@@ -11,7 +11,7 @@ base_packages = ["numpy>=1.15.4", "scipy>=1.2.0", "scikit-learn>=0.20.2",
                  "plotnine>=0.5.1", "pytest==4.0.2", "jupyter==1.0.0", "jupyterlab==0.35.4"]
 
 setup(
-    name="skblocks",
+    name="scikit-blocks",
     version="0.0.1",
     packages=find_packages(exclude=['data', 'notebooks']),
     long_description=read('README.md'),
