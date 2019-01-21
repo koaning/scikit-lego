@@ -11,5 +11,5 @@ install:
   - pip install -e .
   - pip install .[dev]
 script:
-  - pytest
+  - pytest -v
   - flake8
