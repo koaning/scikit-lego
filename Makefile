@@ -9,6 +9,6 @@ develop:
 	python setup.py develop
 
 test:
-	pytest
+	pytest -v
 
 check: flake test
