@@ -8,7 +8,7 @@ matrix:
 before_install:
   - pip install --upgrade pip
 install:
-  - pip install .
+  - pip install -e .
   - pip install .[dev]
 script:
   - pytest
