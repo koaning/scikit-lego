@@ -1,5 +1,5 @@
 flake:
-	flake8 scikit-blocks
+	flake8 skblocks
 	flake8 tests
 
 install:
@@ -10,3 +10,5 @@ develop:
 
 test:
 	pytest
+
+check: flake test
