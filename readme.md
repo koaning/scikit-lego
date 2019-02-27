@@ -1,4 +1,4 @@
-# scikit-blocks
+# scikit-lego
 
 We love scikit learn but very often we find ourselves writing
 custom transformers, metrics and models. The goal of this project
@@ -6,29 +6,36 @@ is to attempt to consolidate these into a package that offers
 code quality/testing. This project is a collaboration between
 multiple companies in the Netherlands. 
 
-## project structure 
+## Installation 
+
+Install `scikit-lego` via pip with 
 
 ```
-│
-├── notebooks/          <- Jupyter notebooks. Naming convention is a short `-` delimited 
-│                          description, a number (for ordering), and the creator's initials,
-│                          e.g. `initial-data-exploration-01-hg`.
-├── tests/              <- Unit tests.
-├── skblocks/           <- Python module with source code of this project.
-├── Makefile            <- Makefile with commands like `make environment`
-└── README.md           <- The top-level README for developers using this project.
+pip install scikit-lego
 ```
 
-## installation 
-
-Install `scikit-blocks` in the virtual environment via:
+Alternatively you can fork/clone and run: 
 
 ```bash
 $ pip install --editable .
 ```
 
-## usage 
+## Usage 
 
 ```python
-from skblocks.transformers import RandomAdder
+from sklego.transformers import RandomAdder
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+
+...
+
+mod = Pipeline([
+    ("scale", StandardScaler()),
+    ("pca", RandomAdder()),
+    ("model", LogisticRegression(solver='lbfgs'))
+])
+
+...
 ```
