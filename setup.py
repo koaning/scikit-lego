@@ -7,8 +7,8 @@ base_packages = ["numpy>=1.15.4", "scipy>=1.2.0", "scikit-learn>=0.20.2",
                  "jupyterlab==0.35.4", "flake8==3.6.0"]
 
 setup(
-    name="scikit-blocks",
-    version="0.0.1",
+    name="scikit-lego",
+    version="0.1.0",
     packages=find_packages(exclude=['notebooks']),
     install_requires=base_packages
 )
