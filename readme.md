@@ -10,7 +10,7 @@ multiple companies in the Netherlands.
 
 Install `scikit-lego` via pip with 
 
-```
+```bash
 pip install scikit-lego
 ```
 
