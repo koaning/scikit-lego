@@ -1,4 +1,4 @@
-from skblocks.transformers import RandomAdder
+from sklego.transformers import RandomAdder
 
 
 def test_shape_does_not_change(random_xy_dataset):
