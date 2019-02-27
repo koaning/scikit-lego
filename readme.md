@@ -1,3 +1,5 @@
+![](https://travis-ci.com/koaning/scikit-lego.svg?branch=master)
+
 # scikit-lego
 
 We love scikit learn but very often we find ourselves writing
