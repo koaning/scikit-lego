@@ -19,3 +19,8 @@ def test_values_normal(random_xy_dataset_regr):
     predictions = mod.fit(X, y).predict(X)
     assert mod.mu_ == y.mean()
     assert mod.sigma_ == y.std()
+
+
+def test_bad_values():
+    with pytest.raises(ValueError):
+        RandomRegressor(strategy="foobar")
