@@ -1,4 +1,5 @@
-![](https://travis-ci.com/koaning/scikit-lego.svg?branch=master)
+![](https://travis-ci.com/koaning/scikit-lego.svg?branch=master) [![Build status](https://ci.appveyor.com/api/projects/status/66r9jjs844v8c5qh?svg=true)](https://ci.appveyor.com/project/koaning/scikit-lego)
+
 
 # scikit-lego
 
