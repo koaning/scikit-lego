@@ -7,7 +7,7 @@ base_packages = ["numpy>=1.15.4", "scipy>=1.2.0", "scikit-learn>=0.20.2",
 
 setup(
     name="scikit-lego",
-    version="0.1.0",
+    version="0.1.1",
     packages=find_packages(exclude=['notebooks']),
     install_requires=base_packages
 )
