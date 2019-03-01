@@ -38,7 +38,7 @@ from sklearn.pipeline import Pipeline
 
 mod = Pipeline([
     ("scale", StandardScaler()),
-    ("pca", RandomAdder()),
+    ("random_noise", RandomAdder()),
     ("model", LogisticRegression(solver='lbfgs'))
 ])
 
