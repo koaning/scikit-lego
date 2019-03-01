@@ -3,13 +3,14 @@ from sklearn.base import BaseEstimator, RegressorMixin
 
 
 class RandomRegressor(BaseEstimator, RegressorMixin):
-    def __init__(self, strategy="uniform"):
+    def __init__(self, strategy="uniform", seed=42):
         """
         :param strategy: One of 'uniform', 'normal' or 'gmm'.
         """
         self.allowed_strategies = ("uniform", "normal")
         if strategy not in self.allowed_strategies:
             raise ValueError(f"strategy {strategy} is not in {self.allowed_strategies}")
+        self.seed = seed
         self.strategy = strategy
         self.min_ = None
         self.max_ = None
@@ -25,6 +26,7 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X):
+        np.random.seed(self.seed)
         if self.strategy not in self.allowed_strategies:
             raise ValueError(f"strategy {strategy} is not in {self.allowed_strategies}")
         if self.strategy == 'normal':
