@@ -28,7 +28,7 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
     def predict(self, X):
         np.random.seed(self.seed)
         if self.strategy not in self.allowed_strategies:
-            raise ValueError(f"strategy {strategy} is not in {self.allowed_strategies}")
+            raise ValueError(f"strategy {self.strategy} is not in {self.allowed_strategies}")
         if self.strategy == 'normal':
             return np.random.normal(self.mu_, self.sigma_, X.shape[0])
         if self.strategy == 'uniform':
