@@ -1,3 +1,4 @@
+import numpy as np
 from sklego.dummy import RandomRegressor
 
 import pytest
@@ -15,10 +16,9 @@ def test_values_uniform(random_xy_dataset_regr):
 
 def test_values_normal(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
-    mod = RandomRegressor(strategy="normal")
-    predictions = mod.fit(X, y).predict(X)
-    assert mod.mu_ == y.mean()
-    assert mod.sigma_ == y.std()
+    mod = RandomRegressor(strategy="normal").fit(X, y)
+    assert mod.mu_ == pytest.approx(np.mean(y), abs=0.001)
+    assert mod.sigma_ == pytest.approx(np.std(y), abs=0.001)
 
 
 def test_bad_values():
