@@ -23,3 +23,8 @@ def random_xy_dataset_clf(request):
     X = np.random.normal(0, 2, (n, k)).astype(np_type)
     y = np.random.normal(0, 2, (n, 1)) > 0.0
     return X, y
+
+
+def id_func(param):
+    """Returns the repr of an object for usage in pytest parametrize"""
+    return repr(param)
