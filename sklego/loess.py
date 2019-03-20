@@ -1,17 +1,31 @@
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
+from sklearn.linear_model import LinearRegression
 
 
-class PointSelector:
-    def __init__(self, n_points=5, metric='euclidean'):
+class LoessSmoother:
+    def __init__(self, model='linear', n_points=5):
         self.n_points = n_points
-        self.metric = metric
+        # This is to be adjusted:
+        self.model = LinearRegression()
 
-    def get_point_indexes(self, X):
-        knn = NearestNeighbors(n_neighbors=self.n_points, metric=self.metric).fit()
+    def get_point_sets(self, X):
+        knn = NearestNeighbors(n_neighbors=self.n_points).fit(X)
 
         for point in X:
-            yield knn.kneighbours(point.reshape(-1, 1))[1][0]
+            yield knn.kneighbors(point.reshape(-1, 1))[1][0]
+
+    def fit(self, X, y):
+        points_generator = self.get_point_sets(X)
+        y_focal = np.array([])
+        for idx_focal, idx_window in enumerate(points_generator):
+            x_focal = x[idx_focal].reshape(-1, 1)
+            x_window = x[idx_window]
+            y_window = y[idx_window]
+            y_focal_new = self.model.fit(x_window, y_window).predict(x_focal)[0][0]
+            y_focal = np.append(y_focal, y_focal_new)
+
+        return y_focal
 
 
 def random_x(minimum_val, maximum_val, size):
