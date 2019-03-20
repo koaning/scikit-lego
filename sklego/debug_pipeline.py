@@ -12,8 +12,36 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_memory
 
 
-def _default_log_step(func):
-    '''Wrapper to log information after a step in a pipeline.
+def _default_log_callback(output, execution_time):
+    '''The default log callback, that logs the step name, shape of the output
+    and the execution time of the step.
+
+    Parameters
+    ----------
+    output : Tuple(
+            numpy.ndarray or pandas.DataFrame
+            sklearn.base.BaseEstimator or sklearn.base.TransformerMixin
+        )
+        The output of the step and a step in the pipeline.
+    execution_time : float
+        The execution time of the step.
+    '''
+    logger = logging.getLogger(__name__)
+    step_result, step = output
+    logger.info(f'[{step}] shape={step_result.shape} time={execution_time}')
+
+
+def _log_wrapper(func, log_callback=_default_log_callback):
+    '''Function wrapper to log information after the function is called, about
+    the output ant the execution time.
+
+    Parameters
+    ----------
+    func : function
+        The function to be wrapped with a log statement.
+    log_callback : function, optional
+        The log callback. Defaults to :func:_default_log_callback. It should
+        expect the same arguments as the default.
     '''
     @wraps(func)
     def wrapper(*args, **kwargs):
