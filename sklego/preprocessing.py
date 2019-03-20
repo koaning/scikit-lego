@@ -5,9 +5,12 @@ import pandas as pd
 class ColumnSelector(BaseEstimator, TransformerMixin):
     """
     Allows selecting specific columns from a pandas DataFrame by name. Can be useful in a sklearn Pipeline.
+
     :param columns: column name ``str`` or list of column names to be selected
+
     .. note::
         Raises a ``TypeError`` if input provided is not a DataFrame
+
         Raises a ``ValueError`` if columns provided are not in the input DataFrame
     :Example:
     >>> # Selecting a single column from a pandas DataFrame
@@ -22,17 +25,20 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
     0    1.82
     1    1.85
     2    1.80
+
     >>> # Selecting multiple columns from a pandas DataFrame
     >>> ColumnSelector(['length', 'shoesize']).fit_transform(df)
        length  shoesize
     0    1.82        42
     1    1.85        44
     2    1.80        45
+
     >>> # Selecting non-existent columns returns in a KeyError
     >>> ColumnSelector(['weight']).fit_transform(df)
     Traceback (most recent call last):
         ...
     KeyError: "['weight'] column(s) not in DataFrame"
+
     >>> # How to use the ColumnSelector in a sklearn Pipeline
     >>> from sklearn.pipeline import Pipeline
     >>> from sklearn.preprocessing import StandardScaler
@@ -56,6 +62,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         """
         Checks 1) if input is a DataFrame, and 2) if column names are in this DataFrame
+
         :param X: ``pd.DataFrame`` on which we apply the column selection
         :param y: ``pd.Series`` labels for X. unused for column selection
         :returns: ``ColumnSelector`` object.
@@ -67,6 +74,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """Returns a pandas DataFrame with only the specified columns
+
         :param X: ``pd.DataFrame`` on which we apply the column selection
         :returns: ``pd.DataFrame`` with only the selected columns
         """
