@@ -2,7 +2,7 @@
 name: Feature Request Template
 about: This is a template for a Feature Request
 title: "[FEATURE]"
-labels: ''
+labels: enhancement
 assignees: ''
 
 ---
