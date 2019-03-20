@@ -1,5 +1,7 @@
+import numpy as np
 import pandas as pd
 from scipy.ndimage.interpolation import shift
+
 
 def _as_list(val):
     """
@@ -75,6 +77,21 @@ def add_lag(X, cols, lags):
     >>> add_lag(df, ['a', 'b'], 2) # doctest: +NORMALIZE_WHITESPACE
        a  b  c  a-2  b-2
     1  1  2  3  7.0  8.0
+
+    >>> import numpy as np
+    >>> X = np.array([[-4, 2],
+    ...               [-2, 0],
+    ...               [4, -6]])
+
+    >>> add_lag(X, [0, 1], 1)
+    array([[-4,  2, -2,  0],
+           [-2,  0,  4, -6],
+           [ 4, -6,  0,  0]])
+
+    >>> add_lag(X, 1, [-1, 1])
+    array([[-4,  2,  0,  0],
+           [-2,  0,  2, -6],
+           [ 4, -6,  0,  0]])
     """
 
     lags = _negate_lags(lags)
@@ -97,12 +114,36 @@ def _add_lagged_numpy_columns(X, cols, lags):
     :param df: the input ``np.ndarray``.
     :param cols: an iterable of column names, or a single column name.
     :returns: ``np.ndarray`` with the concatenated lagged columns.
+
+    :Example:
+    >>> import numpy as np
+    >>> X = np.array([[-4, 2],
+    ...               [-2, 0],
+    ...               [4, -6]])
+
+    >>> _add_lagged_numpy_columns(X, ['test'], 1)
+    Traceback (most recent call last):
+        ...
+    ValueError: Matrix columns are indexed by integers
+
+    >>> _add_lagged_numpy_columns(X, ['test'], 1)
+    Traceback (most recent call last):
+        ...
+    ValueError: Matrix columns are indexed by integers
+
+    >>> _add_lagged_numpy_columns(X, [15], 1)
+    Traceback (most recent call last):
+        ...
+    KeyError: 'The column does not exist'
     """
 
     cols = _as_list(cols)
 
-    if not all([col < df.shape[1] for col in cols]):
-        raise KeyError
+    if not all([isinstance(col, int) for col in cols]):
+        raise ValueError("Matrix columns are indexed by integers")
+
+    if not all([col < X.shape[1] for col in cols]):
+        raise KeyError("The column does not exist")
 
     combos = (shift(X[:, col], lag) for col in cols for lag in lags)
 
@@ -128,13 +169,13 @@ def _add_lagged_pandas_columns(df, cols, lags):
     >>> _add_lagged_pandas_columns(df, ['last_name'], 1)
     Traceback (most recent call last):
         ...
-    KeyError
+    KeyError: 'The column does not exist'
     """
 
     cols = _as_list(cols)
 
     if not all([col in df.columns.values for col in cols]):
-        raise KeyError
+        raise KeyError("The column does not exist")
 
     combos = [
         df[col].shift(lag).rename(col + str(lag))
