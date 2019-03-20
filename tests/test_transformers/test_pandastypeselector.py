@@ -59,7 +59,7 @@ def test_value_error_inequal(random_xy_dataset_regr):
     transformer = PandasTypeSelector(include=['number'])
     X, y = random_xy_dataset_regr
     X = pd.DataFrame(X)
-    if len(list(X)) > 0:
+    if X.shape[0] > 0:
         with pytest.raises(ValueError):
             transformer.fit(X)
             # Remove column to create error
