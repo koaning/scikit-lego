@@ -99,12 +99,19 @@ class Pipeline(Pipeline):
     See :class:sklearn.pipeline.PipeLine for all other information.
     '''
 
-    def __init__(self, steps, memory=None, log_callback=_default_log_callback):
-        # Overwrite cache function of memory such that it logs the output when
-        # the function is called
-        memory = check_memory(memory)
-        memory._cache = memory.cache
-        memory.cache = _cache_with_function_log_statement(
-            log_callback).__get__(memory, memory.__class__)
-
+    def __init__(
+            self,
+            steps,
+            memory=None,
+            *,
+            log_callback=None):
+        if log_callback is not None:
+            if log_callback == 'default':
+                log_callback = _default_log_callback
+            # Overwrite cache function of memory such that it logs the output
+            # when the function is called
+            memory = check_memory(memory)
+            memory._cache = memory.cache
+            memory.cache = _cache_with_function_log_statement(
+                log_callback).__get__(memory, memory.__class__)
         super().__init__(steps, memory=memory)
