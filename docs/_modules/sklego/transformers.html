@@ -151,19 +151,19 @@
 <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">FLOAT_DTYPES</span><span class="p">,</span> <span class="n">check_random_state</span><span class="p">,</span> <span class="n">check_is_fitted</span>
 
 
-<div class="viewcode-block" id="RandomAdder"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.RandomAdder">[doc]</a><span class="k">class</span> <span class="nc">RandomAdder</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
+<div class="viewcode-block" id="RandomAdder"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.RandomAdder">[docs]</a><span class="k">class</span> <span class="nc">RandomAdder</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">noise</span> <span class="o">=</span> <span class="n">noise</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="o">=</span> <span class="n">random_state</span>
 
-<div class="viewcode-block" id="RandomAdder.fit"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.RandomAdder.fit">[doc]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<div class="viewcode-block" id="RandomAdder.fit"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.RandomAdder.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
 
         <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">check_X_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">FLOAT_DTYPES</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">dim_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="RandomAdder.transform"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.RandomAdder.transform">[doc]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<div class="viewcode-block" id="RandomAdder.transform"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.RandomAdder.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="n">rs</span> <span class="o">=</span> <span class="n">check_random_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
         <span class="n">check_is_fitted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;dim_&#39;</span><span class="p">])</span>
 
@@ -175,7 +175,7 @@
         <span class="k">return</span> <span class="n">X</span> <span class="o">+</span> <span class="n">rs</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">noise</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="EstimatorTransformer"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.EstimatorTransformer">[doc]</a><span class="k">class</span> <span class="nc">EstimatorTransformer</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">MetaEstimatorMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
+<div class="viewcode-block" id="EstimatorTransformer"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.EstimatorTransformer">[docs]</a><span class="k">class</span> <span class="nc">EstimatorTransformer</span><span class="p">(</span><span class="n">TransformerMixin</span><span class="p">,</span> <span class="n">MetaEstimatorMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Allows using an estimator such as a model as a transformer in an earlier step of a pipeline</span>
 
@@ -187,7 +187,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">estimator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">predict_func</span> <span class="o">=</span> <span class="n">predict_func</span>
 
-<div class="viewcode-block" id="EstimatorTransformer.fit"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.EstimatorTransformer.fit">[doc]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<div class="viewcode-block" id="EstimatorTransformer.fit"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.EstimatorTransformer.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Fits the estimator&quot;&quot;&quot;</span>
         <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">check_X_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">estimator</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">FLOAT_DTYPES</span><span class="p">)</span>
 
@@ -195,7 +195,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">estimator_</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="EstimatorTransformer.transform"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.EstimatorTransformer.transform">[doc]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<div class="viewcode-block" id="EstimatorTransformer.transform"><a class="viewcode-back" href="../../api/sklego.html#sklego.transformers.EstimatorTransformer.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Applies the `predict_func` on the fitted estimator.</span>
 
