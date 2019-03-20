@@ -8,10 +8,12 @@ install:
 	pip install -e .
 
 develop:
-	python setup.py develop
+	# python setup.py develop
+	pip install -e ".[dev]"
 
 test:
 	pytest
+	python -m doctest sklego/*.py
 
 check: flake test
 
