@@ -1,3 +1,10 @@
+"""
+The dummy module is for machine learning models that are a little bit
+simple (and shouldn't be *that* performant) but are perfectly fine
+as starting baselines. If a model does not perform well against a dummy
+model then you have work to do.
+"""
+
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils import check_X_y
