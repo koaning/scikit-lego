@@ -11,18 +11,23 @@ from sklearn.utils.validation import check_memory
 
 
 def _default_log_callback(output, execution_time):
-    '''The default log callback, that logs the step name, shape of the output
+    '''The default log callback which logs the step name, shape of the output
     and the execution time of the step.
 
     Parameters
     ----------
-    output : Tuple(
+    output : tuple(
             numpy.ndarray or pandas.DataFrame
-            sklearn.base.BaseEstimator or sklearn.base.TransformerMixin
+            :class:estimator or :class:transformer
         )
         The output of the step and a step in the pipeline.
     execution_time : float
         The execution time of the step.
+
+    Note
+    ----------
+    If you write your custom callback function the expected input should be the
+    sames as this function.
     '''
     logger = logging.getLogger(__name__)
     step_result, step = output
@@ -31,23 +36,26 @@ def _default_log_callback(output, execution_time):
 
 def _log_wrapper(func, log_callback=_default_log_callback):
     '''Function wrapper to log information after the function is called, about
-    the output ant the execution time.
+    the output and the execution time.
 
     Parameters
     ----------
     func : function
         The function to be wrapped with a log statement.
     log_callback : function, optional
-        The log callback. Defaults to :func:_default_log_callback. It should
-        expect the same arguments as the default.
+        The log callback which is called after `func` is called. Defaults to
+        :func:_default_log_callback. Note, this function should expect the
+        same arguments as the default.
+
+    Returns
+    ----------
+    function : The function wrapped with a log callback.
     '''
     def _(*args, **kwargs):
         start_time = dt.datetime.now()
         output = func(*args, **kwargs)
         execution_time = dt.datetime.now() - start_time
-
         log_callback(output, execution_time)
-
         return output
     return _
 
@@ -62,8 +70,8 @@ def _cache_with_function_log_statement(log_callback=_default_log_callback):
         The log callback function. Defaults to :func:_default_log_callback.
 
     Returns
-    ---------
-    See :method:self._cache.
+    ----------
+    function : The cache where its function is wrapped with a log statement.
     '''
     def _(
             self,
@@ -80,24 +88,32 @@ class Pipeline(Pipeline):
     '''A pipeline that has a log statement in between each step, useful for
     debugging.
 
-    This implementation is a hack on the original sklearn Pipeline. It aims to
-    maintain the same behaviour as the original sklearn Pipeline, while
-    changing minimal amount of code.
-
-    The log statement is added by overwriting the cache method of the memory,
-    such that the function called in the cache is wrapped with a functions that
-    has the log statement. For an example wrapper function see
-    :func:_default_log_step.
-
     Parameters
     ----------
     log_callback : function, optional
         The callback function that logs information in between each
-        intermediate step. See :func:_default_log_callback for what this
-        function expects. Defaults to None. If set to `'default'`,
+        intermediate step. Defaults to None. If set to `'default'`,
         :func:_default_log_callback is used.
 
-    See :class:sklearn.pipeline.PipeLine for all other information.
+        See :func:_default_log_callback for an example.
+
+    See :class:sklearn.pipeline.PipeLine for all other parameters.
+
+    Note
+    ----------
+    This implementation is a hack on the original sklearn Pipeline. It aims to
+    have the same behaviour as the original sklearn Pipeline, while changing
+    minimal amount of code.
+
+    The log statement is added by overwriting the cache method of the memory,
+    such that the function called in the cache is wrapped with a functions that
+    calls the log callback function (`log_callback`).
+
+    This hack breaks will break when:
+    1) The SKlearn pipeline initialization function is changed.
+    2) The memory is used differently in the fit.
+    3) The :class:joblib.memory.Memory changes behaviour of the cache function.
+    4) The :class:joblib.memory.Memory starts using a `_cache` method.
     '''
 
     def __init__(
