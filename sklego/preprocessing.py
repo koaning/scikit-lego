@@ -8,7 +8,8 @@ class TimeSeriesFeatureAdder(TransformerMixin, BaseEstimator):
     """
     Add common time-series features to data frame in your scikit-learn pipeline.
     There are a number of date features that can be added (weekday, weekofyear, year,
-    quarter, month, day, hour and minute.
+    quarter, month, day, hour and minute. By default it will generate all the time features. They
+    can be individually excluded.
 
     :param date_col: name of the date column (default= 'date')
 
