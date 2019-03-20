@@ -1,5 +1,4 @@
 import pandas as pd
-import doctest
 
 
 def negate_lags(lags):
@@ -94,6 +93,3 @@ def add_lagged_pandas_columns(df, cols, lags):
     ]
 
     return pd.concat([df, *combos], axis=1).dropna()
-
-
-doctest.testmod()
