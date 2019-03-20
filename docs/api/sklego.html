@@ -243,6 +243,113 @@ for benchmarking. It should be easily beatable.</p>
 </div>
 <div class="section" id="module-sklego.preprocessing">
 <span id="sklego-preprocessing-module"></span><h2>sklego.preprocessing module<a class="headerlink" href="#module-sklego.preprocessing" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="sklego.preprocessing.ColumnSelector">
+<em class="property">class </em><code class="descclassname">sklego.preprocessing.</code><code class="descname">ColumnSelector</code><span class="sig-paren">(</span><em>columns: list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sklego/preprocessing.html#ColumnSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sklego.preprocessing.ColumnSelector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Allows selecting specific columns from a pandas DataFrame by name. Can be useful in a sklearn Pipeline.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>columns</strong> – column name <code class="docutils literal notranslate"><span class="pre">str</span></code> or list of column names to be selected</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Raises a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> if input provided is not a DataFrame</p>
+<p class="last">Raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if columns provided are not in the input DataFrame</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Selecting a single column from a pandas DataFrame</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+<span class="gp">... </span>    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Swen&#39;</span><span class="p">,</span> <span class="s1">&#39;Victor&#39;</span><span class="p">,</span> <span class="s1">&#39;Alex&#39;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.82</span><span class="p">,</span> <span class="mf">1.85</span><span class="p">,</span> <span class="mf">1.80</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;shoesize&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">42</span><span class="p">,</span> <span class="mi">44</span><span class="p">,</span> <span class="mi">45</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ColumnSelector</span><span class="p">([</span><span class="s1">&#39;length&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="go">   length</span>
+<span class="go">0    1.82</span>
+<span class="go">1    1.85</span>
+<span class="go">2    1.80</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Selecting multiple columns from a pandas DataFrame</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ColumnSelector</span><span class="p">([</span><span class="s1">&#39;length&#39;</span><span class="p">,</span> <span class="s1">&#39;shoesize&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="go">   length  shoesize</span>
+<span class="go">0    1.82        42</span>
+<span class="go">1    1.85        44</span>
+<span class="go">2    1.80        45</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Selecting non-existent columns returns in a KeyError</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ColumnSelector</span><span class="p">([</span><span class="s1">&#39;weight&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+    <span class="o">...</span>
+<span class="gr">KeyError</span>: <span class="n">&quot;[&#39;weight&#39;] column(s) not in DataFrame&quot;</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># How to use the ColumnSelector in a sklearn Pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="k">import</span> <span class="n">Pipeline</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">StandardScaler</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipe</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;select&#39;</span><span class="p">,</span> <span class="n">ColumnSelector</span><span class="p">([</span><span class="s1">&#39;length&#39;</span><span class="p">])),</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">()),</span>
+<span class="gp">... </span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipe</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="go">array([[-0.16222142],</span>
+<span class="go">       [ 1.29777137],</span>
+<span class="go">       [-1.13554995]])</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="sklego.preprocessing.ColumnSelector.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sklego/preprocessing.html#ColumnSelector.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sklego.preprocessing.ColumnSelector.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks 1) if input is a DataFrame, and 2) if column names are in this DataFrame</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>X</strong> – <code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code> on which we apply the column selection</li>
+<li><strong>y</strong> – <code class="docutils literal notranslate"><span class="pre">pd.Series</span></code> labels for X. unused for column selection</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal notranslate"><span class="pre">ColumnSelector</span></code> object.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sklego.preprocessing.ColumnSelector.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sklego/preprocessing.html#ColumnSelector.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sklego.preprocessing.ColumnSelector.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas DataFrame with only the specified columns</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> – <code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code> on which we apply the column selection</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><code class="docutils literal notranslate"><span class="pre">pd.DataFrame</span></code> with only the selected columns</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-sklego.transformers">
 <span id="sklego-transformers-module"></span><h2>sklego.transformers module<a class="headerlink" href="#module-sklego.transformers" title="Permalink to this headline">¶</a></h2>
