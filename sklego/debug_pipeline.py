@@ -91,14 +91,22 @@ class DebugPipeline(Pipeline):
     has the log statement. For an example wrapper function see
     :func:_default_log_step.
 
+    Parameters
+    ----------
+    log_callback : function, optional
+        The callback function that logs information in-between each
+        intermediate step. See :func:_default_log_callback for what this
+        function expects. Defaults to :func:_default_log_callback
+
     See :class:sklearn.pipeline.PipeLine for all other information.
     '''
 
-    def __init__(self, steps, memory=None):
+    def __init__(self, steps, memory=None, log_callback=_default_log_callback):
         # Overwrite cache function of memory such that it logs the output when
         # the function is called
         memory = check_memory(memory)
         memory._cache = memory.cache
-        memory.cache = _log_step_cache.__get__(memory, memory.__class__)
+        memory.cache = _cache_with_function_log_statement(
+            log_callback).__get__(memory, memory.__class__)
 
         super().__init__(steps, memory=memory)
