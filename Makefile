@@ -8,8 +8,9 @@ install:
 	pip install -e .
 
 develop:
-	# python setup.py develop
 	pip install -e ".[dev]"
+	python setup.py develop
+
 
 doctest:
 	python -m doctest sklego/*.py
