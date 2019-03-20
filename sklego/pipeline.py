@@ -106,12 +106,9 @@ class Pipeline(Pipeline):
             memory=None,
             *,
             log_callback=None):
-
         self.memory = check_memory(memory)
-        if log_callback is not None:
-            self.log_callback = log_callback
-
-        super().__init__(steps, memory=self.memory)
+        self.log_callback = log_callback
+        super().__init__(steps=steps, memory=self.memory)
 
     @property
     def log_callback(self):
@@ -119,12 +116,19 @@ class Pipeline(Pipeline):
 
     @log_callback.setter
     def log_callback(self, func):
-        if func == 'default':
+        self._log_callback = func
+        if self._log_callback == 'default':
             self._log_callback = _default_log_callback
-        else:
-            self._log_callback = func
-        # Overwrite cache function of memory such that it logs the output
-        # when the function is called
+
+        # When no log callback function is given, change nothing.
+        # Or, if the memory cache was changed, set it back to its original.
+        if self._log_callback is None:
+            if hasattr(self.memory, '_cache'):
+                self.memory.cache = self.memory._cache
+            return
+
+        # Overwrite cache function of memory such that it logs the
+        # output when the function is called
         if not hasattr(self.memory, '_cache'):
             self.memory._cache = self.memory.cache
         self.memory.cache = _cache_with_function_log_statement(
