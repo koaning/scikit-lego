@@ -19,3 +19,9 @@ docs:
 	sphinx-apidoc -f -o doc/api sklego
 	sphinx-build doc docs
 	touch docs/.nojekyll
+
+clean:
+	rm -rf .pytest_cache
+	rm -rf build
+	rm -rf dist
+	rm -rf scikit_lego.egg-info
