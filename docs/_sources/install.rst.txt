@@ -1,13 +1,15 @@
-installation
+Installation
 ============
 
-How to install things.
+Install `scikit-lego` via pip with
 
-1. blak 
-2. blah
-3. bla
+.. code-block:: bash
 
-.. code-block:: python
+   pip install scikit-lego
 
-	from what import wut
-	wut().yo()
+
+Alternatively you can fork/clone and run:
+
+.. code-block:: bash
+
+   pip install --editable .

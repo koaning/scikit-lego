@@ -12,7 +12,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
@@ -179,9 +178,7 @@ epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
 
-from shutil import copyfile
-
 def setup(app):
     print("setup is running")
-    app.add_stylesheet('_static/css/custom.css')
+    app.add_stylesheet('css/custom.css')
     # copyfile('_static/css/custom.css', '_build/html/_static/css/custom.css')
