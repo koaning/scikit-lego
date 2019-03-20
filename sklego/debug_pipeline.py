@@ -43,35 +43,39 @@ def _log_wrapper(func, log_callback=_default_log_callback):
         The log callback. Defaults to :func:_default_log_callback. It should
         expect the same arguments as the default.
     '''
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        logger = logging.getLogger(inspect.stack()[1].function)
+    def _(*args, **kwargs):
+        start_time = dt.datetime.now()
+        output = func(*args, **kwargs)
+        execution_time = dt.datetime.now() - start_time
 
-        tic = dt.datetime.now()
-        out, step = func(*args, **kwargs)
-        toc = str(dt.datetime.now() - tic)
+        log_callback(output, execution_time)
 
-        logger.info(f'[{step}] shape={out.shape} time={toc}')
-        return out, step
-    return wrapper
+        return output
+    return _
 
 
-def _log_step_cache(self, func=None, *args, **kwargs):
-    '''Wraps the `func` with a log step, then uses the original case.
+def _cache_with_function_log_statement(log_callback=_default_log_callback):
+    '''Wraps the `func` with :func:_log_wrapper before passing it to
+    :method:_cache.
 
     Parameters
     ----------
-    func : function
-        Function to be wrapper with the :func:_default_log_step. Defaults to
-        `None`.
+    log_callback : function, optional
+        The log callback function. Defaults to :func:_default_log_callback.
 
     Returns
     ---------
     See :method:self._cache.
     '''
-    if callable(func):
-        func = _default_log_step(func)
-    return self._cache(func=func, *args, **kwargs)
+    def _(
+            self,
+            func=None,
+            *args,
+            **kwargs):
+        if callable(func):
+            func = _log_wrapper(func, log_callback=log_callback)
+        return self._cache(func=func, *args, **kwargs)
+    return _
 
 
 class DebugPipeline(Pipeline):
