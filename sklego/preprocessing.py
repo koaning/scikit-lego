@@ -1,7 +1,5 @@
 from sklearn.base import TransformerMixin, BaseEstimator
 import pandas as pd
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
 
 
 class ColumnSelector(BaseEstimator, TransformerMixin):
