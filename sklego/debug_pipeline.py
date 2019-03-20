@@ -1,12 +1,10 @@
 '''
-Debug pipeline that logs the in-between steps of the pipeline.
+Debug pipeline that has a log statement in-between the executed steps.
 '''
 
 
 import logging
-import inspect
 import datetime as dt
-from functools import wraps
 
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_memory
