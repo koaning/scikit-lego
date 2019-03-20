@@ -1,0 +1,13 @@
+installation
+============
+
+How to install things.
+
+1. blak 
+2. blah
+3. bla
+
+.. code-block:: python
+
+	from what import wut
+	wut().yo()
