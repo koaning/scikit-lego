@@ -18,7 +18,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         """
         Saves the column names for check during transform
 
-        :param X: pandas dataframe to select dtypes for
+        :param X: pandas dataframe to select dtypes out of
         :param y: not used in this class
         """
         self._check_X_for_type(X)
