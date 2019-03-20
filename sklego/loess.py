@@ -2,12 +2,12 @@ from sklearn.neighbors import NearestNeighbors
 
 
 class PointSelector:
-    def __init__(self, n_points=5):
+    def __init__(self, n_points=5, metric='euclidean'):
         self.n_points = n_points
+        self.metric = metric
 
-    def get_point_sets(self, X):
-        knn = NearestNeighbors(n_neighbors=self.n_points).fit()
+    def get_point_indexes(self, X):
+        knn = NearestNeighbors(n_neighbors=self.n_points, metric=self.metric).fit()
 
-        points_dict = {idx: (knn.kneighbours(point.reshape(-1, 1))[0], knn.kneighbours(point.reshape(-1, 1))[1]) for point in X}
-
-        return points_dict
+        for point in X:
+            yield knn.kneighbours(point.reshape(-1, 1))[1][0]
