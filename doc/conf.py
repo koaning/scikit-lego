@@ -181,4 +181,3 @@ epub_exclude_files = ['search.html']
 def setup(app):
     print("setup is running")
     app.add_stylesheet('css/custom.css')
-    # copyfile('_static/css/custom.css', '_build/html/_static/css/custom.css')

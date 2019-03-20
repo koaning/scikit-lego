@@ -20,6 +20,46 @@ sklego.dummy module
     :undoc-members:
     :show-inheritance:
 
+sklego.linear module
+--------------------
+
+.. automodule:: sklego.linear
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sklego.meta module
+------------------
+
+.. automodule:: sklego.meta
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sklego.naive\_bayes module
+--------------------------
+
+.. automodule:: sklego.naive_bayes
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sklego.outlier module
+---------------------
+
+.. automodule:: sklego.outlier
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sklego.preprocessing module
+---------------------------
+
+.. automodule:: sklego.preprocessing
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sklego.transformers module
 --------------------------
 
