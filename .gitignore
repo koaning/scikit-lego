@@ -111,5 +111,6 @@ venv.bak/
 dmypy.json
 
 .idea
+docs/
 .DS_Store
 doc/_build
