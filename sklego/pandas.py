@@ -1,4 +1,5 @@
 import pandas as pd
+from scipy.ndimage.interpolation import shift
 
 def _as_list(val):
     """
@@ -82,7 +83,30 @@ def add_lag(X, cols, lags):
     if isinstance(X, pd.core.frame.DataFrame):
         return _add_lagged_pandas_columns(X, cols, lags)
 
+    # Check the X instance of numpy array
+    if isinstance(X, np.ndarray):
+        return _add_lagged_numpy_columns(X, cols, lags)
+
     raise ValueError("Please pass a pandas DataFrame")
+
+
+def _add_lagged_numpy_columns(X, cols, lags):
+    """
+    Append a lag columns, removes all NA values.
+
+    :param df: the input ``np.ndarray``.
+    :param cols: an iterable of column names, or a single column name.
+    :returns: ``np.ndarray`` with the concatenated lagged columns.
+    """
+
+    cols = _as_list(cols)
+
+    if not all([col < df.shape[1] for col in cols]):
+        raise KeyError
+
+    combos = (shift(X[:, col], lag) for col in cols for lag in lags)
+
+    return np.column_stack((X, *combos))
 
 
 def _add_lagged_pandas_columns(df, cols, lags):
