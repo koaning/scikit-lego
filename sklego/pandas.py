@@ -1,5 +1,25 @@
 import pandas as pd
 
+def _as_list(val):
+    """
+    Helper function, returns value as list, if not already iterable.
+
+    :param val: an iterable or a single value.
+    :returns: a list of the input value.
+
+    :Example:
+
+    >>> _as_list('test')
+    ['test']
+
+    >>> _as_list(['test1', 'test2'])
+    ['test1', 'test2']
+    """
+
+    if not isinstance(val, list):
+        return [val]
+    return val
+
 
 def _negate_lags(lags):
     """
@@ -20,36 +40,12 @@ def _negate_lags(lags):
     def negate(x):
         return -x
 
-    if isinstance(lags, int):
-        return [negate(lags)]
+    lags = _as_list(lags)
 
-    if hasattr(lags, '__iter__'):
-        assert all(isinstance(x, int) for x in lags), "Must be list of ints"
-        return list(map(negate, lags))
+    if not all(isinstance(x, int) for x in lags):
+        raise ValueError("Must be list of ints")
 
-
-def _expand_columns(cols):
-    """
-    Helper function, returns list of one or more columns
-    from column or list of columns.
-
-    :param cols: an iterable of column names or a single column name string.
-    :returns: an iterable of column names.
-
-    :Example:
-
-    >>> _expand_columns('test')
-    ['test']
-
-    >>> _expand_columns(['test1', 'test2'])
-    ['test1', 'test2']
-    """
-
-    if isinstance(cols, str):
-        return [cols]
-
-    if hasattr(cols, '__iter__'):
-        return cols
+    return [-x for x in lags]
 
 
 def add_lag(X, cols, lags):
@@ -111,7 +107,7 @@ def _add_lagged_pandas_columns(df, cols, lags):
     KeyError
     """
 
-    cols = _expand_columns(cols)
+    cols = _as_list(cols)
 
     if not all([col in df.columns.values for col in cols]):
         raise KeyError
