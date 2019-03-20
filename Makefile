@@ -11,9 +11,11 @@ develop:
 	# python setup.py develop
 	pip install -e ".[dev]"
 
-test:
-	pytest
+doctest:
 	python -m doctest sklego/*.py
+
+test: doctest
+	pytest
 
 check: flake test
 
