@@ -243,6 +243,57 @@ for benchmarking. It should be easily beatable.</p>
 </div>
 <div class="section" id="module-sklego.preprocessing">
 <span id="sklego-preprocessing-module"></span><h2>sklego.preprocessing module<a class="headerlink" href="#module-sklego.preprocessing" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="sklego.preprocessing.PandasTypeSelector">
+<em class="property">class </em><code class="descclassname">sklego.preprocessing.</code><code class="descname">PandasTypeSelector</code><span class="sig-paren">(</span><em>include=None</em>, <em>exclude=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sklego/preprocessing.html#PandasTypeSelector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sklego.preprocessing.PandasTypeSelector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.BaseEstimator</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sklearn.base.TransformerMixin</span></code></p>
+<p>Select columns in a pandas dataframe based on their dtype</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>include</strong> – types to be included in the dataframe</li>
+<li><strong>exclude</strong> – types to be exluded in the dataframe</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="sklego.preprocessing.PandasTypeSelector.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sklego/preprocessing.html#PandasTypeSelector.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sklego.preprocessing.PandasTypeSelector.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the column names for check during transform</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>X</strong> – pandas dataframe to select dtypes for</li>
+<li><strong>y</strong> – not used in this class</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sklego.preprocessing.PandasTypeSelector.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/sklego/preprocessing.html#PandasTypeSelector.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sklego.preprocessing.PandasTypeSelector.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms pandas dataframe by (de)selecting columns based on their dtype</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>X</strong> – pandas dataframe to select dtypes for</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="module-sklego.transformers">
 <span id="sklego-transformers-module"></span><h2>sklego.transformers module<a class="headerlink" href="#module-sklego.transformers" title="Permalink to this headline">¶</a></h2>

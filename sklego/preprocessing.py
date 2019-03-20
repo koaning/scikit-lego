@@ -10,7 +10,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     :param include: types to be included in the dataframe
     :param exclude: types to be exluded in the dataframe
     """
-    def __init__(self, include, exclude=[]):
+    def __init__(self, include=None, exclude=None):
         self.include = include
         self.exclude = exclude
 
@@ -23,6 +23,9 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         """
         self._check_X_for_type(X)
         self.type_columns_ = list(X.select_dtypes(include=self.include, exclude=self.exclude))
+
+        if len(self.type_columns_) == 0:
+            raise ValueError(f'Provided type(s) results in empty dateframe')
 
         return self
 
@@ -37,6 +40,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         self._check_X_for_type(X)
 
         transformed_df = X.select_dtypes(include=self.include, exclude=self.exclude)
+
         if set(list(transformed_df)) != set(self.type_columns_):
             raise ValueError(f'Columns were not equal during fit and transform')
 
