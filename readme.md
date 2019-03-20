@@ -3,6 +3,8 @@
 
 # scikit-lego
 
+BWHAAHAHAHHAAHAHAHA
+
 ![](images/logo.png)
 
 We love scikit learn but very often we find ourselves writing
