@@ -152,7 +152,7 @@
 <span class="kn">from</span> <span class="nn">sklearn.utils.validation</span> <span class="k">import</span> <span class="n">check_is_fitted</span><span class="p">,</span> <span class="n">check_array</span><span class="p">,</span> <span class="n">check_random_state</span><span class="p">,</span> <span class="n">FLOAT_DTYPES</span>
 
 
-<div class="viewcode-block" id="RandomRegressor"><a class="viewcode-back" href="../../api/sklego.html#sklego.dummy.RandomRegressor">[docs]</a><span class="k">class</span> <span class="nc">RandomRegressor</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">):</span>
+<div class="viewcode-block" id="RandomRegressor"><a class="viewcode-back" href="../../api/sklego.html#sklego.dummy.RandomRegressor">[doc]</a><span class="k">class</span> <span class="nc">RandomRegressor</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">RegressorMixin</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A RandomRegressor makes random predictions only based on the &quot;y&quot;</span>
 <span class="sd">    value that is seen. The goal is that such a regressor can be used</span>
@@ -173,7 +173,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">gmm</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="RandomRegressor.fit"><a class="viewcode-back" href="../../api/sklego.html#sklego.dummy.RandomRegressor.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RandomRegressor&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="RandomRegressor.fit"><a class="viewcode-back" href="../../api/sklego.html#sklego.dummy.RandomRegressor.fit">[doc]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;RandomRegressor&quot;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fit the model using X, y as training data.</span>
 
@@ -191,7 +191,7 @@
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="RandomRegressor.predict"><a class="viewcode-back" href="../../api/sklego.html#sklego.dummy.RandomRegressor.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<div class="viewcode-block" id="RandomRegressor.predict"><a class="viewcode-back" href="../../api/sklego.html#sklego.dummy.RandomRegressor.predict">[doc]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Predict new data by making random guesses.</span>
 
