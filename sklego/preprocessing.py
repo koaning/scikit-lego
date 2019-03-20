@@ -1,21 +1,28 @@
+from operator import attrgetter
 import pandas as pd
+import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class TimeSeriesFeatureAdder(TransformerMixin, BaseEstimator):
     """
     Add common time-series features to data frame in your scikit-learn pipeline.
-    Currently, it returns the day of the week.
+    There are a number of date features that can be added (weekday, weekofyear, year,
+    quarter, month, day, hour and minute.
 
     :param date_col: name of the date column (default= 'date')
-    :param make_dummies: boolean whether the days of week will be added as dummy variables or as
-    one column. In case of one column, Mondays = 0 and Sundays = 6. (default= false).
+
 
     """
 
-    def __init__(self, date_col="date", make_dummies=False):
+    def __init__(self, date_col="date", weekday=True, weekofyear=True, year=True, quarter=True,
+                 month=True, day=True, hour=True, minute=True):
+        date_features = np.array(
+            ["weekday", "weekofyear", "year", "quarter", "month", "day", "hour", "minute"])
+        date_mask = [weekday, weekofyear, year, quarter, month, day, hour, minute]
+
         self.date_col = date_col
-        self.make_dummies = make_dummies
+        self.date_features = date_features[date_mask]
 
     def fit(self, X, y):
         _ = X.get(self.date_col,
@@ -28,20 +35,9 @@ class TimeSeriesFeatureAdder(TransformerMixin, BaseEstimator):
         return self
 
     def transform(self, X, y):
-        X = self._get_days_of_week(X, self.date_col)
+        return self._get_time_features(X)
 
-        return X
-
-    def _get_days_of_week(self, dataf: pd.DataFrame, date_col: str = "date"):
-        """
-        The day of the week with Monday=0, Sunday=6.
-
-        :param dataf: data frame that contains a date column. (type pandas.DataFrame)
-        :returns pandas.DataFrame with an extra column day_of_week
-        """
-        df_with_days_of_week = dataf.assign(day_of_week=lambda d: d[date_col].dt.dayofweek)
-        if self.make_dummies:
-            df_with_days_of_week = pd.get_dummies(df_with_days_of_week, columns=["day_of_week"],
-                                                  prefix="day", dtype=int)
-
-        return df_with_days_of_week
+    def _get_time_features(self, dataf: pd.DataFrame):
+        time_attr = pd.DataFrame(attrgetter(*self.date_features)(dataf[self.date_col].dt)).T
+        time_attr.columns = self.date_features
+        return pd.concat([dataf, time_attr], axis=1)
