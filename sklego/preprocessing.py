@@ -48,6 +48,9 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
 
     @staticmethod
     def _check_X_for_type(X):
+        """Checks if input of the Selector is of the required dtype"""
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("Provided variable X is not of type pandas.DataFrame")
 
 
 class ColumnSelector(BaseEstimator, TransformerMixin):
