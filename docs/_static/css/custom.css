@@ -1,0 +1,12 @@
+.wy-nav-side{
+	background-color: #f2f2f2;
+	color: black;
+}
+
+.wy-nav-content-wrap{
+	background-color: white;
+}
+
+a.reference.internal{
+	color: black;
+}
