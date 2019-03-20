@@ -20,10 +20,10 @@ Install `scikit-lego` via pip with
 pip install scikit-lego
 ```
 
-Alternatively you can fork/clone and run: 
+Alternatively, to edit and contribute you can fork/clone and run: 
 
 ```bash
-$ pip install --editable .
+$ pip install -e ".[dev]"
 ```
 
 ## Usage 
