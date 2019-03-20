@@ -1,5 +1,5 @@
 '''
-Debug pipeline that has a log statement in-between the executed steps.
+Debug pipeline that has a log statement in between the executed steps.
 '''
 
 
@@ -77,7 +77,7 @@ def _cache_with_function_log_statement(log_callback=_default_log_callback):
 
 
 class Pipeline(Pipeline):
-    '''A pipeline that has a log statement in-between each step, useful for
+    '''A pipeline that has a log statement in between each step, useful for
     debugging.
 
     This implementation is a hack on the original sklearn Pipeline. It aims to
@@ -92,9 +92,10 @@ class Pipeline(Pipeline):
     Parameters
     ----------
     log_callback : function, optional
-        The callback function that logs information in-between each
+        The callback function that logs information in between each
         intermediate step. See :func:_default_log_callback for what this
-        function expects. Defaults to :func:_default_log_callback
+        function expects. Defaults to None. If set to `'default'`,
+        :func:_default_log_callback is used.
 
     See :class:sklearn.pipeline.PipeLine for all other information.
     '''
