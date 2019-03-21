@@ -12,7 +12,11 @@ def log_step(func):
         tic = dt.datetime.now()
         result_df = func(*args, **kwargs)
         time_taken = str(dt.datetime.now() - tic)
+        func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+        func_args_str = ''.join(', {} = {!r}'.format(*item) for item in list(func_args.items())[1:])
 
-        logger.info(f"[{func.__name__}]  n_obs={result_df.shape[0]} n_col={result_df.shape[1]} time={time_taken}")
+        logger.info(
+            f"[ {func.__name__}(df{func_args_str}) ] "
+            f"n_obs={result_df.shape[0]} n_col={result_df.shape[1]} time={time_taken}")
         return result_df
     return wrapper
