@@ -5,10 +5,10 @@ from scipy.ndimage.interpolation import shift
 
 def _as_list(val):
     """
-    Helper function, returns value as list, if not already iterable.
+    Helper function, always returns a list.
 
-    :param val: an iterable or a single value.
-    :returns: a list of the input value.
+    :param val: a list or a single value.
+    :returns: the input value as a list.
 
     :Example:
 
