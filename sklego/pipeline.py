@@ -10,46 +10,39 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_memory
 
 
-def _default_log_callback(output, execution_time):
-    '''The default log callback which logs the step name, shape of the output
-    and the execution time of the step.
+def default_log_callback(output, execution_time):
+    '''
+    The default log callback which logs the step name, shape of the output and
+    the execution time of the step.
 
-    Parameters
-    ----------
-    output : tuple(
-            numpy.ndarray or pandas.DataFrame
-            :class:estimator or :class:transformer
-        )
+    :param tuple output:
+        tuple(:class:`numpy.ndarray` or :class:`pandas.DataFrame`,
+              :class:`estimator` or :class:`transformer`)
         The output of the step and a step in the pipeline.
-    execution_time : float
-        The execution time of the step.
+    :param float execution_time: The execution time of the step.
 
-    Note
-    ----------
-    If you write your custom callback function the expected input should be the
-    sames as this function.
+    .. note::
+        If you write your custom callback function the expected input should
+        be the sames as this function.
     '''
     logger = logging.getLogger(__name__)
     step_result, step = output
     logger.info(f'[{step}] shape={step_result.shape} time={execution_time}')
 
 
-def _log_wrapper(func, log_callback=_default_log_callback):
-    '''Function wrapper to log information after the function is called, about
-    the output and the execution time.
+def _log_wrapper(func, log_callback=default_log_callback):
+    '''
+    Function wrapper to log information after the function is called, about the
+    output and the execution time.
 
-    Parameters
-    ----------
-    func : function
-        The function to be wrapped with a log statement.
-    log_callback : function, optional
+    :param function func: The function to be wrapped with a log statement.
+    :param function log_callback: optional.
         The log callback which is called after `func` is called. Defaults to
-        :func:_default_log_callback. Note, this function should expect the
+        :func:`default_log_callback`. Note, this function should expect the
         same arguments as the default.
 
-    Returns
-    ----------
-    function : The function wrapped with a log callback.
+    :returns: The function wrapped with a log callback.
+    :rtype: function
     '''
     def _(*args, **kwargs):
         start_time = dt.datetime.now()
@@ -60,18 +53,15 @@ def _log_wrapper(func, log_callback=_default_log_callback):
     return _
 
 
-def _cache_with_function_log_statement(log_callback=_default_log_callback):
-    '''Wraps the `func` with :func:_log_wrapper before passing it to
-    :method:_cache.
+def _cache_with_function_log_statement(log_callback=default_log_callback):
+    '''
+    Wraps the `func` with :func:`_log_wrapper` before passing it to
+    :method:`_cache`.
 
-    Parameters
-    ----------
-    log_callback : function, optional
-        The log callback function. Defaults to :func:_default_log_callback.
+    :param function log_callback: optional.
+        The log callback function. Defaults to :func:default_log_callback.
 
-    Returns
-    ----------
-    function : The cache where its function is wrapped with a log statement.
+    :returns: The cache where its function is wrapped with a log statement.
     '''
     def _(
             self,
@@ -85,35 +75,36 @@ def _cache_with_function_log_statement(log_callback=_default_log_callback):
 
 
 class Pipeline(Pipeline):
-    '''A pipeline that has a log statement in between each step, useful for
+    '''
+    A pipeline that has a log statement in between each step, useful for
     debugging.
 
-    Parameters
-    ----------
-    log_callback : function, optional
+    :ivar log_callback: optional.
         The callback function that logs information in between each
         intermediate step. Defaults to None. If set to `'default'`,
-        :func:_default_log_callback is used.
+        :func:`default_log_callback` is used.
 
-        See :func:_default_log_callback for an example.
+        See :func:`default_log_callback` for an example.
 
-    See :class:sklearn.pipeline.PipeLine for all other parameters.
+    See :class:`sklearn.pipeline.Pipeline` for all other variables.
 
-    Note
-    ----------
-    This implementation is a hack on the original sklearn Pipeline. It aims to
-    have the same behaviour as the original sklearn Pipeline, while changing
-    minimal amount of code.
+    .. note::
 
-    The log statement is added by overwriting the cache method of the memory,
-    such that the function called in the cache is wrapped with a functions that
-    calls the log callback function (`log_callback`).
+        This implementation is a hack on the original sklearn Pipeline. It aims
+        to have the same behaviour as the original sklearn Pipeline, while
+        changing minimal amount of code.
 
-    This hack breaks will break when:
-    1) The SKlearn pipeline initialization function is changed.
-    2) The memory is used differently in the fit.
-    3) The :class:joblib.memory.Memory changes behaviour of the cache function.
-    4) The :class:joblib.memory.Memory starts using a `_cache` method.
+        The log statement is added by overwriting the cache method of the
+        memory, such that the function called in the cache is wrapped with a
+        functions that calls the log callback function (`log_callback`).
+
+        This hack breaks will break when:
+            - The SKlearn pipeline initialization function is changed.
+            - The memory is used differently in the fit.
+            - The :class:`joblib.memory.Memory` changes behaviour of the
+              :func:`cache` method..
+            - The :class:`joblib.memory.Memory` starts using a :func:`_cache`
+              method.
     '''
 
     def __init__(
@@ -134,7 +125,7 @@ class Pipeline(Pipeline):
     def log_callback(self, func):
         self._log_callback = func
         if self._log_callback == 'default':
-            self._log_callback = _default_log_callback
+            self._log_callback = default_log_callback
 
         # When no log callback function is given, change nothing.
         # Or, if the memory cache was changed, set it back to its original.
