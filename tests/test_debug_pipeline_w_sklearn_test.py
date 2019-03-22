@@ -38,7 +38,7 @@ from sklearn.utils._joblib import __version__ as joblib_version
 from sklearn.utils.validation import check_memory
 
 
-from sklego.pipeline import Pipeline
+from sklego.pipeline import DebugPipeline as Pipeline
 
 
 JUNK_FOOD_DOCS = (

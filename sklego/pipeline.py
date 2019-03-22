@@ -74,7 +74,7 @@ def _cache_with_function_log_statement(log_callback=default_log_callback):
     return _
 
 
-class Pipeline(Pipeline):
+class DebugPipeline(Pipeline):
     '''
     A pipeline that has a log statement in between each step, useful for
     debugging.
