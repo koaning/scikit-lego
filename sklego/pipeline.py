@@ -7,6 +7,7 @@ import logging
 import datetime as dt
 
 from sklearn.pipeline import Pipeline
+from sklearn.utils.validation import check_memory
 
 
 def default_log_callback(output, execution_time):
@@ -123,6 +124,8 @@ class DebugPipeline(Pipeline):
             if hasattr(self._memory, '_cache'):
                 self._memory.cache = self._memory._cache
             return self._memory
+
+        self._memory = check_memory(self._memory)
 
         # Overwrite cache function of memory such that it logs the
         # output when the function is called
