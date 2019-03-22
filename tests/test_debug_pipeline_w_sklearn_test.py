@@ -22,7 +22,7 @@ from sklearn.utils.testing import assert_dict_equal
 from sklearn.utils.testing import assert_no_warnings
 
 from sklearn.base import clone, BaseEstimator
-from sklearn.pipeline import Pipeline, FeatureUnion, make_pipeline, make_union
+from sklearn.pipeline import FeatureUnion, make_pipeline, make_union
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression, Lasso
 from sklearn.linear_model import LinearRegression
