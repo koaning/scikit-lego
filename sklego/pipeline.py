@@ -123,9 +123,9 @@ class DebugPipeline(Pipeline):
     >>> from sklego.pipeline import DebugPipeline
     >>>
     >>> logging.basicConfig(
-        format=('[%(funcName)s:%(lineno)d] - %(message)s'),
-        level=logging.INFO
-     )
+    ...    format=('[%(funcName)s:%(lineno)d] - %(message)s'),
+    ...    level=logging.INFO
+    ... )
     >>>
     >>> # DebugPipeline set-up
     >>> n_samples, n_features = 3, 5
@@ -133,24 +133,24 @@ class DebugPipeline(Pipeline):
     >>> y = np.arange(n_samples)
     >>>
     >>> class Adder(TransformerMixin, BaseEstimator):
-        def __init__(self, value):
-            self._value = value
-
-        def fit(self, X, y=None):
-            return self
-
-        def transform(self, X):
-            return X + self._value
-
-        def __repr__(self):
-            return f'Adder(value={self._value})'
+    ...    def __init__(self, value):
+    ...        self._value = value
+    ...
+    ...    def fit(self, X, y=None):
+    ...        return self
+    ...
+    ...    def transform(self, X):
+    ...        return X + self._value
+    ...
+    ...    def __repr__(self):
+    ...        return f'Adder(value={self._value})'
     >>>
     >>> steps = [
-         ('add_1', Adder(value=1)),
-         ('add_10', Adder(value=10)),
-         ('add_100', Adder(value=100)),
-         ('add_1000', Adder(value=1000)),
-     ]
+    ...     ('add_1', Adder(value=1)),
+    ...     ('add_10', Adder(value=10)),
+    ...     ('add_100', Adder(value=100)),
+    ...     ('add_1000', Adder(value=1000)),
+    ... ]
     >>>
     >>> # The DebugPipeline behaves the sames as the Sklearn pipeline.
     >>> pipe = DebugPipeline(steps)
@@ -198,26 +198,26 @@ class DebugPipeline(Pipeline):
     >>>
     >>> # It is possible to define your own `log_callback`
     >>> def log_callback(output, execution_time, **kwargs):
-         """My custom `log_callback` function
-
-         Parameters
-         ----------
-         output : tuple(
-                 numpy.ndarray or pandas.DataFrame
-                 :class:estimator or :class:transformer
-             )
-             The output of the step and a step in the pipeline.
-         execution_time : float
-             The execution time of the step.
-
-         Note
-         ----------
-         The **kwargs are for arguments that are not used in this callback.
-         """
-         logger = logging.getLogger(__name__)
-         step_result, step = output
-         logger.info(f'[{step}] shape={step_result.shape} '
-                     f'nbytes={step_result.nbytes} time={execution_time}')
+    ...     """My custom `log_callback` function
+    ...
+    ...     Parameters
+    ...     ----------
+    ...     output : tuple(
+    ...             numpy.ndarray or pandas.DataFrame
+    ...             :class:estimator or :class:transformer
+    ...         )
+    ...         The output of the step and a step in the pipeline.
+    ...     execution_time : float
+    ...         The execution time of the step.
+    ...
+    ...     Note
+    ...     ----------
+    ...     The **kwargs are for arguments that are not used in this callback.
+    ...     """
+    ...     logger = logging.getLogger(__name__)
+    ...     step_result, step = output
+    ...     logger.info(f'[{step}] shape={step_result.shape} '
+    ...                 f'nbytes={step_result.nbytes} time={execution_time}')
     >>>
     >>> pipe.log_callback = log_callback
     >>>
