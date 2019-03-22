@@ -10,7 +10,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_memory
 
 
-def default_log_callback(output, execution_time):
+def default_log_callback(output, execution_time, **kwargs):
     '''
     The default log callback which logs the step name, shape of the output and
     the execution time of the step.
@@ -22,34 +22,39 @@ def default_log_callback(output, execution_time):
     :param float execution_time: The execution time of the step.
 
     .. note::
-        If you write your custom callback function the expected input should
-        be the sames as this function.
+        If you write your custom callback function the input is:
+            :param function func: The function to be wrapped.
+            :param tuple input_args: The input arguments.
+            :param dict input_kwargs: The input key-word arguments.
+            :param output: The output of the function.
+            :param execution_time float: The execution time.
     '''
     logger = logging.getLogger(__name__)
     step_result, step = output
     logger.info(f'[{step}] shape={step_result.shape} time={execution_time}')
 
 
-def _log_wrapper(func, log_callback=default_log_callback):
+def _log_wrapper(log_callback=default_log_callback):
     '''
     Function wrapper to log information after the function is called, about the
-    output and the execution time.
+    function, input args, input kwargs, output and the execution time.
 
-    :param function func: The function to be wrapped with a log statement.
     :param function log_callback: optional.
         The log callback which is called after `func` is called. Defaults to
         :func:`default_log_callback`. Note, this function should expect the
         same arguments as the default.
-
     :returns: The function wrapped with a log callback.
     :rtype: function
     '''
-    def _(*args, **kwargs):
-        start_time = dt.datetime.now()
-        output = func(*args, **kwargs)
-        execution_time = dt.datetime.now() - start_time
-        log_callback(output, execution_time)
-        return output
+    def _(func):
+        def _(*args, **kwargs):
+            start_time = dt.datetime.now()
+            output = func(*args, **kwargs)
+            execution_time = dt.datetime.now() - start_time
+            log_callback(func=func, input_args=args, input_kwargs=kwargs,
+                         output=output, execution_time=execution_time)
+            return output
+        return _
     return _
 
 
@@ -69,7 +74,7 @@ def _cache_with_function_log_statement(log_callback=default_log_callback):
             *args,
             **kwargs):
         if callable(func):
-            func = _log_wrapper(func, log_callback=log_callback)
+            func = _log_wrapper(log_callback)(func)
         return self._cache(func=func, *args, **kwargs)
     return _
 
