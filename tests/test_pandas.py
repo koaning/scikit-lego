@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import logging
 
-from sklego.pandas_utils import log_step
+from sklego.pandas import log_step
 
 logging.basicConfig(level=logging.INFO)
 
