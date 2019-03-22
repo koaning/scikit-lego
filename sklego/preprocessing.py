@@ -54,7 +54,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
 
 
-class TimeFeatures(TransformerMixin, BaseEstimator):
+class DateTimeFeatures(TransformerMixin, BaseEstimator):
     """
     Add common time-series features to data frame in your scikit-learn pipeline.
     All time features supported by pandas.dt can be added (e.g. weekday, weekofyear, year,
