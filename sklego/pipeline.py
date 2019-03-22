@@ -1,5 +1,5 @@
 '''
-Debug pipeline that has a log statement in between the executed steps.
+Pipelines, variances to the :class:`sklearn.pipeline.Pipeline` object.
 '''
 
 
