@@ -7,7 +7,6 @@ import logging
 import datetime as dt
 
 from sklearn.pipeline import Pipeline
-from sklearn.utils.validation import check_memory
 
 
 def default_log_callback(output, execution_time):
