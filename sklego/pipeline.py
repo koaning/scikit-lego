@@ -244,6 +244,29 @@ class DebugPipeline(Pipeline):
      [[1111. 1111. 1111. 1111. 1111.]
      [1111. 1111. 1111. 1111. 1111.]
      [1111. 1111. 1111. 1111. 1111.]]
+    >>>
+    >>> pipe_w_default_log_callback = DebugPipeline(steps, log_callback='default')
+    >>> pipe_w_custom_log_callback = DebugPipeline(steps, log_callback=log_callback)
+    >>>
+    >>> pipe_union = FeatureUnion([
+    ...     ('pipe_w_default_log_callback', pipe_w_default_log_callback),
+    ...     ('pipe_w_custom_log_callback', pipe_w_custom_log_callback),
+    ... ])
+    >>>
+    >>> pipe_union.fit(X, y=y)
+    >>> X_out = pipe_union.transform(X)
+    >>>
+    >>> print('Transformed X:\n', X_out)
+    [default_log_callback:34] - [Adder(value=1)] shape=(3, 5) time=0:00:00
+    [default_log_callback:34] - [Adder(value=10)] shape=(3, 5) time=0:00:00
+    [default_log_callback:34] - [Adder(value=100)] shape=(3, 5) time=0:00:00
+    [log_callback:16] - [Adder(value=1)] shape=(3, 5) nbytes=120 time=0:00:00
+    [log_callback:16] - [Adder(value=10)] shape=(3, 5) nbytes=120 time=0:00:00
+    [log_callback:16] - [Adder(value=100)] shape=(3, 5) nbytes=120 time=0:00:00
+    Transformed X:
+     [[1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]
+     [1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]
+     [1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]]
     '''
 
     def __init__(

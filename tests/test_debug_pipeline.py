@@ -9,6 +9,7 @@ from sklearn.multiclass import (
     OneVsOneClassifier,
     OutputCodeClassifier,
 )
+from sklearn.pipeline import FeatureUnion
 from sklearn.svm import LinearSVC
 
 from sklego.pipeline import DebugPipeline
@@ -127,3 +128,25 @@ def test_nbytes_in_logs_when_log_callback_is_custom(caplog, steps):
     assert 'nbytes=' in caplog.text, f'"nbytes=" should be in: {caplog.text}'
     assert caplog.text.count('nbytes=') == (len(pipe.steps) - 1), \
         f'"nbytes=" should be {len(pipe.steps) - 1} times in {caplog.text}'
+
+
+def test_feature_union(caplog, steps):
+    pipe_w_default_log_callback = DebugPipeline(steps, log_callback='default')
+    pipe_w_custom_log_callback = DebugPipeline(
+        steps, log_callback=custom_log_callback)
+
+    pipe_union = FeatureUnion([
+        ('pipe_w_default_log_callback', pipe_w_default_log_callback),
+        ('pipe_w_custom_log_callback', pipe_w_custom_log_callback),
+    ])
+
+    caplog.clear()
+    with caplog.at_level(logging.INFO):
+        pipe_union.fit(IRIS.data, IRIS.target)
+    assert caplog.text, f'Log should be none empty: {caplog.text}'
+    for pipe in [pipe_w_default_log_callback, pipe_w_custom_log_callback]:
+        for _, step in pipe.steps[:-1]:
+            assert str(step) in caplog.text, \
+                f'{step} should be in: {caplog.text}'
+            assert caplog.text.count(str(step)) == 2, \
+                f'{step} should be once in {caplog.text}'
