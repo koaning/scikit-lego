@@ -52,6 +52,14 @@ sklego.outlier module
     :undoc-members:
     :show-inheritance:
 
+sklego.pipeline module
+----------------------
+
+.. automodule:: sklego.pipeline
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sklego.preprocessing module
 ---------------------------
 
