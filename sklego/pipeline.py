@@ -113,9 +113,29 @@ class DebugPipeline(Pipeline):
             memory=None,
             *,
             log_callback=None):
-        self.memory = check_memory(memory)
         self.log_callback = log_callback
-        super().__init__(steps=steps, memory=self.memory)
+        super().__init__(steps=steps, memory=memory)
+
+    @property
+    def memory(self):
+        # When no log callback function is given, change nothing.
+        # Or, if the memory cache was changed, set it back to its original.
+        if self._log_callback is None:
+            if hasattr(self._memory, '_cache'):
+                self._memory.cache = self._memory._cache
+            return self._memory
+
+        # Overwrite cache function of memory such that it logs the
+        # output when the function is called
+        if not hasattr(self._memory, '_cache'):
+            self._memory._cache = self._memory.cache
+        self._memory.cache = _cache_with_function_log_statement(
+            self._log_callback).__get__(self._memory, self._memory.__class__)
+        return self._memory
+
+    @memory.setter
+    def memory(self, memory):
+        self._memory = memory
 
     @property
     def log_callback(self):
@@ -126,17 +146,3 @@ class DebugPipeline(Pipeline):
         self._log_callback = func
         if self._log_callback == 'default':
             self._log_callback = default_log_callback
-
-        # When no log callback function is given, change nothing.
-        # Or, if the memory cache was changed, set it back to its original.
-        if self._log_callback is None:
-            if hasattr(self.memory, '_cache'):
-                self.memory.cache = self.memory._cache
-            return
-
-        # Overwrite cache function of memory such that it logs the
-        # output when the function is called
-        if not hasattr(self.memory, '_cache'):
-            self.memory._cache = self.memory.cache
-        self.memory.cache = _cache_with_function_log_statement(
-            self._log_callback).__get__(self.memory, self.memory.__class__)

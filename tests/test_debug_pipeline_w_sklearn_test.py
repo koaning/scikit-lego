@@ -22,7 +22,7 @@ from sklearn.utils.testing import assert_dict_equal
 from sklearn.utils.testing import assert_no_warnings
 
 from sklearn.base import clone, BaseEstimator
-from sklearn.pipeline import FeatureUnion, make_pipeline, make_union
+from sklearn.pipeline import Pipeline, FeatureUnion, make_pipeline, make_union
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression, Lasso
 from sklearn.linear_model import LinearRegression
@@ -35,7 +35,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.utils._joblib import Memory
 from sklearn.utils._joblib import __version__ as joblib_version
-from sklearn.utils.validation import check_memory
 
 
 from sklego.pipeline import DebugPipeline as Pipeline
@@ -585,12 +584,10 @@ def test_set_pipeline_step_none():
     mult3 = Mult(mult=3)
     mult5 = Mult(mult=5)
 
-    def make(memory):
-        return Pipeline([('m2', mult2), ('m3', mult3), ('last', mult5)],
-                        memory=memory)
+    def make():
+        return Pipeline([('m2', mult2), ('m3', mult3), ('last', mult5)])
 
-    memory = check_memory(None)
-    pipeline = make(memory)
+    pipeline = make()
 
     exp = 2 * 3 * 5
     assert_array_equal([[exp]], pipeline.fit_transform(X, y))
@@ -607,10 +604,10 @@ def test_set_pipeline_step_none():
                        'm2': mult2,
                        'm3': None,
                        'last': mult5,
-                       'log_callback': None,
-                       'memory': memory,
+                       'memory': None,
                        'm2__mult': 2,
                        'last__mult': 5,
+                       'log_callback': None,
                        })
 
     pipeline.set_params(m2=None)
@@ -631,7 +628,7 @@ def test_set_pipeline_step_none():
     assert_array_equal([exp], pipeline.fit(X).predict(X))
     assert_array_equal(X, pipeline.inverse_transform([[exp]]))
 
-    pipeline = make(memory)
+    pipeline = make()
     pipeline.set_params(last=None)
     # mult2 and mult3 are active
     exp = 6
@@ -675,6 +672,30 @@ def test_pipeline_ducktyping():
     assert_false(hasattr(pipeline, 'predict'))
     pipeline.transform
     assert_false(hasattr(pipeline, 'inverse_transform'))
+
+
+def test_make_pipeline():
+    # TODO: update this to sklego make_pipeline, when this function is
+    # implemented
+    from sklearn.pipeline import Pipeline
+    t1 = Transf()
+    t2 = Transf()
+    pipe = make_pipeline(t1, t2)
+    assert isinstance(pipe, Pipeline)
+    assert_equal(pipe.steps[0][0], "transf-1")
+    assert_equal(pipe.steps[1][0], "transf-2")
+
+    pipe = make_pipeline(t1, t2, FitParamT())
+    assert isinstance(pipe, Pipeline)
+    assert_equal(pipe.steps[0][0], "transf-1")
+    assert_equal(pipe.steps[1][0], "transf-2")
+    assert_equal(pipe.steps[2][0], "fitparamt")
+
+    assert_raise_message(
+        TypeError,
+        'Unknown keyword arguments: "random_parameter"',
+        make_pipeline, t1, t2, random_parameter='rnd'
+    )
 
 
 def test_feature_union_weights():
@@ -897,13 +918,18 @@ def test_set_params_nested_pipeline():
 
 
 def test_pipeline_wrong_memory():
+    # Test that an error is raised when memory is not a string or a Memory
+    # instance
+    iris = load_iris()
+    X = iris.data
+    y = iris.target
     # Define memory as an integer
     memory = 1
-    error_message = (
-        "'memory' should be None, a string or have the same interface as "
-        "joblib.Memory. Got memory='{}' instead.".format(memory))
-    with pytest.raises(ValueError, match=error_message):
-        Pipeline([('transf', Transf()), ('clf', Mult())], memory=memory)
+    cached_pipe = Pipeline([('transf', DummyTransf()),
+                            ('svc', SVC())], memory=memory)
+    assert_raises_regex(ValueError, "'memory' should be None, a string or"
+                        " have the same interface as joblib.Memory."
+                        " Got memory='1' instead.", cached_pipe.fit, X, y)
 
 
 class DummyMemory(object):
@@ -921,11 +947,11 @@ def test_pipeline_with_cache_attribute():
                     memory=DummyMemory())
     pipe.fit(X, y=None)
     dummy = WrongDummyMemory()
-    error_message = (
-        "'memory' should be None, a string or have the same interface as "
-        "joblib.Memory. Got memory='{}' instead.".format(dummy))
-    with pytest.raises(ValueError, match=error_message):
-        Pipeline([('transf', Transf()), ('clf', Mult())], memory=dummy)
+    pipe = Pipeline([('transf', Transf()), ('clf', Mult())],
+                    memory=dummy)
+    assert_raises_regex(ValueError, "'memory' should be None, a string or"
+                        " have the same interface as joblib.Memory."
+                        " Got memory='{}' instead.".format(dummy), pipe.fit, X)
 
 
 def test_pipeline_memory():
