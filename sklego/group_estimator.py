@@ -6,14 +6,14 @@ class GroupEstimator(base.BaseEstimator):
     """
         Parameters
         ----------
-          model : sklearn.base.BaseEstimator
-              The model to run in the data
-          dataset : pandas.DataFrame
-              The Pandas dataset
-          col_name_sep : List of string
+        model : sklearn.base.BaseEstimator
+            The model to run in the data
+        dataset : pandas.DataFrame
+            The Pandas dataset
+        col_name_sep : List of string
             The name of the column to group by the data
 
-         Examples
+        Examples
         --------
             >>> from sklego import GroupEstimator
             >>> from sklearn import DummyClassifier
