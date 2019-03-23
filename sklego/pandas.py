@@ -68,7 +68,6 @@ def add_lag(X, cols, lags):
     ...                    [7, 8, 9]],
     ...                    columns=['a', 'b', 'c'],
     ...                    index=[1, 2, 3])
-    >>> df = [1, 2, 3]
 
     >>> add_lag(df, 'a', [1]) # doctest: +NORMALIZE_WHITESPACE
     a  b  c  a-1
