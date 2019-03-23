@@ -58,7 +58,7 @@ def add_lag(X, cols, lags):
     :param X: array-like, shape=(n_columns, n_samples,) training data.
     :param cols: an iterable of column names or a single column name string.
     :param lags: iterable of ints or int.
-    :returns: ``pd.DataFrame`` with only the selected columns
+    :returns: ``pd.DataFrame | np.ndarray`` with only the selected columns
 
     :Example:
 
@@ -68,6 +68,7 @@ def add_lag(X, cols, lags):
     ...                    [7, 8, 9]],
     ...                    columns=['a', 'b', 'c'],
     ...                    index=[1, 2, 3])
+    >>> df = [1, 2, 3]
 
     >>> add_lag(df, 'a', [1]) # doctest: +NORMALIZE_WHITESPACE
     a  b  c  a-1
@@ -96,15 +97,17 @@ def add_lag(X, cols, lags):
 
     lags = _negate_lags(lags)
 
-    # Check the X instance of pandas DataFrame
-    if isinstance(X, pd.core.frame.DataFrame):
-        return _add_lagged_pandas_columns(X, cols, lags)
+    allowed_inputs = {
+        pd.core.frame.DataFrame: _add_lagged_pandas_columns,
+        np.ndarray: _add_lagged_numpy_columns,
+    }
 
-    # Check the X instance of numpy array
-    if isinstance(X, np.ndarray):
-        return _add_lagged_numpy_columns(X, cols, lags)
+    for allowed_input, handler in allowed_inputs.items():
+        if isinstance(X, allowed_input):
+            return handler(X, cols, lags)
 
-    raise ValueError("Please pass a pandas DataFrame")
+    allowed_input_names = list(allowed_inputs.keys())
+    raise ValueError("X type should be one of:", allowed_input_names)
 
 
 def _add_lagged_numpy_columns(X, cols, lags):
