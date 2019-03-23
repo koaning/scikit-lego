@@ -24,8 +24,8 @@ def log_step(func):
             f"n_obs={result_df.shape[0]} n_col={result_df.shape[1]} time={time_taken}")
         return result_df
     return wrapper
-  
-  
+
+
 def _as_list(val):
     """
     Helper function, always returns a list.
@@ -74,7 +74,7 @@ def _negate_lags(lags):
     return [-x for x in lags]
 
 
-def add_lag(X, cols, lags):
+def add_lags(X, cols, lags):
     """
     Appends lag column(s).
 
@@ -92,12 +92,12 @@ def add_lag(X, cols, lags):
     ...                    columns=['a', 'b', 'c'],
     ...                    index=[1, 2, 3])
 
-    >>> add_lag(df, 'a', [1]) # doctest: +NORMALIZE_WHITESPACE
+    >>> add_lags(df, 'a', [1]) # doctest: +NORMALIZE_WHITESPACE
     a  b  c  a-1
     1  1  2  3  4.0
     2  4  5  6  7.0
 
-    >>> add_lag(df, ['a', 'b'], 2) # doctest: +NORMALIZE_WHITESPACE
+    >>> add_lags(df, ['a', 'b'], 2) # doctest: +NORMALIZE_WHITESPACE
        a  b  c  a-2  b-2
     1  1  2  3  7.0  8.0
 
@@ -106,12 +106,12 @@ def add_lag(X, cols, lags):
     ...               [-2, 0],
     ...               [4, -6]])
 
-    >>> add_lag(X, [0, 1], 1)
+    >>> add_lags(X, [0, 1], 1)
     array([[-4,  2, -2,  0],
            [-2,  0,  4, -6],
            [ 4, -6,  0,  0]])
 
-    >>> add_lag(X, 1, [-1, 1])
+    >>> add_lags(X, 1, [-1, 1])
     array([[-4,  2,  0,  0],
            [-2,  0,  2, -6],
            [ 4, -6,  0,  0]])
