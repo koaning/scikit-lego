@@ -5,6 +5,7 @@ import pandas as pd
 import datetime as dt
 
 from functools import wraps
+from sklego.common import as_list
 from scipy.ndimage.interpolation import shift
 
 
@@ -26,27 +27,6 @@ def log_step(func):
     return wrapper
 
 
-def _as_list(val):
-    """
-    Helper function, always returns a list.
-
-    :param val: a list or a single value.
-    :returns: the input value as a list.
-
-    :Example:
-
-    >>> _as_list('test')
-    ['test']
-
-    >>> _as_list(['test1', 'test2'])
-    ['test1', 'test2']
-    """
-
-    if not isinstance(val, list):
-        return [val]
-    return val
-
-
 def _negate_lags(lags):
     """
     Helper function, negates an int or iterable of ints.
@@ -66,7 +46,7 @@ def _negate_lags(lags):
     def negate(x):
         return -x
 
-    lags = _as_list(lags)
+    lags = as_list(lags)
 
     if not all(isinstance(x, int) for x in lags):
         raise ValueError("Must be list of ints")
@@ -141,7 +121,7 @@ def _add_lagged_numpy_columns(X, cols, lags):
     :returns: ``np.ndarray`` with the concatenated lagged columns.
     """
 
-    cols = _as_list(cols)
+    cols = as_list(cols)
 
     if not all([isinstance(col, int) for col in cols]):
         raise ValueError("Matrix columns are indexed by integers")
@@ -163,7 +143,7 @@ def _add_lagged_pandas_columns(df, cols, lags):
     :returns: ``pd.DataFrame`` with the concatenated lagged columns.
     """
 
-    cols = _as_list(cols)
+    cols = as_list(cols)
 
     if not all([col in df.columns.values for col in cols]):
         raise KeyError("The column does not exist")
