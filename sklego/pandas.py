@@ -139,27 +139,6 @@ def _add_lagged_numpy_columns(X, cols, lags):
     :param df: the input ``np.ndarray``.
     :param cols: an iterable of column names, or a single column name.
     :returns: ``np.ndarray`` with the concatenated lagged columns.
-
-    :Example:
-    >>> import numpy as np
-    >>> X = np.array([[-4, 2],
-    ...               [-2, 0],
-    ...               [4, -6]])
-
-    >>> _add_lagged_numpy_columns(X, ['test'], 1)
-    Traceback (most recent call last):
-        ...
-    ValueError: Matrix columns are indexed by integers
-
-    >>> _add_lagged_numpy_columns(X, ['test'], 1)
-    Traceback (most recent call last):
-        ...
-    ValueError: Matrix columns are indexed by integers
-
-    >>> _add_lagged_numpy_columns(X, [15], 1)
-    Traceback (most recent call last):
-        ...
-    KeyError: 'The column does not exist'
     """
 
     cols = _as_list(cols)
@@ -182,19 +161,6 @@ def _add_lagged_pandas_columns(df, cols, lags):
     :param df: the input ``pd.DataFrame``.
     :param cols: an iterable of column names, or a single column name.
     :returns: ``pd.DataFrame`` with the concatenated lagged columns.
-
-    :Example:
-
-    >>> df = pd.DataFrame([[1, 2, 3],
-    ...                    [4, 5, 6],
-    ...                    [7, 8, 9]],
-    ...                    columns=['a', 'b', 'c'],
-    ...                    index=[1, 2, 3])
-
-    >>> _add_lagged_pandas_columns(df, ['last_name'], 1)
-    Traceback (most recent call last):
-        ...
-    KeyError: 'The column does not exist'
     """
 
     cols = _as_list(cols)
