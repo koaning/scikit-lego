@@ -67,7 +67,7 @@ def steps():
     'cls', [OneVsRestClassifier, OneVsOneClassifier, OutputCodeClassifier])
 def test_classifier_gridsearch(cls):
     pipe = DebugPipeline([
-        ('ovrc', cls(LinearSVC(random_state=0))),
+        ('ovrc', cls(LinearSVC(random_state=0, tol=0.1))),
     ])
     Cs = [0.1, 0.5, 0.8]
     cv = GridSearchCV(pipe, {'ovrc__estimator__C': Cs})
