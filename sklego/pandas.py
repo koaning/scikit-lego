@@ -27,33 +27,6 @@ def log_step(func):
     return wrapper
 
 
-def _negate_lags(lags):
-    """
-    Helper function, negates an int or iterable of ints.
-
-    :param lags: iterable of ints or int.
-    :returns: iterable of ints that are negated.
-
-    :Example:
-
-    >>> _negate_lags(3)
-    [-3]
-
-    >>> _negate_lags([3])
-    [-3]
-    """
-
-    def negate(x):
-        return -x
-
-    lags = as_list(lags)
-
-    if not all(isinstance(x, int) for x in lags):
-        raise ValueError("Must be list of ints")
-
-    return [-x for x in lags]
-
-
 def add_lags(X, cols, lags):
     """
     Appends lag column(s).
@@ -73,41 +46,48 @@ def add_lags(X, cols, lags):
     ...                    index=[1, 2, 3])
 
     >>> add_lags(df, 'a', [1]) # doctest: +NORMALIZE_WHITESPACE
-    a  b  c  a-1
+       a  b  c  a1
     1  1  2  3  4.0
     2  4  5  6  7.0
 
     >>> add_lags(df, ['a', 'b'], 2) # doctest: +NORMALIZE_WHITESPACE
-       a  b  c  a-2  b-2
+       a  b  c  a2   b2
     1  1  2  3  7.0  8.0
 
     >>> import numpy as np
-    >>> X = np.array([[-4, 2],
-    ...               [-2, 0],
-    ...               [4, -6]])
+    >>> X = np.array([[1, 2, 3],
+    ...               [4, 5, 6],
+    ...               [7, 8, 9]])
 
-    >>> add_lags(X, [0, 1], 1)
-    array([[-4,  2, -2,  0],
-           [-2,  0,  4, -6],
-           [ 4, -6,  0,  0]])
+    >>> add_lags(X, 0, [1])
+    array([[1, 2, 3, 4],
+           [4, 5, 6, 7]])
 
     >>> add_lags(X, 1, [-1, 1])
-    array([[-4,  2,  0,  0],
-           [-2,  0,  2, -6],
-           [ 4, -6,  0,  0]])
+    array([[4, 5, 6, 2, 8]])
     """
 
-    lags = _negate_lags(lags)
+    # A single lag will be put in a list
+    lags = as_list(lags)
 
+    # Now we can iterate over the list to determine
+    # whether it is a list of integers
+    if not all(isinstance(x, int) for x in lags):
+        raise ValueError("lags must be a list of type: " + str(int))
+
+    # The keys of the allowed_inputs dict contain the allowed
+    # types, and the values contain the associated handlers
     allowed_inputs = {
         pd.core.frame.DataFrame: _add_lagged_pandas_columns,
         np.ndarray: _add_lagged_numpy_columns,
     }
 
+    # Choose the correct handler based on the input class
     for allowed_input, handler in allowed_inputs.items():
         if isinstance(X, allowed_input):
             return handler(X, cols, lags)
 
+    # Otherwise, raise a ValueError
     allowed_input_names = list(allowed_inputs.keys())
     raise ValueError("X type should be one of:", allowed_input_names)
 
@@ -129,9 +109,18 @@ def _add_lagged_numpy_columns(X, cols, lags):
     if not all([col < X.shape[1] for col in cols]):
         raise KeyError("The column does not exist")
 
-    combos = (shift(X[:, col], lag) for col in cols for lag in lags)
+    combos = (
+        shift(X[:, col], -lag, cval=np.NaN)
+        for col in cols
+        for lag in lags
+    )
 
-    return np.column_stack((X, *combos))
+    X = np.asarray(X, dtype=float)
+
+    ans = np.column_stack((X, *combos))
+    ans = ans[~np.isnan(ans).any(axis=1)]
+    ans = np.asarray(ans, dtype=int)
+    return ans
 
 
 def _add_lagged_pandas_columns(df, cols, lags):
@@ -148,10 +137,10 @@ def _add_lagged_pandas_columns(df, cols, lags):
     if not all([col in df.columns.values for col in cols]):
         raise KeyError("The column does not exist")
 
-    combos = [
-        df[col].shift(lag).rename(col + str(lag))
+    combos = (
+        df[col].shift(-lag).rename(col + str(lag))
         for col in cols
         for lag in lags
-    ]
+    )
 
     return pd.concat([df, *combos], axis=1).dropna()
