@@ -115,11 +115,15 @@ def _add_lagged_numpy_columns(X, cols, lags):
         for lag in lags
     )
 
+    # In integer-based ndarrays, NaN values are represented as
+    # -9223372036854775808, so we convert back and forth from
+    # original to float and back to original dtype
+    original_type = X.dtype
     X = np.asarray(X, dtype=float)
 
     ans = np.column_stack((X, *combos))
     ans = ans[~np.isnan(ans).any(axis=1)]
-    ans = np.asarray(ans, dtype=int)
+    ans = np.asarray(ans, dtype=original_type)
     return ans
 
 
