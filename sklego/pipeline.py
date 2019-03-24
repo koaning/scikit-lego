@@ -16,8 +16,8 @@ def default_log_callback(output, execution_time, **kwargs):
     the execution time of the step.
 
     :param tuple output:
-        tuple(:class:`numpy.ndarray` or :class:`pandas.DataFrame`,
-              :class:`estimator` or :class:`transformer`)
+        (:class:`numpy.ndarray` or :class:`pandas.DataFrame`, \
+         :class:`estimator` or :class:`transformer`)
         The output of the step and a step in the pipeline.
     :param float execution_time: The execution time of the step.
 
@@ -94,7 +94,6 @@ class DebugPipeline(Pipeline):
     See :class:`sklearn.pipeline.Pipeline` for all other variables.
 
     .. note::
-
         This implementation is a hack on the original sklearn Pipeline. It aims
         to have the same behaviour as the original sklearn Pipeline, while
         changing minimal amount of code.
@@ -158,11 +157,11 @@ class DebugPipeline(Pipeline):
     >>> pipe.fit(X, y=y)
     >>> X_out = pipe.transform(X)
     >>>
-    >>> print('Transformed X:\n', X_out)
-    Transformed X:
-     [[1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111.]]
+    >>> # Transformed X
+    >>> print(X_out)
+    [[1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111.]]
     >>>
     >>> # But it has the option to set a `log_callback`, that logs in between
     >>> # each step.
@@ -170,15 +169,15 @@ class DebugPipeline(Pipeline):
     >>>
     >>> pipe.fit(X, y=y)
     >>> X_out = pipe.transform(X)
-    >>>
-    >>> print('Transformed X:\n', X_out)
     [default_log_callback:30] - [Adder(value=1)] shape=(3, 5) time=0:00:00
     [default_log_callback:30] - [Adder(value=10)] shape=(3, 5) time=0:00:00
     [default_log_callback:30] - [Adder(value=100)] shape=(3, 5) time=0:00:00
-    Transformed X:
-     [[1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111.]]
+    >>>
+    >>> # Transformed X
+    >>> print(X_out)
+    [[1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111.]]
     >>>
     >>> # It is possible to set the `log_callback` later then initialisation.
     >>> pipe = DebugPipeline(steps)
@@ -186,15 +185,15 @@ class DebugPipeline(Pipeline):
     >>>
     >>> pipe.fit(X, y=y)
     >>> X_out = pipe.transform(X)
-    >>>
-    >>> print('Transformed X:\n', X_out)
     [default_log_callback:30] - [Adder(value=1)] shape=(3, 5) time=0:00:00
     [default_log_callback:30] - [Adder(value=10)] shape=(3, 5) time=0:00:00
     [default_log_callback:30] - [Adder(value=100)] shape=(3, 5) time=0:00:00
-    Transformed X:
-     [[1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111.]]
+    >>>
+    >>> # Transformed X
+    >>> print(X_out)
+    [[1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111.]]
     >>>
     >>> # It is possible to define your own `log_callback`
     >>> def log_callback(output, execution_time, **kwargs):
@@ -223,15 +222,15 @@ class DebugPipeline(Pipeline):
     >>>
     >>> pipe.fit(X, y=y)
     >>> X_out = pipe.transform(X)
-    >>>
-    >>> print('Transformed X:\n', X_out)
     [log_callback:16] - [Adder(value=1)] shape=(3, 5) nbytes=120 time=0:00:00
     [log_callback:16] - [Adder(value=10)] shape=(3, 5) nbytes=120 time=0:00:00
     [log_callback:16] - [Adder(value=100)] shape=(3, 5) nbytes=120 time=0:00:00
-    Transformed X:
-     [[1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111.]]
+    >>>
+    >>> # Transformed X:
+    >>> print(X_out)
+    [[1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111.]]
     >>>
     >>> # Remove the `log_callback` when you want to stop logging.
     >>> pipe.log_callback = None
@@ -239,11 +238,11 @@ class DebugPipeline(Pipeline):
     >>> pipe.fit(X, y=y)
     >>> X_out = pipe.transform(X)
     >>>
-    >>> print('Transformed X:\n', X_out)
-    Transformed X:
-     [[1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111.]]
+    >>> # Transformed X
+    >>> print(X_out)
+    [[1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111.]]
     >>>
     >>> pipe_w_default_log_callback = DebugPipeline(steps, log_callback='default')
     >>> pipe_w_custom_log_callback = DebugPipeline(steps, log_callback=log_callback)
@@ -255,18 +254,18 @@ class DebugPipeline(Pipeline):
     >>>
     >>> pipe_union.fit(X, y=y)
     >>> X_out = pipe_union.transform(X)
-    >>>
-    >>> print('Transformed X:\n', X_out)
     [default_log_callback:34] - [Adder(value=1)] shape=(3, 5) time=0:00:00
     [default_log_callback:34] - [Adder(value=10)] shape=(3, 5) time=0:00:00
     [default_log_callback:34] - [Adder(value=100)] shape=(3, 5) time=0:00:00
     [log_callback:16] - [Adder(value=1)] shape=(3, 5) nbytes=120 time=0:00:00
     [log_callback:16] - [Adder(value=10)] shape=(3, 5) nbytes=120 time=0:00:00
     [log_callback:16] - [Adder(value=100)] shape=(3, 5) nbytes=120 time=0:00:00
-    Transformed X:
-     [[1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]]
+    >>>
+    >>> # Transformed X
+    >>> print(X_out)
+    [[1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]
+    [1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]]
     '''
 
     def __init__(

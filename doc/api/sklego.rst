@@ -52,6 +52,14 @@ sklego.outlier module
     :undoc-members:
     :show-inheritance:
 
+sklego.pandas module
+--------------------
+
+.. automodule:: sklego.pandas
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sklego.pipeline module
 ----------------------
 
