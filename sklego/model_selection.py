@@ -2,7 +2,6 @@ from sklearn.model_selection._split import _BaseKFold
 from sklearn.cluster import k_means
 import numpy as np
 import pandas as pd
-import warnings
 
 
 class KMeansFold(_BaseKFold):
@@ -13,17 +12,13 @@ class KMeansFold(_BaseKFold):
     :param kmeans_kwargs: Extra kwargs for k_means apart from n_clusters
     """
 
-    def __init__(self, n_splits='default', k_means_kwargs=None):
-        if n_splits == 'default':
-            warnings.warn(f'n_splits not provided, will be set to default ({n_splits})')
-            n_splits = 3
-
+    def __init__(self, n_splits, random_state, k_means_kwargs=None):
         if not k_means_kwargs:
             k_means_kwargs = {}
 
         super(KMeansFold, self).__init__(n_splits=n_splits,
                                          shuffle=False,
-                                         random_state=None)
+                                         random_state=random_state)
 
         self.kmeans_kwargs = k_means_kwargs
 
