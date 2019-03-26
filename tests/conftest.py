@@ -13,7 +13,7 @@ np_types = (np.int32, np.float32, np.float64)
 def random_xy_dataset_regr(request):
     n, k, np_type = request.param
     X = np.random.normal(0, 2, (n, k)).astype(np_type)
-    y = np.random.normal(0, 2, (n, 1))
+    y = np.random.normal(0, 2, (n, ))
     return X, y
 
 
@@ -21,7 +21,7 @@ def random_xy_dataset_regr(request):
 def random_xy_dataset_clf(request):
     n, k, np_type = request.param
     X = np.random.normal(0, 2, (n, k)).astype(np_type)
-    y = np.random.normal(0, 2, (n, 1)) > 0.0
+    y = np.random.normal(0, 2, (n, )) > 0.0
     return X, y
 
 
