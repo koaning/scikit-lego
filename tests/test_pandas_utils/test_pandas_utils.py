@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import logging
 
-from sklego.pandas import log_step, _add_lagged_pandas_columns, _add_lagged_numpy_columns
+from sklego.pandas_utils import log_step, _add_lagged_pandas_columns, _add_lagged_numpy_columns
 
 logging.basicConfig(level=logging.INFO)
 
