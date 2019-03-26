@@ -9,10 +9,10 @@ def as_list(val):
 
     :Example:
 
-    >>> _as_list('test')
+    >>> as_list('test')
     ['test']
 
-    >>> _as_list(['test1', 'test2'])
+    >>> as_list(['test1', 'test2'])
     ['test1', 'test2']
     """
     treat_single_value = (str)
