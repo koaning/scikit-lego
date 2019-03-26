@@ -32,9 +32,9 @@ def add_lags(X, cols, lags):
     Appends lag column(s).
 
     :param X: array-like, shape=(n_columns, n_samples,) training data.
-    :param cols: an iterable of column names or a single column name string.
-    :param lags: iterable of ints or int.
-    :returns: ``pd.DataFrame | np.ndarray`` with only the selected columns
+    :param cols: column name(s) or index (indices).
+    :param lags: the amount of lag for each col.
+    :returns: ``pd.DataFrame | np.ndarray`` with only the selected cols.
 
     :Example:
 
@@ -97,8 +97,8 @@ def _add_lagged_numpy_columns(X, cols, lags):
     Append a lag columns, removes all NA values.
 
     :param df: the input ``np.ndarray``.
-    :param cols: an iterable of column names, or a single column name.
-    :returns: ``np.ndarray`` with the concatenated lagged columns.
+    :param cols: column index / indices.
+    :returns: ``np.ndarray`` with the concatenated lagged cols.
     """
 
     cols = as_list(cols)
@@ -132,12 +132,14 @@ def _add_lagged_pandas_columns(df, cols, lags):
     Append a lag columns, removes all NA values.
 
     :param df: the input ``pd.DataFrame``.
-    :param cols: an iterable of column names, or a single column name.
-    :returns: ``pd.DataFrame`` with the concatenated lagged columns.
+    :param cols: column name(s).
+    :returns: ``pd.DataFrame`` with the concatenated lagged cols.
     """
 
     cols = as_list(cols)
 
+    # Indexes are not supported as pandas column names may be
+    # integers themselves, introducing unexpected behaviour
     if not all([col in df.columns.values for col in cols]):
         raise KeyError("The column does not exist")
 
