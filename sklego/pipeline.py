@@ -237,22 +237,26 @@ class DebugPipeline(Pipeline):
     >>> pipe_w_default_log_callback = DebugPipeline(steps, log_callback='default')
     >>> pipe_w_custom_log_callback = DebugPipeline(steps, log_callback=log_callback)
     >>>
-    >>> pipe_union = FeatureUnion([
-    ...     ('pipe_w_default_log_callback', pipe_w_default_log_callback),
-    ...     ('pipe_w_custom_log_callback', pipe_w_custom_log_callback),
-    ... ])
+    >>> pipe_union = DebugPipeline([
+    ...     ('feature_union', FeatureUnion([
+    ...         ('pipe_w_default_log_callback', pipe_w_default_log_callback),
+    ...         ('pipe_w_custom_log_callback', pipe_w_custom_log_callback),
+    ...     ])),
+    ...     ('final_adder', Adder(10000))
+    ... ], log_callback='default')
     >>>
-    >>> _ = pipe_union.fit(X, y=y)
+    >>> _ = pipe_union.fit(X, y=y)   # doctest:+ELLIPSIS
     [default_log_callback:34] - [Adder(value=1)] shape=(3, 5) time=0s
     [default_log_callback:34] - [Adder(value=10)] shape=(3, 5) time=0s
     [default_log_callback:34] - [Adder(value=100)] shape=(3, 5) time=0s
     [log_callback:20] - [Adder(value=1)] shape=(3, 5) nbytes=120 time=0s
     [log_callback:20] - [Adder(value=10)] shape=(3, 5) nbytes=120 time=0s
     [log_callback:20] - [Adder(value=100)] shape=(3, 5) nbytes=120 time=0s
+    [default_log_callback:34] - [FeatureUnion(...)] shape=(3, 10) time=0s
     >>> print(pipe_union.transform(X))
-    [[1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]
-     [1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111. 1111.]]
+    [[11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111.]
+     [11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111.]
+     [11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111.]]
     '''
 
     def __init__(
