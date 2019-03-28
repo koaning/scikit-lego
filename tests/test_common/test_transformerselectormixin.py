@@ -6,11 +6,11 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 
-from sklego.common import TransformerSelectorMixin
+from sklego.common import TrainOnlyTransformerMixin
 from tests.conftest import np_types, n_vals, k_vals
 
 
-class TrainOnlyTransformer(TransformerSelectorMixin, BaseEstimator, TransformerMixin):
+class TrainOnlyTrainOnlyTransformer(TrainOnlyTransformerMixin, BaseEstimator, TransformerMixin):
 
     def fit(self, X, y):
         super().fit(X, y)
@@ -25,7 +25,7 @@ def test_hash_numpy():
     for n, k, np_type in it.product(n_vals, k_vals, np_types):
         X = np.random.normal(0, 2, (n, k)).astype(np_type)
 
-        hashes.append(TransformerSelectorMixin._hash(X))
+        hashes.append(TrainOnlyTransformerMixin._hash(X))
 
     assert len(hashes) == len(set(hashes))
 
@@ -36,7 +36,7 @@ def test_hash_pandas():
     for n, k, np_type in it.product(n_vals, k_vals, np_types):
         X = pd.DataFrame(np.random.normal(0, 2, (n, k)).astype(np_type))
 
-        hashes.append(TransformerSelectorMixin._hash(X))
+        hashes.append(TrainOnlyTransformerMixin._hash(X))
 
     assert len(hashes) == len(set(hashes))
 
@@ -46,7 +46,7 @@ def test_bare_trainonlytransformer(random_xy_dataset_regr):
 
     X_train, X_test, y_train, y_test = train_test_split(*random_xy_dataset_regr)
 
-    trf = TrainOnlyTransformer()
+    trf = TrainOnlyTrainOnlyTransformer()
     trf.fit(X_train, y_train)
 
     assert np.all(trf.transform(X_train) != X_train)
@@ -58,7 +58,7 @@ def test_pipeline_trainonlytransformer(random_xy_dataset_regr):
 
     X_train, X_test, y_train, y_test = train_test_split(*random_xy_dataset_regr)
 
-    trf = make_pipeline(TrainOnlyTransformer())
+    trf = make_pipeline(TrainOnlyTrainOnlyTransformer())
     trf.fit(X_train, y_train)
 
     assert np.all(trf.transform(X_train) != X_train)
@@ -70,7 +70,7 @@ def test_bare_trainonlytransformer_pandas(random_xy_dataset_regr):
     X, y = pd.DataFrame(random_xy_dataset_regr[0]), pd.DataFrame(random_xy_dataset_regr[1])
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    trf = TrainOnlyTransformer()
+    trf = TrainOnlyTrainOnlyTransformer()
     trf.fit(X_train, y_train)
 
     assert np.all(trf.transform(X_train) != X_train)
@@ -85,7 +85,7 @@ def test_pipeline_trainonlytransformer_pandas(random_xy_dataset_regr):
     X, y = pd.DataFrame(random_xy_dataset_regr[0]), pd.DataFrame(random_xy_dataset_regr[1])
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
-    trf = make_pipeline(TrainOnlyTransformer())
+    trf = make_pipeline(TrainOnlyTrainOnlyTransformer())
     trf.fit(X_train, y_train)
 
     assert np.all(trf.transform(X_train) != X_train)

@@ -5,13 +5,13 @@ import pandas as pd
 from sklearn.utils.validation import check_is_fitted, check_array, check_X_y
 
 
-class TransformerSelectorMixin:
+class TrainOnlyTransformerMixin:
     """
     Allows using a separate function for transforming train and test data
 
     Usage:
     >>> from sklearn.base import BaseEstimator, TransformerMixin
-    >>> class TrainOnlyTransformer(TransformerSelectorMixin, BaseEstimator, TransformerMixin):
+    >>> class TrainOnlyTransformer(TrainOnlyTransformerMixin, BaseEstimator, TransformerMixin):
     ...     def fit(self, X, y):
     ...         super().fit(X, y)
     ...
@@ -53,10 +53,10 @@ class TransformerSelectorMixin:
     def _hash(X):
         """Returns a hash of X based on the type of X. Hashers are defined in TrainOnlyMixin.HASHERS"""
         try:
-            hasher = TransformerSelectorMixin.HASHERS[type(X)]
+            hasher = TrainOnlyTransformerMixin.HASHERS[type(X)]
         except KeyError:
             raise ValueError(f'Unknown datatype {type(X)}, '
-                             f'TransformerSelector only supports {TransformerSelectorMixin.HASHERS.keys()}')
+                             f'TransformerSelector only supports {TrainOnlyTransformerMixin.HASHERS.keys()}')
         else:
             return hasher(X)
 

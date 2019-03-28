@@ -2,10 +2,10 @@ from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin, cl
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
 
-from sklego.common import TransformerSelectorMixin
+from sklego.common import TrainOnlyTransformerMixin
 
 
-class RandomAdder(TransformerSelectorMixin, TransformerMixin, BaseEstimator):
+class RandomAdder(TrainOnlyTransformerMixin, TransformerMixin, BaseEstimator):
     def __init__(self, noise=1, random_state=None):
         self.noise = noise
         self.random_state = random_state
