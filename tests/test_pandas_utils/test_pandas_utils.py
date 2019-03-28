@@ -25,18 +25,18 @@ def test_X():
 
 def test_add_lagged_pandas_columns(test_df):
     with pytest.raises(KeyError, message='The column does not exist'):
-        _add_lagged_pandas_columns(test_df, ['last_name'], 1)
+        _add_lagged_pandas_columns(test_df, ['last_name'], 1, True)
 
 
 def test_add_lagged_numpy_columns(test_X):
     err_indexed_integes = 'Matrix columns are indexed by integers'
     err_column_not_exists = 'The column does not exist'
     with pytest.raises(KeyError, message=err_column_not_exists):
-        _add_lagged_numpy_columns(test_X, [15], 1)
+        _add_lagged_numpy_columns(test_X, [15], 1, True)
     with pytest.raises(ValueError, message=err_indexed_integes):
-        _add_lagged_numpy_columns(test_X, ['test'], 1)
+        _add_lagged_numpy_columns(test_X, ['test'], 1, True)
     with pytest.raises(ValueError, message=err_indexed_integes):
-        _add_lagged_numpy_columns(test_X, ['test'], 1)
+        _add_lagged_numpy_columns(test_X, ['test'], 1, True)
 
 
 def test_logging(caplog, test_df):

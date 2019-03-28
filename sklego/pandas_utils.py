@@ -27,13 +27,14 @@ def log_step(func):
     return wrapper
 
 
-def add_lags(X, cols, lags):
+def add_lags(X, cols, lags, drop_na=True):
     """
     Appends lag column(s).
 
     :param X: array-like, shape=(n_columns, n_samples,) training data.
     :param cols: column name(s) or index (indices).
     :param lags: the amount of lag for each col.
+    :param drop_na: remove rows that contain NA values.
     :returns: ``pd.DataFrame | np.ndarray`` with only the selected cols.
 
     :Example:
@@ -85,19 +86,20 @@ def add_lags(X, cols, lags):
     # Choose the correct handler based on the input class
     for allowed_input, handler in allowed_inputs.items():
         if isinstance(X, allowed_input):
-            return handler(X, cols, lags)
+            return handler(X, cols, lags, drop_na)
 
     # Otherwise, raise a ValueError
     allowed_input_names = list(allowed_inputs.keys())
     raise ValueError("X type should be one of:", allowed_input_names)
 
 
-def _add_lagged_numpy_columns(X, cols, lags):
+def _add_lagged_numpy_columns(X, cols, lags, drop_na):
     """
     Append a lag columns, removes all NA values.
 
     :param df: the input ``np.ndarray``.
     :param cols: column index / indices.
+    :param drop_na: remove rows that contain NA values.
     :returns: ``np.ndarray`` with the concatenated lagged cols.
     """
 
@@ -120,19 +122,24 @@ def _add_lagged_numpy_columns(X, cols, lags):
     # original to float and back to original dtype
     original_type = X.dtype
     X = np.asarray(X, dtype=float)
-
     ans = np.column_stack((X, *combos))
-    ans = ans[~np.isnan(ans).any(axis=1)]
+
+    # Remove rows that contain NA values when drop_na is truthy
+    if drop_na:
+        ans = ans[~np.isnan(ans).any(axis=1)]
+
+    # Change dtype back to its original
     ans = np.asarray(ans, dtype=original_type)
     return ans
 
 
-def _add_lagged_pandas_columns(df, cols, lags):
+def _add_lagged_pandas_columns(df, cols, lags, drop_na):
     """
     Append a lag columns, removes all NA values.
 
     :param df: the input ``pd.DataFrame``.
     :param cols: column name(s).
+    :param drop_na: remove rows that contain NA values.
     :returns: ``pd.DataFrame`` with the concatenated lagged cols.
     """
 
@@ -149,4 +156,10 @@ def _add_lagged_pandas_columns(df, cols, lags):
         for lag in lags
     )
 
-    return pd.concat([df, *combos], axis=1).dropna()
+    ans = pd.concat([df, *combos], axis=1)
+
+    # Remove rows that contain NA values when drop_na is truthy
+    if drop_na:
+        ans = ans.dropna()
+
+    return ans
