@@ -2,7 +2,7 @@ import itertools as it
 
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 
@@ -10,7 +10,7 @@ from sklego.common import TrainOnlyTransformerMixin
 from tests.conftest import np_types, n_vals, k_vals
 
 
-class TrainOnlyTrainOnlyTransformer(TrainOnlyTransformerMixin, BaseEstimator, TransformerMixin):
+class TrainOnlyTrainOnlyTransformer(TrainOnlyTransformerMixin, BaseEstimator):
 
     def fit(self, X, y):
         super().fit(X, y)

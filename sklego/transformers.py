@@ -5,7 +5,7 @@ from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_
 from sklego.common import TrainOnlyTransformerMixin
 
 
-class RandomAdder(TrainOnlyTransformerMixin, TransformerMixin, BaseEstimator):
+class RandomAdder(TrainOnlyTransformerMixin, BaseEstimator):
     def __init__(self, noise=1, random_state=None):
         self.noise = noise
         self.random_state = random_state
