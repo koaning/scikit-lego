@@ -85,7 +85,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
     def transform_test(self, X, y=None):
         return X
 
-      
+
 def as_list(val):
     """
     Helper function, always returns a list of the input value.
