@@ -95,7 +95,7 @@ def add_lags(X, cols, lags, drop_na=True):
 
 def _add_lagged_numpy_columns(X, cols, lags, drop_na):
     """
-    Append a lag columns, removes all NA values.
+    Append a lag columns.
 
     :param df: the input ``np.ndarray``.
     :param cols: column index / indices.
@@ -135,7 +135,7 @@ def _add_lagged_numpy_columns(X, cols, lags, drop_na):
 
 def _add_lagged_pandas_columns(df, cols, lags, drop_na):
     """
-    Append a lag columns, removes all NA values.
+    Append a lag columns.
 
     :param df: the input ``pd.DataFrame``.
     :param cols: column name(s).
