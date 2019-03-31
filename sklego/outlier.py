@@ -1,7 +1,6 @@
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator
 from sklearn.mixture import GaussianMixture
-from sklearn.utils import check_X_y
 from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
 
 
@@ -12,7 +11,7 @@ class GMMDetector(BaseEstimator):
         self.likelihood_threshold = None
         self.gmm = None
 
-    def fit(self, X: np.array) -> "GMMClassifier":
+    def fit(self, X: np.array, y=None) -> "GMMDetector":
         """
         Fit the model using X, y as training data.
 
