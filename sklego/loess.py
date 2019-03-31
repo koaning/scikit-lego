@@ -92,6 +92,9 @@ class LoessSmoother:
         self._get_window_indices(x)
         self._fit_model_per_window(x, y)
 
+    def transform(self, x):
+        return self.y_focal_base
+
     def _get_x_focal_base(self, x):
         """
 
