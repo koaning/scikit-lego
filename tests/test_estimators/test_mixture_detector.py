@@ -11,9 +11,10 @@ def test_obvious_usecase():
 
 
 def test_value_error_threshold():
+    X = np.concatenate([np.random.normal(0, 1, (2000, 2))])
     with pytest.raises(ValueError):
-        GMMOutlierDetector(threshold=10)
+        GMMOutlierDetector(threshold=10).fit(X)
     with pytest.raises(ValueError):
-        GMMOutlierDetector(threshold=-10)
+        GMMOutlierDetector(threshold=-10).fit(X)
     with pytest.raises(ValueError):
-        GMMOutlierDetector(megatondinosaurhead=1)
+        GMMOutlierDetector(megatondinosaurhead=1).fit(X)

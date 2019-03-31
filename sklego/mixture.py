@@ -16,9 +16,6 @@ def _check_gmm_keywords(kwargs):
 class GMMClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, **gmm_kwargs):
         self.gmm_kwargs = gmm_kwargs
-        self.classes = None
-        self.gmms = None
-        _check_gmm_keywords(gmm_kwargs)
 
     def fit(self, X: np.array, y: np.array) -> "GMMClassifier":
         """
@@ -29,23 +26,24 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         :return: Returns an instance of self.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        self.gmms = {}
-        self.classes = np.unique(y)
-        for c in self.classes:
+        _check_gmm_keywords(self.gmm_kwargs)
+        self.gmms_ = {}
+        self.classes_ = np.unique(y)
+        for c in self.classes_:
             subset_x, subset_y = X[y == c], y[y == c]
-            self.gmms[c] = GaussianMixture(**self.gmm_kwargs).fit(subset_x, subset_y)
+            self.gmms_[c] = GaussianMixture(**self.gmm_kwargs).fit(subset_x, subset_y)
         return self
 
     def predict(self, X):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        return self.classes[self.predict_proba(X).argmax(axis=1)]
+        return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     def predict_proba(self, X):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ['gmms', 'classes'])
-        res = np.zeros((X.shape[0], self.classes.shape[0]))
-        for idx, c in enumerate(self.classes):
-            res[:, idx] = self.gmms[c].score_samples(X)
+        check_is_fitted(self, ['gmms_', 'classes_'])
+        res = np.zeros((X.shape[0], self.classes_.shape[0]))
+        for idx, c in enumerate(self.classes_):
+            res[:, idx] = self.gmms_[c].score_samples(X)
         return np.exp(res)/np.exp(res).sum(axis=1)[:, np.newaxis]
 
 
@@ -62,11 +60,6 @@ class GMMOutlierDetector(BaseEstimator):
     def __init__(self, threshold=0.99, **gmm_kwargs):
         self.gmm_kwargs = gmm_kwargs
         self.threshold = threshold
-        self.likelihood_threshold = None
-        self.gmm = None
-        if (threshold > 1) or (threshold < 0):
-            raise ValueError(f"Threshold {threshold} needs to be 0 < threshold < 1")
-        _check_gmm_keywords(gmm_kwargs)
 
     def fit(self, X: np.array, y=None) -> "GMMOutlierDetector":
         """
@@ -77,12 +70,15 @@ class GMMOutlierDetector(BaseEstimator):
         :return: Returns an instance of self.
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        self.gmm = GaussianMixture(**self.gmm_kwargs).fit(X)
-        self.likelihood_threshold = np.quantile(self.gmm.score_samples(X), 1 - self.threshold)
+        if (self.threshold > 1) or (self.threshold < 0):
+            raise ValueError(f"Threshold {self.threshold} needs to be 0 < threshold < 1")
+        _check_gmm_keywords(self.gmm_kwargs)
+        self.gmm_ = GaussianMixture(**self.gmm_kwargs).fit(X)
+        self.likelihood_threshold_ = np.quantile(self.gmm_.score_samples(X), 1 - self.threshold)
         return self
 
     def score_samples(self, X):
-        return self.gmm.score_samples(X)
+        return self.gmm_.score_samples(X)
 
     def predict(self, X):
         """
@@ -93,5 +89,5 @@ class GMMOutlierDetector(BaseEstimator):
         :return: array, shape=(n_samples,) the predicted data
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ['gmm', 'likelihood_threshold'])
-        return (self.score_samples(X) < self.likelihood_threshold).astype(np.int)
+        check_is_fitted(self, ['gmm_', 'likelihood_threshold_'])
+        return (self.score_samples(X) < self.likelihood_threshold_).astype(np.int)
