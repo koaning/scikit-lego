@@ -22,6 +22,7 @@ class LoessSmoother:
         self.weights = weights
 
     def get_point_sets(self, X):
+        self.n_points = math.floor(self.frac * len(X))
         if self.point_extraction == 'knn':
             knn = NearestNeighbors(n_neighbors=self.n_points, metric='euclidean').fit(X)
 
@@ -32,15 +33,13 @@ class LoessSmoother:
         elif self.point_extraction == 'symmetric':
             for idx, point in enumerate(X):
                 if idx < math.floor(self.frac * len(X) / 2):
-                    yield np.array(range(0, idx + math.floor(self.frac * len(X) / 2)))
+                    yield np.array(range(0, idx + math.floor(self.n_points / 2)))
 
-                elif (idx >= math.floor(self.frac * len(X) / 2)) & (
-                (idx <= len(X) - math.floor(self.frac * len(X) / 2))):
-                    yield np.array(
-                        range(idx - math.floor(self.frac * len(X) / 2), idx + math.floor(self.frac * len(X) / 2)))
+                elif (idx >= math.floor(self.n_points / 2)) & ((idx <= len(X) - math.floor(self.n_points / 2))):
+                    yield np.array(range(idx - math.floor(self.n_points / 2), idx + math.floor(self.n_points / 2)))
 
                 else:
-                    yield np.array(range(len(X) - math.floor(self.frac * len(X) / 2), len(X)))
+                    yield np.array(range(len(X) - math.floor(self.n_points / 2), len(X)))
 
         else:
             raise NotImplementedError('Sorry this method has not been implemented.')
