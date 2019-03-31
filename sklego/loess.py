@@ -49,6 +49,7 @@ class LoessSmoother(TransformerMixin, BaseEstimator):
 =
 
         TODO:
+        - Add tests
         - Fix sklearn interface
         - Decide on how to use predict outside of original x_focal_base.
         - Add function typehints
