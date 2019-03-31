@@ -4,27 +4,46 @@ from sklearn.linear_model import LinearRegression
 
 
 class LoessSmoother:
-    def __init__(self, model='linear', n_points=5):
+    def __init__(self, model='linear', n_points=20, point_extraction='knn'):
         self.n_points = n_points
         # This is to be adjusted:
         self.model = LinearRegression()
+        self.point_extraction = point_extraction
 
     def get_point_sets(self, X):
-        knn = NearestNeighbors(n_neighbors=self.n_points).fit(X)
+        if self.point_extraction=='knn':
+            knn = NearestNeighbors(n_neighbors=self.n_points, metric='euclidean').fit(X)
 
-        for point in X:
-            yield knn.kneighbors(point.reshape(-1, 1))[1][0]
+            # For every point return n nearest points:
+            for idx, point in enumerate(X):
+                yield knn.kneighbors(point.reshape(-1, 1))[1][0]
+        elif self.point_extraction=='symmetric':
+            for idx, point in enumerate(X):
+                if idx < int(self.n_points / 2):
+                    yield np.array(range(0, idx + self.n_points))
+                elif (idx >= int(self.n_points / 2)) & ((idx <= len(X) - int(self.n_points / 2))):
+                    yield np.array(range(idx - int(self.n_points / 2), idx + int(self.n_points / 2)))
+                else:
+                    yield np.array(range(len(X) - int(self.n_points / 2), len(X)))
+
+        else:
+            raise NotImplementedError('Sorry this method has not been implemented.')
 
     def fit(self, X, y):
+
+        if len(X.shape) < 2:
+            X = X.reshape(-1, 1)
+
         points_generator = self.get_point_sets(X)
         y_focal = np.array([])
-        for idx_focal, idx_window in enumerate(points_generator):
-            x_focal = x[idx_focal].reshape(-1, 1)
-            x_window = x[idx_window]
-            y_window = y[idx_window]
-            y_focal_new = self.model.fit(x_window, y_window).predict(x_focal)[0][0]
-            y_focal = np.append(y_focal, y_focal_new)
 
+        for idx_focal, idx_window in enumerate(points_generator):
+            x_focal = X[idx_focal].reshape(-1, 1)
+            x_window = X[idx_window].reshape(-1, 1)
+            y_window = y[idx_window]
+            #pf = PolynomialFeatures(degree=1, include_bias=False)
+            y_focal_new = self.model.fit(x_window, y_window).predict(x_focal.reshape(-1, 1))
+            y_focal = np.append(y_focal, y_focal_new)
         return y_focal
 
 
