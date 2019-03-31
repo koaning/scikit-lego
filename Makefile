@@ -3,6 +3,7 @@
 flake:
 	flake8 sklego
 	flake8 tests
+	flake8 setup.py
 
 install:
 	pip install -e .
