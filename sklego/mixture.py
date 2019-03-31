@@ -2,14 +2,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import GaussianMixture
 from sklearn.utils import check_X_y
-from sklearn.utils.validation import check_is_fitted, check_array, check_random_state, FLOAT_DTYPES
-
-
-import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.mixture import GaussianMixture
-from sklearn.utils import check_X_y
-from sklearn.utils.validation import check_is_fitted, check_array, check_random_state, FLOAT_DTYPES
+from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
 
 
 class GMMClassifier(BaseEstimator, ClassifierMixin):
@@ -18,7 +11,7 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         self.classes = None
         self.gmms = None
 
-    def fit(self, X: np.array, y: np.array) -> "RandomRegressor":
+    def fit(self, X: np.array, y: np.array) -> "GMMClassifier":
         """
         Fit the model using X, y as training data.
 

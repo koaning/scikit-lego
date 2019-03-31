@@ -1,11 +1,13 @@
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin
+
 from sklearn.mixture import GaussianMixture
 from sklearn.utils import check_X_y
 from sklearn.utils.validation import check_is_fitted, check_array, check_random_state, FLOAT_DTYPES
 
+from sklego.mixture import GMMClassifier
 
-class GMMDetector(BaseEstimator, ClassifierMixin):
+
+class GMMDetector(GMMClassifier):
     """
     A GMMDetector tries to estimate a Gaussian Mixture Model on a dataset
     such and will attempt a outlier prediction by setting a threshold. Can
@@ -17,7 +19,7 @@ class GMMDetector(BaseEstimator, ClassifierMixin):
         """
         self.gmm = GaussianMixture(**gmm_kwargs)
 
-    def fit(self, X: np.array, y: np.array) -> "RandomRegressor":
+    def fit(self, X: np.array, y: np.array) -> "GMMDetector":
         """
         Fit the model using X, y as training data.
 
