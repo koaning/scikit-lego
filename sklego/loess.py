@@ -124,13 +124,13 @@ class LoessSmoother:
             self.logger.info(f"Creating data windows using method: {self.window_method}")
 
             if self.window_method == 'fixed':
-                self._get_fixed_window_indices(self, index, x_focal, x, n_points)
+                self._get_fixed_window_indices(index, x_focal, x, n_points)
 
             elif self.window_method == 'knn':
-                self._get_knn_window_indices(self, index, x_focal, x, n_points)
+                self._get_knn_window_indices(index, x_focal, x, n_points)
 
             elif self.window_method == 'knn_symmetric':
-                self._get_knn_symmetric_indices(self, index, x_length, n_points)
+                self._get_knn_symmetric_indices(index, x_length, n_points)
 
     def _get_fixed_window_indices(self, index, x_focal, x, n_points):
         x_indices = np.argwhere(
@@ -140,7 +140,7 @@ class LoessSmoother:
         if len(x_indices) > 2 * n_points:
             self.indices[index] = x_indices
         else:  # If the number of returned indices is too small, resort to nearest points
-            self._get_knn_window_indices(self, index, x_focal, x, n_points)
+            self._get_knn_window_indices(index, x_focal, x, n_points)
 
     def _get_knn_window_indices(self, index, x_focal, x, n_points):
         x_focal = np.asarray([x_focal]).reshape(-1, 1)
