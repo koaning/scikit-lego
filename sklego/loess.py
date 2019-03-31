@@ -14,7 +14,7 @@ class LoessSmoother:
         self.frac = frac
 
         # Create a pipeline in case that the user wants to perform a polynomial degree fit:
-        self.model = Pipeline([('p_features', PolynomialFeatures(degree=1, include_bias=True)),
+        self.model = Pipeline([('p_features', PolynomialFeatures(degree=p_degree, include_bias=True)),
                                ('linear', LinearRegression())])
 
         self.point_extraction = point_extraction
@@ -51,7 +51,7 @@ class LoessSmoother:
             X = X.reshape(-1, 1)
 
         points_generator = self.get_point_sets(X)
-        y_focal = np.array([])
+        self.y_focal = np.array([])
 
         for idx_focal, idx_window in enumerate(points_generator):
             x_focal = X[idx_focal].reshape(-1, 1)
