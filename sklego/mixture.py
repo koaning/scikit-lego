@@ -81,6 +81,9 @@ class GMMOutlierDetector(BaseEstimator):
         self.likelihood_threshold = np.quantile(self.gmm.score_samples(X), 1 - self.threshold)
         return self
 
+    def score_samples(self, X):
+        return self.gmm.score_samples(X)
+
     def predict(self, X):
         """
         Predict if a point is an outlier. If the output is 0 then
@@ -91,4 +94,4 @@ class GMMOutlierDetector(BaseEstimator):
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ['gmm', 'likelihood_threshold'])
-        return (self.gmm.score_samples(X) < self.likelihood_threshold).astype(np.int)
+        return (self.score_samples(X) < self.likelihood_threshold).astype(np.int)

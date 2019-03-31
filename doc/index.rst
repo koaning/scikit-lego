@@ -61,4 +61,5 @@ Usage
 
    install
    contribution
+   mixture-methods
    api/modules

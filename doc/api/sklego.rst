@@ -52,14 +52,6 @@ sklego.naive\_bayes module
     :undoc-members:
     :show-inheritance:
 
-sklego.outlier module
----------------------
-
-.. automodule:: sklego.outlier
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 sklego.pandas\_utils module
 ---------------------------
 

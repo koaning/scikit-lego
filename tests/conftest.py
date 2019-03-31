@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 n_vals = (10, 100, 1000, 10000)
-k_vals = (1, 5, 10, 25)
+k_vals = (2, 5, 10, 25)
 np_types = (np.int32, np.float32, np.float64)
 
 
