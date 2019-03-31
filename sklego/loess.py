@@ -117,8 +117,7 @@ class LoessSmoother:
         :return:
         """
         # TODO: Create generators instead of self.indices list.
-        x_length = len(x)
-        n_points = x_length*self.fraction
+        n_points = len(x)*self.fraction
 
         for index, x_focal in enumerate(self.x_focal_base):
             self.logger.info(f"Creating data windows using method: {self.window_method}")
@@ -130,7 +129,7 @@ class LoessSmoother:
                 self._get_knn_window_indices(index, x_focal, x, n_points)
 
             elif self.window_method == 'knn_symmetric':
-                self._get_knn_symmetric_indices(index, x_length, n_points)
+                self._get_knn_symmetric_indices(index, x_focal, x, n_points)
 
     def _get_fixed_window_indices(self, index, x_focal, x, n_points):
         x_indices = np.argwhere(
@@ -144,20 +143,43 @@ class LoessSmoother:
 
     def _get_knn_window_indices(self, index, x_focal, x, n_points):
         x_focal = np.asarray([x_focal]).reshape(-1, 1)
+
         knn = NearestNeighbors(n_neighbors=int(n_points)).fit(x.reshape(-1, 1))
         self.indices[index] = knn.kneighbors(x_focal)[1][0]
 
-    def _get_knn_symmetric_indices(self, index, x_length, n_points):
-        if index < floor(n_points / 2):
-            self.indices[index] = np.array(range(0, index + floor(n_points / 2)))
+    def _get_knn_symmetric_indices(self, index, x_focal, x, n_points):
+        low_mask = x < x_focal
+        high_mask = ~low_mask
 
-        elif (index >= floor(n_points / 2)) & (
-                (index <= x_length - floor(n_points / 2))):
-            self.indices[index] = np.array(range(index - floor(n_points / 2),
-                                                 index + floor(n_points / 2))
-                                           )
+        x_low = x[low_mask]
+        x_high = x[high_mask]
+
+        x_focal = np.asarray([x_focal]).reshape(-1, 1)
+
+        if (x_low.size > floor(n_points / 2)) & (x_high.size > floor(n_points / 2)):
+            knn_low = NearestNeighbors(n_neighbors=int(n_points / 2)).fit(x_low.reshape(-1, 1))
+            knn_high = NearestNeighbors(n_neighbors=int(n_points / 2)).fit(x_high.reshape(-1, 1))
+            indices_low = knn_low.kneighbors(x_focal)[1][0]
+            indices_high = knn_high.kneighbors(x_focal)[1][0]
+            self.indices[index] = np.concatenate([indices_low, indices_high])
+
+        elif (x_low.size > floor(n_points / 2)) & (not x_high.size > floor(n_points / 2)):
+            knn_low = NearestNeighbors(n_neighbors=int(n_points)).fit(x_low.reshape(-1, 1))
+            self.indices[index] = knn_low.kneighbors(x_focal)[1][0]
+
         else:
-            self.indices[index] = np.array(range(x_length - floor(n_points / 2), x_length))
+            knn_high = NearestNeighbors(n_neighbors=int(n_points)).fit(x_high.reshape(-1, 1))
+            self.indices[index] = knn_high.kneighbors(x_focal)[1][0]
+
+        # if index < floor(n_points / 2):
+        #     self.indices[index] = np.array(range(0, index + floor(n_points / 2)))
+        #
+        # elif (index >= floor(n_points / 2)) & (index <= x_length - floor(n_points / 2)):
+        #     self.indices[index] = np.array(range(index - floor(n_points / 2),
+        #                                          index + floor(n_points / 2))
+        #                                    )
+        # else:
+        #     self.indices[index] = np.array(range(x_length - floor(n_points / 2), x_length))
 
     def _fit_model_per_window(self, x, y):
         """
