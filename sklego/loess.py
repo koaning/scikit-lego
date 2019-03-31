@@ -1,30 +1,54 @@
+import math
+
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
 from sklearn.linear_model import LinearRegression
+from sklearn.neighbors import NearestNeighbors
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import PolynomialFeatures
 
 
+# TODO: Include weights
 class LoessSmoother:
-    def __init__(self, model='linear', n_points=20, point_extraction='knn'):
+    def __init__(self, p_degree=1, n_points=20, point_extraction='knn', weights=None):
+
         self.n_points = n_points
-        # This is to be adjusted:
-        self.model = LinearRegression()
+        # Create a pipeline in case that the user wants the stuff to be polynomial:
+        if p_degree == 1:
+
+            self.model = LinearRegression()
+        else:
+
+            self.model = Pipeline([('p_features', PolynomialFeatures(degree=1, include_bias=True)),
+                                   ('linear', LinearRegression())])
+
         self.point_extraction = point_extraction
+        # This should be a function to calculate weights
+        self.weights = weights
 
     def get_point_sets(self, X):
-        if self.point_extraction=='knn':
+        if self.point_extraction == 'knn':
+
             knn = NearestNeighbors(n_neighbors=self.n_points, metric='euclidean').fit(X)
 
             # For every point return n nearest points:
             for idx, point in enumerate(X):
                 yield knn.kneighbors(point.reshape(-1, 1))[1][0]
-        elif self.point_extraction=='symmetric':
+
+        elif self.point_extraction == 'symmetric':
+
             for idx, point in enumerate(X):
-                if idx < int(self.n_points / 2):
-                    yield np.array(range(0, idx + self.n_points))
-                elif (idx >= int(self.n_points / 2)) & ((idx <= len(X) - int(self.n_points / 2))):
-                    yield np.array(range(idx - int(self.n_points / 2), idx + int(self.n_points / 2)))
+
+                if idx < math.floor(self.n_points / 2):
+
+                    yield np.array(range(idx, idx + math.floor(self.n_points / 2)))
+
+                elif (idx >= math.floor(self.n_points / 2)) & ((idx <= len(X) - math.floor(self.n_points / 2))):
+
+                    yield np.array(range(idx - math.floor(self.n_points / 2), idx + math.floor(self.n_points / 2)))
+
                 else:
-                    yield np.array(range(len(X) - int(self.n_points / 2), len(X)))
+
+                    yield np.array(range(len(X) - math.floor(self.n_points / 2), len(X)))
 
         else:
             raise NotImplementedError('Sorry this method has not been implemented.')
@@ -38,12 +62,22 @@ class LoessSmoother:
         y_focal = np.array([])
 
         for idx_focal, idx_window in enumerate(points_generator):
+
             x_focal = X[idx_focal].reshape(-1, 1)
             x_window = X[idx_window].reshape(-1, 1)
             y_window = y[idx_window]
-            #pf = PolynomialFeatures(degree=1, include_bias=False)
-            y_focal_new = self.model.fit(x_window, y_window).predict(x_focal.reshape(-1, 1))
+
+            if self.weights == None:
+                weights = np.ones(np.shape(x_window)[0])
+            else:
+                raise NotImplementedError('Weight can not be specified at this point.')
+            y_focal_new = (self.model.fit(x_window,
+                                          y_window,
+                                          linear__sample_weight=weights))
+                           .predict(x_focal.reshape(-1, 1)))
+
             y_focal = np.append(y_focal, y_focal_new)
+
         return y_focal
 
 
