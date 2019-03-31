@@ -31,9 +31,9 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         self.gmms = {}
         self.classes = np.unique(y)
-        for cls in self.classes:
-            subset_x, subset_y = X[y == cls], y[y == cls]
-            self.gmms[cls] = GaussianMixture(**self.gmm_kwargs).fit(subset_x, subset_y)
+        for c in self.classes:
+            subset_x, subset_y = X[y == c], y[y == c]
+            self.gmms[c] = GaussianMixture(**self.gmm_kwargs).fit(subset_x, subset_y)
         return self
 
     def predict(self, X):
@@ -44,9 +44,9 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ['gmms', 'classes'])
         res = np.zeros((X.shape[0], self.classes.shape[0]))
-        for idx, cls in enumerate(self.classes):
-            res[:, idx] = self.gmms[cls].score_samples(X)
-        return np.exp(res)/np.exp(res).sum(axis=1).reshape((X.shape[0], 1))
+        for idx, c in enumerate(self.classes):
+            res[:, idx] = self.gmms[c].score_samples(X)
+        return np.exp(res)/np.exp(res).sum(axis=1)[:, np.newaxis]
 
 
 class GMMOutlierDetector(BaseEstimator):
