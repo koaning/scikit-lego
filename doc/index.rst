@@ -60,4 +60,5 @@ Usage
    :caption: Contents:
 
    install
+   contribution
    api/modules
