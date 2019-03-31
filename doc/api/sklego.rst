@@ -36,6 +36,14 @@ sklego.meta module
     :undoc-members:
     :show-inheritance:
 
+sklego.mixture module
+---------------------
+
+.. automodule:: sklego.mixture
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sklego.naive\_bayes module
 --------------------------
 
