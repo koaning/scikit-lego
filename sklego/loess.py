@@ -14,11 +14,8 @@ class LoessSmoother:
         self.frac = frac
 
         # Create a pipeline in case that the user wants to perform a polynomial degree fit:
-        if p_degree == 1:  # No need to construct a pipeline in this case
-            self.model = LinearRegression()
-        else:  # otherwise we have no choice but to construct the pipeline
-            self.model = Pipeline([('p_features', PolynomialFeatures(degree=1, include_bias=True)),
-                                   ('linear', LinearRegression())])
+        self.model = Pipeline([('p_features', PolynomialFeatures(degree=1, include_bias=True)),
+                               ('linear', LinearRegression())])
 
         self.point_extraction = point_extraction
         # This should be a function to calculate weights, e.g. Gaussian, Linear, etc...
@@ -35,7 +32,7 @@ class LoessSmoother:
         elif self.point_extraction == 'symmetric':
             for idx, point in enumerate(X):
                 if idx < math.floor(self.frac * len(X) / 2):
-                    yield np.array(range(idx, idx + math.floor(self.frac * len(X) / 2)))
+                    yield np.array(range(0, idx + math.floor(self.frac * len(X) / 2)))
 
                 elif (idx >= math.floor(self.frac * len(X) / 2)) & (
                 (idx <= len(X) - math.floor(self.frac * len(X) / 2))):
@@ -65,8 +62,7 @@ class LoessSmoother:
                 weights = np.ones(np.shape(x_window)[0])
 
             else:
-                # calculate weights using the user-specified function:
-                weights = self.weights(X)
+                raise NotImplementedError('Weights can not be specified at this point.')
 
             y_focal_new = (self.model.fit(x_window,
                                           y_window,
