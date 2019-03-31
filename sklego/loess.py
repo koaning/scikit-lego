@@ -1,17 +1,23 @@
+import logging
+from math import floor
+
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import NearestNeighbors
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import PolynomialFeatures
 
 
 class LoessSmoother:
     def __init__(self,
-                 model=LinearRegression(),
+                 model=None,
+                 n_degree=2,
                  transform=True,
                  window_method='fixed',
-                 fixed_window=2,
+                 window_size=2,
                  step_size=.2,
-                 n_points=5):
+                 fraction=.1):
         """
         Loess Regression. This class implements multiple methods of Loess regression.
         Options:
@@ -20,28 +26,60 @@ class LoessSmoother:
           datapoints.
 
         TODO:
-        - Fix interpolation
-        - iterative process of updating weights based on y-distance in fit method
-        -
-        :param model: Initialized sklearn object that has .fit() and .predict method
-        :param transform: boolean, if Yes
-        :param window_method:
-        :param fixed_window:
-        :param step_size:
-        :param n_points:
+        - Add typehints
+        - Improve interpolation for 'transform == False' estimator mode
+        - Include weighted fit
+        - Generalize to multi-input
         """
-        self.model = model
-        self.transform = transform
-        self.window_method = window_method
-        self.fixed_window = fixed_window
-        self.step_size = step_size
-        self.n_points = n_points
 
-        # initialize empty objects
+        self.logger = logging.getLogger(__name__)
+
+        self.model = self._init_model(n_degree, model)
+        self.transform = transform
+        self.window_method = self._init_window_method(window_method)
+
+        self.window_size = window_size
+        self.step_size = step_size
+        self.fraction = fraction
+
+        # initialize fit attributes
         self.x_focal_base = np.ndarray([])
         self.y_focal_base = np.ndarray([])
         self.indices = {}
         self.model_per_window = np.ndarray([])
+
+    def _init_model(self, n_degree, model):
+        # TODO: Use argparse mutually_exclusive_group iso if statement?
+        if n_degree and model is None:
+            self.logger.info(f"Creating linear model with polynomial features of degree {model}.\n"
+                             f"NOTE: interaction terms are also included!")
+            return Pipeline([('p_features', PolynomialFeatures(degree=n_degree,
+                                                               include_bias=True,
+                                                               interaction_only=False)),
+                             ('linear', LinearRegression(fit_intercept=True,
+                                                         normalize=False,
+                                                         copy_X=True,
+                                                         n_jobs=2))
+                            ])
+
+        elif not n_degree and model:
+            self.logger.info(f"Using user defined model: {model}")
+            return model
+        else:
+            message = f"Parameters n_degree and model are required mutually exclusive. Choose one."
+            self.logger.error(message)
+            # TODO: Use better Exception?
+            raise ValueError(message)
+
+    def _init_window_method(self, window_method):
+        available_window_methods = ['knn', 'knn_symmetric', 'fixed']
+        if window_method in available_window_methods:
+            return window_method
+        else:
+            message = (f"Unrecognized window method. Use one of the following:"
+                       f"\n{available_window_methods}")
+            self.logger.error(message)
+            raise NotImplementedError(message)
 
     def fit(self, x, y):
         """
@@ -61,9 +99,11 @@ class LoessSmoother:
         :return:
         """
         if self.transform:
-            return np.sort(x)
+            self.x_focal_base = np.sort(x)
+            self.logger.info('Creating x basis as a transformer')
 
         else:
+            self.logger.info('Creating x basis as an estimator')
             self.x_focal_base = np.array([np.min(x)])
 
             while self.x_focal_base.max() < np.array(x).max():
@@ -76,21 +116,48 @@ class LoessSmoother:
         :param x:
         :return:
         """
+        # TODO: Create generators instead of self.indices list.
+        x_length = len(x)
+        n_points = x_length*self.fraction
+
         for index, x_focal in enumerate(self.x_focal_base):
+            self.logger.info(f"Creating data windows using method: {self.window_method}")
 
             if self.window_method == 'fixed':
-                x_indices = np.argwhere(
-                    (x > (x_focal - self.fixed_window)) & (x < (x_focal + self.fixed_window)))
+                self._get_fixed_window_indices(self, index, x_focal, x, n_points)
 
-                if len(x_indices) > 2 * self.n_points:
-                    self.indices[index] = x_indices
-                else:  # If the number of returned indices is too small, resort to nearest points
-                    self.indices[index] = x_indices
+            elif self.window_method == 'knn':
+                self._get_knn_window_indices(self, index, x_focal, x, n_points)
 
-            if self.window_method == 'closest':
-                x_focal = np.asarray([x_focal]).reshape(-1, 1)
-                knn = NearestNeighbors(n_neighbors=self.n_points).fit(x.reshape(-1, 1))
-                self.indices[index] = knn.kneighbors(x_focal)[1][0]
+            elif self.window_method == 'knn_symmetric':
+                self._get_knn_symmetric_indices(self, index, x_length, n_points)
+
+    def _get_fixed_window_indices(self, index, x_focal, x, n_points):
+        x_indices = np.argwhere(
+            (x > (x_focal - self.window_size)) & (x < (x_focal + self.window_size)))
+
+        # TODO: Improve interpolation
+        if len(x_indices) > 2 * n_points:
+            self.indices[index] = x_indices
+        else:  # If the number of returned indices is too small, resort to nearest points
+            self._get_knn_window_indices(self, index, x_focal, x, n_points)
+
+    def _get_knn_window_indices(self, index, x_focal, x, n_points):
+        x_focal = np.asarray([x_focal]).reshape(-1, 1)
+        knn = NearestNeighbors(n_neighbors=int(n_points)).fit(x.reshape(-1, 1))
+        self.indices[index] = knn.kneighbors(x_focal)[1][0]
+
+    def _get_knn_symmetric_indices(self, index, x_length, n_points):
+        if index < floor(n_points / 2):
+            self.indices[index] = np.array(range(0, index + floor(n_points / 2)))
+
+        elif (index >= floor(n_points / 2)) & (
+                (index <= x_length - floor(n_points / 2))):
+            self.indices[index] = np.array(range(index - floor(n_points / 2),
+                                                 index + floor(n_points / 2))
+                                           )
+        else:
+            self.indices[index] = np.array(range(x_length - floor(n_points / 2), x_length))
 
     def _fit_model_per_window(self, x, y):
         """
@@ -104,15 +171,10 @@ class LoessSmoother:
             x_window = x[self.indices[index]].reshape(-1, 1)
             y_window = y[self.indices[index]].reshape(-1, 1)
 
-            # TODO: Development purposes: catch error during fit when x_window is empty
-            try:
-                # TODO: implement iterative weighted fit
-                model = self.model.fit(x_window, y_window, sample_weight=None)
-                np.append(self.y_focal_base, model.predict(x_focal))
-                np.append(self.model_per_window, model)
-            except ValueError:
-                np.append(self.y_focal_base, np.asarray([np.mean(self.y_focal_base)]))
-                np.append(self.model_per_window, None)
+            # TODO: implement iterative weighted fit
+            model = self.model.fit(x_window, y_window)
+            self.y_focal_base = np.append(self.y_focal_base, model.predict(x_focal))
+            self.model_per_window = np.append(self.model_per_window, model)
 
 
 def plot_windows(x, y, x_focal_base, y_focal_base, indices):
@@ -149,7 +211,8 @@ def random_x(minimum_val, maximum_val, size):
 
 def generate_noisy_sine_data(noise_std):
     """
-    Generate x with a gap and f(x) with added normal distributed noise with standard deviation noise_std, with:
+    Generate x with a gap and f(x) with added normal distributed noise with standard deviation
+    noise_std, with:
     f(x) = 5*sin(x/3) + N(mu=0, sigma=n)
 
     :param noise_std: non-negative float, standard deviation of added noise.
