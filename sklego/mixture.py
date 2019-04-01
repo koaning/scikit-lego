@@ -1,4 +1,3 @@
-
 import inspect
 
 import numpy as np
@@ -6,6 +5,8 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import GaussianMixture
 from sklearn.utils import check_X_y
 from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
+
+from scipy.stats import gaussian_kde
 
 
 def _check_gmm_keywords(kwargs):
@@ -61,9 +62,10 @@ class GMMOutlierDetector(BaseEstimator):
     :param threshold: the limit at which the model thinks an outlier appears, must be between (0, 1)
     :param gmm_kwargs: features that are passed to the `GaussianMixture` from sklearn
     """
-    def __init__(self, threshold=0.99, **gmm_kwargs):
+    def __init__(self, threshold=0.99, method='quantile', **gmm_kwargs):
         self.gmm_kwargs = gmm_kwargs
         self.threshold = threshold
+        self.method = method
 
     def fit(self, X: np.array, y=None) -> "GMMOutlierDetector":
         """
@@ -78,11 +80,36 @@ class GMMOutlierDetector(BaseEstimator):
             X = np.expand_dims(X, 1)
 
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        if (self.threshold > 1) or (self.threshold < 0):
-            raise ValueError(f"Threshold {self.threshold} needs to be 0 < threshold < 1")
+
+        if (self.method == "quantile") and ((self.threshold > 1) or (self.threshold < 0)):
+            raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1")
+
+        elif (self.method == "stddev") and (self.threshold < 0):
+            raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold ")
+
+        elif (self.method != "quantile") and (self.method != "stdev"):
+            raise ValueError("Method not recognised. Method must be either quantile or std")
+
         _check_gmm_keywords(self.gmm_kwargs)
         self.gmm_ = GaussianMixture(**self.gmm_kwargs).fit(X)
-        self.likelihood_threshold_ = np.quantile(self.gmm_.score_samples(X), 1 - self.threshold)
+
+        if self.method == "quantile":
+            self.likelihood_threshold_ = np.quantile(self.gmm_.score_samples(X), 1 - self.threshold)
+
+        elif self.method == "stdev":
+            likelihoods = self.gmm_.score_samples(X)
+            density = gaussian_kde(likelihoods)
+            my_range = np.arange(likelihoods.min(), likelihoods.max(),
+                                 (np.abs((likelihoods.max()) - (likelihoods.min())) / 10000))
+
+            fitted_dist = density(my_range)
+            index_max_y = np.argmax(fitted_dist)
+            index_max_x = my_range[index_max_y]
+            mean_likelihood = likelihoods.mean()
+            new_likelihoods = likelihoods[likelihoods < index_max_x]
+            new_likelihoods_std = np.sqrt(np.sum((new_likelihoods - mean_likelihood) ** 2)/(len(new_likelihoods) - 1))
+            self.likelihood_threshold_ = mean_likelihood - (self.threshold * new_likelihoods_std)
+
         return self
 
     def score_samples(self, X):
