@@ -22,6 +22,7 @@ def test_shape_regression(estimator, random_xy_dataset_regr):
 ], ids=id_func)
 def test_shape_classification(estimator, random_xy_dataset_clf):
     X, y = random_xy_dataset_clf
+    print(X.shape, y.shape)
     assert estimator.fit(X, y).predict(X).shape[0] == y.shape[0]
     pipe = Pipeline(steps=[('scaler', StandardScaler()), ('clf', estimator)])
     assert pipe.fit(X, y).predict(X).shape[0] == y.shape[0]
