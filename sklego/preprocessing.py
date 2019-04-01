@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -153,7 +152,8 @@ class ColumnCapper(BaseEstimator, TransformerMixin):
     the threshold can be set manually or a quantile can be used.
 
     :param threshold: `float or list of floats` that represents thresholds
-    :param cols_names: `list of column names, column indices or None`. if list, cap these columns. if None, caps all columns
+    :param cols_names: `list of column names, column indices or None`.
+    if list, cap these columns. if None, caps all columns
     :param method: `str` determines method to apply must be `quantile` or `absolute`
     """
 
@@ -162,11 +162,10 @@ class ColumnCapper(BaseEstimator, TransformerMixin):
         self.columns = columns
         self.method = method
 
-    def fit(self, X, y):
+    def fit(self, X, y=None):
         if self.method == "quantile":
-            self.threshold_values = [np.quantile(X[:, i]) for i in range(X.shape[1])]
-        pass
+            pass
+        return self
 
     def transform(self, X):
-        pass
         return X
