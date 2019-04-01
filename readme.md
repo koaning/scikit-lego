@@ -24,12 +24,7 @@ pip install scikit-lego
 Alternatively, to edit and contribute you can fork/clone and run: 
 
 ```bash
-$ pip install -e ".[dev]"
-```
-
-Now run:
-
-```bash
+pip install -e ".[dev]"
 python setup.py develop
 ```
 
