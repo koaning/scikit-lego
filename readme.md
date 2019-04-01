@@ -26,6 +26,13 @@ Alternatively, to edit and contribute you can fork/clone and run:
 ```bash
 $ pip install -e ".[dev]"
 ```
+
+Now run:
+
+```bash
+python setup.py develop
+```
+
 ## Documentation 
 
 The documentation can be found [here](scikit-lego.readthedocs.io). 
