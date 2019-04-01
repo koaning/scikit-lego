@@ -144,3 +144,57 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         """Checks if input of the Selector is of the required dtype"""
         if not isinstance(X, pd.DataFrame):
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
+            
+            
+            
+
+class ColumnsCapper(TransformerMixin):
+    """Returns a dataframe with selected columns capped to a maximum threshold.
+    the threshold can be set manually or a quantile can be used.
+    
+    param:
+    X: `pd.DataFrame` to which to apply capping
+    quantile_thresholds: `float or list of floats` if float (e.g. 0.9) is the quantile to use as threshold. if 
+                            list, there is one value for each column to cap
+    absolute_threshold: `float or list of floats` (e.g. 100) absolute value to use to cap values. if list, there is one
+                            value for each column to cap
+    cols_names: `list of column names or None`. if list, cap these columns. if None, caps all columns in dataframe
+    use_quantile: `bool`. if true uses the quantile, otherwise uses the absolute threshold
+    
+    
+    """
+    
+    def __init__(self, quantile_thresholds, cols_names=None, absolute_thresholds=None, use_quantile=True):
+        self.cols_names = cols_names
+        self.absolute_thresholds = absolute_thresholds
+        self.quantile_thresholds = quantile_thresholds
+        self.use_quantile = use_quantile
+        
+    def transform(self, X):
+        if self.cols_names is None:
+            self.cols_names = X.columns
+    
+        if self.use_quantile:
+
+            if type(self.quantile_thresholds) is float:
+                for col in self.cols_names:
+                    q = X[col].quantile(self.quantile_thresholds, interpolation='linear')
+                    X[col] = X[col].apply(lambda x: x if (x < q) else q)
+
+            if type(self.quantile_thresholds) is list:
+                for col, q_t in zip(self.cols_names, self.quantile_thresholds):
+                    q = X[col].quantile(q=q_t, axis=1, interpolation='linear')
+                    X[col] = X[col].apply(lambda x: x if (x < q) else q)
+        else:
+
+            if type(self.absolute_thresholds) is float:
+                for col in self.cols_names:
+                    X[col] = X[col].apply(lambda x: x if (x < self.absolute_thresholds) else self.absolute_thresholds)
+
+            if type(self.absolute_thresholds) is list:
+                for col, threshold in zip(self.cols_names, self.thresholds):
+                    X[col] = X[col].apply(lambda x: x if (x < self.threshold) else self.threshold)
+        return X
+    
+    def fit(self):
+        return self
