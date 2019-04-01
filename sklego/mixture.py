@@ -62,11 +62,20 @@ class GMMOutlierDetector(BaseEstimator):
 
     :param threshold: the limit at which the model thinks an outlier appears, must be between (0, 1)
     :param gmm_kwargs: features that are passed to the `GaussianMixture` from sklearn
+    :param method: the method that the threshold will be applied to, possible values = [stddev, default=quantile]
+
+    If you select method="quantile" then the threshold value represents the
+    quantile value to start calling something an outlier.
+
+    If you select method="stddev" then the threshold value represents the
+    numbers of standard deviations before calling something an outlier.
     """
-    def __init__(self, threshold=0.99, method='quantile', **gmm_kwargs):
+    def __init__(self, threshold=0.99, method='quantile', random_state=42, **gmm_kwargs):
         self.gmm_kwargs = gmm_kwargs
         self.threshold = threshold
         self.method = method
+        self.random_state = random_state
+        self.allowed_methods = ["quantile", "stddev"]
 
     def fit(self, X: np.array, y=None) -> "GMMOutlierDetector":
         """
@@ -77,38 +86,33 @@ class GMMOutlierDetector(BaseEstimator):
         :return: Returns an instance of self.
         """
 
+        # GMM sometimes throws an error if you don't do this
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
-
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
 
         if (self.method == "quantile") and ((self.threshold > 1) or (self.threshold < 0)):
             raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1")
-
-        elif (self.method == "stddev") and (self.threshold < 0):
+        if (self.method == "stddev") and (self.threshold < 0):
             raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold ")
-
-        elif (self.method != "quantile") and (self.method != "stdev"):
-            raise ValueError("Method not recognised. Method must be either quantile or std")
+        if self.method not in self.allowed_methods:
+            raise ValueError(f"Method not recognised. Method must be in {self.allowed_methods}")
 
         _check_gmm_keywords(self.gmm_kwargs)
-        self.gmm_ = GaussianMixture(**self.gmm_kwargs).fit(X)
+        self.gmm_ = GaussianMixture(**self.gmm_kwargs, random_state=self.random_state).fit(X)
+        score_samples = self.gmm_.score_samples(X)
 
         if self.method == "quantile":
-            self.likelihood_threshold_ = np.quantile(self.gmm_.score_samples(X), 1 - self.threshold)
+            self.likelihood_threshold_ = np.quantile(score_samples, 1 - self.threshold)
 
         elif self.method == "stdev":
-            likelihoods = self.gmm_.score_samples(X)
-            density = gaussian_kde(likelihoods)
-            my_range = np.arange(likelihoods.min(), likelihoods.max(),
-                                 (np.abs((likelihoods.max()) - (likelihoods.min())) / 10000))
+            density = gaussian_kde(score_samples)
+            likelihood_range = np.linspace(score_samples.min(), score_samples.max(), 10000)
 
-            fitted_dist = density(my_range)
-            index_max_y = np.argmax(fitted_dist)
-            index_max_x = my_range[index_max_y]
-            mean_likelihood = likelihoods.mean()
-            new_likelihoods = likelihoods[likelihoods < index_max_x]
-            new_likelihoods_std = np.sqrt(np.sum((new_likelihoods - mean_likelihood) ** 2)/(len(new_likelihoods) - 1))
+            index_max_y = np.argmax(density(likelihood_range))
+            mean_likelihood = likelihood_range[index_max_y]
+            new_likelihoods = score_samples[score_samples < index_max_x]
+            new_likelihoods_std = np.sqrt(np.sum((new_likelihoods - mean_likelihood) ** 2) / (len(new_likelihoods) - 1))
             self.likelihood_threshold_ = mean_likelihood - (self.threshold * new_likelihoods_std)
 
         return self
