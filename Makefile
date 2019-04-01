@@ -12,12 +12,11 @@ develop:
 	pip install -e ".[dev]"
 	python setup.py develop
 
-
 doctest:
-	python -m doctest sklego/*.py
+	python -m doctest -v sklego/*.py
 
 test: doctest
-	pytest
+	pytest --disable-warnings
 
 check: flake test
 
@@ -31,3 +30,4 @@ clean:
 	rm -rf build
 	rm -rf dist
 	rm -rf scikit_lego.egg-info
+	rm -rf .ipynb_checkpoints
