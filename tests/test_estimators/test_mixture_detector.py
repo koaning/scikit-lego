@@ -47,4 +47,3 @@ def test_thresh_effect_quantile():
     mod3 = GMMOutlierDetector(threshold=0.99, method="quantile").fit(X)
     assert mod1.predict(X).sum() > mod2.predict(X).sum()
     assert mod2.predict(X).sum() > mod3.predict(X).sum()
-
