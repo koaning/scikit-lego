@@ -1,4 +1,5 @@
-![](https://travis-ci.com/koaning/scikit-lego.svg?branch=master) [![Build status](https://ci.appveyor.com/api/projects/status/66r9jjs844v8c5qh?svg=true)](https://ci.appveyor.com/project/koaning/scikit-lego)
+![](https://travis-ci.com/koaning/scikit-lego.svg?branch=master) [![Build status](https://ci.appveyor.com/api/projects/status/66r9jjs844v8c5qh?svg=true)](https://ci.appveyor.com/project/koaning/scikit-lego) [![Documentation Status](https://readthedocs.org/projects/scikit-lego/badge/?version=latest)](https://scikit-lego.readthedocs.io/en/latest/?badge=latest)
+
 
 
 # scikit-lego
@@ -23,8 +24,13 @@ pip install scikit-lego
 Alternatively, to edit and contribute you can fork/clone and run: 
 
 ```bash
-$ pip install -e ".[dev]"
+pip install -e ".[dev]"
+python setup.py develop
 ```
+
+## Documentation 
+
+The documentation can be found [here](scikit-lego.readthedocs.io). 
 
 ## Usage 
 
