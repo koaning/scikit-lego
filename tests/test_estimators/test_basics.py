@@ -1,20 +1,10 @@
 import pytest
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils.estimator_checks import check_estimator
 
 from sklego.dummy import RandomRegressor
 from sklego.mixture import GMMClassifier, GMMOutlierDetector
 from tests.conftest import id_func
-
-
-@pytest.mark.parametrize("estimator", [
-    GMMClassifier(),
-    GMMOutlierDetector(threshold=0.999, method="quantile"),
-    GMMOutlierDetector(threshold=2, method="stddev")
-], ids=id_func)
-def test_sklearn_estimators(estimator):
-    check_estimator(estimator)
 
 
 @pytest.mark.parametrize("estimator", [
