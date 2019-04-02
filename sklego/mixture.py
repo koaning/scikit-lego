@@ -29,11 +29,12 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         :param y: array-like, shape=(n_samples, ) training data.
         :return: Returns an instance of self.
         """
-        if len(X.shape) == 1:
+        if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         _check_gmm_keywords(self.gmm_kwargs)
+        check_classification_targets
         self.gmms_ = {}
         self.classes_ = np.unique(y)
         for c in self.classes_:
