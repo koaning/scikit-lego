@@ -105,14 +105,15 @@ class GMMOutlierDetector(BaseEstimator):
         if self.method == "quantile":
             self.likelihood_threshold_ = np.quantile(score_samples, 1 - self.threshold)
 
-        elif self.method == "stdev":
+        if self.method == "stddev":
             density = gaussian_kde(score_samples)
             likelihood_range = np.linspace(score_samples.min(), score_samples.max(), 10000)
 
             index_max_y = np.argmax(density(likelihood_range))
-            mean_likelihood = likelihood_range[index_max_y]
+            index_max_x = likelihood_range[index_max_y]
+            mean_likelihood = score_samples.mean()
             new_likelihoods = score_samples[score_samples < index_max_x]
-            new_likelihoods_std = np.sqrt(np.sum((new_likelihoods - mean_likelihood) ** 2) / (len(new_likelihoods) - 1))
+            new_likelihoods_std = np.std(new_likelihoods - mean_likelihood)
             self.likelihood_threshold_ = mean_likelihood - (self.threshold * new_likelihoods_std)
 
         return self
