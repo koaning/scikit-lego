@@ -78,6 +78,25 @@ from sklego to do outlier detection.
 
 .. image:: _static/outlier-mixture.png
 
+Note that with a GMM there are multiple ways to select outliers. Instead
+of selection points that are beyond the likely quantile threshold one
+can also specify the number of standard deviations away from the most likely
+standard deviations a given point it.
+
+.. testcode:: python
+
+    plt.figure(figsize=(14, 3))
+    for i in range(1, 5):
+        mod = GMMOutlierDetector(n_components=16, threshold=i, method="stddev").fit(X)
+        plt.subplot(140 + i)
+        plt.scatter(U[:, 0], U[:, 1], c=mod.predict(U), s=8)
+        plt.title(f"outlier sigma={i}");
+
+.. image:: _static/outlier-mixture-stddev.png
+
+Detection Details
+-----------------
+
 The outlier detection methods that we use are based on the likelihoods
 that come out of the estimated Gaussian Mixture. Depending on the setting
 you choose we have a different method for determining if a point is inside
