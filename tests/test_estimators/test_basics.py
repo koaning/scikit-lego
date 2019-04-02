@@ -8,28 +8,19 @@ from sklego.mixture import GMMClassifier, GMMOutlierDetector
 from tests.conftest import id_func
 
 
-regressors = [
-    RandomRegressor(),
-]
-
-classifiers = [
+@pytest.mark.parametrize("estimator", [
     GMMClassifier(),
     GMMOutlierDetector(threshold=0.999, method="quantile"),
     GMMOutlierDetector(threshold=2, method="stddev")
-]
+], ids=id_func)
+def test_sklearn_estimators(estimator):
+    check_estimator(estimator)
 
 
-# @pytest.mark.parametrize("estimator", regressors, ids=id_func)
-# def test_sklearn_regression(estimator):
-#     check_estimator(estimator)
-#
-#
-# @pytest.mark.parametrize("estimator", classifiers, ids=id_func)
-# def test_sklearn_classification(estimator):
-#     check_estimator(estimator)
-
-
-@pytest.mark.parametrize("estimator", regressors, ids=id_func)
+@pytest.mark.parametrize("estimator", [
+    RandomRegressor(strategy="uniform"),
+    RandomRegressor(strategy="normal"),
+], ids=id_func)
 def test_shape_regression(estimator, random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
     assert estimator.fit(X, y).predict(X).shape[0] == y.shape[0]
@@ -37,7 +28,11 @@ def test_shape_regression(estimator, random_xy_dataset_regr):
     assert pipe.fit(X, y).predict(X).shape[0] == y.shape[0]
 
 
-@pytest.mark.parametrize("estimator", classifiers, ids=id_func)
+@pytest.mark.parametrize("estimator", [
+    GMMClassifier(),
+    GMMOutlierDetector(threshold=0.999, method="quantile"),
+    GMMOutlierDetector(threshold=2, method="stddev")
+], ids=id_func)
 def test_shape_classification(estimator, random_xy_dataset_clf):
     X, y = random_xy_dataset_clf
     assert estimator.fit(X, y).predict(X).shape[0] == y.shape[0]

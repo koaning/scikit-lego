@@ -6,6 +6,7 @@ from scipy.optimize import minimize_scalar
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import GaussianMixture
 from sklearn.utils import check_X_y
+from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
 
 from scipy.stats import gaussian_kde
@@ -29,20 +30,20 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         :param y: array-like, shape=(n_samples, ) training data.
         :return: Returns an instance of self.
         """
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         _check_gmm_keywords(self.gmm_kwargs)
-        check_classification_targets
         self.gmms_ = {}
-        self.classes_ = np.unique(y)
+        self.classes_ = unique_labels(y)
         for c in self.classes_:
             subset_x, subset_y = X[y == c], y[y == c]
             self.gmms_[c] = GaussianMixture(**self.gmm_kwargs).fit(subset_x, subset_y)
         return self
 
     def predict(self, X):
+        check_is_fitted(self, ['gmms_', 'classes_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
@@ -89,9 +90,9 @@ class GMMOutlierDetector(BaseEstimator):
         """
 
         # GMM sometimes throws an error if you don't do this
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
 
         if (self.method == "quantile") and ((self.threshold > 1) or (self.threshold < 0)):
             raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1")

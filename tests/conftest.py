@@ -4,8 +4,8 @@ import numpy as np
 
 import pytest
 
-n_vals = (10, 100, 1000, 10000)
-k_vals = (1, 2, 5, 10, 25)
+n_vals = (10, 100, 10000)
+k_vals = (1, 2, 25)
 np_types = (np.int32, np.float32, np.float64)
 
 
