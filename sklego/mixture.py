@@ -2,6 +2,7 @@
 import inspect
 
 import numpy as np
+from scipy.optimize import minimize_scalar
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import GaussianMixture
 from sklearn.utils import check_X_y
@@ -107,12 +108,9 @@ class GMMOutlierDetector(BaseEstimator):
 
         if self.method == "stddev":
             density = gaussian_kde(score_samples)
-            likelihood_range = np.linspace(score_samples.min(), score_samples.max(), 10000)
-
-            index_max_y = np.argmax(density(likelihood_range))
-            index_max_x = likelihood_range[index_max_y]
+            max_x_value = minimize_scalar(lambda x: -density(x)).x
             mean_likelihood = score_samples.mean()
-            new_likelihoods = score_samples[score_samples < index_max_x]
+            new_likelihoods = score_samples[score_samples < max_x_value]
             new_likelihoods_std = np.std(new_likelihoods - mean_likelihood)
             self.likelihood_threshold_ = mean_likelihood - (self.threshold * new_likelihoods_std)
 
