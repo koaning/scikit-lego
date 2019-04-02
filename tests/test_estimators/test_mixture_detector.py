@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from sklego.mixture import GMMOutlierDetector
 
+
 @pytest.fixture
 def dataset():
     np.random.seed(42)
