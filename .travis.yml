@@ -11,5 +11,6 @@ install:
   - pip install -e .
   - pip install .[dev]
 script:
-  - pytest
+  - pytest --disable-warnings
+  - python -m doctest -v sklego/*.py
   - flake8
