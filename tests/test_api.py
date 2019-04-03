@@ -5,6 +5,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.utils import estimator_checks
 
 from sklego.dummy import RandomRegressor
+from sklego.mixture import GMMClassifier, GMMOutlierDetector
 from sklego.transformers import EstimatorTransformer, RandomAdder
 from tests.conftest import id_func
 
@@ -12,7 +13,11 @@ from tests.conftest import id_func
 @pytest.mark.parametrize("estimator", [
     RandomAdder(),
     EstimatorTransformer(LinearRegression()),
-    RandomRegressor(),
+    RandomRegressor(strategy="normal"),
+    RandomRegressor(strategy="uniform"),
+    GMMClassifier(),
+    GMMOutlierDetector(threshold=0.999, method="quantile"),
+    GMMOutlierDetector(threshold=2, method="stddev")
 ], ids=id_func)
 def test_check_estimator(estimator, monkeypatch):
     """Uses the sklearn `check_estimator` method to verify our custom estimators"""
