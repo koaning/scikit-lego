@@ -17,7 +17,7 @@ def read(fname):
 
 setup(
     name="scikit-lego",
-    version="0.1.2",
+    version="0.1.3",
     packages=find_packages(exclude=['notebooks']),
     long_description=read('readme.md'),
     long_description_content_type='text/markdown',
