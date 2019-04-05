@@ -1,26 +1,25 @@
 from sklearn.model_selection._split import _BaseKFold
-from sklearn.cluster import k_means
 import numpy as np
 import pandas as pd
 
 
-class KMeansFold(_BaseKFold):
+class KlusterFoldValidation(_BaseKFold):
     """
     K-Means cross validator
 
     :param n_splits: Number of splits (clusters) to fold on
-    :param kmeans_kwargs: Extra kwargs for k_means apart from n_clusters
+    :param cluster_method: Clustering method with fit_predict attribute
     """
 
-    def __init__(self, n_splits, random_state, k_means_kwargs=None):
-        if not k_means_kwargs:
-            k_means_kwargs = {}
+    def __init__(self, random_state, cluster_method=None):
+        if not hasattr(cluster_method, 'fit_predict'):
+            raise TypeError('Provide a cluster method which supports fit_predict operation')
 
-        super(KMeansFold, self).__init__(n_splits=n_splits,
-                                         shuffle=False,
-                                         random_state=random_state)
+        super(KlusterFoldValidation, self).__init__(n_splits=3,
+                                                    shuffle=False,
+                                                    random_state=random_state)
 
-        self.kmeans_kwargs = k_means_kwargs
+        self.cluster_method = cluster_method
 
     def _iter_test_indices(self, X, y=None, groups=None):
         """
@@ -33,7 +32,12 @@ class KMeansFold(_BaseKFold):
         if isinstance(X, pd.DataFrame):
             X = X.values
 
-        clusters = k_means(X, n_clusters=self.n_splits, **self.kmeans_kwargs)[1]
+        clusters = self.cluster_method.fit_predict(X)
+
+        self.n_splits = len(np.unique(clusters))
+
+        if self.n_splits == 0:
+            raise ValueError(f'Clustering method resulted in {self.n_splits} cluster, too few for fold validation')
 
         for label in np.unique(clusters):
             yield np.where(clusters == label)[0]
