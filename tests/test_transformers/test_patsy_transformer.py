@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import pandas as pd
 
 from sklego.transformers import PatsyTransformer
@@ -10,7 +11,7 @@ from sklearn.linear_model import LogisticRegression
 @pytest.fixture()
 def df():
     return pd.DataFrame({"a": [1, 2, 3, 4, 5, 6],
-                         "b": [0, 9, 8, 7, 6, 5],
+                         "b": np.log([10, 9, 8, 7, 6, 5]),
                          "c": ["a", "b", "a", "b", "c", "c"],
                          "d": ["b", "a", "a", "b", "a", "b"],
                          "e": [0, 1, 0, 1, 0, 1]})
@@ -77,7 +78,7 @@ def test_design_matrix_error(df):
     X_train, y_train = df_train[["a", "b", "c", "d"]], df_train[["e"]].values.ravel()
 
     df_test = df[4:]
-    X_test, y_test = df_test[["a", "b", "c", "d"]], df_test[["e"]].values.ravel()
+    X_test, _ = df_test[["a", "b", "c", "d"]], df_test[["e"]].values.ravel()
 
     pipe = Pipeline([
         ("design", PatsyTransformer("a + np.log(a) + b + c + d - 1")),
