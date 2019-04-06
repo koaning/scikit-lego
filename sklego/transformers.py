@@ -1,6 +1,8 @@
 from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin, clone
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
+from patsy import dmatrix, demo_data
+import numpy as np
 
 from sklego.common import TrainOnlyTransformerMixin
 
@@ -54,3 +56,31 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         """
         check_is_fitted(self, 'estimator_')
         return getattr(self.estimator_, self.predict_func)(X)
+
+
+class PatsyTransformer(TransformerMixin, BaseEstimator):
+    """
+    The patsy transformer offers a method to select the right columns
+    from a dataframe as well as a DSL for transformations. It is inspired
+    from R formulas.
+
+    This is can be useful as a first step in the pipeline.
+
+    :param formula: a patsy-compatible formula
+    """
+
+    def __init__(self, formula):
+        self.formula = formula
+
+    def fit(self, X, y=None):
+        """Fits the estimator"""
+        X_ = dmatrix(self.formula, X)
+        return self
+
+    def transform(self, X):
+        """
+        Applies the formula to the matrix/dataframe X.
+
+        Returns an design array that can be used in sklearn pipelines.
+        """
+        return np.array(dmatrix(self.formula, X))
