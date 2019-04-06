@@ -1,7 +1,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin, clone
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
-from patsy import dmatrix, demo_data
+from patsy import dmatrix
 import numpy as np
 
 from sklego.common import TrainOnlyTransformerMixin
@@ -75,6 +75,7 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
     def fit(self, X, y=None):
         """Fits the estimator"""
         X_ = dmatrix(self.formula, X)
+        assert X_.shape[0] == X.shape[0]
         return self
 
     def transform(self, X):

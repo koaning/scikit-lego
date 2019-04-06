@@ -6,7 +6,7 @@ from sklearn.utils import estimator_checks
 
 from sklego.dummy import RandomRegressor
 from sklego.mixture import GMMClassifier, GMMOutlierDetector
-from sklego.transformers import EstimatorTransformer, RandomAdder, PatsyTransformer
+from sklego.transformers import EstimatorTransformer, RandomAdder
 from tests.conftest import id_func
 
 
@@ -17,8 +17,7 @@ estimators = [
     RandomRegressor(strategy="uniform"),
     GMMClassifier(),
     GMMOutlierDetector(threshold=0.999, method="quantile"),
-    GMMOutlierDetector(threshold=2, method="stddev"),
-    PatsyTransformer("x")
+    GMMOutlierDetector(threshold=2, method="stddev")
 ]
 
 

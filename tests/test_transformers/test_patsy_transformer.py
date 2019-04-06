@@ -6,6 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 
+
 @pytest.fixture()
 def df():
     return pd.DataFrame({"a": [1, 2, 3, 4, 5, 6],
@@ -69,4 +70,3 @@ def test_design_matrix_in_pipeline(df):
         ("model", LogisticRegression(solver='lbfgs')),
     ])
     assert pipe.fit(X, y).predict(X).shape == (6,)
-
