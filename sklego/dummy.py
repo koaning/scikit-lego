@@ -18,12 +18,8 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         :param strategy: One of 'uniform', 'normal' or 'gmm'.
         """
         self.allowed_strategies = ("uniform", "normal")
-        if strategy not in self.allowed_strategies:
-            raise ValueError(f"strategy {strategy} is not in {self.allowed_strategies}")
         self.random_state = random_state
         self.strategy = strategy
-
-        self.gmm = None
 
     def fit(self, X: np.array, y: np.array) -> "RandomRegressor":
         """
@@ -33,6 +29,8 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
+        if self.strategy not in self.allowed_strategies:
+            raise ValueError(f"strategy {self.strategy} is not in {self.allowed_strategies}")
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         self.dim_ = X.shape[1]
 
