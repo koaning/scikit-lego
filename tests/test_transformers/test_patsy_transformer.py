@@ -70,3 +70,21 @@ def test_design_matrix_in_pipeline(df):
         ("model", LogisticRegression(solver='lbfgs')),
     ])
     assert pipe.fit(X, y).predict(X).shape == (6,)
+
+
+def test_design_matrix_error(df):
+    df_train = df[:4]
+    X_train, y_train = df_train[["a", "b", "c", "d"]], df_train[["e"]].values.ravel()
+
+    df_test = df[4:]
+    X_test, y_test = df_test[["a", "b", "c", "d"]], df_test[["e"]].values.ravel()
+
+    pipe = Pipeline([
+        ("design", PatsyTransformer("a + np.log(a) + b + c + d - 1")),
+        ("scale", StandardScaler()),
+        ("model", LogisticRegression(solver='lbfgs')),
+    ])
+
+    pipe.fit(X_train, y_train)
+    with pytest.raises(RuntimeError):
+        pipe.predict(X_test)
