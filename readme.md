@@ -66,7 +66,7 @@ Here's a list of features that this library currently offers:
 - `sklego.pandas_utils.add_lags` adds lag values of certain columns in pandas 
 - `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
- 
+- `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier 
 
 ## New Features 
 
