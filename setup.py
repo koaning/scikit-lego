@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 
 base_packages = ["numpy>=1.15.4", "scipy>=1.2.0", "scikit-learn>=0.20.2",
-                 "pandas>=0.23.4"]
+                 "pandas>=0.23.4", "patsy>=0.5.1"]
 
 docs_packages = ["sphinx>=1.8.5", "sphinx_rtd_theme>=0.4.3"]
 dev_packages = docs_packages + ["flake8>=3.6.0", "matplotlib>=3.0.2",
