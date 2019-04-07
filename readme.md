@@ -52,6 +52,22 @@ mod = Pipeline([
 ...
 ```
 
+## Features 
+
+Here's a list of features that this library currently offers: 
+
+- `sklego.transformers.PatsyTransformer` applies a [patsy]() formula
+- `sklego.transformers.RandomAdder` adds randomness in training
+- `sklego.transformers.EstimatorTransformer` adds a model output as a feature
+- `sklego.dummy.RandomRegressor` benchmark that predicts random values
+- `sklego.mixture.GMMClassifier` classifies by training a GMM per class
+- `sklego.mixture.GMMOutlierDetector` detects outliers based on a trained GMM
+- `sklego.pandas_utils.log_step` a simple logger-decorator for pandas pipeline steps
+- `sklego.pandas_utils.add_lags` adds lag values of certain columns in pandas 
+- `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
+- `sklego.preprocessing.ColumnSelector` selects columns based on column name
+ 
+
 ## New Features 
 
 We want to be rather open here in what we accept but we do demand three 
