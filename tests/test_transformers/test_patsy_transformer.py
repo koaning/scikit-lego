@@ -73,6 +73,20 @@ def test_design_matrix_in_pipeline(df):
     assert pipe.fit(X, y).predict(X).shape == (6,)
 
 
+def test_subset_categories_in_test(df):
+    df_train = df[:5]
+    X_train, y_train = df_train[["a", "b", "c", "d"]], df_train[["e"]].values.ravel()
+
+    df_test = df[5:]
+    X_test, _ = df_test[["a", "b", "c", "d"]], df_test[["e"]].values.ravel()
+
+    trf = PatsyTransformer("a + np.log(a) + b + c + d - 1")
+
+    trf.fit(X_train, y_train)
+
+    assert trf.transform(X_test).shape[1] == trf.transform(X_train).shape[1]
+
+
 def test_design_matrix_error(df):
     df_train = df[:4]
     X_train, y_train = df_train[["a", "b", "c", "d"]], df_train[["e"]].values.ravel()

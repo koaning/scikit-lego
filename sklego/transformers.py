@@ -1,7 +1,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin, clone
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
-from patsy import dmatrix
+from patsy import dmatrix, build_design_matrices, PatsyError
 import numpy as np
 
 from sklego.common import TrainOnlyTransformerMixin
@@ -76,7 +76,7 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
         """Fits the estimator"""
         X_ = dmatrix(self.formula, X)
         assert np.array(X_).shape[0] == np.array(X).shape[0]
-        self.design_info = X_.design_info
+        self.design_info_ = X_.design_info
         return self
 
     def transform(self, X):
@@ -85,15 +85,8 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
 
         Returns an design array that can be used in sklearn pipelines.
         """
-        check_is_fitted(self, 'design_info')
-        output = dmatrix(self.formula, X)
-        di1 = output.design_info
-        di2 = self.design_info
-        print(output)
-        if output.design_info.column_name_indexes != self.design_info.column_name_indexes:
-            raise RuntimeError(f"different column names in train/test")
-        if output.design_info.term_name_slices != self.design_info.term_name_slices:
-            raise RuntimeError(f"different column slices in train/test")
-        if not all([di1.term_name_slices[k] == di2.term_name_slices[k] for k in di1.term_name_slices.keys()]):
-            raise RuntimeError(f"different column slices in train/test")
-        return dmatrix(self.formula, X)
+        check_is_fitted(self, 'design_info_')
+        try:
+            return build_design_matrices([self.design_info_], X)[0]
+        except PatsyError as e:
+            raise RuntimeError from e
