@@ -20,33 +20,40 @@ class LoessSmoother(TransformerMixin, BaseEstimator):
                  window_size=2,
                  step_size=.2,
                  fraction=.1):
+
         """
+        Loess Regression. This class implements multiple methods of Loess
+        regression for the single input, single output case. The first main
+        choice to make is if the instance should behave as a transformer or
+        as an estimator.
 
-        Loess Regression. This class implements multiple methods of Loess regression for the single
-        input, single output case.
-        The first main choice to make is if the instance should behave as a transformer or as an
-        estimator.
+        In transformer mode, the instance will take each data_point and
+        return it's y value changed according to the Loess regression. Hence,
+        no interpolation is done in between missing datapoints.
 
-        In transformer mode, the instance will take each data_point and return it's y value changed
-        according to the Loess regression. Hence, no interpolation is done in between missing
-        datapoints.
+        In estimator mode, the instance will create a x_focal_base to evalue
+        the y values for. The created x_focal_base is an equally spaced
+        distance vector between x_min and x_man with distance step_size
+        between elements. Hence, interpolation will happen because of the
+        fixed step sizes.
 
-        In estimator mode, the instance will create a x_focal_base to evalue the y values for. The
-        created x_focal_base is an equally spaced distance vector between x_min and x_man with
-        distance step_size between elements. Hence, interpolation will happen because of the fixed
-        step sizes.
+        The second main choice to make is the windowing method. This
+        determines how the algorithm selects datapoints for each x_focal
+        point to fit a model. Currently three options exist:
 
-        The second main choice to make is the windowing method. This determines how the algorithm
-        selects datapoints for each x_focal point to fit a model. Currently three options exist:
+        - fixed: the window is created using a fixed distance from the
+        x_focal point in both + and - direction. If this window doesn't yield
+        sufficient datapoints, it falls back to the 'knn_symmetric' window
+        method.
+        - knn: The window is created by taking the n_closest datapoints,
+        determined by the fraction parameter. It doesn't matter if the points
+        are in the + or - direction of x_focal
+        - knn_symmetric: The window is created by taking n_closest/2
+        datapoints in the + and - direction from the x_focal point.
 
-        - fixed: the window is created using a fixed distance from the x_focal point in both + and -
-        direction. If this window doesn't yield sufficient datapoints, it falls back to the
-        'knn_symmetric' window method.
-        - knn: The window is created by taking the n_closest datapoints, determined by the fraction
-        parameter. It doesn't matter if the points are in the + or - direction of x_focal
-        - knn_symmetric: The window is created by taking n_closest/2 datapoints in the + and -
-        direction from the x_focal point.
-=
+        See http://web.ipac.caltech.edu/staff/fmasci/home/astro_refs/LocalRegressionBook_1999.pdf
+        for theoretical background and more information on
+        Loess regression.
 
         TODO:
         - Clean knn_symmetric code
@@ -56,19 +63,24 @@ class LoessSmoother(TransformerMixin, BaseEstimator):
         - Add function typehints
         - Include weighted fit
         - Generalize to multi-input
-        - Iso hand-tune window and step parameters, perform grid_search, store all results and
-        sample from results. Use distribution to get 'line-prediction' and confidence bound around
-        it.
+        - Iso hand-tune window and step parameters, perform grid_search,
+        store all results and sample from results. Use distribution to
+        get 'line-prediction' and confidence bound around it.
 
-        :param model: Sklearn estimator. Optional to include a sklearn pipeline or model to use
+        :param model: Sklearn estimator. Optional to include a sklearn
+            pipeline or model to use
         :param n_degree: Integer, Select n-th order polynomial for fitting
-        :param transformer_type: Bool, True for instantiating a Transformer, False for an estimator
-        :param window_method: String, Select one of the available methods for windowing
-        :param window_size: Integer, Determine the window size for the 'fixed' window method
-        :param step_size: Float, Determine the step size for the x_focal_base if instantiated as an
-            estimator
-        :param fraction: Float, value between 0 and 1, determines the fraction of datapoints to use
-            as window for the 'knn' and 'knn_symmetric' window method.
+        :param transformer_type: Bool, True for instantiating a Transformer,
+            False for an estimator
+        :param window_method: String, Select one of the available methods for
+            windowing
+        :param window_size: Integer, Determine the window size for the 'fixed'
+            window method
+        :param step_size: Float, Determine the step size for the x_focal_base
+            if instantiated as an estimator
+        :param fraction: Float, value between 0 and 1, determines the fraction
+            of datapoints to use as window for the 'knn' and 'knn_symmetric'
+            window method.
         """
 
         self.logger = logging.getLogger(__name__)
@@ -82,10 +94,10 @@ class LoessSmoother(TransformerMixin, BaseEstimator):
         self.fraction = fraction
 
         # initialize attributes
-        self.x_focal_base = np.ndarray([])
-        self.y_focal_base = np.ndarray([])
+        self.x_focal_base = np.array([])
+        self.y_focal_base = np.array([])
         self.indices = {}
-        self.model_per_window = np.ndarray([])
+        self.model_per_window = np.array([])
 
     def _init_model(self, n_degree, model):
         """
@@ -281,52 +293,3 @@ class LoessSmoother(TransformerMixin, BaseEstimator):
             model = self.model.fit(x_window, y_window)
             self.y_focal_base = np.append(self.y_focal_base, model.predict(x_focal))
             self.model_per_window = np.append(self.model_per_window, model)
-
-
-def plot_windows(x, y, x_focal_base, y_focal_base, indices):
-    """
-    TODO: Use matplotlib.animation to create video
-    Plot the data used in each window and it's accompanying focal point. Useful for debugging
-    methods used in the self._get_window_indices function
-    :param x:
-    :param y:
-    :param x_focal_base:
-    :param y_focal_base:
-    :param indices:
-    """
-    for index in indices.keys():
-        ax = plt.axes(xlim=(np.min(x), np.max(x)), ylim=(np.min(y), np.max(y)))
-        ax.scatter(x[indices[index]], y[indices[index]])
-        ax.scatter(x_focal_base[index], y_focal_base[index], c='r')
-        ax.set_title(f'Window for {x_focal_base[index]}')
-        plt.pause(0.01)
-        plt.show()
-
-
-# HELPER FUNCTIONS TO GENERATE RANDOM DATA
-def random_x(minimum_val, maximum_val, size):
-    """
-    Generate n random data-points of size between minimum_val and right bounds
-    :param minimum_val: float, minimal value of the generated data
-    :param maximum_val: float, maximum value of the generated data
-    :param size: tuple or list, shape of the desired output
-    :return: x, y
-    """
-    return (maximum_val - minimum_val) * np.random.random(size=size) + minimum_val
-
-
-def generate_noisy_sine_data(noise_std):
-    """
-    Generate x with a gap and f(x) with added normal distributed noise with standard deviation
-    noise_std, with:
-    f(x) = 5*sin(x/3) + N(mu=0, sigma=n)
-
-    :param noise_std: non-negative float, standard deviation of added noise.
-    :return: xnp.Array, y = f(x) + N(0, std)
-    """
-    x1 = random_x(10, 30, 100)
-    x2 = random_x(37, 60, 100)
-    x = np.append(x1, x2)
-    np.random.shuffle(x)
-
-    return x, 5 * np.sin(x / 3) + np.random.normal(loc=0, scale=noise_std, size=x.shape)
