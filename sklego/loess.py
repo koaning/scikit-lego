@@ -1,98 +1,58 @@
-import math
-
-import numpy as np
+from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import NearestNeighbors
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import PolynomialFeatures
 
 
-# TODO: Include weights
-class LoessSmoother:
-    def __init__(self, p_degree=1, frac=0.3, point_extraction='knn', weights=None):
+class LoessRegressor(BaseEstimator, RegressorMixin):
+    def __init__(self,
+                 weighting_method='euclidean',
+                 span=.1):
+        super().__init__()
 
-        self.frac = frac
+        self.weighting_method = weighting_method
+        self.span = span
+        self.xs = None
+        self.ys = None
 
-        # Create a pipeline in case that the user wants to perform a polynomial degree fit:
-        self.model = Pipeline([('p_features', PolynomialFeatures(degree=p_degree, include_bias=True)),
-                               ('linear', LinearRegression())])
+    def fit(self, xs, ys):
+        """
 
-        self.point_extraction = point_extraction
-        # This should be a function to calculate weights, e.g. Gaussian, Linear, etc...
-        self.weights = weights
+        :param x:
+        :param y:
+        :return:
+        """
+        self.xs = xs
+        self.ys = ys
 
-    def get_point_sets(self, X):
-        self.n_points = math.floor(self.frac * len(X))
-        if self.point_extraction == 'knn':
-            knn = NearestNeighbors(n_neighbors=self.n_points, metric='euclidean').fit(X)
+    def _get_window_indices(self, x):
+        """
 
-            # For every point return n nearest points:
-            for idx, point in enumerate(X):
-                yield knn.kneighbors(point.reshape(-1, 1))[1][0]
+        :param x:
+        :return:
+        """
+        n_points = int(len(self.xs) * self.span)
 
-        elif self.point_extraction == 'symmetric':
-            for idx, point in enumerate(X):
-                if idx < math.floor(self.frac * len(X) / 2):
-                    yield np.array(range(0, idx + math.floor(self.n_points / 2)))
+        knn = NearestNeighbors(n_neighbors=n_points).fit(self.xs.reshape(-1, 1))
 
-                elif (idx >= math.floor(self.n_points / 2)) & ((idx <= len(X) - math.floor(self.n_points / 2))):
-                    yield np.array(range(idx - math.floor(self.n_points / 2), idx + math.floor(self.n_points / 2)))
+        return knn.kneighbors(x)[1][0]
 
-                else:
-                    yield np.array(range(len(X) - math.floor(self.n_points / 2), len(X)))
+    def predict(self, xs):
+        """
 
-        else:
-            raise NotImplementedError('Sorry this method has not been implemented.')
+        :param x:
+        :param y:
+        :return:
+        """
+        y_pred = np.array([])
 
-    def fit(self, X, y):
+        for x in xs:
+            idx_list = self._get_window_indices(x.reshape(-1, 1))
 
-        if len(X.shape) < 2:
-            X = X.reshape(-1, 1)
+            X = self.xs[idx_list].reshape(-1, 1)
+            y = self.ys[idx_list]
 
-        points_generator = self.get_point_sets(X)
-        self.y_focal = np.array([])
+            model = LinearRegression().fit(X, y)
 
-        for idx_focal, idx_window in enumerate(points_generator):
-            x_focal = X[idx_focal].reshape(-1, 1)
-            x_window = X[idx_window].reshape(-1, 1)
-            y_window = y[idx_window]
+            y_pred = np.concat([y_pred, model.predict(x.reshape(-1, 1))])
 
-            if self.weights == None:
-                weights = np.ones(np.shape(x_window)[0])
-
-            else:
-                raise NotImplementedError('Weights can not be specified at this point.')
-
-            y_focal_new = (self.model.fit(x_window,
-                                          y_window,
-                                          linear__sample_weight=weights)
-                           .predict(x_focal.reshape(-1, 1)))
-
-            self.y_focal = np.append(self.y_focal, y_focal_new)
-
-        return self
-
-    def transform(self, X):
-        return self.y_focal
-
-
-def random_x(minimum_val, maximum_val, size):
-    """
-    Generate n random data-points of size between minimum_val and right bounds
-    :param minimum_val: float, minimal value of the generated data
-    :param maximum_val: float, maximum value of the generated data
-    :param size: tuple or list, shape of the desired output
-    :return: np.Array with generated data
-    """
-    return (maximum_val - minimum_val) * np.random.random(size=size) + minimum_val
-
-
-def generate_data(x, generate_function, noise_std):
-    """
-    Return f(x) with added normal distributed noise with standard deviation noise_std.
-    :param x: np.Array, input data
-    :param generate_function: function to apply to input data
-    :param noise_std: non-negative float, standard deviation of added noise.
-    :return: np.Array, y = f(x) + N(0, std)
-    """
-    return generate_function(x) + np.random.normal(loc=0, scale=noise_std, size=x.shape)
+        return y_pred
