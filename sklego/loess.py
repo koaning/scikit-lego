@@ -42,11 +42,17 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
     def _create_weights(self, x, xs):
 
         if self.weighting_method == None:
-            weights = np.ones(xs.shape)
-        elif self.weighting_method == 'euclidean':
-            weights = np.array([distance.euclidean(x, xsi) for xsi in xs])
+            weights = None
 
-        weights = weights/weights.max()
+        elif self.weighting_method == 'euclidean':
+
+            distances = np.array([distance.euclidean(x, xsi) for xsi in xs])
+
+            distances = np.where(distances == 0, 0.1 * distances[distances != 0].min(), distances)
+
+            weights = 1 / distances
+
+            weights = (weights / weights.max()).ravel()
 
         return weights
 
@@ -60,13 +66,18 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
         y_pred = np.array([])
 
         for x in xs:
-            idx_list = self._get_window_indices(x.reshape(-1, 1))
+            x = x = x.reshape(-1, 1)
+            idx_list = self._get_window_indices(x)
 
             X = self.xs[idx_list].reshape(-1, 1)
             y = self.ys[idx_list]
 
-            model = LinearRegression().fit(X, y, sample_weight=self._create_weights(self, x, X))
+            weights = self._create_weights(x, X)
+
+            model = LinearRegression().fit(X, y, sample_weight=weights)
 
             y_pred = np.append(y_pred, model.predict(x.reshape(-1, 1)))
 
         return y_pred
+
+
