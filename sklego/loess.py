@@ -26,6 +26,8 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
         self.xs = xs
         self.ys = ys
 
+        return self
+
     def _get_window_indices(self, x):
         """
 
@@ -55,6 +57,7 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
             model = LinearRegression().fit(X, y)
 
-            y_pred = np.concat([y_pred, model.predict(x.reshape(-1, 1))])
+            y_pred = np.append(y_pred, model.predict(x.reshape(-1, 1)))
 
         return y_pred
+
