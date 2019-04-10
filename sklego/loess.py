@@ -1,11 +1,12 @@
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import NearestNeighbors
+import scipy.spatial.distance as distance
 
 
 class LoessRegressor(BaseEstimator, RegressorMixin):
     def __init__(self,
-                 weighting_method='euclidean',
+                 weighting_method=None,
                  span=.1):
         super().__init__()
 
@@ -38,6 +39,17 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
         return knn.kneighbors(x)[1][0]
 
+    def _create_weights(self, x, xs):
+
+        if self.weighting_method == None:
+            weights = np.ones(xs.shape)
+        elif self.weighting_method == 'euclidean':
+            weights = np.array([distance.euclidean(x, xsi) for xsi in xs])
+
+        weights = weights/weights.max()
+
+        return weights
+
     def predict(self, xs):
         """
 
@@ -53,9 +65,8 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
             X = self.xs[idx_list].reshape(-1, 1)
             y = self.ys[idx_list]
 
-            model = LinearRegression().fit(X, y)
+            model = LinearRegression().fit(X, y, sample_weight=self._create_weights(self, x, X))
 
             y_pred = np.append(y_pred, model.predict(x.reshape(-1, 1)))
 
         return y_pred
-
