@@ -13,8 +13,18 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
     Lo(w)ess regressor.
 
     """
-    def __init__(self, weighting_method: Union[str, None] = None, span: float = .1):
+    def __init__(self, weighting_method: str = 'equal', span: float = .1):
         super().__init__()
+
+        if not 0 < span <= 1:
+            raise ValueError("Span should be larger than 0 and smaller or equal to 1")
+
+        expected_weighting_methods = ['euclidean', 'equal']
+
+        if weighting_method not in expected_weighting_methods:
+            raise ValueError(f"Received unexpected weighting method. "
+                             f"Choose one from: {expected_weighting_methods}. "
+                             f"If no weighting method is provided, default 'equal' is used.")
 
         self.weighting_method = weighting_method
         self.span = span
@@ -24,11 +34,18 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
     def fit(self, xs: np.array, ys: np.array):
         """
-        Fit the regressor on the data
+        Fit the regressor on the data by storing the data sorted on the inputs.
+
         :param xs: Input data for the model
         :param ys: Target output data for the model
         :return: The fitted instance
         """
+        if (not xs.size > 0) | (not xs.size > 0):
+            raise ValueError("Found array with 0 sample(s) while a minimum of 1 is required.")
+
+        if xs.shape[0] != ys.shape[0]:
+            raise ValueError(f"Found input variables with inconsistent numbers of samples: "
+                             f"[{xs.shape[0], ys.shape[0]}]")
         self.xs = xs
         self.ys = ys
 
@@ -60,7 +77,7 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
         else:
             weights = np.ones(xs.shape)
 
-        return weights
+        return weights.flatten()
 
     def predict(self, xs: np.array, with_indices: bool = False):
         """
@@ -72,13 +89,13 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
         y_pred = np.array([])
 
         if with_indices:
-            indices = np.array([])
+            indices = []
 
         for x in xs:
             idx_window = self._get_window_indices(x.reshape(-1, 1))
 
             if with_indices:
-                indices = np.append(indices, idx_window)
+                indices.append(idx_window)
 
             x = x.reshape(-1, 1)
             idx_window = self._get_window_indices(x)
