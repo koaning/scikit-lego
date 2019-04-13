@@ -4,7 +4,7 @@ from autograd.test_util import check_grads
 
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils import check_X_y
-from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
+from sklearn.utils.validation import check_is_fitted, FLOAT_DTYPES
 
 
 class DeadZoneRegression(BaseEstimator, RegressorMixin):
@@ -16,13 +16,15 @@ class DeadZoneRegression(BaseEstimator, RegressorMixin):
         self.stepsize = stepsize
 
     def fit(self, X, y):
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+
         def deadzone(errors):
             return np.where(errors > self.threshold, errors, np.zeros(errors.shape))
 
         def training_loss(weights):
             diff = np.abs(np.dot(X, weights) - y)
             if self.relative:
-                diff = diff / targets
+                diff = diff / y
             return np.mean(deadzone(diff))
 
         n, k = X.shape
@@ -35,17 +37,18 @@ class DeadZoneRegression(BaseEstimator, RegressorMixin):
         check_grads(training_loss, modes=['rev'])(weights)
 
         # Optimize weights using gradient descent.
-        loss_log = np.zeros(self.n_iter)
-        wts_log = np.zeros((self.n_iter, k))
-        deriv_log = np.zeros((self.n_iter, k))
+        self.loss_log_ = np.zeros(self.n_iter)
+        self.wts_log_ = np.zeros((self.n_iter, k))
+        self.deriv_log_ = np.zeros((self.n_iter, k))
         for i in range(self.n_iter):
             weights -= training_gradient_fun(weights) * self.stepsize
-            wts_log[i, :] = weights.ravel()
-            loss_log[i] = training_loss(weights)
-            deriv_log[i, :] = training_gradient_fun(weights).ravel()
+            self.wts_log_[i, :] = weights.ravel()
+            self.loss_log_[i] = training_loss(weights)
+            self.deriv_log_[i, :] = training_gradient_fun(weights).ravel()
         self.coefs_ = weights
         print(weights)
         return self
 
     def predict(self, X):
+        check_is_fitted(self, ['coefs_'])
         return np.dot(X, self.coefs_)
