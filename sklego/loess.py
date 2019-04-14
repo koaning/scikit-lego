@@ -34,8 +34,8 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
         """
         Fit the regressor on the data by storing the data sorted on the inputs.
 
-        :param X: Input data for the model
-        :param y: Target output data for the model
+        :param X: Array-like object of shape (n_samples, 1), input data for the model.
+        :param y: Array-like object of shape (n_samples, 1), target output data for the model
         :return: The fitted instance
         """
 
@@ -46,11 +46,15 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
     def predict(self, X: np.array, with_indices: bool = False) -> Union[np.array, np.array]:
         """
-
-        :param X:
-        :param with_indices:
-        :return:
+        Predict targets using the fitted model
+        :param X: Array-like object of shape (n_samples, 1), input data for the model.
+        :param with_indices: If set to True, function also returns the indices of the sub-set in the
+            train data used for fitting the local model.
+        :return: Array-like object of shape (n_samples, 1), predicted target output. If with_indices
+            is set to true, a tuple of two array-like objects (y_predictions, indices) is returned
+            instead.
         """
+
         check_is_fitted(self, ['dim_'])
         X = check_array(X)
 
@@ -81,7 +85,16 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
             return y_pred
 
     @staticmethod
-    def _check_init_inputs(weighting_method, span):
+    def _check_init_inputs(weighting_method: str, span: float) -> None:
+        """
+        Checks if the provided model parameters are valid.
+
+        :param weighting_method: String id of the weighting method to be used. Should be 'euclidean'
+            or 'equal'.
+        :param span: Float in (0,1]. Sets the fraction of data to use for making local predictions.
+            If 1, the full training data set is used.
+        """
+
         if not 0 < span <= 1:
             raise ValueError("Span should be larger than 0 and smaller or equal to 1")
 
@@ -97,9 +110,11 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
         Find and return the indices of the input data points that are closest to
         the given point x. The size of the returned set of indices is determined
         by the span setting.
+
         :param x: data point to find closest points to
         :return: List of indices of the data points closest to the requested point
         """
+
         n_points = int(len(self.xs) * self.span)
 
         knn = NearestNeighbors(n_neighbors=n_points).fit(self.xs.reshape(-1, 1))
@@ -109,10 +124,12 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
     def _create_weights(self, x: Union[float, np.array], xs: np.array) -> np.array:
         """
         Create an array that serves as a weight mask for the regressor.
+
         :param x:
         :param xs:
         :return:
         """
+
         if self.weighting_method == 'euclidean':
             distances = np.array([distance.euclidean(x, xsi) for xsi in xs])
             distances = np.where(distances == 0, 0.1 * distances[distances != 0].min(), distances)
