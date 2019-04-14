@@ -22,5 +22,8 @@ def test_values_normal(random_xy_dataset_regr):
 
 
 def test_bad_values():
+    np.random.seed(42)
+    X = np.random.normal(0, 1, (10, 2))
+    y = np.random.normal(0, 1, (10, 1))
     with pytest.raises(ValueError):
-        RandomRegressor(strategy="foobar")
+        RandomRegressor(strategy="foobar").fit(X, y)
