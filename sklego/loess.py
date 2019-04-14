@@ -1,7 +1,8 @@
+import numpy as np
+import scipy.spatial.distance as distance
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import NearestNeighbors
-import scipy.spatial.distance as distance
 
 
 class LoessRegressor(BaseEstimator, RegressorMixin):
