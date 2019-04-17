@@ -1,4 +1,5 @@
-![](https://travis-ci.com/koaning/scikit-lego.svg?branch=master) [![Build status](https://ci.appveyor.com/api/projects/status/66r9jjs844v8c5qh?svg=true)](https://ci.appveyor.com/project/koaning/scikit-lego)
+![](https://travis-ci.com/koaning/scikit-lego.svg?branch=master) [![Build status](https://ci.appveyor.com/api/projects/status/66r9jjs844v8c5qh?svg=true)](https://ci.appveyor.com/project/koaning/scikit-lego) [![Documentation Status](https://readthedocs.org/projects/scikit-lego/badge/?version=latest)](https://scikit-lego.readthedocs.io/en/latest/?badge=latest)
+
 
 
 # scikit-lego
@@ -20,11 +21,16 @@ Install `scikit-lego` via pip with
 pip install scikit-lego
 ```
 
-Alternatively you can fork/clone and run: 
+Alternatively, to edit and contribute you can fork/clone and run: 
 
 ```bash
-$ pip install --editable .
+pip install -e ".[dev]"
+python setup.py develop
 ```
+
+## Documentation 
+
+The documentation can be found [here](scikit-lego.readthedocs.io). 
 
 ## Usage 
 
@@ -45,6 +51,22 @@ mod = Pipeline([
 
 ...
 ```
+
+## Features 
+
+Here's a list of features that this library currently offers: 
+
+- `sklego.transformers.PatsyTransformer` applies a [patsy]() formula
+- `sklego.transformers.RandomAdder` adds randomness in training
+- `sklego.transformers.EstimatorTransformer` adds a model output as a feature
+- `sklego.dummy.RandomRegressor` benchmark that predicts random values
+- `sklego.mixture.GMMClassifier` classifies by training a GMM per class
+- `sklego.mixture.GMMOutlierDetector` detects outliers based on a trained GMM
+- `sklego.pandas_utils.log_step` a simple logger-decorator for pandas pipeline steps
+- `sklego.pandas_utils.add_lags` adds lag values of certain columns in pandas 
+- `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
+- `sklego.preprocessing.ColumnSelector` selects columns based on column name
+- `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier 
 
 ## New Features 
 
