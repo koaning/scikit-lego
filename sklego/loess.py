@@ -18,7 +18,7 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
     """
 
-    def __init__(self, weighting_method: str = 'equal', span: float = .1):
+    def __init__(self, weighting_method: Union[str, None] = None, span: float = .1):
         super().__init__()
 
         self._check_init_inputs(weighting_method, span)
@@ -69,13 +69,11 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
             if with_indices:
                 indices.append(idx_window)
 
-            x = x.reshape(-1, 1)
-            idx_window = self._get_window_indices(x)
-
             X = self.xs[idx_window].reshape(-1, 1)
             y = self.ys[idx_window]
 
-            model = LinearRegression().fit(X, y, sample_weight=self._create_weights(x, X))
+            weights = self._create_weights(x, X)
+            model = LinearRegression().fit(X, y, sample_weight=weights)
 
             y_pred = np.append(y_pred, model.predict(x.reshape(-1, 1)))
 
@@ -121,7 +119,7 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
         return knn.kneighbors(x)[1][0]
 
-    def _create_weights(self, x: Union[float, np.array], xs: np.array) -> np.array:
+    def _create_weights(self, x: Union[float, np.array], xs: np.array) -> Union[np.array, None]:
         """
         Create an array that serves as a weight mask for the regressor.
 
@@ -132,9 +130,7 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
         if self.weighting_method == 'euclidean':
             distances = np.array([distance.euclidean(x, xsi) for xsi in xs])
-            distances = np.where(distances == 0, 0.1 * distances[distances != 0].min(), distances)
-            weights = 1 / distances
-        else:
-            weights = np.ones(xs.shape)
+            return (1 - distances / distances.max()).ravel()
 
-        return weights.flatten()
+        else:
+            return None
