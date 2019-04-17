@@ -19,7 +19,7 @@ class GroupedEstimator(BaseEstimator):
         self.estimators_ = None
 
     def fit(self, X, y):
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        self.estimators_ = {}
         for group in np.unique(X[self.groupby]):
             selector = X[self.groupby] == group
             x_group, y_group = X[selector], y[selector]
