@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from sklego.linear import DeadZoneRegression
+from sklego.linear_model import DeadZoneRegressor
 
 
 @pytest.fixture
@@ -12,9 +12,13 @@ def dataset():
     return inputs, targets
 
 
-def test_values_uniform(dataset):
+@pytest.fixture(scope="module", params=["linear", "quadratic"])
+def mod(request):
+    return DeadZoneRegressor(effect=request.param)
+
+
+def test_values_uniform(dataset, mod):
     X, y = dataset
-    mod = DeadZoneRegression()
     coefs = mod.fit(X, y).coefs_
     assert coefs[0] == pytest.approx(3.1, abs=0.1)
     assert coefs[1] == pytest.approx(2.0, abs=0.1)

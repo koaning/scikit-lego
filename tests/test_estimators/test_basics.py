@@ -3,6 +3,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from sklego.dummy import RandomRegressor
+from sklego.linear_model import DeadZoneRegressor
 from sklego.mixture import GMMClassifier, GMMOutlierDetector
 from tests.conftest import id_func
 
@@ -10,6 +11,8 @@ from tests.conftest import id_func
 @pytest.mark.parametrize("estimator", [
     RandomRegressor(strategy="uniform"),
     RandomRegressor(strategy="normal"),
+    DeadZoneRegressor(effect="linear", n_iter=100),
+    DeadZoneRegressor(effect="quadratic", n_iter=100),
 ], ids=id_func)
 def test_shape_regression(estimator, random_xy_dataset_regr):
     X, y = random_xy_dataset_regr

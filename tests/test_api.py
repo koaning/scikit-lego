@@ -5,6 +5,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.utils import estimator_checks
 
 from sklego.dummy import RandomRegressor
+from sklego.linear_model import DeadZoneRegressor
 from sklego.mixture import GMMClassifier, GMMOutlierDetector
 from sklego.transformers import EstimatorTransformer, RandomAdder
 from tests.conftest import id_func
@@ -17,7 +18,7 @@ estimators = [
     RandomRegressor(strategy="uniform"),
     GMMClassifier(),
     GMMOutlierDetector(threshold=0.999, method="quantile"),
-    GMMOutlierDetector(threshold=2, method="stddev")
+    GMMOutlierDetector(threshold=2, method="stddev"),
 ]
 
 
@@ -40,7 +41,7 @@ def test_check_estimator(estimator, monkeypatch):
         RandomRegressor: [
             'check_methods_subset_invariance',  # Since we add noise, the method is not invariant on a subset
             'check_regressors_train',  # RandomRegressors score is not always greater than 0.5 due to randomness
-        ]
+        ],
     }
     skips = defaultdict(list, exceptions)
 
