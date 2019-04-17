@@ -49,9 +49,10 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
             distances = np.array([distance.euclidean(x, xsi) for xsi in xs])
 
-            distances = np.where(distances == 0, 0.1 * distances[distances != 0].min(), distances)
+            # Normalize:
+            distances = distances/distances.max()
 
-            weights = 1 / distances
+            weights = 1 - distances
 
             weights = (weights / weights.max()).ravel()
 
