@@ -80,6 +80,10 @@ ipython_config.py
 # pyenv
 .python-version
 
+# pipenv
+Pipfile
+Pipfile.lock
+
 # celery beat schedule file
 celerybeat-schedule
 
@@ -110,6 +114,8 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# editor
+.vscode
 .idea
-
-doc/_build
+docs/
+.DS_Store

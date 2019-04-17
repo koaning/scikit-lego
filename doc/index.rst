@@ -10,22 +10,22 @@ scikit-lego
 
 We love scikit learn but very often we find ourselves writing
 custom transformers, metrics and models. The goal of this project
-is to attempt to consolidate these into a package that offers 
+is to attempt to consolidate these into a package that offers
 code quality/testing. This project is a collaboration between
-multiple companies in the Netherlands. Note that we're not formally 
-affiliated with the scikit-learn project at all. 
+multiple companies in the Netherlands. Note that we're not formally
+affiliated with the scikit-learn project at all.
 
 Installation
 ************
 
-Install `scikit-lego` via pip with 
+Install `scikit-lego` via pip with
 
 .. code-block:: bash
 
    pip install scikit-lego
 
 
-Alternatively you can fork/clone and run: 
+Alternatively you can fork/clone and run:
 
 .. code-block:: bash
 
@@ -60,4 +60,7 @@ Usage
    :caption: Contents:
 
    install
-   api/sklego
+   contribution
+   mixture-methods
+   preprocessing
+   api/modules
