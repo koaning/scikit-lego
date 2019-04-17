@@ -44,7 +44,8 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
         return self
 
-    def predict(self, X: np.array, with_indices: bool = False) -> Union[np.array, np.array]:
+    def predict(self, X: np.array, with_indices: bool = False) -> Union[np.array,
+                                                                        (np.array, np.array)]:
         """
         Predict targets using the fitted model
         :param X: Array-like object of shape (n_samples, 1), input data for the model.
@@ -123,9 +124,12 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
         """
         Create an array that serves as a weight mask for the regressor.
 
-        :param x:
-        :param xs:
-        :return:
+        :param x: Data point of reference to calculate weights for
+        :param xs: full data set to calculate the weights with respect to the data point of
+            reference
+        :return: Array of weight values using the specified method, None if no method is specified.
+            When no method is specified, the regressor will resort to an approach using equal
+            weights.
         """
 
         if self.weighting_method == 'euclidean':
