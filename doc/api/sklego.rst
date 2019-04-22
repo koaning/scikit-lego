@@ -12,6 +12,14 @@ sklego.common module
     :undoc-members:
     :show-inheritance:
 
+sklego.datasets module
+----------------------
+
+.. automodule:: sklego.datasets
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sklego.dummy module
 -------------------
 
