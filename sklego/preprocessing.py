@@ -63,7 +63,6 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
             raise RuntimeError from e
 
 
-
 class PandasTypeSelector(BaseEstimator, TransformerMixin):
     """
     Select columns in a pandas dataframe based on their dtype
