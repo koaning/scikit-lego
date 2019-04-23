@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
-from sklearn.linear_model import LinearRegression
 from sklearn.utils import estimator_checks
+from sklearn.linear_model import LinearRegression
 
 from sklego.common import flatten
 from sklego.meta import GroupedEstimator

@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 import numpy as np
 import pandas as pd
 
@@ -59,7 +57,6 @@ class GroupedEstimator(BaseEstimator):
             subset_x, subset_y = subset[self.cols_to_use_], subset[pred_col]
             group_estimator.fit(subset_x, subset_y)
             self.estimators_[group] = group_estimator
-
         return self
 
     def predict(self, X):
@@ -88,7 +85,7 @@ class GroupedEstimator(BaseEstimator):
                     .squeeze())
         except AttributeError:
             culprits = set(pd.concat([X[self.groupby_].drop_duplicates().assign(new=1),
-                                   self.groups_.assign(new=0)])
+                                      self.groups_.assign(new=0)])
                              .drop_duplicates()
                              .loc[lambda d: d['new'] == 1]
                              .itertuples())
