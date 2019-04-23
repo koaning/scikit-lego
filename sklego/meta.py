@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn import clone
 from sklearn.base import BaseEstimator
-from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
+from sklearn.utils.validation import check_is_fitted
 
 from sklego.common import as_list
 
@@ -43,7 +43,7 @@ class GroupedEstimator(BaseEstimator):
             X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
         result = []
         for row in X.itertuples():
-            group_to_use= (tuple([getattr(row, k) for k in self.groupby]))
+            group_to_use = (tuple([getattr(row, k) for k in self.groupby]))
             data_to_use = [getattr(row, c) for c in X.columns if c not in self.groupby]
             result.append(self.estimators_[group_to_use].predict([data_to_use]))
         return np.array(result).squeeze()
