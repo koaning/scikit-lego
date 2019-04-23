@@ -1,3 +1,4 @@
+import collections
 import hashlib
 
 import numpy as np
@@ -111,3 +112,20 @@ def as_list(val):
         return list(val)
 
     return [val]
+
+
+def flatten(nested_iterable):
+    """
+    Helper function, returns an iterator of flattened values from an arbitrarily nested iterable
+
+    >>> list(flatten([['test1', 'test2'], ['a', 'b', ['c', 'd']]]))
+    ['test1', 'test2', 'a', 'b', 'c', 'd']
+
+    >>> list(flatten(['test1', ['test2']]))
+    ['test1', 'test2']
+    """
+    for el in nested_iterable:
+        if isinstance(el, collections.Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten(el)
+        else:
+            yield el
