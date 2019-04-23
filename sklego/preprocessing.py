@@ -106,7 +106,9 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         Raises a ``TypeError`` if input provided is not a DataFrame
 
         Raises a ``ValueError`` if columns provided are not in the input DataFrame
+
     :Example:
+
     >>> # Selecting a single column from a pandas DataFrame
     >>> import pandas as pd
     >>> df = pd.DataFrame({

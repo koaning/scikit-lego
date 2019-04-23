@@ -12,6 +12,14 @@ sklego.common module
     :undoc-members:
     :show-inheritance:
 
+sklego.datasets module
+----------------------
+
+.. automodule:: sklego.datasets
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sklego.dummy module
 -------------------
 
@@ -20,10 +28,10 @@ sklego.dummy module
     :undoc-members:
     :show-inheritance:
 
-sklego.linear module
---------------------
+sklego.linear\_model module
+---------------------------
 
-.. automodule:: sklego.linear
+.. automodule:: sklego.linear_model
     :members:
     :undoc-members:
     :show-inheritance:
@@ -36,18 +44,18 @@ sklego.meta module
     :undoc-members:
     :show-inheritance:
 
-sklego.naive\_bayes module
---------------------------
+sklego.mixture module
+---------------------
 
-.. automodule:: sklego.naive_bayes
+.. automodule:: sklego.mixture
     :members:
     :undoc-members:
     :show-inheritance:
 
-sklego.outlier module
----------------------
+sklego.naive\_bayes module
+--------------------------
 
-.. automodule:: sklego.outlier
+.. automodule:: sklego.naive_bayes
     :members:
     :undoc-members:
     :show-inheritance:
@@ -72,6 +80,14 @@ sklego.preprocessing module
 ---------------------------
 
 .. automodule:: sklego.preprocessing
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sklego.testing module
+---------------------
+
+.. automodule:: sklego.testing
     :members:
     :undoc-members:
     :show-inheritance:
