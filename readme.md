@@ -36,9 +36,9 @@ The documentation can be found [here](scikit-lego.readthedocs.io).
 
 ```python
 from sklego.transformers import RandomAdder
+from sklego.mixture import GMMClassifier
 
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 
 ...
@@ -46,7 +46,7 @@ from sklearn.pipeline import Pipeline
 mod = Pipeline([
     ("scale", StandardScaler()),
     ("random_noise", RandomAdder()),
-    ("model", LogisticRegression(solver='lbfgs'))
+    ("model", GMMClassifier(solver='lbfgs'))
 ])
 
 ...
@@ -56,7 +56,7 @@ mod = Pipeline([
 
 Here's a list of features that this library currently offers: 
 
-- `sklego.transformers.PatsyTransformer` applies a [patsy]() formula
+- `sklego.transformers.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
 - `sklego.transformers.RandomAdder` adds randomness in training
 - `sklego.transformers.EstimatorTransformer` adds a model output as a feature
 - `sklego.dummy.RandomRegressor` benchmark that predicts random values
@@ -66,7 +66,9 @@ Here's a list of features that this library currently offers:
 - `sklego.pandas_utils.add_lags` adds lag values of certain columns in pandas 
 - `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
-- `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier 
+- `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier
+- `sklego.mega.GroupedEstimator` can split the data into runs and run a model on each
+- `sklego.datasets.load_chicken` loads in the joyful chickweight dataset 
 
 ## New Features 
 
