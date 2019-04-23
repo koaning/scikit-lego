@@ -6,7 +6,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_X_y
 
 from sklego.common import flatten
-from sklego.transformers import EstimatorTransformer
+from sklego.meta import EstimatorTransformer
 from tests.conftest import transformer_checks, nonmeta_checks, general_checks
 
 
