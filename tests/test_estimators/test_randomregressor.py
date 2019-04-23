@@ -1,7 +1,18 @@
-import numpy as np
-from sklego.dummy import RandomRegressor
-
 import pytest
+import numpy as np
+from sklearn.utils import estimator_checks
+
+from sklego.dummy import RandomRegressor
+from sklego.testing import check_shape_remains_same_regressor
+
+
+@pytest.mark.parametrize("test_fn", [
+    estimator_checks.check_classifier_data_not_an_array,
+    check_shape_remains_same_regressor
+])
+def test_random_adder(test_fn):
+    regr = RandomRegressor()
+    test_fn(RandomRegressor.__name__, regr)
 
 
 def test_values_uniform(random_xy_dataset_regr):
