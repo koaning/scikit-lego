@@ -107,7 +107,7 @@ class GroupedEstimator(BaseEstimator):
             return (X
                     .groupby(self.group_colnames_, as_index=False)
                     .apply(lambda d: pd.DataFrame(
-                self.estimators_.get(d.name, self.fallback_).predict(d[self.X_colnames_]), index=d.index))
+                        self.estimators_.get(d.name, self.fallback_).predict(d[self.X_colnames_]), index=d.index))
                     .values
                     .squeeze())
         except AttributeError:
