@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 from sklearn import clone
 from sklearn.base import BaseEstimator
-
 from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
+
+from sklego.common import as_list
 
 
 class GroupedEstimator(BaseEstimator):
@@ -14,28 +15,35 @@ class GroupedEstimator(BaseEstimator):
 
     def __init__(self, estimator, groupby):
         self.estimator = estimator
-        self.groupby = groupby
-        self.estimators_ = None
+        self.groupby = [str(_) for _ in as_list(groupby)]
 
     def fit(self, X, y):
         self.estimators_ = {}
-        for group in np.unique(X[self.groupby]):
-            selector = X[self.groupby] == group
-            x_group, y_group = X[selector], y[selector]
+        self.groups_ = []
+        if isinstance(X, np.ndarray):
+            X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
+        pred_col = 'the-column-that-i-want-to-predict-but-dont-have-the-name-for'
+        X = X.assign(**{pred_col: y})
+        self.groups_ = (X
+                        .groupby(self.groupby)
+                        .count()
+                        .reset_index()
+                        [self.groupby])
+        for group, subset in X.groupby(self.groupby):
             group_estimator = clone(self.estimator)
-            group_estimator.fit(x_group.drop(columns=self.groupby), y_group)
+            subset_x = subset.drop(columns=[pred_col]).drop(columns=self.groupby)
+            subset_y = subset[pred_col]
+            group_estimator.fit(subset_x, subset_y)
             self.estimators_[group] = group_estimator
         return self
 
     def predict(self, X):
-        check_is_fitted(self, ['estimators_'])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        if isinstance(X, pd.DataFrame):
-            return [
-                self.estimators_[row[self.groupby]].predict([row])[0]
-                for _, row in X.iterrows()
-            ]
-        return [
-            self.estimators_[row[self.groupby]].predict([row])[0]
-            for _, row in X
-        ]
+        check_is_fitted(self, ['estimators_', 'groups_'])
+        if isinstance(X, np.ndarray):
+            X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
+        result = []
+        for row in X.itertuples():
+            group_to_use= (tuple([getattr(row, k) for k in self.groupby]))
+            data_to_use = [getattr(row, c) for c in X.columns if c not in self.groupby]
+            result.append(self.estimators_[group_to_use].predict([data_to_use]))
+        return np.array(result).squeeze()
