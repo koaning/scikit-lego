@@ -39,24 +39,22 @@ class GroupedEstimator(BaseEstimator):
             X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
         X = X.assign(**{pred_col: y})
 
-        self.groupby_ = [str(_) for _ in as_list(self.groups)]
-        if any([c not in X.columns for c in self.groupby_]):
-            raise ValueError(f"{self.groupby_} not in {X.columns}")
-        self.cols_to_use_ = [_ for _ in X.columns if _ not in self.groupby_ and _ is not pred_col]
-        self.estimators_ = {}
+        self.group_colnames_ = [str(_) for _ in as_list(self.groups)]
+        if any([c not in X.columns for c in self.group_colnames_]):
+            raise ValueError(f"{self.group_colnames_} not in {X.columns}")
+        self.X_colnames_ = [_ for _ in X.columns if _ not in self.group_colnames_ and _ is not pred_col]
         self.fallback_ = None
         if self.use_fallback:
-            subset_x = X[self.cols_to_use_]
+            subset_x = X[self.X_colnames_]
             self.fallback_ = clone(self.estimator).fit(subset_x, y)
 
         self.groups_ = []
-        self.groups_ = X[self.groupby_].drop_duplicates()
+        self.groups_ = X[self.group_colnames_].drop_duplicates()
 
-        for group, subset in X.groupby(self.groupby_):
-            group_estimator = clone(self.estimator)
-            subset_x, subset_y = subset[self.cols_to_use_], subset[pred_col]
-            group_estimator.fit(subset_x, subset_y)
-            self.estimators_[group] = group_estimator
+        self.estimators_ = (X
+                            .groupby(self.group_colnames_)
+                            .apply(lambda d: clone(self.estimator).fit(d[self.X_colnames_], d[pred_col]))
+                            .to_dict())
         return self
 
     def predict(self, X):
@@ -67,24 +65,25 @@ class GroupedEstimator(BaseEstimator):
         :return: array, shape=(n_samples,) the predicted data
         """
         check_array(X)
-        check_is_fitted(self, ['estimators_', 'groups_', 'groupby_', 'cols_to_use_', 'fallback_'])
+        check_is_fitted(self, ['estimators_', 'groups_', 'group_colnames_',
+                               'X_colnames_', 'fallback_'])
         if isinstance(X, np.ndarray):
             X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
 
-        if any([c not in X.columns for c in self.groupby_]):
-            raise ValueError(f"group columns {self.groupby_} not in {X.columns}")
-        if any([c not in X.columns for c in self.cols_to_use_]):
-            raise ValueError(f"columns to use {self.cols_to_use_} not in {X.columns}")
+        if any([c not in X.columns for c in self.group_colnames_]):
+            raise ValueError(f"group columns {self.group_colnames_} not in {X.columns}")
+        if any([c not in X.columns for c in self.X_colnames_]):
+            raise ValueError(f"columns to use {self.X_colnames_} not in {X.columns}")
 
         try:
             return (X
-                    .groupby(self.groupby_, as_index=False)
+                    .groupby(self.group_colnames_, as_index=False)
                     .apply(lambda d: pd.DataFrame(
-                        self.estimators_.get(d.name, self.fallback_).predict(d[self.cols_to_use_]), index=d.index))
+                        self.estimators_.get(d.name, self.fallback_).predict(d[self.X_colnames_]), index=d.index))
                     .values
                     .squeeze())
         except AttributeError:
-            culprits = set(pd.concat([X[self.groupby_].drop_duplicates().assign(new=1),
+            culprits = set(pd.concat([X[self.group_colnames_].drop_duplicates().assign(new=1),
                                       self.groups_.assign(new=0)])
                              .drop_duplicates()
                              .loc[lambda d: d['new'] == 1]

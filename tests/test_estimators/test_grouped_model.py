@@ -68,9 +68,27 @@ def test_fallback_can_raise_error():
         mod.predict(to_predict)
 
 
+def test_chickweight_raise_error_cols_missing1():
+    df = load_chicken(give_pandas=True)
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
+    mod.fit(df[['time', 'diet']], df['weight'])
+    with pytest.raises(ValueError):
+        mod.predict(df[['time', 'chick']])
+
+
+def test_chickweight_raise_error_cols_missing2():
+    df = load_chicken(give_pandas=True)
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
+    mod.fit(df[['time', 'diet']], df['weight'])
+    with pytest.raises(ValueError):
+        mod.predict(df[['diet', 'chick']])
+
+
 def test_chickweight_np_keys():
     df = load_chicken(give_pandas=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups=[1, 2])
     mod.fit(df[['time', 'chick', 'diet']].values, df['weight'].values)
     # there should still only be 50 groups on this dataset
     assert len(mod.estimators_.keys()) == 50
+
+
