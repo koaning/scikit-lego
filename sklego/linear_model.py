@@ -16,6 +16,10 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         self.stepsize = stepsize
         self.check_grad = check_grad
         self.allowed_effects = ("linear", "quadratic", "constant")
+        self.loss_log_ = None
+        self.wts_log_ = None
+        self.deriv_log_ = None
+        self.coefs_ = None
 
     def fit(self, X, y):
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)

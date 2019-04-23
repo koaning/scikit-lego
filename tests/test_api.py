@@ -42,6 +42,9 @@ def test_check_estimator(estimator, monkeypatch):
             'check_methods_subset_invariance',  # Since we add noise, the method is not invariant on a subset
             'check_regressors_train',  # RandomRegressors score is not always greater than 0.5 due to randomness
         ],
+        DeadZoneRegressor: [
+
+        ]
     }
     skips = defaultdict(list, exceptions)
 
