@@ -4,7 +4,18 @@ from sklearn.linear_model import LinearRegression
 
 from sklego.meta import GroupedEstimator
 from sklego.datasets import load_chicken
+from tests.conftest import nonmeta_checks, general_checks, classifier_checks
 
+
+@pytest.mark.parametrize("test_fn", flatten([
+    nonmeta_checks,
+    general_checks,
+    classifier_checks,
+    check_shape_remains_same_classifier
+]))
+def test_estimator_checks(test_fn):
+    clf = GroupedEstimator()
+    test_fn(GroupedEstimator.__name__, clf)
 
 def test_chickweight_df1_keys():
     df = load_chicken(give_pandas=True)
