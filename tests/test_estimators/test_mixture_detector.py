@@ -1,6 +1,26 @@
-import pytest
 import numpy as np
+import pytest
+from sklearn.utils import estimator_checks
+
+from sklego.common import flatten
 from sklego.mixture import GMMOutlierDetector
+from tests.conftest import nonmeta_checks, general_checks
+
+
+@pytest.mark.parametrize("test_fn", flatten([
+    nonmeta_checks,
+    general_checks,
+    # outlier checks
+    estimator_checks.check_outliers_fit_predict,
+    estimator_checks.check_classifier_data_not_an_array,
+    estimator_checks.check_estimators_unfitted,
+]))
+def test_estimator_checks(test_fn):
+    clf_quantile = GMMOutlierDetector(threshold=0.999, method="quantile")
+    test_fn(GMMOutlierDetector.__name__ + '_quantile', clf_quantile)
+
+    clf_stddev = GMMOutlierDetector(threshold=2, method="stddev")
+    test_fn(GMMOutlierDetector.__name__ + '_stddev', clf_stddev)
 
 
 @pytest.fixture
@@ -12,13 +32,13 @@ def dataset():
 def test_obvious_usecase_quantile(dataset):
     mod = GMMOutlierDetector(n_components=2, threshold=0.999, method="quantile").fit(dataset)
     assert mod.predict([[10, 10], [-10, -10]]).all()
-    assert not mod.predict([[0, 0]]).all()
+    assert (mod.predict([[0, 0]]) == np.array([-1])).all()
 
 
 def test_obvious_usecase_stddev(dataset):
     mod = GMMOutlierDetector(n_components=2, threshold=2, method="stddev").fit(dataset)
     assert mod.predict([[10, 10], [-10, -10]]).all()
-    assert not mod.predict([[0, 0]]).all()
+    assert (mod.predict([[0, 0]]) == np.array([-1])).all()
 
 
 def test_value_error_threshold(dataset):
