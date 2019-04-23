@@ -48,7 +48,6 @@ class GroupedEstimator(BaseEstimator):
             subset_x = X[self.X_colnames_]
             self.fallback_ = clone(self.estimator).fit(subset_x, y)
 
-        self.groups_ = []
         self.groups_ = X[self.group_colnames_].drop_duplicates()
 
         self.estimators_ = (X

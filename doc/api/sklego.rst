@@ -28,10 +28,10 @@ sklego.dummy module
     :undoc-members:
     :show-inheritance:
 
-sklego.linear module
---------------------
+sklego.linear\_model module
+---------------------------
 
-.. automodule:: sklego.linear
+.. automodule:: sklego.linear_model
     :members:
     :undoc-members:
     :show-inheritance:
@@ -80,6 +80,14 @@ sklego.preprocessing module
 ---------------------------
 
 .. automodule:: sklego.preprocessing
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sklego.testing module
+---------------------
+
+.. automodule:: sklego.testing
     :members:
     :undoc-members:
     :show-inheritance:

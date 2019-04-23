@@ -67,7 +67,8 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
 - `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier
-- `sklego.mega.GroupedEstimator` can split the data into runs and run a model on each 
+- `sklego.mega.GroupedEstimator` can split the data into runs and run a model on each
+- `sklego.datasets.load_chicken` loads in the joyful chickweight dataset 
 
 ## New Features 
 

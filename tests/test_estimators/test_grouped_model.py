@@ -90,5 +90,3 @@ def test_chickweight_np_keys():
     mod.fit(df[['time', 'chick', 'diet']].values, df['weight'].values)
     # there should still only be 50 groups on this dataset
     assert len(mod.estimators_.keys()) == 50
-
-
