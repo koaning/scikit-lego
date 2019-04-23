@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 import itertools as it
 import numpy as np
-from sklego.selectors import PandasTypeSelector
+from sklego.preprocessing import PandasTypeSelector
 from tests.conftest import id_func
 
 
