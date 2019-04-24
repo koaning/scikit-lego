@@ -12,9 +12,10 @@ This part of the documentation will highlight a few of them.
 Grouped Estimation
 ------------------
 
-A kind introduction to "meta"-models is the `GroupedEstimator`. To
-help explain what it can do we'll consider three models to predict
-the chicken dataset. The chicken data has 578 rows and 4 columns
+A kind introduction to "meta"-models is the `GroupedEstimator`.
+
+To help explain what it can do we'll consider three methods to predict
+the chicken weight  . The chicken data has 578 rows and 4 columns
 from an experiment on the effect of diet on early growth of chicks.
 The body weights of the chicks were measured at birth and every second
 day thereafter until day 20. They were also measured on day 21.
@@ -100,6 +101,11 @@ We train 5 models in total because the model will also train a
 fallback automatically (you can turn this off via `use_fallback=False`).
 The idea behind the fallback is that we can predict something if
 the group does not appear in the prediction.
+
+Each model will accept features that are in `X` that are not
+part of the grouping variables. In this case each group will
+model based on the `time` since `weight` is what we're trying
+to predict.
 
 Applying this model to the dataframe is easy.
 
