@@ -5,7 +5,7 @@ from sklearn.utils import estimator_checks
 from sklearn.utils.estimator_checks import check_transformers_unfitted
 
 from sklego.common import flatten
-from sklego.transformers import RandomAdder
+from sklego.preprocessing import RandomAdder
 from tests.conftest import nonmeta_checks
 
 
