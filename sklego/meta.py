@@ -1,11 +1,40 @@
 import numpy as np
 import pandas as pd
-
 from sklearn import clone
-from sklearn.base import BaseEstimator
-from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
+from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin
+from sklearn.utils.validation import check_is_fitted, check_X_y, check_array, FLOAT_DTYPES
 
 from sklego.common import as_list
+
+
+class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
+    """
+    Allows using an estimator such as a model as a transformer in an earlier step of a pipeline
+
+    :param estimator: An instance of the estimator that should be used for the transformation
+    :param predict_func: The function called on the estimator when transforming e.g. (`predict`, `predict_proba`)
+    """
+
+    def __init__(self, estimator, predict_func='predict'):
+        self.estimator = estimator
+        self.predict_func = predict_func
+
+    def fit(self, X, y):
+        """Fits the estimator"""
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+
+        self.estimator_ = clone(self.estimator)
+        self.estimator_.fit(X, y)
+        return self
+
+    def transform(self, X):
+        """
+        Applies the `predict_func` on the fitted estimator.
+
+        Returns an array of shape `(X.shape[0], )`.
+        """
+        check_is_fitted(self, 'estimator_')
+        return getattr(self.estimator_, self.predict_func)(X)
 
 
 class GroupedEstimator(BaseEstimator):
@@ -84,7 +113,7 @@ class GroupedEstimator(BaseEstimator):
         except AttributeError:
             culprits = set(pd.concat([X[self.group_colnames_].drop_duplicates().assign(new=1),
                                       self.groups_.assign(new=0)])
-                             .drop_duplicates()
-                             .loc[lambda d: d['new'] == 1]
-                             .itertuples())
+                           .drop_duplicates()
+                           .loc[lambda d: d['new'] == 1]
+                           .itertuples())
             raise ValueError(f"found a group(s) {culprits} in `.predict` that was not in `.fit`")

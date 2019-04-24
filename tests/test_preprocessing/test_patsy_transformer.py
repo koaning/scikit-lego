@@ -2,10 +2,11 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from sklego.transformers import PatsyTransformer
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
+
+from sklego.preprocessing import PatsyTransformer
 
 
 @pytest.fixture()
