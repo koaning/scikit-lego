@@ -30,3 +30,8 @@ clean:
 	rm -rf dist
 	rm -rf scikit_lego.egg-info
 	rm -rf .ipynb_checkpoints
+
+dist: clean
+	python setup.py sdist
+	python setup.py bdist_wheel --universal
+	twine upload dist/*
