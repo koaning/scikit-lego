@@ -58,16 +58,16 @@ Here's a list of features that this library currently offers:
 
 - `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
 - `sklego.preprocessing.RandomAdder` adds randomness in training
-- `sklego.meta.EstimatorTransformer` adds a model output as a feature
+- `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
+- `sklego.preprocessing.ColumnSelector` selects columns based on column name
 - `sklego.dummy.RandomRegressor` benchmark that predicts random values
 - `sklego.mixture.GMMClassifier` classifies by training a GMM per class
 - `sklego.mixture.GMMOutlierDetector` detects outliers based on a trained GMM
 - `sklego.pandas_utils.log_step` a simple logger-decorator for pandas pipeline steps
 - `sklego.pandas_utils.add_lags` adds lag values of certain columns in pandas 
-- `sklego.selectors.PandasTypeSelector` selects columns based on pandas type
-- `sklego.selectors.ColumnSelector` selects columns based on column name
 - `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier
 - `sklego.meta.GroupedEstimator` can split the data into runs and run a model on each
+- `sklego.meta.EstimatorTransformer` adds a model output as a feature
 - `sklego.datasets.load_chicken` loads in the joyful chickweight dataset 
 
 ## New Features 
