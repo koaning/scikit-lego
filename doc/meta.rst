@@ -54,6 +54,8 @@ Let's first load a bunch of things to do this.
 Model 1: Linear Regression with Dummies
 ***************************************
 
+First we start with a baseline.
+
 .. code-block:: python
 
     feature_pipeline = Pipeline([
@@ -76,10 +78,30 @@ Model 1: Linear Regression with Dummies
 
     plot_model(pipe)
 
-This code results in a model that is demonstrated below.
+This code results in a model that is plotted below.
+
+.. image:: _static/grouped-chick-1.png
+   :align: center
+
+Because the model is linear the dummy variable causes the intercept
+to change but leaves the gradient untouched. This might not be what
+we want from a model. So let's see how the grouped model can adress
+this.
 
 Model 2: Linear Regression in GroupedEstimation
 ***********************************************
+
+The goal of the grouped estimator is to allow us to split up our data.
+The image below demonstrates what will happen.
+
+.. image:: _static/grouped-df.png
+
+We train 5 models in total because the model will also train a
+fallback automatically (you can turn this off via `use_fallback=False`).
+The idea behind the fallback is that we can predict something if
+the group does not appear in the prediction.
+
+Applying this model to the dataframe is easy.
 
 .. code-block:: python
 
@@ -87,10 +109,24 @@ Model 2: Linear Regression in GroupedEstimation
     mod = GroupedEstimator(LinearRegression(), groups=["diet"])
     plot_model(mod)
 
-This code results in a model that is demonstrated below.
+
+And the results will look a bit better.
+
+.. image:: _static/grouped-chick-2.png
+   :align: center
 
 Model 3: Dummy Regression in GroupedEstimation
 **********************************************
+
+We could go a step further and train a DummyRegressor_ per diet
+per timestep. The code below works similar as the previous example
+but one difference is that the grouped model does not receive a
+dataframe but a numpy array.
+
+.. image:: _static/grouped-np.png
+
+Note that we're also grouping over more than one column here.
+The code that does this is listed below.
 
 .. code-block:: python
 
@@ -113,3 +149,13 @@ Model 3: Dummy Regression in GroupedEstimation
     ])
 
     plot_model(pipe)
+
+Again, we show the predictions:
+
+.. image:: _static/grouped-chick-3.png
+   :align: center
+
+Note that these predictions seems to yield the lowest error but take it
+with a grain of salt since these errors are only based on the train set.
+
+.. _DummyRegressor: https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html
