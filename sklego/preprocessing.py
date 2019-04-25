@@ -206,3 +206,180 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         """Checks if input of the Selector is of the required dtype"""
         if not isinstance(X, pd.DataFrame):
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
+
+
+class ColumnCapper(TransformerMixin, BaseEstimator):
+    """
+    ColumnCapper caps the values of columns according to the given quantile thresholds.
+
+    :type min_quantile: float, optional, default=0.05
+    :param min_quantile: The minimum quantile to compute the lowerbound of the transformed
+        columns. Must be in the interval [0; 1].
+
+    :type max_quantile: float, optional, default=0.95
+    :param max_quantile: The maximum quantile to compute the upperbound of the transformed
+        columns. Must be in the interval [0; 1].
+
+    :type discard_infs: bool, optional, default=False
+    :param discard_infs: Whether to discard ``-np.inf`` and ``np.inf`` values or not. If
+        ``False``, such values will be capped. If ``True``, they will be replaced by
+        ``np.nan``.
+
+        .. note::
+            Setting ``discard_infs=True`` is important if the `inf` values are the result
+            of divisions by 0, which are interpreted by ``pandas`` as ``-np.inf`` or
+            ``np.inf`` depending on the signal of the numerator.
+
+    :raises:
+        ``TypeError`` if the quantiles are not numbers
+
+        ``ValueError`` if ``min_quantile`` > ``max_quantile`` or if the quantiles are
+        not in the interval [0; 1]
+
+    :Example:
+
+    >>> import pandas as pd
+    >>> import numpy as np
+    >>> from sklego.preprocessing import ColumnCapper
+    >>> df = pd.DataFrame({'a':[1, 2, 3, 4], 'b':[11, 12, np.inf, 14]})
+    >>> df
+       a          b
+    0  1  11.000000
+    1  2  12.000000
+    2  3        inf
+    3  4  14.000000
+    >>> capper = ColumnCapper(min_quantile=.05, max_quantile=.9, discard_infs=False)
+    >>> df['a_capped'] = capper.fit_transform(df['a'])
+    >>> df['b_capped'] = capper.fit_transform(df['b'])
+    >>> df
+       a          b  a_capped  b_capped
+    0  1  11.000000      1.15      11.1
+    1  2  12.000000      2.00      12.0
+    2  3        inf      3.00      13.6
+    3  4  14.000000      3.70      13.6
+    >>> capper = ColumnCapper(discard_infs=True) # Discarding infs
+    >>> df[['a', 'b']] = capper.fit_transform(df[['a', 'b']]) # Transforming multiple columns
+    >>> df
+          a     b  a_capped  b_capped
+    0  1.15  11.1      1.15      11.1
+    1  2.00  12.0      2.00      12.0
+    2  3.00   NaN      3.00      13.6
+    3  3.85  13.8      3.70      13.6
+    """
+    def __init__(self, min_quantile=0.05, max_quantile=0.95, discard_infs=False):
+
+        self._check_quantiles(min_quantile, max_quantile)
+
+        self.min_quantile = min_quantile
+        self.max_quantile = max_quantile
+        self.discard_infs = discard_infs
+
+    def fit(self, X, y=None):
+        """
+        Computes the quantiles for each column of ``X``.
+
+        :type X: pandas.DataFrame, pandas.Series or numpy.ndarray
+        :param X: The column(s) from which the capping limit(s) will be computed.
+
+        :param y: Ignored.
+
+        :rtype: sklego.preprocessing.ColumnCapper
+        :returns: The fitted object.
+
+        :raises:
+            ``TypeError`` if ``X`` is not an object of :class:`pandas.DataFrame`,
+            :class:`pandas.Series` or :class:`numpy.ndarray`
+
+            ``ValueError`` if ``X`` contains non-numeric columns
+        """
+        X = self._check_X_and_convert_to_pandas(X)
+
+        # Saving the number of columns to ensure coherence between fit and transform inputs
+        self._n_columns = X.shape[1]
+
+        # Making sure that the magnitudes of -np.inf and np.inf won't cause any trouble
+        X = X[(-np.inf < X) & (X < np.inf)]
+
+        # Computing the quantiles for each column of X
+        self._quantiles = X.quantile([self.min_quantile, self.max_quantile])
+
+        return self
+
+    def transform(self, X):
+        """
+        Performs the capping on the column(s) of ``X``.
+
+        :type X: pandas.DataFrame, pandas.Series or numpy.ndarray
+        :param X: The column(s) for which the capping limit(s) will be applied.
+
+        :rtype: numpy.ndarray
+        :returns: A copy of ``X`` with capped limits.
+
+        :raises:
+            ``TypeError`` if ``X`` is not an object of :class:`pandas.DataFrame`,
+            :class:`pandas.Series` or :class:`numpy.ndarray`
+
+            ``ValueError`` if ``X`` contains non-numeric columns or if the number of
+            columns from ``X`` differs from the number of columns when fitting
+        """
+        check_is_fitted(self, '_n_columns')
+        X = self._check_X_and_convert_to_pandas(X)
+
+        if X.shape[1] != self._n_columns:
+            raise ValueError("Reshape your data. X must have the same number of "+\
+                             "columns in fit and transform")
+
+        if self.discard_infs:
+            X.replace([np.inf, -np.inf], [np.nan, np.nan], inplace=True)
+
+        # Actually capping
+        for column in X.columns:
+            min_value, max_value = self._quantiles[column]
+            X.loc[X[column] < min_value, column] = min_value
+            X.loc[X[column] > max_value, column] = max_value
+
+        if X.shape[1] == 1:
+            return X.values[:,0]
+        return X.values
+
+    @staticmethod
+    def _check_quantiles(min_quantile, max_quantile):
+        """
+        Checks for the validity of min_quantile and max_quantile:
+
+        * They must be numbers (int of float)
+        * They must be in the interval [0; 1]
+        * `min_quantile` must be less than or equal to `max_quantile`
+        """
+        for quantile in min_quantile, max_quantile:
+            if not isinstance(quantile, float) and not isinstance(quantile, int):
+                raise TypeError("min_quantile and max_quantile must be numbers")
+            if quantile < 0 or 1 < quantile:
+                raise ValueError("min_quantile and max_quantile must be in [0; 1]")
+
+        if min_quantile > max_quantile:
+            raise ValueError("min_quantile must be less than or equal to max_quantile")
+
+    def _check_X_and_convert_to_pandas(self, X):
+        """
+        Creates a copy of `X` as a pandas.DataFrame object for safety reasons and to gain
+        access to `replace`, `quantile` and `loc` attributes.
+
+        The columns names are reset for compatibility purposes between `X` in fit and `X`
+        in transform, which can be either pandas.DataFrame, pandas.Series or numpy.ndarray
+        objects (not necessarily the same types on both methods).
+
+        This method also checks if `X` is compatible with the requirements of ColumnCapper.
+        """
+        if isinstance(X, pd.DataFrame) or isinstance(X, pd.Series):
+            X = pd.DataFrame(X.copy().values)
+        elif isinstance(X, np.ndarray):
+            X = pd.DataFrame(X.copy())
+        else:
+            raise TypeError("Provided variable X must be of type pandas.DataFrame, "+\
+                            "pandas.Series or numpy.ndarray")
+
+        for column in X.columns:
+            if X[column].dtype == object:
+                raise ValueError("All columns of X must be numeric")
+        return X
