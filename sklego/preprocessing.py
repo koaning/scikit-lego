@@ -243,20 +243,20 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
     >>> from sklego.preprocessing import ColumnCapper
     >>> df = pd.DataFrame({'a':[1, 2, 3, 4], 'b':[11, 12, np.inf, 14]})
     >>> df
-       a          b
-    0  1  11.000000
-    1  2  12.000000
-    2  3        inf
-    3  4  14.000000
+       a     b
+    0  1  11.0
+    1  2  12.0
+    2  3   inf
+    3  4  14.0
     >>> capper = ColumnCapper(min_quantile=.05, max_quantile=.9, discard_infs=False)
     >>> df['a_capped'] = capper.fit_transform(df['a'])
     >>> df['b_capped'] = capper.fit_transform(df['b'])
     >>> df
-       a          b  a_capped  b_capped
-    0  1  11.000000      1.15      11.1
-    1  2  12.000000      2.00      12.0
-    2  3        inf      3.00      13.6
-    3  4  14.000000      3.70      13.6
+       a     b  a_capped  b_capped
+    0  1  11.0      1.15      11.1
+    1  2  12.0      2.00      12.0
+    2  3   inf      3.00      13.6
+    3  4  14.0      3.70      13.6
     >>> capper = ColumnCapper(discard_infs=True) # Discarding infs
     >>> df[['a', 'b']] = capper.fit_transform(df[['a', 'b']]) # Transforming multiple columns
     >>> df
