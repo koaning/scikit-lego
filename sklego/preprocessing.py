@@ -210,7 +210,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 
 class ColumnCapper(TransformerMixin, BaseEstimator):
     """
-    ColumnCapper caps the values of columns according to the given quantile thresholds.
+    Caps the values of columns according to the given quantile thresholds.
 
     :type min_quantile: float, optional, default=0.05
     :param min_quantile: The minimum quantile to compute the lowerbound of the transformed
@@ -226,7 +226,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         ``np.nan``.
 
         .. note::
-            Setting ``discard_infs=True`` is important if the `inf` values are the result
+            Setting ``discard_infs=True`` is important if the `inf` values are results
             of divisions by 0, which are interpreted by ``pandas`` as ``-np.inf`` or
             ``np.inf`` depending on the signal of the numerator.
 
@@ -278,7 +278,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         """
         Computes the quantiles for each column of ``X``.
 
-        :type X: pandas.DataFrame, pandas.Series or numpy.ndarray
+        :type X: pandas.DataFrame, pandas.Series, numpy.ndarray or list
         :param X: The column(s) from which the capping limit(s) will be computed.
 
         :param y: Ignored.
@@ -288,7 +288,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
 
         :raises:
             ``TypeError`` if ``X`` is not an object of :class:`pandas.DataFrame`,
-            :class:`pandas.Series` or :class:`numpy.ndarray`
+            :class:`pandas.Series`, :class:`numpy.ndarray` or :class:`list`
 
             ``ValueError`` if ``X`` contains non-numeric columns
         """
@@ -309,7 +309,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         """
         Performs the capping on the column(s) of ``X``.
 
-        :type X: pandas.DataFrame, pandas.Series or numpy.ndarray
+        :type X: pandas.DataFrame, pandas.Series, numpy.ndarray or list
         :param X: The column(s) for which the capping limit(s) will be applied.
 
         :rtype: numpy.ndarray
@@ -317,7 +317,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
 
         :raises:
             ``TypeError`` if ``X`` is not an object of :class:`pandas.DataFrame`,
-            :class:`pandas.Series` or :class:`numpy.ndarray`
+            :class:`pandas.Series`, :class:`numpy.ndarray` or :class:`list`
 
             ``ValueError`` if ``X`` contains non-numeric columns or if the number of
             columns from ``X`` differs from the number of columns when fitting
@@ -326,8 +326,8 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         X = self._check_X_and_convert_to_pandas(X)
 
         if X.shape[1] != self._n_columns:
-            raise ValueError("Reshape your data. X must have the same number of "+\
-                             "columns in fit and transform")
+            raise ValueError("Reshape your data. X must have the same number of "
+                             + "columns in fit and transform")
 
         if self.discard_infs:
             X.replace([np.inf, -np.inf], [np.nan, np.nan], inplace=True)
@@ -339,7 +339,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             X.loc[X[column] > max_value, column] = max_value
 
         if X.shape[1] == 1:
-            return X.values[:,0]
+            return X.values[:, 0]
         return X.values
 
     @staticmethod
@@ -371,15 +371,14 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
 
         This method also checks if `X` is compatible with the requirements of ColumnCapper.
         """
+        if isinstance(X, list):
+            X = np.array(X)
+        X = check_array(X, copy=True, force_all_finite=False, ensure_2d=False, dtype=FLOAT_DTYPES, estimator=self)
         if isinstance(X, pd.DataFrame) or isinstance(X, pd.Series):
-            X = pd.DataFrame(X.copy().values)
+            X = pd.DataFrame(X.values)
         elif isinstance(X, np.ndarray):
-            X = pd.DataFrame(X.copy())
+            X = pd.DataFrame(X)
         else:
-            raise TypeError("Provided variable X must be of type pandas.DataFrame, "+\
-                            "pandas.Series or numpy.ndarray")
-
-        for column in X.columns:
-            if X[column].dtype == object:
-                raise ValueError("All columns of X must be numeric")
+            raise TypeError("Provided variable X must be of type pandas.DataFrame, "
+                            + "pandas.Series, numpy.ndarray or list")
         return X
