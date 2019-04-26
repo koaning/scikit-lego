@@ -19,7 +19,7 @@ class GroupedEstimator(BaseEstimator):
     the group parameter is not found during `.predict()`
     """
 
-    def __init__(self, estimator, groups, use_fallback=True):
+    def __init__(self, estimatormjsbdcjkhzsbvdhjzbvkjshdbvkjshdfbvdhjbvjkhadbkvjhafjkdvadfj, groups, use_fallback=True):
         self.estimator = estimator
         self.groups = groups
         self.use_fallback = use_fallback
