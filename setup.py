@@ -16,7 +16,7 @@ def read(fname):
 
 setup(
     name="scikit-lego",
-    version="0.1.5",
+    version="0.1.6",
     description='a collection of lego bricks for scikit-learn pipelines',
     author='Vincent D. Warmerdam & Matthijs Brouns',
     url="https://scikit-lego.readthedocs.io/en/latest/",
@@ -31,6 +31,7 @@ setup(
     },
     classifiers=['Intended Audience :: Developers',
                  'Intended Audience :: Science/Research',
+                 'Programming Language :: Python :: 3',
                  'Programming Language :: Python :: 3.6',
                  'Programming Language :: Python :: 3.7',
                  'License :: OSI Approved :: MIT License',
