@@ -1,101 +1,125 @@
 import pytest
 import numpy as np
 import pandas as pd
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.utils import estimator_checks
-from sklearn.utils.estimator_checks import check_transformers_unfitted
+
 from sklearn.utils.validation import FLOAT_DTYPES
+from sklearn.utils import estimator_checks
 
 from sklego.common import flatten
 from sklego.preprocessing import ColumnCapper
-from tests.conftest import nonmeta_checks
-
-# ColumnCapper works with nan/inf cells
-nonmeta_checks_allow_nan_inf = [test for test in nonmeta_checks if test.__name__ != 'check_estimators_nan_inf']
+from tests.conftest import transformer_checks, general_checks
 
 
 @pytest.mark.parametrize("test_fn", flatten([
-    nonmeta_checks_allow_nan_inf,
-    # Transformer checks
-    check_transformers_unfitted,
-    # General checks
-    estimator_checks.check_fit2d_predict1d,
-    estimator_checks.check_fit2d_1sample,
-    estimator_checks.check_fit2d_1feature,
-    # ColumnCapper works with 1d arrays. Skipping check_fit1d.
-    # estimator_checks.check_fit1d,
-    estimator_checks.check_get_params_invariance,
-    estimator_checks.check_set_params,
-    estimator_checks.check_dict_unchanged,
-    estimator_checks.check_dont_overwrite_parameters,
-    estimator_checks.check_transformer_general,
-    estimator_checks.check_methods_subset_invariance,
-    estimator_checks.check_transformer_data_not_an_array,
-    estimator_checks.check_transformer_general,
+    transformer_checks,
+    general_checks,
+
+    # nonmeta_checks
+    estimator_checks.check_estimators_dtypes,
+    estimator_checks.check_fit_score_takes_y,
+    estimator_checks.check_dtype_object,
+    estimator_checks.check_sample_weights_pandas_series,
+    estimator_checks.check_sample_weights_list,
+    estimator_checks.check_sample_weights_invariance,
+    estimator_checks.check_estimators_fit_returns_self,
+    estimator_checks.check_complex_data,
+    estimator_checks.check_estimators_empty_data_messages,
+    estimator_checks.check_pipeline_consistency,
+    # ColumnCapper works with nan/inf cells
+    # estimator_checks.check_estimators_nan_inf,
+    estimator_checks.check_estimators_overwrite_params,
+    estimator_checks.check_estimator_sparse_data,
+    estimator_checks.check_estimators_pickle,
 ]))
 def test_estimator_checks(test_fn):
     test_fn(ColumnCapper.__name__, ColumnCapper())
 
 
-def test_quantiles():
-    def expect_type_error(min_quantile=0.05, max_quantile=0.95):
+def test_quantile_range():
+    def expect_type_error(quantile_range):
         with pytest.raises(TypeError):
-            ColumnCapper(min_quantile, max_quantile)
+            ColumnCapper(quantile_range)
 
-    def expect_value_error(min_quantile=0.05, max_quantile=0.95):
+    def expect_value_error(quantile_range):
         with pytest.raises(ValueError):
-            ColumnCapper(min_quantile, max_quantile)
+            ColumnCapper(quantile_range)
 
-    # Testing quantiles types
-    expect_type_error(min_quantile='a')
-    expect_type_error(max_quantile='a')
+    # Testing quantile_range type
+    expect_type_error(quantile_range=1)
+    expect_type_error(quantile_range='a')
+    expect_type_error(quantile_range={})
+    expect_type_error(quantile_range=set())
 
-    # Testing quantiles limits
-    expect_value_error(max_quantile=-1)
-    expect_value_error(max_quantile=2)
-    expect_value_error(min_quantile=-1)
-    expect_value_error(min_quantile=2)
+    # Testing quantile_range values
+    # Invalid type:
+    expect_type_error(quantile_range=('a', 90))
+    expect_type_error(quantile_range=(10, 'a'))
 
-    # Testing quantiles order
-    expect_value_error(min_quantile=0.5, max_quantile=0.4)
+    # Invalid limits
+    expect_value_error(quantile_range=(-1, 90))
+    expect_value_error(quantile_range=(10, 110))
+
+    # Invalid order
+    expect_value_error(quantile_range=(60, 40))
+
+
+def test_interpolation():
+    valid_interpolations = ('linear', 'lower', 'higher', 'midpoint', 'nearest')
+    invalid_interpolations = ('test', 42, None, [], {}, set(), .42)
+
+    for interpolation in valid_interpolations:
+        ColumnCapper(interpolation=interpolation)
+
+    for interpolation in invalid_interpolations:
+        with pytest.raises(ValueError):
+            ColumnCapper(interpolation=interpolation)
 
 
 @pytest.fixture()
-def df():
-    return pd.DataFrame({"a": [1, np.nan, 3, 4],
-                         "b": [11, 12, np.inf, 14]})
+def valid_df():
+    return pd.DataFrame({'a': [1, np.nan, 3, 4],
+                         'b': [11, 12, np.inf, 14],
+                         'c': [21, 22, 23, 24]})
 
 
-def test_X_types_and_output_shapes(df):
+def test_X_types_and_transformed_shapes(valid_df):
+    def expect_value_error(X, X_transform=None):
+        if X_transform is None:
+            X_transform = X
+        with pytest.raises(ValueError):
+            capper = ColumnCapper().fit(X)
+            capper.transform(X_transform)
+
+    # Fitted and transformed arrays must have the same number of columns
+    expect_value_error(valid_df, valid_df[['a', 'b']])
+
+    invalid_dfs = [
+        pd.DataFrame({'a': [np.nan, np.nan, np.nan], 'b': [11, 12, 13]}),
+        pd.DataFrame({'a': [np.inf, np.inf, np.inf], 'b': [11, 12, 13]})
+    ]
+
+    for invalid_df in invalid_dfs:
+        expect_value_error(invalid_df)  # contains an invalid column ('a')
+        expect_value_error(invalid_df['b'])  # 1d arrays should be reshaped before fitted/transformed
+        # Like this:
+        ColumnCapper().fit_transform(invalid_df['b'].values.reshape(-1, 1))
+        ColumnCapper().fit_transform(invalid_df['b'].values.reshape(1, -1))
+
     capper = ColumnCapper()
-    for X in df, df.values, df['a'], df['a'].values:
-        # Testing objects with `shape` attribute
+    for X in valid_df, valid_df.values:
         assert capper.fit_transform(X).shape == X.shape
-    # Testing a list
-    lst = list(df['a'])
-    assert capper.fit_transform(lst).shape[0] == len(lst)
 
 
-def test_nan_inf(df):
+def test_nan_inf(valid_df):
     # Capping infs
     capper = ColumnCapper(discard_infs=False)
-    assert (capper.fit_transform(df) == np.inf).sum().sum() == 0
-    assert np.isnan(capper.fit_transform(df)).sum() == 1
+    assert (capper.fit_transform(valid_df) == np.inf).sum().sum() == 0
+    assert np.isnan(capper.fit_transform(valid_df)).sum() == 1
 
     # Discarding infs
     capper = ColumnCapper(discard_infs=True)
-    assert (capper.fit_transform(df) == np.inf).sum().sum() == 0
-    assert np.isnan(capper.fit_transform(df)).sum() == 2
-
-
-def test_pipeline_shape(df):
-    pipeline = Pipeline([
-        ('cap', ColumnCapper()),
-        ('scale', StandardScaler())
-    ])
-
-    assert pipeline.fit_transform(df).shape == df.shape
+    assert (capper.fit_transform(valid_df) == np.inf).sum().sum() == 0
+    assert np.isnan(capper.fit_transform(valid_df)).sum() == 2
 
 
 def test_dtype_regression(random_xy_dataset_regr):
