@@ -212,13 +212,21 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
     """
     Caps the values of columns according to the given quantile thresholds.
 
-    :type min_quantile: float, optional, default=0.05
-    :param min_quantile: The minimum quantile to compute the lowerbound of the transformed
-        columns. Must be in the interval [0; 1].
+    :type quantile_range: tuple or list, optional, default=(5.0, 95.0)
+    :param quantile_range: The quantile ranges to perform the capping. Their valus must
+        be in the interval [0; 100].
 
-    :type max_quantile: float, optional, default=0.95
-    :param max_quantile: The maximum quantile to compute the upperbound of the transformed
-        columns. Must be in the interval [0; 1].
+    :type interpolation: str, optional, default='linear'
+    :param interpolation: The interpolation method to compute the quantiles when the
+        desired quantile lies between two data points `i` and `j`. The Available values
+        are:
+
+        * ``'linear'``: `i + (j - i) * fraction`, where `fraction` is the fractional part of\
+            the index surrounded by `i` and `j`.
+        * ``'lower'``: `i`.
+        * ``'higher'``: `j`.
+        * ``'nearest'``: `i` or `j` whichever is nearest.
+        * ``'midpoint'``: (`i` + `j`) / 2.
 
     :type discard_infs: bool, optional, default=False
     :param discard_infs: Whether to discard ``-np.inf`` and ``np.inf`` values or not. If
@@ -230,11 +238,13 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             of divisions by 0, which are interpreted by ``pandas`` as ``-np.inf`` or
             ``np.inf`` depending on the signal of the numerator.
 
-    :raises:
-        ``TypeError`` if the quantiles are not numbers
+    :type copy: bool, optional, default=True
+    :param copy: If False, try to avoid a copy and do inplace capping instead. This is not
+        guaranteed to always work inplace; e.g. if the data is not a NumPy array or scipy.sparse
+        CSR matrix, a copy may still be returned.
 
-        ``ValueError`` if ``min_quantile`` > ``max_quantile`` or if the quantiles are
-        not in the interval [0; 1]
+    :raises:
+        ``TypeError``, ``ValueError``
 
     :Example:
 
