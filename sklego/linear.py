@@ -16,6 +16,8 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
     """
     Lo(w)ess regressor.
 
+    See for example: https://www.itl.nist.gov/div898/handbook/pmd/section1/pmd144.htm
+
     """
 
     def __init__(self, weighting_method: Union[str, None] = None, span: float = .1):
@@ -58,16 +60,18 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
         check_is_fitted(self, ['dim_'])
         X = check_array(X)
 
-        y_pred = np.array([])
+        X_size = X.size()
+
+        y_pred = np.zeros(shape=[])
 
         if with_indices:
-            indices = []
+            indices = [[] for _ in X_size[1]]
 
-        for x in X:
+        for index, x in enumerate(X):
             idx_window = self._get_window_indices(x.reshape(-1, 1))
 
             if with_indices:
-                indices.append(idx_window)
+                indices[index] = idx_window
 
             X = self.xs[idx_window].reshape(-1, 1)
             y = self.ys[idx_window]
@@ -75,7 +79,7 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
             weights = self._create_weights(x, X)
             model = LinearRegression().fit(X, y, sample_weight=weights)
 
-            y_pred = np.append(y_pred, model.predict(x.reshape(-1, 1)))
+            y_pred[index] = model.predict(x.reshape(-1, 1))
 
         if with_indices:
             return y_pred, indices
@@ -132,5 +136,4 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
             distances = np.array([distance.euclidean(x, xsi) for xsi in xs])
             return (1 - distances / distances.max()).ravel()
 
-        else:
-            return None
+        return None
