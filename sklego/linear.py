@@ -47,8 +47,7 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
         return self
 
-    def predict(self, X: np.array, with_indices: bool = False) -> Union[np.array,
-                                                                        tuple]:
+    def predict(self, X: np.array, with_indices: bool = False) -> Union[np.array, tuple]:
         """
         Predict targets using the fitted model
         :param X: Array-like object of shape (n_samples, 1), input data for the model.
@@ -61,11 +60,10 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
         check_is_fitted(self, ['dim_'])
         X = check_array(X)
-
         y_pred = np.zeros(shape=(X.shape[0], 1))
 
         if with_indices:
-            indices = [[] for _ in X.shape[0]]
+            indices = [[] for _ in np.arange(X.shape[0])]
 
         for index, x in enumerate(X):
             idx_window = self._get_window_indices(x.reshape(-1, 1))
@@ -102,7 +100,7 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
                              f"Choose one from: {self.available_weighting_methods}. "
                              f"If no weighting method is provided, default 'equal' is used.")
 
-    def _get_window_indices(self, x: Union[float, np.array]):
+    def _get_window_indices(self, x: Union[float, np.array]) -> np.array:
         """
         Find and return the indices of the input data points that are closest to
         the given point x. The size of the returned set of indices is determined
