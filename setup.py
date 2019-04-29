@@ -1,5 +1,7 @@
-from setuptools import setup, find_packages
 import os
+from setuptools import setup, find_packages
+
+import sklego
 
 base_packages = ["numpy>=1.15.4", "scipy>=1.2.0", "scikit-learn>=0.20.2",
                  "pandas>=0.23.4", "patsy>=0.5.1", "autograd>=1.2"]
@@ -16,13 +18,25 @@ def read(fname):
 
 setup(
     name="scikit-lego",
-    version="0.1.5",
+    version=sklego.__version__,
+    description='a collection of lego bricks for scikit-learn pipelines',
+    author='Vincent D. Warmerdam & Matthijs Brouns',
+    url="https://scikit-lego.readthedocs.io/en/latest/",
     packages=find_packages(exclude=['notebooks']),
+    package_data={'sklego': ['data/*.csv']},
     long_description=read('readme.md'),
     long_description_content_type='text/markdown',
     install_requires=base_packages,
     extras_require={
         "docs": docs_packages,
         "dev": dev_packages
-    }
+    },
+    classifiers=['Intended Audience :: Developers',
+                 'Intended Audience :: Science/Research',
+                 'Programming Language :: Python :: 3',
+                 'Programming Language :: Python :: 3.6',
+                 'Programming Language :: Python :: 3.7',
+                 'License :: OSI Approved :: MIT License',
+                 'Topic :: Scientific/Engineering',
+                 'Topic :: Scientific/Engineering :: Artificial Intelligence']
 )
