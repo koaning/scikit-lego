@@ -1,6 +1,8 @@
 Time Gap Split Cross Validation
 ===============================
 
+You would need TimeGapSplit if you have multiple samples per timestamp or if you want to introduce a gap between training and validation.
+
 TimeGapSplit provides 3 parameters to really reproduce your production implementation in your cross-validation schema.
 
 It uses a column parameter to specify the date used to split.
