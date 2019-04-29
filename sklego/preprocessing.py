@@ -223,38 +223,29 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
         Store the inverse of R of the QR decomposition of X, which can be used to calculate the orthogonal projection
         of X. If normalization is required, also stores a vector with normalization terms
         """
-        input_is_df = isinstance(X, pd.DataFrame)
+        X = check_array(X, estimator=self)
 
-        if input_is_df:
-            X = np.array(X)
+        if not X.shape[0] > 1:
+            raise ValueError("Orthogonal transformation not valid for one sample")
 
         # Q, R such that X = Q*R, with Q orthogonal, from which follows Q = X*inv(R)
         Q, R = np.linalg.qr(X)
-        self.inv_r_ = np.linalg.inv(R)
+        self.inv_R_ = np.linalg.inv(R)
 
         if self.normalize:
             self.normalization_vector_ = np.linalg.norm(Q, ord=2, axis=0)
+        else:
+            self.normalization_vector_ = np.ones((X.shape[1], ))
 
         return self
 
     def transform(self, X):
         """Transforms X using the fitted inverse of R. Normalizes the result if required"""
         if self.normalize:
-            check_is_fitted(self, ['inv_r_', 'normalization_vector_'])
+            check_is_fitted(self, ['inv_R_', 'normalization_vector_'])
         else:
-            check_is_fitted(self, ['inv_r_'])
+            check_is_fitted(self, ['inv_R_'])
 
-        input_is_df = isinstance(X, pd.DataFrame)
+        X = check_array(X, estimator=self)
 
-        if input_is_df:
-            X = np.array(X)
-
-        Q = X @ self.inv_r_
-
-        if self.normalize:
-            Q = Q / self.normalization_vector_
-
-        if input_is_df:
-            return pd.DataFrame(Q, columns=[f'ortho_{x}' for x in range(Q.shape[1])])
-
-        return Q
+        return X @ self.inv_R_ / self.normalization_vector_
