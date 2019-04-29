@@ -33,7 +33,7 @@ def check_is_orthogonal(X, tolerance=10 ** -5):
     Check if X is an column orthogonal matrix. If X is column orthogonal, then X.T * X equals the identity matrix
     :param X: Matrix to check
     :param tolerance: Tolerance for difference caused by rounding
-    :raises: AssertionError if X is not orthogonal 
+    :raises: AssertionError if X is not orthogonal
     """
     diff_with_eye = np.dot(X.T, X) - np.eye(X.shape[1])
 
