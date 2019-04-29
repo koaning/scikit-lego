@@ -1,5 +1,7 @@
-from setuptools import setup, find_packages
 import os
+from setuptools import setup, find_packages
+
+import sklego
 
 base_packages = ["numpy>=1.15.4", "scipy>=1.2.0", "scikit-learn>=0.20.2",
                  "pandas>=0.23.4", "patsy>=0.5.1", "autograd>=1.2"]
@@ -16,7 +18,7 @@ def read(fname):
 
 setup(
     name="scikit-lego",
-    version="0.1.6",
+    version=sklego.__version__,
     description='a collection of lego bricks for scikit-learn pipelines',
     author='Vincent D. Warmerdam & Matthijs Brouns',
     url="https://scikit-lego.readthedocs.io/en/latest/",
