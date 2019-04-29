@@ -16,7 +16,7 @@ doctest:
 	python -m doctest -v sklego/*.py
 
 test: doctest
-	pytest --disable-warnings
+	pytest --disable-warnings --cov=sklego
 
 check: flake test
 
