@@ -68,4 +68,4 @@ The formula syntax is pretty powerful, if you'd like to learn we refer you
 to formulas_ documentation.
 
 .. _patsy: https://patsy.readthedocs.io/en/latest/
-.. _formulas https://patsy.readthedocs.io/en/latest/formulas.html
+.. _formulas: https://patsy.readthedocs.io/en/latest/formulas.html
