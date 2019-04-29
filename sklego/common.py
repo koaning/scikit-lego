@@ -125,7 +125,7 @@ def flatten(nested_iterable):
     ['test1', 'test2']
     """
     for el in nested_iterable:
-        if isinstance(el, collections.Iterable) and not isinstance(el, (str, bytes)):
+        if isinstance(el, collections.abc.Iterable) and not isinstance(el, (str, bytes)):
             yield from flatten(el)
         else:
             yield el

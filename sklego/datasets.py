@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from pkg_resources import resource_filename
 
 
 def load_chicken(give_pandas=False):
@@ -29,8 +30,7 @@ def load_chicken(give_pandas=False):
     - Crowder, M. and Hand, D. (1990), Analysis of Repeated Measures, Chapman and Hall (example 5.3)
     - Hand, D. and Crowder, M. (1996), Practical Longitudinal Data Analysis, Chapman and Hall (table A.2)
     """
-    dirname = os.path.dirname(__file__)
-    filepath = os.path.join(dirname, "data", "chickweight.csv")
+    filepath = resource_filename("sklego", os.path.join("data", "chickweight.csv"))
     df = pd.read_csv(filepath)
     if give_pandas:
         return df
