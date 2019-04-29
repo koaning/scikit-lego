@@ -1,7 +1,11 @@
 import pytest
 import pandas as pd
 import numpy as np
+
 from sklego.preprocessing import OrthogonalTransformer
+from sklego.common import flatten
+
+from tests.conftest import nonmeta_checks, general_checks, transformer_checks
 
 
 @pytest.fixture
@@ -13,6 +17,15 @@ def sample_matrix():
 @pytest.fixture
 def sample_df(sample_matrix):
     return pd.DataFrame(sample_matrix)
+
+
+@pytest.mark.parametrize("test_fn", flatten([
+    nonmeta_checks,
+    general_checks,
+    transformer_checks
+]))
+def test_estimator_checks(test_fn):
+    test_fn(OrthogonalTransformer.__name__, OrthogonalTransformer())
 
 
 def check_is_orthogonal(X, tolerance=10 ** -5):
@@ -48,9 +61,11 @@ def test_orthogonal_transformer(sample_matrix):
     ot = OrthogonalTransformer(normalize=False)
     ot.fit(X=sample_matrix)
 
-    assert hasattr(ot, 'inv_r_')
-    assert not hasattr(ot, 'normalization_vector_')
-    assert ot.inv_r_.shape[0] == sample_matrix.shape[1]
+    assert hasattr(ot, 'inv_R_')
+    assert hasattr(ot, 'normalization_vector_')
+    assert ot.inv_R_.shape[0] == sample_matrix.shape[1]
+
+    assert all(ot.normalization_vector_ == 1)
 
     trans = ot.transform(sample_matrix)
 
@@ -61,9 +76,9 @@ def test_orthonormal_transformer(sample_matrix):
     ot = OrthogonalTransformer(normalize=True)
     ot.fit(X=sample_matrix)
 
-    assert hasattr(ot, 'inv_r_')
+    assert hasattr(ot, 'inv_R_')
     assert hasattr(ot, 'normalization_vector_')
-    assert ot.inv_r_.shape[0] == sample_matrix.shape[1]
+    assert ot.inv_R_.shape[0] == sample_matrix.shape[1]
     assert ot.normalization_vector_.shape[0] == sample_matrix.shape[1]
 
     trans = ot.transform(sample_matrix)
@@ -75,10 +90,8 @@ def test_orthogonal_with_df(sample_df):
     ot = OrthogonalTransformer(normalize=False)
     ot.fit(X=sample_df)
 
-    assert ot.inv_r_.shape[0] == sample_df.shape[1]
+    assert ot.inv_R_.shape[0] == sample_df.shape[1]
 
     trans = ot.transform(sample_df)
 
-    assert isinstance(trans, pd.DataFrame)
-
-    check_is_orthogonal(np.array(trans))
+    check_is_orthogonal(trans)
