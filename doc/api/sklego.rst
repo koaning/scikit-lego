@@ -4,14 +4,6 @@ sklego package
 Submodules
 ----------
 
-sklego.common module
---------------------
-
-.. automodule:: sklego.common
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 sklego.datasets module
 ----------------------
 
@@ -80,31 +72,6 @@ sklego.preprocessing module
 ---------------------------
 
 .. automodule:: sklego.preprocessing
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-sklego.testing module
----------------------
-
-.. automodule:: sklego.testing
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-sklego.transformers module
---------------------------
-
-.. automodule:: sklego.transformers
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: sklego
     :members:
     :undoc-members:
     :show-inheritance:
