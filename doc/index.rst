@@ -61,4 +61,7 @@ Usage
 
    install
    contribution
+   mixture-methods
+   meta
+   preprocessing
    api/modules
