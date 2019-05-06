@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from datetime import timedelta
 
 
@@ -10,7 +11,7 @@ class TimeGapSplit:
     Provides train/test indices to split time series data samples.
     This cross-validation object is a variation of TimeSeriesSplit with the following differences:
 
-    1. The splits are made based on datetime duration, instead of number of rows. LLOO
+    1. The splits are made based on datetime duration, instead of number of rows.
     2. The user specifies the training and the validation durations
     3. The user can specify a 'gap' duration that is omitted from the end part of the training split
 
@@ -21,14 +22,16 @@ class TimeGapSplit:
     1. The historical training data
     2. The retraining frequency
     3. The period of the forward looking window necessary to create the target.
-    Indeed at the end of the training, the last period is dropped due to lack of recent data to create your target lol.
+    This period at the end of your training fold is dropped due to lack of recent data to create your target.
 
+    Each validation fold doesn't overlap. The entire 'window' moves by 1 valid_duration until there is not enough data.
+    The number of folds is automatically defined that way.
 
     :param pandas.DataFrame df: DataFrame that should have all the indices of X used in split()
     :param str date_col: Name of the column of datetime in the df
     :param datetime.timedelta train_duration: historical training data
     :param datetime.timedelta valid_duration: retraining frequency
-    :param datetime.timedelta gap_duration: forward looking window
+    :param datetime.timedelta gap_duration: forward looking window of the target
     """
 
     def __init__(self, df, date_col, train_duration, valid_duration, gap_duration=timedelta(0)):
@@ -69,5 +72,9 @@ class TimeGapSplit:
 
             current_date = current_date + self.valid_duration
 
-            yield ([X.index.get_loc(i) for i in train_i],
-                   [X.index.get_loc(i) for i in valid_i])
+            yield (np.array([X.index.get_loc(i) for i in train_i]),
+                   np.array([X.index.get_loc(i) for i in valid_i]))
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+
+        return sum(1 for x in self.split(X, y, groups))
