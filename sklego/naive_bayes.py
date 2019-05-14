@@ -36,7 +36,8 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         self.classes_ = unique_labels(y)
         for c in self.classes_:
             subset_x, subset_y = X[y == c], y[y == c]
-            self.gmms_[c] = GaussianMixture(**self.gmm_kwargs).fit(subset_x, subset_y)
+            self.gmms_[c] = [GaussianMixture(**self.gmm_kwargs).fit(subset_x[:, i].reshape(-1, 1), subset_y)
+                               for i in range(X.shape[1])]
         return self
 
     def predict(self, X):
@@ -47,7 +48,8 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
     def predict_proba(self, X):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ['gmms_', 'classes_'])
-        res = np.zeros((X.shape[0], self.classes_.shape[0]))
-        for idx, c in enumerate(self.classes_):
-            res[:, idx] = self.gmms_[c].score_samples(X)
-        return np.exp(res)/np.exp(res).sum(axis=1)[:, np.newaxis]
+        probs = np.zeros((X.shape[0], len(self.classes_)))
+        for k, v in self.gmms_.items():
+          probs[:, k] = np.array([m.score_samples(X[:, idx].reshape(-1, 1)) for idx, m in enumerate(v)]).sum(axis=0)
+        likelihood = np.exp(probs)
+        return likelihood / likelihood.sum(axis=1).reshape(-1, 1)
