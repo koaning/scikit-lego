@@ -311,7 +311,8 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             raise ValueError("ColumnCapper cannot fit columns containing only inf/nan values")
 
         q = [quantile_limit/100 for quantile_limit in self.quantile_range]
-        self.quantiles_ = np.nanquantile(a=X, q=q, axis=0, interpolation=self.interpolation)
+        self.quantiles_ = np.nanquantile(a=X, q=q, axis=0, overwrite_input=True,
+                                         interpolation=self.interpolation)
 
         # Saving the number of columns to ensure coherence between fit and transform inputs
         self.n_columns_ = X.shape[1]
