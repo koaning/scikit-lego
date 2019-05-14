@@ -17,6 +17,7 @@ doctest:
 
 test: doctest
 	pytest --disable-warnings --cov=sklego
+	rm -rf .coverage*
 
 check: flake test
 
