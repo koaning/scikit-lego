@@ -21,7 +21,6 @@ test: doctest
 check: flake test
 
 docs:
-	sphinx-apidoc -f -o doc/api sklego
 	sphinx-build doc docs
 
 clean:

@@ -46,7 +46,7 @@ from sklearn.pipeline import Pipeline
 mod = Pipeline([
     ("scale", StandardScaler()),
     ("random_noise", RandomAdder()),
-    ("model", GMMClassifier(solver='lbfgs'))
+    ("model", GMMClassifier())
 ])
 
 ...
