@@ -30,6 +30,7 @@ clean:
 	rm -rf dist
 	rm -rf scikit_lego.egg-info
 	rm -rf .ipynb_checkpoints
+	rm -rf .coverage*
 
 dist: clean
 	python setup.py sdist
