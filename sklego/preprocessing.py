@@ -298,23 +298,10 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         :raises:
             ``ValueError`` if ``X`` contains non-numeric columns
         """
-        # Attempts to avoid copying X
-        X = check_array(X, copy=False, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
+        X = check_array(X, copy=True, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
 
-        infs_mask = (X == np.inf) | (X == -np.inf)
-
-        # If X contains infs, we will need to replace them by nans before computing quantiles
-        if infs_mask.any():
-            if isinstance(X, pd.DataFrame):
-                # Copying X is not enough in this case. We need to go deeper.
-                X = X.values.copy()
-            else:
-                X = X.copy()
-            copied = True
-            # Now we're free to edit X
-            np.putmask(X, infs_mask, np.nan)
-        else:
-            copied = False
+        # If X contains infs, we need to replace them by nans before computing quantiles
+        np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
 
         # There should be no column containing only nan cells at this point. If that's not the case,
         # it means that the user asked ColumnCapper to fit some column containing only nan or inf cells.
@@ -323,10 +310,8 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         if invalid_columns_mask.any():
             raise ValueError("ColumnCapper cannot fit columns containing only inf/nan values")
 
-        # Computing the quantiles. If copied == True, it's possible to save up some memory
         q = [quantile_limit/100 for quantile_limit in self.quantile_range]
-        self.quantiles_ = np.nanquantile(a=X, q=q, axis=0, overwrite_input=copied,
-                                         interpolation=self.interpolation)
+        self.quantiles_ = np.nanquantile(a=X, q=q, axis=0, interpolation=self.interpolation)
 
         # Saving the number of columns to ensure coherence between fit and transform inputs
         self.n_columns_ = X.shape[1]
