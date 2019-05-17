@@ -15,6 +15,10 @@ def _check_gmm_keywords(kwargs):
             raise ValueError(f"Keyword argument {key} is not in `sklearn.mixture.GaussianMixture`")
 
 
+def foo():
+    lsadklbfaskbfasdjhbfajhd
+
+
 class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
     def __init__(self, **gmm_kwargs):
         self.gmm_kwargs = gmm_kwargs
