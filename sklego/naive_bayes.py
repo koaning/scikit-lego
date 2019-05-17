@@ -16,6 +16,13 @@ def _check_gmm_keywords(kwargs):
 
 
 class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
+    """
+    The GaussianMixtureNB trains a Naive Bayes Classifier that uses a mixture
+    of gaussians instead of merely training a single one.
+
+    You can pass any keyword parameter that scikit-learn's Gaussian Mixture
+    Model uses and it will be passed along.
+    """
     def __init__(self, **gmm_kwargs):
         self.gmm_kwargs = gmm_kwargs
 
