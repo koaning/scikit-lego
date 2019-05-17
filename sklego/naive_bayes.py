@@ -38,10 +38,11 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         _check_gmm_keywords(self.gmm_kwargs)
         self.gmms_ = {}
         self.classes_ = unique_labels(y)
+        self.num_fit_cols = X.shape[1]
         for c in self.classes_:
             subset_x, subset_y = X[y == c], y[y == c]
             self.gmms_[c] = [GaussianMixture(**self.gmm_kwargs).fit(subset_x[:, i].reshape(-1, 1), subset_y)
-                               for i in range(X.shape[1])]
+                             for i in range(X.shape[1])]
         return self
 
     def predict(self, X):
@@ -49,11 +50,14 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: np.array):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        if self.num_fit_cols != X.shape[1]:
+            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.num_fit_cols}")
         check_is_fitted(self, ['gmms_', 'classes_'])
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():
-          probs[:, k] = np.array([m.score_samples(X[:, idx].reshape(-1, 1)) for idx, m in enumerate(v)]).sum(axis=0)
+            probs[:, k] = np.array([m.score_samples(X[:, idx].reshape(-1, 1)) for
+                                    idx, m in enumerate(v)]).sum(axis=0)
         likelihood = np.exp(probs)
         return likelihood / likelihood.sum(axis=1).reshape(-1, 1)
