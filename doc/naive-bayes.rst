@@ -5,8 +5,10 @@ Naive Bayes models are flexible and interpretable. In scikit
 lego we've added support for a Gaussian Mixture variant of
 the algorithm.
 
-Dataset
--------
+.. image:: _static/naive-bayes-0.png
+  :align: center
+
+An example of this algorithm can be found below.
 
 .. code-block:: python
 
@@ -30,6 +32,7 @@ Dataset
     plt.title("simulated dataset");
 
 .. image:: _static/naive-bayes-1.png
+   :align: center
 
 .. code-block:: python
 
@@ -50,6 +53,7 @@ Dataset
 
 
 .. image:: _static/naive-bayes-2.png
+   :align: center
 
 .. code-block:: python
 
@@ -71,3 +75,4 @@ Dataset
     plt.title("model 2 - column 2 density");
 
 .. image:: _static/naive-bayes-3.png
+   :align: center

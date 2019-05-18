@@ -5,6 +5,16 @@ There are many preprocessors in scikit-lego and in this document we
 would like to highlight a few such that you might be inspired to use
 pipelines a little bit more flexibly.
 
+Column Capping
+**************
+
+Some models are great at interpolation but less good at extrapolation.
+One way to potentially circumvent this problem is by capping extreme
+valeus that occur in the dataset **X**.
+
+.. image:: _static/column-capper.png
+
+
 Patsy Formulas
 **************
 
