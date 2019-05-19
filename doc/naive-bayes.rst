@@ -8,13 +8,20 @@ the algorithm.
 .. image:: _static/naive-bayes-0.png
   :align: center
 
-An example of this algorithm can be found below.
+An example of the usage of algorithm can be found below.
+
+Example
+*******
+
+Let's first import the dependencies and create some data.
 
 .. code-block:: python
 
     import numpy as np
     import matplotlib.pylab as plt
-    from sklego.naive_bayes import GaussianMixtureNBn = 10000
+    from sklego.naive_bayes import GaussianMixtureNB
+
+    n = 10000
 
     def make_arr(mu1, mu2, std1=1, std2=1, p=0.5):
         res = np.where(np.random.uniform(0, 1, n) > p,
@@ -31,8 +38,17 @@ An example of this algorithm can be found below.
     plt.scatter(X2[:, 0], X2[:, 1], alpha=0.5)
     plt.title("simulated dataset");
 
+
+This code will create a plot of the dataset we'll try to predict.
+
 .. image:: _static/naive-bayes-1.png
    :align: center
+
+Note that this dataset would be hard to classify directly if we
+would be using a standard Gaussian Naive Bayes algorithm since
+the orange class is multipeaked over two clusters. To demonstrate
+this we'll run our algorithm with one or two gaussians that the
+mixture is allowed to find.
 
 .. code-block:: python
 
@@ -54,6 +70,14 @@ An example of this algorithm can be found below.
 
 .. image:: _static/naive-bayes-2.png
    :align: center
+
+.. image:: _static/naive-bayes-22.png
+   :align: center
+
+Note that the second plot fits the original much better.
+
+We can even zoom in on this second algorithm by having it
+sample what it believes is the distribution on each column.
 
 .. code-block:: python
 
