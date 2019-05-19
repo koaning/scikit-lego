@@ -14,6 +14,35 @@ valeus that occur in the dataset **X**.
 
 .. image:: _static/column-capper.png
 
+To see how they work we demonstrate a few examples below.
+
+.. code-block:: python
+
+    import numpy as np
+    import pandas as pd
+    from sklego.preprocessing import ColumnCapper
+
+    np.random.seed(42)
+    X = np.random.uniform(0, 1, (100000, 2))
+
+    cc = ColumnCapper()
+    output = cc.fit(X).transform(X)
+    output.min(axis=0) # array([0.05120598, 0.0502972 ])
+    output.max(axis=0) # array([0.95030677, 0.95088171])
+
+    cc = ColumnCapper(quantile_range=(10, 90))
+    output = cc.fit(X).transform(X)
+    output.min(axis=0) # array([0.10029693, 0.09934085])
+    output.max(axis=0) # array([0.90020412, 0.89859006])
+
+Note that the column capper does not deal with missing values
+but it does support pandas dataframes as well as infinite values.
+
+.. code-block:: python
+
+    arr = np.array([[0.0, np.inf], [-np.inf, 1.0]])
+    cc.transform(arr) # array([[0.10029693, 0.89859006], [0.10029693, 0.89859006]])
+
 
 Patsy Formulas
 **************
@@ -27,7 +56,7 @@ wrapper such that you can also use these in your pipelines.
 .. code-block:: python
 
     import pandas as pd
-    from sklego.transformers import PatsyTransformer
+    from sklego.preprocessing import PatsyTransformer
 
     df = pd.DataFrame({"a": [1, 2, 3, 4, 5],
                        "b": ["yes", "yes", "no", "maybe", "yes"],
