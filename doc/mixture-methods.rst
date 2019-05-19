@@ -95,7 +95,7 @@ standard deviations a given point it.
 .. image:: _static/outlier-mixture-stddev.png
 
 Detection Details
------------------
+*****************
 
 The outlier detection methods that we use are based on the likelihoods
 that come out of the estimated Gaussian Mixture. Depending on the setting
