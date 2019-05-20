@@ -298,30 +298,24 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         :raises:
             ``ValueError`` if ``X`` contains non-numeric columns
         """
-        X = check_array(X, copy=False, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
+        X = check_array(X, copy=True, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
+
+        # If X contains infs, we need to replace them by nans before computing quantiles
+        np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
+
+        # There should be no column containing only nan cells at this point. If that's not the case,
+        # it means that the user asked ColumnCapper to fit some column containing only nan or inf cells.
+        nans_mask = np.isnan(X)
+        invalid_columns_mask = nans_mask.sum(axis=0) == X.shape[0]  # Contains as many nans as rows
+        if invalid_columns_mask.any():
+            raise ValueError("ColumnCapper cannot fit columns containing only inf/nan values")
+
+        q = [quantile_limit/100 for quantile_limit in self.quantile_range]
+        self.quantiles_ = np.nanquantile(a=X, q=q, axis=0, overwrite_input=True,
+                                         interpolation=self.interpolation)
 
         # Saving the number of columns to ensure coherence between fit and transform inputs
         self.n_columns_ = X.shape[1]
-
-        # Converting to pandas.DataFrame because:
-        # 1. It knows how to deal with inf filters
-        # 2. It can compute quantiles even in the presence of nan values
-        # numpy arrays can't do any of the above
-        X = pd.DataFrame(X)
-
-        # Making sure that the magnitudes of -np.inf and np.inf won't cause any trouble
-        X = X[(-np.inf < X) & (X < np.inf)]
-
-        # Computing the quantiles for each column of X
-        min_quantile, max_quantile = self.quantile_range
-        quantiles = X.quantile([min_quantile/100, max_quantile/100], interpolation=self.interpolation)
-
-        # There shouldn't be any nan cells in self.quantiles_. If that's not the case, it means that
-        # the user asked ColumnCapper to fit columns containing only nan or inf cells.
-        if quantiles.isna().sum().sum() > 0:
-            raise ValueError("ColumnCapper cannot fit columns containing only inf/nan values")
-
-        self.quantiles_ = quantiles
 
         return self
 
@@ -349,8 +343,8 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
 
         # Actually capping
-        X = np.minimum(X, self.quantiles_.iloc[1].values)
-        X = np.maximum(X, self.quantiles_.iloc[0].values)
+        X = np.minimum(X, self.quantiles_[1, :])
+        X = np.maximum(X, self.quantiles_[0, :])
 
         return X
 
