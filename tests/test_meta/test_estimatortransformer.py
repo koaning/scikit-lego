@@ -2,7 +2,8 @@ import pytest
 from pandas.tests.extension.numpy_.test_numpy_nested import np
 from sklearn import clone
 from sklearn.dummy import DummyClassifier
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.utils import check_X_y
 
 from sklego.common import flatten
@@ -27,7 +28,7 @@ def test_values_uniform(random_xy_dataset_clf):
     transformer = EstimatorTransformer(clone(clf))
     transformed = transformer.fit(X, y).transform(X)
 
-    assert transformed.shape == (y.shape[0],)
+    assert transformed.shape == (y.shape[0], 1)
     assert np.all(transformed == clf.fit(X, y).predict(X))
 
 
@@ -50,3 +51,16 @@ def test_get_params():
         'estimator__strategy': 'most_frequent',
         'predict_func': 'predict'
     }
+
+
+def test_shape(random_xy_dataset_regr):
+    X, y = random_xy_dataset_regr
+    m = X.shape[0]
+    pipeline = Pipeline([
+        ("ml_features", FeatureUnion([
+            ("model_1",  EstimatorTransformer(LinearRegression())),
+            ("model_2",  EstimatorTransformer(Ridge()))
+        ]))
+    ])
+
+    assert pipeline.fit(X, y).transform(X).shape == (m, 2)
