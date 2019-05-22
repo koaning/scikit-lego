@@ -26,7 +26,7 @@ Setup
 
 Let's first load a bunch of things to do this.
 
-.. code-block::python
+.. code-block:: python
 
     import numpy as np
     import pandas as pd
@@ -51,6 +51,10 @@ Let's first load a bunch of things to do this.
             pltr = metric_df[['time', 'diet', 'pred']].drop_duplicates().loc[lambda d: d['diet'] == i]
             plt.plot(pltr['time'], pltr['pred'], color='.rbgy'[i])
         plt.title(f"linear model per group, MAE: {np.round(metric, 2)}");
+
+
+This code will be used to explain the steps below.
+
 
 Model 1: Linear Regression with Dummies
 ***************************************
