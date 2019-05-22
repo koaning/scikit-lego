@@ -16,12 +16,12 @@ doctest:
 	python -m doctest -v sklego/*.py
 
 test: doctest
-	pytest --disable-warnings
+	pytest --disable-warnings --cov=sklego
+	rm -rf .coverage*
 
 check: flake test
 
 docs:
-	sphinx-apidoc -f -o doc/api sklego
 	sphinx-build doc docs
 
 clean:
@@ -30,6 +30,7 @@ clean:
 	rm -rf dist
 	rm -rf scikit_lego.egg-info
 	rm -rf .ipynb_checkpoints
+	rm -rf .coverage*
 
 dist: clean
 	python setup.py sdist

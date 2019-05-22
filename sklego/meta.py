@@ -34,7 +34,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         Returns an array of shape `(X.shape[0], )`.
         """
         check_is_fitted(self, 'estimator_')
-        return getattr(self.estimator_, self.predict_func)(X)
+        return getattr(self.estimator_, self.predict_func)(X).reshape(-1, 1)
 
 
 class GroupedEstimator(BaseEstimator):
