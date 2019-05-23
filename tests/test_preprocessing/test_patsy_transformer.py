@@ -79,7 +79,7 @@ def test_subset_categories_in_test(df):
     X_train, y_train = df_train[["a", "b", "c", "d"]], df_train[["e"]].values.ravel()
 
     df_test = df[5:]
-    X_test, _ = df_test[["a", "b", "c", "d"]], df_test[["e"]].values.ravel()
+    X_test = df_test[["a", "b", "c", "d"]]
 
     trf = PatsyTransformer("a + np.log(a) + b + c + d - 1")
 
@@ -93,7 +93,7 @@ def test_design_matrix_error(df):
     X_train, y_train = df_train[["a", "b", "c", "d"]], df_train[["e"]].values.ravel()
 
     df_test = df[4:]
-    X_test, _ = df_test[["a", "b", "c", "d"]], df_test[["e"]].values.ravel()
+    X_test = df_test[["a", "b", "c", "d"]]
 
     pipe = Pipeline([
         ("design", PatsyTransformer("a + np.log(a) + b + c + d - 1")),
