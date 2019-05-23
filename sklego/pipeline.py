@@ -263,10 +263,11 @@ class DebugPipeline(Pipeline):
             self,
             steps,
             memory=None,
+            verbose=False,
             *,
             log_callback=None):
         self.log_callback = log_callback
-        super().__init__(steps=steps, memory=memory)
+        super().__init__(steps=steps, memory=memory, verbose=verbose)
 
     @property
     def memory(self):
