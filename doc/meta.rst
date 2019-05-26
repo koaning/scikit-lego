@@ -14,8 +14,10 @@ Grouped Estimation
 
 A kind introduction to "meta"-models is the `GroupedEstimator`.
 
+.. image:: _static/grouped-model.png
+
 To help explain what it can do we'll consider three methods to predict
-the chicken weight  . The chicken data has 578 rows and 4 columns
+the chicken weight. The chicken data has 578 rows and 4 columns
 from an experiment on the effect of diet on early growth of chicks.
 The body weights of the chicks were measured at birth and every second
 day thereafter until day 20. They were also measured on day 21.

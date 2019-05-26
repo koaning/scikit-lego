@@ -1,10 +1,14 @@
+body{
+    background-color: white;
+}
+
 .wy-nav-side{
-	background-color: white;
+	background-color: #f2f2f2;
 	color: black;
 }
 
 .wy-nav-content-wrap{
-	background-color: white;
+	background-color: #f2f2f2;
 }
 
 a.reference.internal{
