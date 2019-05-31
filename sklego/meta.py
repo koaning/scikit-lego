@@ -117,3 +117,46 @@ class GroupedEstimator(BaseEstimator):
                            .loc[lambda d: d['new'] == 1]
                            .itertuples())
             raise ValueError(f"found a group(s) {culprits} in `.predict` that was not in `.fit`")
+
+
+class DecayEstimator(BaseEstimator):
+    """
+    Morphs an estimator suchs that the training weights can be
+    adapted to ensure that points that are far away have less weight.
+    Note that it is up to the user to sort the dataset appropriately.
+    This meta estimator will only work for estimators that have a
+    "sample_weights" argument in their `.fit()` method.
+
+    The DecayEstimator will use exponential decay to weight the parameters.
+
+    w_{t-1} = decay * w_{t}
+
+    """
+
+    def __init__(self, model, decay: float = 0.999):
+        self.model = model
+        self.decay = decay
+
+    def fit(self, X, y):
+        """
+        Fit the data after adapting the same weight.
+
+        :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :param y: array-like, shape=(n_samples,) training data.
+        :return: Returns an instance of self.
+        """
+        weights = np.cumprod(np.ones(X.shape[0]) * self.decay_param)[::-1]
+        return self.model.fit(X, y, sample_weight=weights(X))
+
+    def predict(self, X):
+        """
+        Predict new data by making random guesses.
+
+        :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :return: array, shape=(n_samples,) the predicted data
+        """
+        return self.model.predict(X)
+
+    @property
+    def coef_(self):
+        return self.model.coef_
