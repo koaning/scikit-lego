@@ -150,9 +150,10 @@ class DecayEstimator(BaseEstimator):
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         self.weights_ = np.cumprod(np.ones(X.shape[0]) * self.decay)[::-1]
-        self.model.fit(X, y, sample_weight=self.weights_)
+        self.estimator_ = clone(self.model)
+        self.estimator_.fit(X, y, sample_weight=self.weights_)
         if self._is_classifier():
-            self.classes_ = self.model.classes_
+            self.classes_ = self.estimator_.classes_
         return self
 
     def predict(self, X):
@@ -164,12 +165,8 @@ class DecayEstimator(BaseEstimator):
         """
         if self._is_classifier():
             check_is_fitted(self, ['classes_'])
-        check_is_fitted(self, ['weights_'])
-        return self.model.predict(X)
+        check_is_fitted(self, ['weights_', 'estimator_'])
+        return self.estimator_.predict(X)
 
     def score(self, X, y):
-        return self.model.score(X, y)
-
-    @property
-    def coef_(self):
-        return self.model.coef_
+        return self.estimator_.score(X, y)
