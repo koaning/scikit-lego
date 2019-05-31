@@ -377,3 +377,106 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         allowed_interpolations = ('linear', 'lower', 'higher', 'midpoint', 'nearest')
         if interpolation not in allowed_interpolations:
             raise ValueError("Available interpolation methods: {}".format(', '.join(allowed_interpolations)))
+
+
+class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
+    """Accepts X which has exactly one column"""
+    def __init__(self, periods=12, modulo=365):
+        self.periods = periods
+        self.modulo = modulo
+
+    def fit(self, X, y=None):
+        """Fits the estimator"""
+        X = check_array(X, estimator=self)
+        # This transformer only accepts one feature as input
+        if X.shape[1] != 1:
+            raise ValueError(f'X should have exactly one column, it has: {X.shape[1]}')
+
+        # last element is excluded because the distance between 0 and modulo is 0, so they're very close
+        self.bases_ = np.linspace(0, self.modulo, self.periods+1)[:-1]
+
+        # curves should be wider for longer windows and narrower if we have more curves
+        self.width_ = (self.modulo / self.periods)
+
+        return self
+
+    def transform(self, X):
+        check_is_fitted(self, ['bases_', 'width_'])
+        X = check_array(X, estimator=self)
+        # This transformer only accepts one feature as input
+        # This transformer only accepts one feature as input
+        if X.shape[1] != 1:
+            raise ValueError(f'X should have exactly one column, it has: {X.shape[1]}')
+
+        # get array
+        if type(X) == pd.DataFrame:
+            X = X.values
+
+        X = X % self.modulo
+
+        base_offsets = self._cycle_apply(X, self.bases_, self.modulo)
+
+        # apply rbf function to series for each basis
+        return self._rbf(base_offsets)
+
+    def _cycle_dist(self, arr: np.ndarray, base: float, modulo: float) -> np.ndarray:
+        """Calculates the absolute difference between values in array and base,
+        where 0 and modulo are assumed to be at the same position"""
+
+        abs_diff = np.abs(arr - base)
+        alt = modulo-abs_diff
+        concat = np.concatenate((abs_diff.reshape(-1, 1), alt.reshape(-1, 1)), axis=1)
+        final = concat.min(axis=1)
+        return final
+
+    def _cycle_apply(self, array, bases, modulo):
+        array = array.reshape(-1, 1)
+        bases = bases.reshape(1, -1)
+
+        return np.apply_along_axis(lambda b: self._cycle_dist(array, base=b, modulo=modulo),
+                                   axis=0,
+                                   arr=bases)
+
+    def _rbf(self, arr):
+        return np.exp(-(arr/self.width_)**2)
+
+
+class SpanningBasisFunction(TransformerMixin, BaseEstimator):
+    def __init__(self, periods=12):
+        self.periods = periods
+
+    def fit(self, X, y=None):
+        """Fits the estimator"""
+        X = check_array(X, estimator=self)
+
+        if type(X) == pd.DataFrame:
+            X = X.values
+
+        # normalize
+        self.X_min_ = X.min(axis=0).reshape(1, -1)
+        self.X_max_ = X.max(axis=0).reshape(1, -1)
+
+        self.bases_ = np.linspace(0, 1, self.periods)
+
+        # curves should be wider for longer windows and narrower if we have more curves
+        self.width_ = (1 / self.periods)
+
+        return self
+
+    def transform(self, X):
+        check_is_fitted(self, ['bases_', 'width_'])
+        X = check_array(X, estimator=self)
+
+        X_norm = (X - self.X_min_) / (self.X_max_ - self.X_min_)
+
+        # get array
+        if type(X) == pd.DataFrame:
+            X = X.values
+
+        X_out = np.empty((X.shape[0], X.shape[1]*self.periods))
+        for i in range(X.shape[1]):
+            X_out[:, i*self.periods:(i+1)*self.periods] = self._rbf(X_norm[:, i].reshape(-1, 1) - self.bases_)
+        return X_out
+
+    def _rbf(self, arr):
+        return np.exp(-(arr/self.width_)**2)
