@@ -151,7 +151,11 @@ class DecayEstimator(BaseEstimator):
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         self.weights_ = np.cumprod(np.ones(X.shape[0]) * self.decay)[::-1]
         self.estimator_ = clone(self.model)
-        self.estimator_.fit(X, y, sample_weight=self.weights_)
+        try:
+            self.estimator_.fit(X, y, sample_weight=self.weights_)
+        except TypeError as e:
+            if "sample_weight" in str(e):
+                raise TypeError(f"Model {type(self.model).__name__}.fit() does not have 'sample_weight'")
         if self._is_classifier():
             self.classes_ = self.estimator_.classes_
         return self
