@@ -3,12 +3,10 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 
 from sklego.common import flatten
 from sklego.meta import DecayEstimator
-from tests.conftest import transformer_checks, nonmeta_checks, general_checks, classifier_checks, regressor_checks
+from tests.conftest import general_checks, classifier_checks, regressor_checks
 
 
 @pytest.mark.parametrize("test_fn", flatten([
-    transformer_checks,
-    nonmeta_checks,
     general_checks,
     regressor_checks
 ]))
@@ -18,8 +16,6 @@ def test_estimator_checks_regression(test_fn):
 
 
 @pytest.mark.parametrize("test_fn", flatten([
-    transformer_checks,
-    nonmeta_checks,
     general_checks,
     classifier_checks
 ]))

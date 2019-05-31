@@ -137,6 +137,9 @@ class DecayEstimator(BaseEstimator):
         self.model = model
         self.decay = decay
 
+    def _is_classifier(self):
+        return any(['ClassifierMixin' in p.__name__ for p in type(self.model).__bases__])
+
     def fit(self, X, y):
         """
         Fit the data after adapting the same weight.
@@ -145,11 +148,12 @@ class DecayEstimator(BaseEstimator):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
-        if any(['ClassifierMixin' in p.__name__ for p in type(self).__bases__]):
-            self.classes_ = np.unique(y)
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         self.weights_ = np.cumprod(np.ones(X.shape[0]) * self.decay)[::-1]
-        return self.model.fit(X, y, sample_weight=self.weights_)
+        self.model.fit(X, y, sample_weight=self.weights_)
+        if self._is_classifier():
+            self.classes_ = self.model.classes_
+        return self
 
     def predict(self, X):
         """
@@ -158,10 +162,13 @@ class DecayEstimator(BaseEstimator):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
-        if any(['ClassifierMixin' in p.__name__ for p in type(self).__bases__]):
+        if self._is_classifier():
             check_is_fitted(self, ['classes_'])
         check_is_fitted(self, ['weights_'])
         return self.model.predict(X)
+
+    def score(self, X, y):
+        return self.model.score(X, y)
 
     @property
     def coef_(self):
