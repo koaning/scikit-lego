@@ -5,6 +5,81 @@ There are many preprocessors in scikit-lego and in this document we
 would like to highlight a few such that you might be inspired to use
 pipelines a little bit more flexibly.
 
+Estimators as Transformers
+**************************
+
+Sometimes you'd like the output of a model to be available as a feature
+that you might use as input for another model. The issue here is that
+scikit learn pipelines usually only allow a single model at the end of
+a pipeline. One solution to this problem is to turn the model into a transformer.
+To convert a model to become a transformer you can use the `EstimatorTransformer`
+from the `meta` module.
+
+Example 1
+---------
+
+Let's demonstrate one example. Below we describe how to create a pipeline
+with two models that each see the same dataset. Note that the output of this
+pipeline is still only a transformer pipeline.
+
+.. image:: _static/estimator-transformer-1.png
+
+.. code-block:: python
+
+    import numpy as np
+    import pandas as pd
+
+    from sklearn.pipeline import FeatureUnion, Pipeline
+    from sklearn.linear_model import LinearRegression, Ridge
+
+    from sklego.meta import EstimatorTransformer
+    from sklego.preprocessing import ColumnSelector
+
+    np.random.seed(42)
+    n = 1000
+    X = np.random.uniform(0, 1, (n, 2))
+    y = X.sum(axis=1) + np.random.uniform(0, 1, (n,))
+    df = pd.DataFrame({"x1": X[:, 0], "x2": X[:, 1], "y": y})
+
+    pipeline = Pipeline([
+        ("grab_columns", ColumnSelector(["x1", "x2"])),
+        ("ml_features", FeatureUnion([
+            ("model_1",  EstimatorTransformer(LinearRegression())),
+            ("model_2",  EstimatorTransformer(Ridge()))
+        ]))
+    ])
+
+    pipeline.fit(df, y).transform(df)
+
+
+
+Example 2
+---------
+
+Here's another example that works a little bit differently. Here
+we have two models that each see different data.
+
+.. image:: _static/estimator-transformer-2.png
+
+.. code-block:: python
+
+    pipeline = Pipeline([
+        ("grab_columns", ColumnSelector(["x1", "x2"])),
+        ("ml_features", FeatureUnion([
+            ("p1", Pipeline([
+                ("grab1", ColumnSelector(["x1"])),
+                ("mod1", EstimatorTransformer(LinearRegression()))
+            ])),
+            ("p2", Pipeline([
+                ("grab2", ColumnSelector(["x2"])),
+                ("mod2", EstimatorTransformer(LinearRegression()))
+            ]))
+        ]))
+    ])
+
+    pipeline.fit(df, y).transform(df)
+
+
 Column Capping
 **************
 
