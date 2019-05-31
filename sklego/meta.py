@@ -145,8 +145,11 @@ class DecayEstimator(BaseEstimator):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
-        weights = np.cumprod(np.ones(X.shape[0]) * self.decay_param)[::-1]
-        return self.model.fit(X, y, sample_weight=weights(X))
+        if any(['ClassifierMixin' in p.__name__ for p in type(self).__bases__]):
+            self.classes_ = np.unique(y)
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        self.weights_ = np.cumprod(np.ones(X.shape[0]) * self.decay)[::-1]
+        return self.model.fit(X, y, sample_weight=self.weights_)
 
     def predict(self, X):
         """
@@ -155,6 +158,9 @@ class DecayEstimator(BaseEstimator):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
+        if any(['ClassifierMixin' in p.__name__ for p in type(self).__bases__]):
+            check_is_fitted(self, ['classes_'])
+        check_is_fitted(self, ['weights_'])
         return self.model.predict(X)
 
     @property
