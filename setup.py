@@ -9,7 +9,7 @@ base_packages = ["numpy>=1.15.4", "scipy>=1.2.0", "scikit-learn>=0.20.2",
 docs_packages = ["sphinx>=1.8.5", "sphinx_rtd_theme>=0.4.3"]
 dev_packages = docs_packages + ["flake8>=3.6.0", "matplotlib>=3.0.2", "pytest>=4.0.2",
                                 "nbval>=0.9.1", "plotnine>=0.5.1", "jupyter>=1.0.0",
-                                "jupyterlab>=0.35.4", "pytest-cov>=2.6.1"]
+                                "jupyterlab>=0.35.4", "pytest-cov>=2.6.1", "pytest-mock>=1.6.3"]
 
 
 def read(fname):
