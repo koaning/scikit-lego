@@ -3,7 +3,7 @@ import inspect
 
 import numpy as np
 from scipy.optimize import minimize_scalar
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, OutlierMixin
 from sklearn.mixture import GaussianMixture
 from sklearn.utils import check_X_y
 from sklearn.utils.multiclass import unique_labels
@@ -56,7 +56,7 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         return np.exp(res)/np.exp(res).sum(axis=1)[:, np.newaxis]
 
 
-class GMMOutlierDetector(BaseEstimator):
+class GMMOutlierDetector(OutlierMixin, BaseEstimator):
     """
     The GMMDetector trains a Gaussian Mixture Model on a dataset X. Once
     a density is trained we can evaluate the likelihood scores to see if
@@ -119,11 +119,19 @@ class GMMOutlierDetector(BaseEstimator):
         return self
 
     def score_samples(self, X):
-
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        check_is_fitted(self, ['gmm_', 'likelihood_threshold_'])
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
 
-        return self.gmm_.score_samples(X)
+        return self.gmm_.score_samples(X) * -1
+
+    def decision_function(self, X):
+
+        # We subtract self.offset_ to make 0 be the threshold value for being
+        # an outlier:
+
+        return self.score_samples(X) + self.likelihood_threshold_
 
     def predict(self, X):
         """
@@ -131,8 +139,8 @@ class GMMOutlierDetector(BaseEstimator):
         the model does not think it is an outlier.
 
         :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :return: array, shape=(n_samples,) the predicted data
+        :return: array, shape=(n_samples,) the predicted data. 1 for inliers, -1 for outliers.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ['gmm_', 'likelihood_threshold_'])
-        return (self.score_samples(X) < self.likelihood_threshold_).astype(np.int)
+        predictions = (self.decision_function(X) >= 0).astype(np.int)
+        predictions[predictions == 0] = -1
+        return predictions

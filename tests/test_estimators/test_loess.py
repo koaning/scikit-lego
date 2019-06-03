@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from sklearn.pipeline import Pipeline
 
-from sklego.linear import LoessRegressor
+from sklego.linear_model import LoessRegressor
 
 
 def test_loessregressor_init_normal():
