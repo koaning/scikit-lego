@@ -9,11 +9,9 @@ def test_loessregressor_init_normal():
     """
     Checks initializing the LoessRegressor in normal use cases
     """
-    xs = np.linspace(start=0, stop=9, num=10).reshape(-1, 1)
-    ys = np.random.random(size=10)
 
-    LoessRegressor(span=.6).fit(xs, ys)
-    LoessRegressor(span=1).fit(xs, ys)
+    assert LoessRegressor(span=.6)
+    assert LoessRegressor(span=1)
 
 
 def test_loessregressor_init_errors():
@@ -109,8 +107,8 @@ def test_loessregressor_in_pipeline():
 
     pipeline = Pipeline([('loess', model)])
 
-    xs = np.linspace(start=0, stop=9, num=10).reshape(-1, 1)
-    ys = [x * 2 for x in xs]
+    xs = np.linspace(start=0, stop=9, num=10)
+    ys = np.array([x * 2 for x in xs])
 
     y_preds_expected = [0.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0]
 
@@ -118,3 +116,5 @@ def test_loessregressor_in_pipeline():
     y_preds = [np.round(y, decimals=3) for y in y_preds]
 
     assert y_preds == y_preds_expected
+
+

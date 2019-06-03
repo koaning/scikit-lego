@@ -3,9 +3,9 @@ from typing import Union
 
 import numpy as np
 import scipy.spatial.distance as distance
+from scipy.spatial import KDTree
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.linear_model import LinearRegression
-from sklearn.neighbors import NearestNeighbors
 from sklearn.utils import check_X_y
 from sklearn.utils import check_array
 from sklearn.utils.validation import FLOAT_DTYPES
@@ -16,13 +16,16 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
     """
     Lo(w)ess regressor.
 
+    See for example: https://www.itl.nist.gov/div898/handbook/pmd/section1/pmd144.htm
+
     """
 
-    def __init__(self, weighting_method: Union[str, None] = None, span: float = .1):
+    def __init__(self, weighting_method: Union[str, None] = 'unweighted', span: float = .1):
+
+        self.available_weighting_methods = ['euclidean', 'unweighted']
+
         super().__init__()
-
         self._check_init_inputs(weighting_method, span)
-
         self.weighting_method = weighting_method
         self.span = span
         self.xs = None
@@ -44,8 +47,7 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
         return self
 
-    def predict(self, X: np.array, with_indices: bool = False) -> Union[np.array,
-                                                                        (np.array, np.array)]:
+    def predict(self, X: np.array, with_indices: bool = False) -> Union[np.array, tuple]:
         """
         Predict targets using the fitted model
         :param X: Array-like object of shape (n_samples, 1), input data for the model.
@@ -58,33 +60,29 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
 
         check_is_fitted(self, ['dim_'])
         X = check_array(X)
-
-        y_pred = np.array([])
+        y_pred = np.zeros(shape=(X.shape[0], 1))
 
         if with_indices:
-            indices = []
+            indices = [[] for _ in np.arange(X.shape[0])]
 
-        for x in X:
+        for index, x in enumerate(X):
             idx_window = self._get_window_indices(x.reshape(-1, 1))
-
             if with_indices:
-                indices.append(idx_window)
+                indices[index] = idx_window
 
             X = self.xs[idx_window].reshape(-1, 1)
             y = self.ys[idx_window]
 
             weights = self._create_weights(x, X)
             model = LinearRegression().fit(X, y, sample_weight=weights)
-
-            y_pred = np.append(y_pred, model.predict(x.reshape(-1, 1)))
+            y_pred[index] = model.predict(x.reshape(-1, 1))
 
         if with_indices:
             return y_pred, indices
         else:
             return y_pred
 
-    @staticmethod
-    def _check_init_inputs(weighting_method: str, span: float) -> None:
+    def _check_init_inputs(self, weighting_method: str, span: float) -> None:
         """
         Checks if the provided model parameters are valid.
 
@@ -97,14 +95,12 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
         if not 0 < span <= 1:
             raise ValueError("Span should be larger than 0 and smaller or equal to 1")
 
-        expected_weighting_methods = ['euclidean', None]
-
-        if weighting_method not in expected_weighting_methods:
+        if weighting_method not in self.available_weighting_methods:
             raise ValueError(f"Received unexpected weighting method. "
-                             f"Choose one from: {expected_weighting_methods}. "
+                             f"Choose one from: {self.available_weighting_methods}. "
                              f"If no weighting method is provided, default 'equal' is used.")
 
-    def _get_window_indices(self, x: Union[float, np.array]):
+    def _get_window_indices(self, x: Union[float, np.array]) -> np.array:
         """
         Find and return the indices of the input data points that are closest to
         the given point x. The size of the returned set of indices is determined
@@ -115,10 +111,8 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
         """
 
         n_points = int(len(self.xs) * self.span)
-
-        knn = NearestNeighbors(n_neighbors=n_points).fit(self.xs.reshape(-1, 1))
-
-        return knn.kneighbors(x)[1][0]
+        lookup_closest = KDTree(self.xs)
+        return lookup_closest.query(x=x, k=n_points)[1].flatten()
 
     def _create_weights(self, x: Union[float, np.array], xs: np.array) -> Union[np.array, None]:
         """
@@ -136,5 +130,4 @@ class LoessRegressor(BaseEstimator, RegressorMixin):
             distances = np.array([distance.euclidean(x, xsi) for xsi in xs])
             return (1 - distances / distances.max()).ravel()
 
-        else:
-            return None
+        return None
