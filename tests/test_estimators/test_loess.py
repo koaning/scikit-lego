@@ -116,5 +116,3 @@ def test_loessregressor_in_pipeline():
     y_preds = [np.round(y, decimals=3) for y in y_preds]
 
     assert y_preds == y_preds_expected
-
-
