@@ -62,6 +62,7 @@ Usage
    install
    contribution
    mixture-methods
+   naive-bayes
    meta
    preprocessing
    api/modules
