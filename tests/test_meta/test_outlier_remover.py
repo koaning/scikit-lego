@@ -1,13 +1,10 @@
 import pytest
 from pandas.tests.extension.numpy_.test_numpy_nested import np
-from sklearn.dummy import DummyClassifier
-from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.utils import check_X_y, estimator_checks
+from sklearn.utils import estimator_checks
 
 from sklego.common import flatten
 from sklego.meta import OutlierRemover
 from sklego.mixture import GMMOutlierDetector
-from tests.conftest import general_checks, nonmeta_checks, transformer_checks 
 
 
 @pytest.mark.parametrize("test_fn", flatten([
@@ -33,19 +30,19 @@ def mock_outlier_detector(mocker):
 
 def test_no_outliers(mock_outlier_detector, mocker):
     mock_outlier_detector.fit.return_value = None
-    mock_outlier_detector.predict.return_value = np.array([[1,1]])
+    mock_outlier_detector.predict.return_value = np.array([[1, 1]])
     mocker.patch('sklego.meta.clone').return_value = mock_outlier_detector
-    
+
     outlier_remover = OutlierRemover(outlier_detector=mock_outlier_detector, refit=True)
-    outlier_remover.fit(X=np.array([[1,1], [2,2]]))
-    assert len(outlier_remover.transform_train(np.array([[1,1], [2,2]]))) == 2
-    
+    outlier_remover.fit(X=np.array([[1, 1], [2, 2]]))
+    assert len(outlier_remover.transform_train(np.array([[1, 1], [2, 2]]))) == 2
+
 
 def test_remove_outlier(mock_outlier_detector, mocker):
     mock_outlier_detector.fit.return_value = None
     mock_outlier_detector.predict.return_value = np.array([[-1]])
     mocker.patch('sklego.meta.clone').return_value = mock_outlier_detector
-    
+
     outlier_remover = OutlierRemover(outlier_detector=mock_outlier_detector, refit=True)
-    outlier_remover.fit(X=np.array([[5,5]]))
+    outlier_remover.fit(X=np.array([[5, 5]]))
     assert len(outlier_remover.transform_train(np.array([[0, 0]]))) == 0

@@ -122,10 +122,10 @@ class GroupedEstimator(BaseEstimator):
 class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
     """
     Removes outliers (train-time only) using the supplied removal model.
-    
+
     :param outlier_detector: must implement `fit` and `predict` methods
     :param refit: If True, fits the estimator during pipeline.fit().
-    
+
     """
     def __init__(self, outlier_detector, refit=True):
         self.outlier_detector = outlier_detector
@@ -134,7 +134,7 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
     def fit(self, X, y=None):
         self.estimator_ = clone(self.outlier_detector)
         if self.refit:
-            super().fit(X,y)
+            super().fit(X, y)
             self.estimator_.fit(X, y)
         return self
 

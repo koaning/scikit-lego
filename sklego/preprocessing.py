@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from patsy import dmatrix, build_design_matrices, PatsyError
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.exceptions import NotFittedError
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
 
