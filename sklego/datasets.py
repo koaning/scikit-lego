@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import pandas as pd
 from pkg_resources import resource_filename
 
@@ -35,3 +36,39 @@ def load_chicken(give_pandas=False):
     if give_pandas:
         return df
     return df[['time', 'diet', 'chick']].values, df['weight'].values
+
+
+def make_simpleseries(n_samples=365*5, trend=0.001, season_trend=0.001, noise=0.5,
+                      give_pandas=False, seed=None, stack_noise=False, start_date=None):
+    """
+    Generate a very simple timeseries dataset to play with. The generator
+    assumes to generate daily data with a season, trend and noise.
+
+    :param n_samples: The number of days to simulate the timeseries for.
+    :param trend: The long term trend in the dataset.
+    :param season_trend: The long term trend in the seasonality.
+    :param noise: The noise that is applied to the dataset.
+    :param give_pandas: Return a pandas dataframe instead of a numpy array.
+    :param seed: The seed value for the randomness.
+    :param stack_noise: Set the noise to be stacked by a cumulative sum.
+    :param start_date: Also add a start date (only works if `give_pandas`=True).
+    :return:
+    """
+    if seed:
+        np.random.seed(seed)
+    time = np.arange(0, n_samples)
+    noise = np.random.normal(0, noise, n_samples)
+    if stack_noise:
+        noise = noise.cumsum()
+    a1, a2, a3 = np.random.random(3,)
+    seasonality = (a1*np.sin(time/2/np.pi*(1/4)) +
+                   a2*np.sin(time/2/np.pi*(1/8) + 100) +
+                   a3*np.sin(time/2/np.pi*(1/2) + 50))
+    result = seasonality + season_trend*seasonality*time + trend * time + noise
+    if give_pandas:
+        if start_date:
+            stamps = pd.date_range(start_date, periods=n_samples)
+            return pd.DataFrame({"yt": result, "date": stamps})
+        return pd.DataFrame({"yt": result})
+    return result
+
