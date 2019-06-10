@@ -52,7 +52,19 @@ def make_simpleseries(n_samples=365*5, trend=0.001, season_trend=0.001, noise=0.
     :param seed: The seed value for the randomness.
     :param stack_noise: Set the noise to be stacked by a cumulative sum.
     :param start_date: Also add a start date (only works if `give_pandas`=True).
-    :return:
+    :return: numpy array unless dataframe is specified
+
+    :Example:
+
+    >>> from sklego.datasets import make_simpleseries
+    >>> make_simpleseries(seed=42)
+    array([-0.09066843, -0.32814465,  0.14572661, ...,  0.67277764,
+            0.5083366 ,  0.963994  ])
+    >>> make_simpleseries(give_pandas=True, start_date="2018-01-01", seed=42).head(3)
+             yt       date
+    0 -0.090668 2018-01-01
+    1 -0.328145 2018-01-02
+    2  0.145727 2018-01-03
     """
     if seed:
         np.random.seed(seed)
@@ -71,4 +83,3 @@ def make_simpleseries(n_samples=365*5, trend=0.001, season_trend=0.001, noise=0.
             return pd.DataFrame({"yt": result, "date": stamps})
         return pd.DataFrame({"yt": result})
     return result
-
