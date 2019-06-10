@@ -58,13 +58,13 @@ def make_simpleseries(n_samples=365*5, trend=0.001, season_trend=0.001, noise=0.
 
     >>> from sklego.datasets import make_simpleseries
     >>> make_simpleseries(seed=42)
-    array([-0.09066843, -0.32814465,  0.14572661, ...,  0.67277764,
-            0.5083366 ,  0.963994  ])
+    array([-0.34078806, -0.61828731, -0.18458236, ..., -0.27547402,
+           -0.38237413,  0.13489355])
     >>> make_simpleseries(give_pandas=True, start_date="2018-01-01", seed=42).head(3)
              yt       date
-    0 -0.090668 2018-01-01
-    1 -0.328145 2018-01-02
-    2  0.145727 2018-01-03
+    0 -0.340788 2018-01-01
+    1 -0.618287 2018-01-02
+    2 -0.184582 2018-01-03
     """
     if seed:
         np.random.seed(seed)
@@ -72,10 +72,8 @@ def make_simpleseries(n_samples=365*5, trend=0.001, season_trend=0.001, noise=0.
     noise = np.random.normal(0, noise, n_samples)
     if stack_noise:
         noise = noise.cumsum()
-    a1, a2, a3 = np.random.random(3,)
-    seasonality = (a1*np.sin(time/2/np.pi*(1/4)) +
-                   a2*np.sin(time/2/np.pi*(1/8) + 100) +
-                   a3*np.sin(time/2/np.pi*(1/2) + 50))
+    r1, r2 = np.random.normal(0, 1, 2)
+    seasonality = r1*np.sin(time/365*2*np.pi) + r2*np.cos(time/365*4*np.pi + 1)
     result = seasonality + season_trend*seasonality*time + trend * time + noise
     if give_pandas:
         if start_date:
