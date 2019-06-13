@@ -377,3 +377,46 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         allowed_interpolations = ('linear', 'lower', 'higher', 'midpoint', 'nearest')
         if interpolation not in allowed_interpolations:
             raise ValueError("Available interpolation methods: {}".format(', '.join(allowed_interpolations)))
+
+
+class OrthogonalTransformer(BaseEstimator, TransformerMixin):
+    """
+    Transform the columns of a dataframe or numpy array to a column orthogonal or orthonormal matrix.
+    Q, R such that X = Q*R, with Q orthogonal, from which follows Q = X*inv(R)
+    :param normalize: whether orthogonal matrix should be orthonormal as well
+    """
+
+    def __init__(self, normalize=False):
+        self.normalize = normalize
+
+    def fit(self, X, y=None):
+        """
+        Store the inverse of R of the QR decomposition of X, which can be used to calculate the orthogonal projection
+        of X. If normalization is required, also stores a vector with normalization terms
+        """
+        X = check_array(X, estimator=self)
+
+        if not X.shape[0] > 1:
+            raise ValueError("Orthogonal transformation not valid for one sample")
+
+        # Q, R such that X = Q*R, with Q orthogonal, from which follows Q = X*inv(R)
+        Q, R = np.linalg.qr(X)
+        self.inv_R_ = np.linalg.inv(R)
+
+        if self.normalize:
+            self.normalization_vector_ = np.linalg.norm(Q, ord=2, axis=0)
+        else:
+            self.normalization_vector_ = np.ones((X.shape[1], ))
+
+        return self
+
+    def transform(self, X):
+        """Transforms X using the fitted inverse of R. Normalizes the result if required"""
+        if self.normalize:
+            check_is_fitted(self, ['inv_R_', 'normalization_vector_'])
+        else:
+            check_is_fitted(self, ['inv_R_'])
+
+        X = check_array(X, estimator=self)
+
+        return X @ self.inv_R_ / self.normalization_vector_
