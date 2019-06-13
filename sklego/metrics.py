@@ -11,8 +11,8 @@ def correlation_score(column):
     :return: Negative correlation between estimator.predict(X) and X[colum]
     (in gridsearch, larger is better and we want to typically punish correlation).
     """
-    def fairness_metric(estimator, X, y_true=None):
+    def correlation_metric(estimator, X, y_true=None):
         """Remember: X is the thing going *in* to your pipeline."""
         sensitive_col = X[:, column] if isinstance(X, np.ndarray) else X[column]
         return -np.abs(np.corrcoef(estimator.predict(X), sensitive_col)[1, 0])
-    return fairness_metric
+    return correlation_metric
