@@ -13,7 +13,6 @@ def correlation_score(column):
     """
     def fairness_metric(estimator, X, y_true=None):
         """Remember: X is the thing going *in* to your pipeline."""
-        if isinstance(X, np.ndarray):
-            return -np.abs(np.corrcoef(estimator.predict(X), X[:, column])[1, 0])
-        return -np.abs(np.corrcoef(estimator.predict(X), X[column])[1, 0])
+        sensitive_col = X[:, column] if isinstance(X, np.ndarray) else X[column]
+        return -np.abs(np.corrcoef(estimator.predict(X), sensitive_col)[1, 0])
     return fairness_metric
