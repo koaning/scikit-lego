@@ -445,13 +445,24 @@ class InformationFilter(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         self.check_coltype_(X)
-        self.idx_ = np.argmax([c == self.column for c in X.columns]) if isinstance(X, pd.DataFrame) else self.column
         X = check_array(X, estimator=self)
         return self
 
-    def transform(self, X):
+    def transform_pandas(self, X):
+        if isinstance(self.column, str):
+            away = X[self.column].values
+            cols_to_keep = [c for c in X.columns if c != self.column]
+        else:
+            away = X[:, self.column].values
+            cols_to_keep = [c for i, c in enumerate(X.columns) if i != self.column]
+        information = X[cols_to_keep].values
         X = check_array(X, estimator=self)
-        check_is_fitted(self, ['idx_'])
+        return pd.DataFrame(np.array([orthogonal_(arr, away) for arr in information.T]).T, columns=cols_to_keep)
+
+    def transform(self, X):
+        if isinstance(X, pd.DataFrame):
+            return self.transform_pandas(X)
+        X = check_array(X, estimator=self)
         away = X[:, self.column]
-        information = np.delete(X, self.idx_, axis=1)
-        return np.array([orthogonal_(arr, away) for arr in information])
+        information = np.delete(X, self.column, axis=1)
+        return np.array([orthogonal_(arr, away) for arr in information.T]).T
