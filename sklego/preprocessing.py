@@ -422,25 +422,36 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
         return X @ self.inv_R_ / self.normalization_vector_
 
 
-def scaler(vec, unto):
+def scaler_(vec, unto):
     return vec.dot(unto)/unto.dot(unto)
 
 
-def project(vec, unto):
-    return scaler(vec, unto) * unto
+def project_(vec, unto):
+    return scaler_(vec, unto) * unto
 
 
-def orthogonal(arr, away):
-    return arr - project(arr, away)
+def orthogonal_(arr, away):
+    return arr - project_(arr, away)
 
 
 class InformationFilter(BaseEstimator, TransformerMixin):
     def __init__(self, column):
         self.column = column
 
+    def check_coltype_(self, X):
+        if isinstance(self.column, str):
+            if isinstance(X, np.ndarray):
+                raise ValueError(f"column {self.column} is a string but datatype receive is numpy.")
+
     def fit(self, X, y=None):
+        self.check_coltype_(X)
+        self.idx_ = np.argmax([c == self.column for c in X.columns]) if isinstance(X, pd.DataFrame) else self.column
         X = check_array(X, estimator=self)
-        pass
+        return self
 
     def transform(self, X):
-        pass
+        X = check_array(X, estimator=self)
+        check_is_fitted(self, ['idx_'])
+        away = X[:, self.column]
+        information = np.delete(X, self.idx_, axis=1)
+        return np.array([orthogonal_(arr, away) for arr in information])
