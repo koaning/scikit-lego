@@ -420,3 +420,27 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
         X = check_array(X, estimator=self)
 
         return X @ self.inv_R_ / self.normalization_vector_
+
+
+def scaler(vec, unto):
+    return vec.dot(unto)/unto.dot(unto)
+
+
+def project(vec, unto):
+    return scaler(vec, unto) * unto
+
+
+def orthogonal(arr, away):
+    return arr - project(arr, away)
+
+
+class InformationFilter(BaseEstimator, TransformerMixin):
+    def __init__(self, column):
+        self.column = column
+
+    def fit(self, X, y=None):
+        X = check_array(X, estimator=self)
+        pass
+
+    def transform(self, X):
+        pass
