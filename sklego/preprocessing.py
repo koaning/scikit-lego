@@ -435,29 +435,28 @@ def orthogonal_(arr, away):
 
 
 class InformationFilter(BaseEstimator, TransformerMixin):
-    def __init__(self, column):
-        self.column = column
+    def __init__(self, columns):
+        self.columns = columns
 
     def check_coltype_(self, X):
-        if isinstance(self.column, str):
-            if isinstance(X, np.ndarray):
-                raise ValueError(f"column {self.column} is a string but datatype receive is numpy.")
+        for col in self.columns:
+            if isinstance(col, str):
+                if isinstance(X, np.ndarray):
+                    raise ValueError(f"column {self.column} is a string but datatype receive is numpy.")
+                if isinstance(X, pd.DataFrame):
+                    if col not in X.columns:
+                        raise ValueError(f"column {col} is not in {X.columns}")
+            if isinstance(col, int):
+                if col not in range(X.shape[1]):
+                    raise ValueError(f"column {col} is out of bounds for input shape {X.shape}")
 
     def fit(self, X, y=None):
         self.check_coltype_(X)
-        X = check_array(X, estimator=self)
+        check_array(X, estimator=self)
         return self
 
-    def transform_pandas(self, X):
-        if isinstance(self.column, str):
-            away = X[self.column].values
-            cols_to_keep = [c for c in X.columns if c != self.column]
-        else:
-            away = X[:, self.column].values
-            cols_to_keep = [c for i, c in enumerate(X.columns) if i != self.column]
-        information = X[cols_to_keep].values
-        X = check_array(X, estimator=self)
-        return pd.DataFrame(np.array([orthogonal_(arr, away) for arr in information.T]).T, columns=cols_to_keep)
+    def filter_away_(self, x_keep, x_away):
+        return np.array([orthogonal_(arr, x_away) for arr in x_keep.T]).T
 
     def transform(self, X):
         if isinstance(X, pd.DataFrame):
