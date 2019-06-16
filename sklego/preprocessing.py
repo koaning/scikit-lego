@@ -5,7 +5,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
 
-from sklego.common import TrainOnlyTransformerMixin
+from sklego.common import TrainOnlyTransformerMixin, as_list
 
 
 class RandomAdder(TrainOnlyTransformerMixin, BaseEstimator):
@@ -436,7 +436,7 @@ def orthogonal_(arr, away):
 
 class InformationFilter(BaseEstimator, TransformerMixin):
     def __init__(self, columns):
-        self.columns = columns
+        self.columns = as_list(columns)
 
     def check_coltype_(self, X):
         for col in self.columns:
@@ -450,18 +450,24 @@ class InformationFilter(BaseEstimator, TransformerMixin):
                 if col not in range(X.shape[1]):
                     raise ValueError(f"column {col} is out of bounds for input shape {X.shape}")
 
+    def pd_col_idx(self, X, name):
+        return {name: i for name, i in enumerate(X.columns)}[name]
+
     def fit(self, X, y=None):
         self.check_coltype_(X)
         check_array(X, estimator=self)
+        # we want col idx if it is pandas but we keep the int otherwise
+        self.col_ids_ = [v if isinstance(v, int) else self.pd_col_idx(X, v) for v in self.columns]
         return self
 
     def filter_away_(self, x_keep, x_away):
         return np.array([orthogonal_(arr, x_away) for arr in x_keep.T]).T
 
     def transform(self, X):
-        if isinstance(X, pd.DataFrame):
-            return self.transform_pandas(X)
+        self.check_coltype_(X)
         X = check_array(X, estimator=self)
-        away = X[:, self.column]
-        information = np.delete(X, self.column, axis=1)
-        return np.array([orthogonal_(arr, away) for arr in information.T]).T
+        check_is_fitted(self, ['col_ids_'])
+        information = np.delete(X, self.col_ids_, axis=1)
+        for col in X[:, self.col_ids_]:
+            information = np.array([orthogonal_(arr, col) for arr in information.T]).T
+        return information
