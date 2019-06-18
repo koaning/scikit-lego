@@ -18,7 +18,7 @@ def correlation_score(column):
     return correlation_metric
 
 
-def neg_p_percent(column, positive_target=1):
+def p_percent_score(column, positive_target=1):
     r"""
     The p_percent score calculates the ratio between the probability of a positive outcome
     given the sensitive attribute (column) being true and the same probability given the
@@ -35,7 +35,7 @@ def neg_p_percent(column, positive_target=1):
     :param column: Name of the column (when X is a dataframe)
     or the index of the column (when X is a numpy array).
     :param positive_target: The name of the class which is associated with a positive outcome
-    :return: Negative p percent score (in gridsearch, larger is better and we want to typically punish correlation).
+    :return: p percent score
     """
     def impl(estimator, X, y_true=None):
         """Remember: X is the thing going *in* to your pipeline."""
@@ -48,9 +48,9 @@ def neg_p_percent(column, positive_target=1):
         y_hat = estimator.predict(X)
         y_given_z1 = y_hat[sensitive_col == 1]
         y_given_z0 = y_hat[sensitive_col == 0]
-        p_y1_z1 = np.sum(y_given_z1 == positive_target) / (len(y_given_z1) or 1)
-        p_y1_z0 = np.sum(y_given_z0 == positive_target) / (len(y_given_z0) or 1)
+        p_y1_z1 = np.mean(y_given_z1 == positive_target)
+        p_y1_z0 = np.mean(y_given_z0 == positive_target)
 
         p_percent = np.minimum(p_y1_z1 / p_y1_z0, p_y1_z0 / p_y1_z1)
-        return -p_percent if not np.isnan(p_percent) else -1
+        return p_percent if not np.isnan(p_percent) else 1
     return impl
