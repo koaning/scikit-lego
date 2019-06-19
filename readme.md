@@ -35,11 +35,13 @@ The documentation can be found [here](https://scikit-lego.readthedocs.io/).
 ## Usage 
 
 ```python
-from sklego.preprocessing import RandomAdder
-from sklego.mixture import GMMClassifier
-
+# the scikit learn stuff we love
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
+
+# from scikit lego stuff we add
+from sklego.preprocessing import RandomAdder
+from sklego.mixture import GMMClassifier
 
 ...
 
