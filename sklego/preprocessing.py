@@ -450,32 +450,29 @@ class InformationFilter(BaseEstimator, TransformerMixin):
                 if col not in range(X.shape[1]):
                     raise ValueError(f"column {col} is out of bounds for input shape {X.shape}")
 
-    def pd_col_idx(self, X, name):
-        return {name: i for name, i in enumerate(X.columns)}[name]
+    def col_idx(self, X, name):
+        if isinstance(name, str):
+            if isinstance(X, np.ndarray):
+                raise ValueError("You cannot have a column of type string on a numpy input matrix.")
+            return {name: i for i, name in enumerate(X.columns)}[name]
+        return name
 
     def fit(self, X, y=None):
         self.check_coltype_(X)
-        check_array(X, estimator=self)
-        # we want col idx if it is pandas but we keep the int otherwise
-        self.col_ids_ = [v if isinstance(v, int) else self.pd_col_idx(X, v) for v in self.columns]
-        if isinstance(X, pd.DataFrame):
-            self.cols_to_keep_ = [c for c in X.columns if c not in self.columns]
+        # we want to learn matrix P: X P = X_fair
+        # this means we first need to create X_fair in order to learn P
+        self.col_ids_ = [v if isinstance(v, int) else self.col_idx(X, v) for v in self.columns]
+        X = check_array(X, estimator=self)
+        X_fair = X.copy()
+        for col in self.col_ids_:
+            X_fair = np.array([orthogonal_(c, X[:, col]) for c in X.T]).T
+        self.projection_, resid, rank, s = np.linalg.lstsq(X, X_fair, rcond=None)
         return self
 
-    def filter_away_(self, x_keep, x_away):
-        return np.array([orthogonal_(arr, x_away) for arr in x_keep.T]).T
-
     def transform(self, X):
-        check_is_fitted(self, ['col_ids_'])
-        if isinstance(X, pd.DataFrame):
-            check_is_fitted(self, ['cols_to_keep_'])
-
+        check_is_fitted(self, ['projection_', 'col_ids_'])
         self.check_coltype_(X)
         X = check_array(X, estimator=self)
-
-        information = np.delete(X, self.col_ids_, axis=1)
-        for col in X[:, self.col_ids_]:
-            information = np.array([orthogonal_(arr, col) for arr in information.T]).T
-        if self.cols_to_keep_:
-            return pd.DataFrame(information, columns=self.cols_to_keep_)
-        return information
+        # apply the projection and remove the column we won't need
+        X_fair = X @ self.projection_
+        return np.atleast_2d(np.delete(X_fair, self.col_ids_, axis=1))
