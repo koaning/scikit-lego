@@ -60,6 +60,8 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.RandomAdder` adds randomness in training
 - `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
+- `sklego.preprocessing.ColumnCapper` limits extreme values of the model features
+- `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independant
 - `sklego.dummy.RandomRegressor` benchmark that predicts random values
 - `sklego.naive_bayes.GaussianMixtureNB` classifies by training a 1D GMM per column per class
 - `sklego.mixture.GMMClassifier` classifies by training a GMM per class
@@ -70,6 +72,8 @@ Here's a list of features that this library currently offers:
 - `sklego.meta.DecayEstimator` adds decay to the sample_weight that the model accepts
 - `sklego.meta.GroupedEstimator` can split the data into runs and run a model on each
 - `sklego.meta.EstimatorTransformer` adds a model output as a feature
+- `sklego.metrics.correlation_score` calculates correlation between model output and feature
+- `sklego.metrics.p_percent_score` proxy for model fairness with regards to sensitive attribute
 - `sklego.datasets.load_chicken` loads in the joyful chickweight dataset 
 
 ## New Features 
