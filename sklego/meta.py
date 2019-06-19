@@ -163,7 +163,7 @@ class DecayEstimator(BaseEstimator):
 
     def predict(self, X):
         """
-        Predict new data by making random guesses.
+        Predict new data.
 
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
@@ -172,6 +172,57 @@ class DecayEstimator(BaseEstimator):
             check_is_fitted(self, ['classes_'])
         check_is_fitted(self, ['weights_', 'estimator_'])
         return self.estimator_.predict(X)
+
+    def score(self, X, y):
+        return self.estimator_.score(X, y)
+
+
+class Thresholder(BaseEstimator):
+    """
+    Takes a two class estimator and moves the threshold. This way you might
+    design the algorithm to only accept a certain class if the probability
+    for it is larger than, say, 90% instead of 50%.
+    """
+
+    def __init__(self, model, threshold: float):
+        self.model = model
+        self.threshold = threshold
+
+    def _is_classifier(self):
+        return any(['ClassifierMixin' in p.__name__ for p in type(self.model).__bases__])
+
+    def fit(self, X, y):
+        """
+        Fit the data.
+
+        :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :param y: array-like, shape=(n_samples,) training data.
+        :return: Returns an instance of self.
+        """
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        self.estimator_ = clone(self.model)
+        if not self._is_classifier():
+            raise ValueError("The Thresholder meta model only works on classifcation models.")
+        self.estimator_.fit(X, y)
+        self.classes_ = self.estimator_.classes_
+        if len(self.classes_) != 2:
+            raise ValueError("The Thresholder meta model only works on models with two classes.")
+        return self
+
+    def predict(self, X):
+        """
+        Predict new data.
+
+        :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :return: array, shape=(n_samples,) the predicted data
+        """
+        check_is_fitted(self, ['classes_', 'estimator_'])
+        predicate = self.estimator_.predict_proba(X)[:, 1] > self.threshold
+        return np.where(predicate, self.classes_[1], self.classes_[0])
+
+    def predict_proba(self, X):
+        check_is_fitted(self, ['classes_', 'estimator_'])
+        return self.estimator_.predict_proba(X)
 
     def score(self, X, y):
         return self.estimator_.score(X, y)
