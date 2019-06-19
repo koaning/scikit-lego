@@ -4,6 +4,7 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array, FLOAT_DTYPES
 
+from sklego.base import ProbabilisticClassifier
 from sklego.common import as_list
 
 
@@ -187,9 +188,6 @@ class Thresholder(BaseEstimator):
         self.model = model
         self.threshold = threshold
 
-    def _is_classifier(self):
-        return any(['ClassifierMixin' in p.__name__ for p in type(self.model).__bases__])
-
     def fit(self, X, y):
         """
         Fit the data.
@@ -200,8 +198,8 @@ class Thresholder(BaseEstimator):
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         self.estimator_ = clone(self.model)
-        if not self._is_classifier():
-            raise ValueError("The Thresholder meta model only works on classifcation models.")
+        if not isinstance(self.estimator_, ProbabilisticClassifier):
+            raise ValueError("The Thresholder meta model only works on classifcation models with .predict_proba.")
         self.estimator_.fit(X, y)
         self.classes_ = self.estimator_.classes_
         if len(self.classes_) != 2:
