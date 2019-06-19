@@ -130,7 +130,6 @@ class DecayEstimator(BaseEstimator):
     The DecayEstimator will use exponential decay to weight the parameters.
 
     w_{t-1} = decay * w_{t}
-
     """
 
     def __init__(self, model, decay: float = 0.999, decay_func="exponential"):
