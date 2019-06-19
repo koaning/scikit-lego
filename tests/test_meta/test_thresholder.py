@@ -9,7 +9,7 @@ from sklearn.utils import estimator_checks
 
 
 @pytest.mark.parametrize("test_fn", flatten([
-    ### GENERAL CHECKS ###
+    # GENERAL CHECKS #
     # estimator_checks.check_fit2d_predict1d -> we only test for two classes
     # estimator_checks.check_methods_subset_invariance -> we only test for two classes
     estimator_checks.check_fit2d_1sample,
@@ -19,7 +19,7 @@ from sklearn.utils import estimator_checks
     estimator_checks.check_set_params,
     estimator_checks.check_dict_unchanged,
     # estimator_checks.check_dont_overwrite_parameters -> we only test for two classes
-    ### CLASSIFIER CHECKS ###
+    # CLASSIFIER CHECKS #
     estimator_checks.check_classifier_data_not_an_array,
     estimator_checks.check_classifiers_one_label,
     # estimator_checks.check_classifiers_classes -> we only test for two classes
@@ -73,4 +73,3 @@ def test_raise_error2():
         # we only support two classes
         y = np.random.choice(["a", "b", "c"], 1000)
         mod.fit(X, y)
-
