@@ -1,10 +1,11 @@
 import autograd.numpy as np
+import cvxpy as cp
 from autograd import grad
 from autograd.test_util import check_grads
 
-from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
 from sklearn.utils import check_X_y
-from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
+from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES, column_or_1d
 
 
 class DeadZoneRegressor(BaseEstimator, RegressorMixin):
@@ -64,3 +65,82 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ['coefs_'])
         return np.dot(X, self.coefs_)
+
+
+class FairClassifier(BaseEstimator, ClassifierMixin):
+    r"""
+    A fair logistic regression classifier.
+
+    Minimizes the Log loss while constraining the correlation between the specified `sensitive_cols` and the
+    distance to the decision boundary of the classifier.
+
+    Only works for binary classification problems
+
+    .. math::
+        \begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i},
+        \boldsymbol{\theta}\right) \\
+        {\text { subject to }} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right) d
+        \boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
+        {} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
+        d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}
+
+    Source:
+    - M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
+
+    :param covariance_threshold: The maximum allowed covariance between the sensitive attributes and the distance to the
+    decision boundary
+    :param sensitive_cols: List of sensitive column names(when X is a dataframe)
+    or a list of column indices when X is a numpy array.
+    :param C: Inverse of regularization strength; must be a positive float.
+    Like in support vector machines, smaller values specify stronger regularization.
+    :param fit_intercept: Specifies if a constant (a.k.a. bias or intercept) should be added to the decision function.
+    :param max_iter: Maximum number of iterations taken for the solvers to converge.
+
+    """
+    def __init__(self, covariance_threshold, sensitive_cols, C=1.0, fit_intercept=True, max_iter=100):
+        self.sensitive_cols = sensitive_cols
+        self.fit_intercept = fit_intercept
+        self.covariance_threshold = covariance_threshold
+        self.max_iter = max_iter
+        self.C = C
+
+    def add_intercept(self, X):
+        if self.fit_intercept:
+            return np.c_[np.ones(len(X)), X]
+
+    def fit(self, X, y):
+        X, y = check_X_y(X, y, accept_large_sparse=False)
+        column_or_1d(y)
+        sensitive = X[:, self.sensitive_cols] if isinstance(X, np.ndarray) else X[self.sensitive_cols]
+        X = self.add_intercept(X)
+        n_obs, n_features = X.shape
+
+        theta = cp.Variable(n_features)
+        y_hat = X @ theta
+        log_likelihood = cp.sum(
+            cp.multiply(y, y_hat) -
+            cp.log_sum_exp(cp.hstack([np.zeros((n_obs, 1)), cp.reshape(y_hat, (n_obs, 1))]), axis=1) -
+            1 / self.C * cp.norm(theta[1:])
+        )
+
+        dec_boundary_cov = y_hat @ (sensitive - np.mean(sensitive, axis=0)) / n_obs
+        constraints = [cp.abs(dec_boundary_cov) <= self.covariance_threshold]
+
+        problem = cp.Problem(cp.Maximize(log_likelihood), constraints)
+        problem.solve(max_iters=self.max_iter)
+
+        if problem.status in ['infeasible', 'unbounded']:
+            raise ValueError(f'problem was found to be {problem.status}')
+
+        self.n_iter_ = problem.solver_stats.num_iters
+        self.coef_ = theta.value
+        return self
+
+    def predict_proba(self, X):
+        check_is_fitted(self, ['coef_', 'n_iter_'])
+        X = check_array(X)
+        X = self.add_intercept(X)
+        return X @ self.coef_
+
+    def predict(self, X):
+        return self.predict_proba(X) > 0.5
