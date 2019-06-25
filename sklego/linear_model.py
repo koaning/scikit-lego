@@ -2,8 +2,11 @@ import autograd.numpy as np
 import cvxpy as cp
 from autograd import grad
 from autograd.test_util import check_grads
+from scipy.special._ufuncs import expit
 
-from sklearn.base import BaseEstimator, RegressorMixin, ClassifierMixin
+from sklearn.base import BaseEstimator, RegressorMixin
+from sklearn.linear_model.base import LinearClassifierMixin
+from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import check_X_y
 from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES, column_or_1d
 
@@ -31,7 +34,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             if self.effect == "linear":
                 return np.where(errors > self.threshold, errors, np.zeros(errors.shape))
             if self.effect == "quadratic":
-                return np.where(errors > self.threshold, errors**2, np.zeros(errors.shape))
+                return np.where(errors > self.threshold, errors ** 2, np.zeros(errors.shape))
 
         def training_loss(weights):
             diff = np.abs(np.dot(X, weights) - y)
@@ -67,7 +70,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         return np.dot(X, self.coefs_)
 
 
-class FairClassifier(BaseEstimator, ClassifierMixin):
+class FairClassifier(BaseEstimator, LinearClassifierMixin):
     r"""
     A fair logistic regression classifier.
 
@@ -97,6 +100,7 @@ class FairClassifier(BaseEstimator, ClassifierMixin):
     :param max_iter: Maximum number of iterations taken for the solvers to converge.
 
     """
+
     def __init__(self, covariance_threshold, sensitive_cols, C=1.0, fit_intercept=True, max_iter=100):
         self.sensitive_cols = sensitive_cols
         self.fit_intercept = fit_intercept
@@ -114,6 +118,14 @@ class FairClassifier(BaseEstimator, ClassifierMixin):
         sensitive = X[:, self.sensitive_cols] if isinstance(X, np.ndarray) else X[self.sensitive_cols]
         X = self.add_intercept(X)
         n_obs, n_features = X.shape
+
+        label_encoder = LabelEncoder().fit(y)
+        y = label_encoder.transform(y)
+        classes = self.classes_ = label_encoder.classes_
+
+        if len(classes) > 2:
+            raise ValueError(f"This solver needs samples of exactly 2 classes"
+                             f" in the data, but the data contains {len(classes)}")
 
         theta = cp.Variable(n_features)
         y_hat = X @ theta
@@ -133,14 +145,22 @@ class FairClassifier(BaseEstimator, ClassifierMixin):
             raise ValueError(f'problem was found to be {problem.status}')
 
         self.n_iter_ = problem.solver_stats.num_iters
-        self.coef_ = theta.value
+
+        if self.fit_intercept:
+            self.coef_ = theta.value[np.newaxis, 1:]
+            self.intercept_ = theta.value[0:1]
+        else:
+            self.coef_ = theta.value[np.newaxis, :]
+            self.intercept_ = np.array([0.])
+
         return self
 
     def predict_proba(self, X):
-        check_is_fitted(self, ['coef_', 'n_iter_'])
-        X = check_array(X)
-        X = self.add_intercept(X)
-        return X @ self.coef_
-
-    def predict(self, X):
-        return self.predict_proba(X) > 0.5
+        decision = self.decision_function(X)
+        if decision.ndim == 1:
+            # Workaround for multi_class="multinomial" and binary outcomes
+            # which requires softmax prediction with only a 1D decision.
+            decision_2d = np.c_[-decision, decision]
+        else:
+            decision_2d = decision
+        return expit(decision_2d)
