@@ -1,5 +1,6 @@
 import pytest
 import pandas as pd
+import numpy as np
 from sklearn.utils import estimator_checks
 from sklearn.linear_model import LinearRegression
 
@@ -90,3 +91,18 @@ def test_chickweight_np_keys():
     mod.fit(df[['time', 'chick', 'diet']].values, df['weight'].values)
     # there should still only be 50 groups on this dataset
     assert len(mod.estimators_.keys()) == 50
+
+
+def test_chickweigt_string_groups():
+
+    df = load_chicken(give_pandas=True)
+    df['diet'] = ['omgomgomg' + s for s in df['diet'].astype(str)]
+
+    X = df[['time', 'diet']]
+    X_np = np.array(X)
+
+    y = df['weight']
+
+    # This should NOT raise errors
+    GroupedEstimator(LinearRegression(), groups=['diet']).fit(X, y).predict(X)
+    GroupedEstimator(LinearRegression(), groups=1).fit(X_np, y).predict(X_np)
