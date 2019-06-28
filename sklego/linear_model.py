@@ -1,5 +1,6 @@
 import cvxpy as cp
 import autograd.numpy as np
+import pandas as pd
 from autograd import grad
 from autograd.test_util import check_grads
 from scipy.special._ufuncs import expit
@@ -125,10 +126,13 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         if self.penalty not in ['l1', 'none']:
             raise ValueError(f"penalty should be either 'l1' or 'none', got {self.penalty}")
 
+        self. sensitive_col_idx_ = self.sensitive_cols
+        if isinstance(X, pd.DataFrame):
+            self.sensitive_col_idx_ = [i for i, name in enumerate(X.columns) if name in self.sensitive_cols]
         X, y = check_X_y(X, y, accept_large_sparse=False)
 
-        sensitive = X[:, self.sensitive_cols] if isinstance(X, np.ndarray) else X[self.sensitive_cols]
-        X = self.add_intercept(X)
+        sensitive = X[:, self.sensitive_col_idx_]
+        X = self._add_intercept(X)
 
         column_or_1d(y)
         label_encoder = LabelEncoder().fit(y)
@@ -139,10 +143,10 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             raise ValueError(f"This solver needs samples of exactly 2 classes"
                              f" in the data, but the data contains {len(self.classes_)}: {self.classes_}")
 
-        self._fit(sensitive, X, y)
+        self._solve(sensitive, X, y)
         return self
 
-    def _fit(self, sensitive, X, y):
+    def _solve(self, sensitive, X, y):
         n_obs, n_features = X.shape
         theta = cp.Variable(n_features)
         y_hat = X @ theta
@@ -152,7 +156,7 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             cp.log_sum_exp(cp.hstack([np.zeros((n_obs, 1)), cp.reshape(y_hat, (n_obs, 1))]), axis=1)
         )
         if self.penalty == 'l1':
-            log_likelihood - cp.sum((1 / self.C) * cp.norm(theta[1:]))
+            log_likelihood -= cp.sum((1 / self.C) * cp.norm(theta[1:]))
 
         dec_boundary_cov = y_hat @ (sensitive - np.mean(sensitive, axis=0)) / n_obs
 
@@ -177,15 +181,10 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
 
     def predict_proba(self, X):
         decision = self.decision_function(X)
-        if decision.ndim == 1:
-            # Workaround for multi_class="multinomial" and binary outcomes
-            # which requires softmax prediction with only a 1D decision.
-            decision_2d = np.c_[-decision, decision]
-        else:
-            decision_2d = decision
+        decision_2d = np.c_[-decision, decision]
         return expit(decision_2d)
 
-    def add_intercept(self, X):
+    def _add_intercept(self, X):
         if self.fit_intercept:
             return np.c_[np.ones(len(X)), X]
 

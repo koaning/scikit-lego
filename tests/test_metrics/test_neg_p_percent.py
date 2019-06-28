@@ -1,29 +1,9 @@
-import pandas as pd
 import pytest
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 
 from sklego.metrics import p_percent_score
 from sklego.preprocessing import ColumnSelector
-
-
-@pytest.fixture
-def sensitive_classification_dataset():
-    df = pd.DataFrame({"x1": [1, 0, 1, 0, 1, 0, 1, 1],
-                       "x2": [0, 0, 0, 0, 0, 1, 1, 1],
-                       "y": [1, 1, 1, 0, 1, 0, 0, 0]})
-
-    return df[['x1', 'x2']], df['y']
-
-
-@pytest.fixture
-def sensitive_multiclass_classification_dataset():
-    df = pd.DataFrame({
-        'x1': [1, 0, 1, 0, 1, 0, 1, 1, -2, -2, -2, -2],
-        'x2': [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1],
-        'y': [1, 1, 1, 0, 1, 0, 0, 0, 2, 2, 0, 0],
-    })
-    return df[['x1', 'x2']], df['y']
 
 
 def test_p_percent_pandas(sensitive_classification_dataset):
