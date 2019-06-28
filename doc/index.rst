@@ -64,5 +64,7 @@ Usage
    mixture-methods
    naive-bayes
    meta
+   fairness.ipynb
    preprocessing
+   cross_validation
    api/modules
