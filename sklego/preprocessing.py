@@ -430,10 +430,6 @@ def project_(vec, unto):
     return scaler_(vec, unto) * unto
 
 
-def orthogonal_(arr, away):
-    return arr - project_(arr, away)
-
-
 class InformationFilter(BaseEstimator, TransformerMixin):
     def __init__(self, columns):
         self.columns = as_list(columns)
@@ -466,6 +462,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         X_fair = X.copy()
         for col in self.col_ids_:
             X_fair = np.array([orthogonal_(c, X[:, col]) for c in X.T]).T
+        self.X_fair = X_fair
         self.projection_, resid, rank, s = np.linalg.lstsq(X, X_fair, rcond=None)
         return self
 
