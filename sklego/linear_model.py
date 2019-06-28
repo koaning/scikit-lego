@@ -1,11 +1,11 @@
-import autograd.numpy as np
 import cvxpy as cp
+import autograd.numpy as np
 from autograd import grad
 from autograd.test_util import check_grads
 from scipy.special._ufuncs import expit
-
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.linear_model.base import LinearClassifierMixin
+from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import check_X_y
 from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES, column_or_1d
@@ -91,52 +91,74 @@ class FairClassifier(BaseEstimator, LinearClassifierMixin):
     - M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
 
     :param covariance_threshold: The maximum allowed covariance between the sensitive attributes and the distance to the
-    decision boundary
+    decision boundary. If set to None, no fairness constraint is enforced
     :param sensitive_cols: List of sensitive column names(when X is a dataframe)
     or a list of column indices when X is a numpy array.
     :param C: Inverse of regularization strength; must be a positive float.
     Like in support vector machines, smaller values specify stronger regularization.
+    :param penalty: Used to specify the norm used in the penalization. Expects 'none' or 'l1'
     :param fit_intercept: Specifies if a constant (a.k.a. bias or intercept) should be added to the decision function.
     :param max_iter: Maximum number of iterations taken for the solvers to converge.
+    :param multi_class: The method to use for multiclass predictions
+    :param n_jobs: The amount of parallel jobs thata should be used to fit multiclass models
 
     """
 
-    def __init__(self, covariance_threshold, sensitive_cols, C=1.0, fit_intercept=True, max_iter=100):
+    def __new__(cls, *args, multi_class='ovr', n_jobs=1, **kwargs):
+        multiclass_meta = {
+            'ovr': OneVsRestClassifier,
+            'ovo': OneVsOneClassifier,
+        }[multi_class]
+        return multiclass_meta(_FairClassifier(*args, **kwargs), n_jobs=n_jobs)
+
+
+class _FairClassifier(BaseEstimator, LinearClassifierMixin):
+    def __init__(self, covariance_threshold, sensitive_cols, C=1.0, penalty='l1', fit_intercept=True, max_iter=100):
         self.sensitive_cols = sensitive_cols
         self.fit_intercept = fit_intercept
+        self.penalty = penalty
         self.covariance_threshold = covariance_threshold
         self.max_iter = max_iter
         self.C = C
 
-    def add_intercept(self, X):
-        if self.fit_intercept:
-            return np.c_[np.ones(len(X)), X]
-
     def fit(self, X, y):
+        if self.penalty not in ['l1', 'none']:
+            raise ValueError(f"penalty should be either 'l1' or 'none', got {self.penalty}")
+
         X, y = check_X_y(X, y, accept_large_sparse=False)
-        column_or_1d(y)
+
         sensitive = X[:, self.sensitive_cols] if isinstance(X, np.ndarray) else X[self.sensitive_cols]
         X = self.add_intercept(X)
-        n_obs, n_features = X.shape
 
+        column_or_1d(y)
         label_encoder = LabelEncoder().fit(y)
         y = label_encoder.transform(y)
-        classes = self.classes_ = label_encoder.classes_
+        self.classes_ = label_encoder.classes_
 
-        if len(classes) > 2:
+        if len(self.classes_) > 2:
             raise ValueError(f"This solver needs samples of exactly 2 classes"
-                             f" in the data, but the data contains {len(classes)}")
+                             f" in the data, but the data contains {len(self.classes_)}: {self.classes_}")
 
+        self._fit(sensitive, X, y)
+        return self
+
+    def _fit(self, sensitive, X, y):
+        n_obs, n_features = X.shape
         theta = cp.Variable(n_features)
         y_hat = X @ theta
+
         log_likelihood = cp.sum(
             cp.multiply(y, y_hat) -
-            cp.log_sum_exp(cp.hstack([np.zeros((n_obs, 1)), cp.reshape(y_hat, (n_obs, 1))]), axis=1) -
-            1 / self.C * cp.norm(theta[1:])
+            cp.log_sum_exp(cp.hstack([np.zeros((n_obs, 1)), cp.reshape(y_hat, (n_obs, 1))]), axis=1)
         )
+        if self.penalty == 'l1':
+            log_likelihood - cp.sum((1 / self.C) * cp.norm(theta[1:]))
 
         dec_boundary_cov = y_hat @ (sensitive - np.mean(sensitive, axis=0)) / n_obs
-        constraints = [cp.abs(dec_boundary_cov) <= self.covariance_threshold]
+
+        constraints = []
+        if self.covariance_threshold is not None:
+            constraints.append(cp.abs(dec_boundary_cov) <= self.covariance_threshold)
 
         problem = cp.Problem(cp.Maximize(log_likelihood), constraints)
         problem.solve(max_iters=self.max_iter)
@@ -153,8 +175,6 @@ class FairClassifier(BaseEstimator, LinearClassifierMixin):
             self.coef_ = theta.value[np.newaxis, :]
             self.intercept_ = np.array([0.])
 
-        return self
-
     def predict_proba(self, X):
         decision = self.decision_function(X)
         if decision.ndim == 1:
@@ -164,3 +184,10 @@ class FairClassifier(BaseEstimator, LinearClassifierMixin):
         else:
             decision_2d = decision
         return expit(decision_2d)
+
+    def add_intercept(self, X):
+        if self.fit_intercept:
+            return np.c_[np.ones(len(X)), X]
+
+
+_FairClassifier.__doc__ = FairClassifier.__doc__
