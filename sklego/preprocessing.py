@@ -445,7 +445,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
                     if col not in X.columns:
                         raise ValueError(f"column {col} is not in {X.columns}")
             if isinstance(col, int):
-                if col not in range(np.array(X).shape[1]):
+                if col not in range(np.atleast_2d(np.array(X)).shape[1]):
                     raise ValueError(f"column {col} is out of bounds for input shape {X.shape}")
 
     def col_idx(self, X, name):
@@ -473,7 +473,6 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         for i, col in enumerate(X_fair.T):
             for v in v_vectors.T:
                 X_fair[:, i] = X_fair[:, i] - project_(X_fair[:, i], v)
-        self.X_fair = X_fair
         # we want to learn matrix P: X P = X_fair
         # this means we first need to create X_fair in order to learn P
         self.projection_, resid, rank, s = np.linalg.lstsq(X, X_fair, rcond=None)

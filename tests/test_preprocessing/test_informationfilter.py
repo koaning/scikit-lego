@@ -1,7 +1,9 @@
 import pytest
-import numpy as np
 import pandas as pd
 
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import GridSearchCV
 from sklearn.utils import estimator_checks
 from sklearn.datasets import load_boston
 
@@ -12,6 +14,23 @@ from tests.conftest import transformer_checks, general_checks
 
 @pytest.mark.parametrize("test_fn", flatten([
     transformer_checks,
+    general_checks,
+    # nonmeta_checks
+    estimator_checks.check_estimators_dtypes,
+    estimator_checks.check_fit_score_takes_y,
+    estimator_checks.check_dtype_object,
+    estimator_checks.check_sample_weights_pandas_series,
+    estimator_checks.check_sample_weights_list,
+    estimator_checks.check_sample_weights_invariance,
+    estimator_checks.check_estimators_fit_returns_self,
+    estimator_checks.check_complex_data,
+    # this won't work because we need to select a column
+    # estimator_checks.check_estimators_empty_data_messages,
+    estimator_checks.check_pipeline_consistency,
+    estimator_checks.check_estimators_nan_inf,
+    estimator_checks.check_estimators_overwrite_params,
+    estimator_checks.check_estimator_sparse_data,
+    estimator_checks.check_estimators_pickle,
 ]))
 def test_estimator_checks(test_fn):
     test_fn(InformationFilter.__name__, InformationFilter(columns=[0]))
@@ -50,3 +69,17 @@ def test_output_orthogonal_general_cols():
     for col in cols:
         X_fair = InformationFilter(columns=col).fit_transform(df)
         assert all([(c * df[col]).sum() < 1E-5 for c in X_fair.T])
+
+
+def test_pipeline_gridsearch():
+    X, y = load_boston(return_X_y=True)
+    pipe = Pipeline([
+        ("info", InformationFilter(columns=[11, 12])),
+        ("model", LinearRegression())
+    ])
+    mod = GridSearchCV(
+        estimator=pipe,
+        param_grid={"info__columns": [[], [11], [12], [11, 12]]},
+        cv=2
+    )
+    assert pd.DataFrame(mod.fit(X, y).cv_results_).shape[0] == 4
