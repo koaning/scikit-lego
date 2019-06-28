@@ -453,16 +453,27 @@ class InformationFilter(BaseEstimator, TransformerMixin):
             return {name: i for i, name in enumerate(X.columns)}[name]
         return name
 
+    def _make_v_vectors(self, X, col_ids):
+        vs = np.zeros((X.shape[0], len(col_ids)))
+        for i, c in enumerate(col_ids):
+            vs[:, i] = X[:, col_ids[i]]
+            for j in range(0, i):
+                vs[:, i] = vs[:, i] - project_(vs[:, i], vs[:, j])
+        return vs
+
     def fit(self, X, y=None):
         self.check_coltype_(X)
-        # we want to learn matrix P: X P = X_fair
-        # this means we first need to create X_fair in order to learn P
         self.col_ids_ = [v if isinstance(v, int) else self.col_idx(X, v) for v in self.columns]
         X = check_array(X, estimator=self)
         X_fair = X.copy()
-        for col in self.col_ids_:
-            X_fair = np.array([orthogonal_(c, X[:, col]) for c in X.T]).T
+        v_vectors = self._make_v_vectors(X, self.col_ids_)
+        # gram smidt process but only on sensitive attributes
+        for i, col in enumerate(X_fair.T):
+            for v in v_vectors.T:
+                X_fair[:, i] = X_fair[:, i] - project_(X_fair[:, i], v)
         self.X_fair = X_fair
+        # we want to learn matrix P: X P = X_fair
+        # this means we first need to create X_fair in order to learn P
         self.projection_, resid, rank, s = np.linalg.lstsq(X, X_fair, rcond=None)
         return self
 
