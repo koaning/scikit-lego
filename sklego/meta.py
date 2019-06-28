@@ -143,8 +143,8 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
     def transform_train(self, X):
         check_is_fitted(self, 'estimator_')
         predictions = self.estimator_.predict(X)
-        check_array(predictions, estimator=self.outlier_detector)
-        return X[predictions.squeeze() != -1]
+        check_array(predictions, estimator=self.outlier_detector, ensure_2d=False)
+        return X[predictions != -1]
 
 
 class DecayEstimator(BaseEstimator):
