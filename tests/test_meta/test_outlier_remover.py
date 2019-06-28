@@ -1,5 +1,6 @@
 import pytest
 from pandas.tests.extension.numpy_.test_numpy_nested import np
+from sklearn.ensemble import IsolationForest
 from sklearn.utils import estimator_checks
 
 from sklego.common import flatten
@@ -19,8 +20,11 @@ from sklego.mixture import GMMOutlierDetector
     estimator_checks.check_transformers_unfitted
 ]))
 def test_estimator_checks(test_fn):
-    outlier_remover = OutlierRemover(outlier_detector=GMMOutlierDetector(), refit=True)
-    test_fn(OutlierRemover.__name__, outlier_remover)
+    gmm_remover = OutlierRemover(outlier_detector=GMMOutlierDetector(), refit=True)
+    test_fn(OutlierRemover.__name__, gmm_remover)
+
+    isolation_forest_remover = OutlierRemover(outlier_detector=IsolationForest(), refit=True)
+    test_fn(OutlierRemover.__name__, isolation_forest_remover)
 
 
 def test_no_outliers(mocker):
