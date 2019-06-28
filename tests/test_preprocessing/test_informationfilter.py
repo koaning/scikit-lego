@@ -10,13 +10,11 @@ from sklego.preprocessing import InformationFilter
 from tests.conftest import transformer_checks, general_checks
 
 
-# @pytest.mark.parametrize("test_fn", flatten([
-#     transformer_checks,
-#     general_checks,
-#     estimator_checks
-# ]))
-# def test_estimator_checks(test_fn):
-#     test_fn(InformationFilter.__name__, InformationFilter())
+@pytest.mark.parametrize("test_fn", flatten([
+    transformer_checks,
+]))
+def test_estimator_checks(test_fn):
+    test_fn(InformationFilter.__name__, InformationFilter(columns=[0]))
 
 
 def test_v_columns_orthogonal():

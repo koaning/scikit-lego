@@ -432,18 +432,20 @@ def project_(vec, unto):
 
 class InformationFilter(BaseEstimator, TransformerMixin):
     def __init__(self, columns):
-        self.columns = as_list(columns)
+        self.columns = columns
+        # sklearn does not allow `as_list` immediately because of cloning reasons
+        self.cols = as_list(columns)
 
     def check_coltype_(self, X):
-        for col in self.columns:
+        for col in self.cols:
             if isinstance(col, str):
                 if isinstance(X, np.ndarray):
-                    raise ValueError(f"column {self.column} is a string but datatype receive is numpy.")
+                    raise ValueError(f"column {col} is a string but datatype receive is numpy.")
                 if isinstance(X, pd.DataFrame):
                     if col not in X.columns:
                         raise ValueError(f"column {col} is not in {X.columns}")
             if isinstance(col, int):
-                if col not in range(X.shape[1]):
+                if col not in range(np.array(X).shape[1]):
                     raise ValueError(f"column {col} is out of bounds for input shape {X.shape}")
 
     def col_idx(self, X, name):
@@ -463,7 +465,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         self.check_coltype_(X)
-        self.col_ids_ = [v if isinstance(v, int) else self.col_idx(X, v) for v in self.columns]
+        self.col_ids_ = [v if isinstance(v, int) else self.col_idx(X, v) for v in self.cols]
         X = check_array(X, estimator=self)
         X_fair = X.copy()
         v_vectors = self._make_v_vectors(X, self.col_ids_)
