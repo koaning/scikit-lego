@@ -130,6 +130,7 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
     def __init__(self, outlier_detector, refit=True):
         self.outlier_detector = outlier_detector
         self.refit = refit
+        self.estimator_ = None
 
     def fit(self, X, y=None):
         self.estimator_ = clone(self.outlier_detector)
