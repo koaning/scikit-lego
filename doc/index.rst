@@ -65,6 +65,6 @@ Usage
    naive-bayes
    meta
    fairness.ipynb
+   timegapsplit.ipynb
    preprocessing
-   cross_validation
    api/modules
