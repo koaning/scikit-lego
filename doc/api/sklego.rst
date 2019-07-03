@@ -4,10 +4,10 @@ sklego package
 Submodules
 ----------
 
-sklego.common module
---------------------
+sklego.datasets module
+----------------------
 
-.. automodule:: sklego.common
+.. automodule:: sklego.datasets
     :members:
     :undoc-members:
     :show-inheritance:
@@ -20,10 +20,10 @@ sklego.dummy module
     :undoc-members:
     :show-inheritance:
 
-sklego.linear module
---------------------
+sklego.linear\_model module
+---------------------------
 
-.. automodule:: sklego.linear
+.. automodule:: sklego.linear_model
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,6 +32,14 @@ sklego.meta module
 ------------------
 
 .. automodule:: sklego.meta
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sklego.model\_selection module
+------------------------------
+
+.. automodule:: sklego.model_selection
     :members:
     :undoc-members:
     :show-inheritance:
@@ -72,23 +80,6 @@ sklego.preprocessing module
 ---------------------------
 
 .. automodule:: sklego.preprocessing
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-sklego.transformers module
---------------------------
-
-.. automodule:: sklego.transformers
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: sklego
     :members:
     :undoc-members:
     :show-inheritance:

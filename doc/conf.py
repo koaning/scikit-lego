@@ -19,7 +19,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'scikit-lego'
-copyright = '2019, Vincent and Others[tm]'
+copyright = '2019, Vincent, Matthijs and ManyOthers[tm]'
 author = 'Vincent and Others[tm]'
 
 # The short X.Y version

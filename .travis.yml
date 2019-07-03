@@ -10,7 +10,8 @@ before_install:
 install:
   - pip install -e .
   - pip install .[dev]
+  - pip freeze
 script:
-  - pytest --disable-warnings
-  - python -m doctest -v sklego/*.py
   - flake8
+  - pytest --disable-warnings --cov=sklego
+  - python -m doctest -v sklego/*.py
