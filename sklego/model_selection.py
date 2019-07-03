@@ -9,26 +9,20 @@ class TimeGapSplit:
     """
     Time Series cross-validator
     ---------------------------
-
     Provides train/test indices to split time series data samples.
     This cross-validation object is a variation of TimeSeriesSplit with the following differences:
-
     1. The splits are made based on datetime duration, instead of number of rows.
     2. The user specifies the training and the validation durations
     3. The user can specify a 'gap' duration that is omitted from the end part of the training split
-
     Those 3 parameters can be used to really replicate how the model
     is going to be used in production in batch learning.
     i.e. you can fix:
-
     1. The historical training data
     2. The retraining frequency
     3. The period of the forward looking window necessary to create the target.
     This period at the end of your training fold is dropped due to lack of recent data to create your target.
-
     Each validation fold doesn't overlap. The entire 'window' moves by 1 valid_duration until there is not enough data.
     The number of folds is automatically defined that way.
-
     :param pandas.DataFrame df: DataFrame that should have all the indices of X used in split()
     :param str date_col: Name of the column of datetime in the df
     :param datetime.timedelta train_duration: historical training data
@@ -36,13 +30,9 @@ class TimeGapSplit:
     :param datetime.timedelta gap_duration: forward looking window of the target
     """
 
-    def __init__(
-        self, df, date_col, train_duration, valid_duration, gap_duration=timedelta(0)
-    ):
+    def __init__(self, df, date_col, train_duration, valid_duration, gap_duration=timedelta(0)):
         if train_duration <= gap_duration:
-            raise AssertionError(
-                "gap_duration is longer than train_duration, it should be shorter."
-            )
+            raise AssertionError("gap_duration is longer than train_duration, it should be shorter.")
 
         df[date_col] = pd.to_datetime(df[date_col])
         self.df = df
@@ -54,7 +44,6 @@ class TimeGapSplit:
     def split(self, X, y=None, groups=None):
         """
         Generate indices to split data into training and test set.
-
         :param pandas.DataFrame X:
         :param y: Always ignored, exists for compatibility
         :param groups: Always ignored, exists for compatibility
@@ -70,23 +59,16 @@ class TimeGapSplit:
                 break
 
             train_i = date_series[
-                (date_series >= current_date)
-                & (date_series < current_date + self.train_duration - self.gap_duration)
-            ].index.values
+                (date_series >= current_date) &
+                (date_series < current_date + self.train_duration - self.gap_duration)].index.values
             valid_i = date_series[
-                (date_series >= current_date + self.train_duration)
-                & (
-                    date_series
-                    < current_date + self.train_duration + self.valid_duration
-                )
-            ].index.values
+                (date_series >= current_date + self.train_duration) &
+                (date_series < current_date + self.train_duration + self.valid_duration)].index.values
 
             current_date = current_date + self.valid_duration
 
-            yield (
-                np.array([X.index.get_loc(i) for i in train_i]),
-                np.array([X.index.get_loc(i) for i in valid_i]),
-            )
+            yield (np.array([X.index.get_loc(i) for i in train_i]),
+                   np.array([X.index.get_loc(i) for i in valid_i]))
 
     def get_n_splits(self, X=None, y=None, groups=None):
 
