@@ -4,6 +4,8 @@ from datetime import timedelta
 from sklearn.exceptions import NotFittedError
 from sklearn.utils import check_array
 
+from sklego.base import Clusterer
+
 
 class TimeGapSplit:
     """
@@ -85,10 +87,8 @@ class KlusterFoldValidation:
     """
 
     def __init__(self, cluster_method=None):
-        if not hasattr(cluster_method, "fit_predict"):
-            raise TypeError(
-                "Provide a cluster method which supports fit_predict operation"
-            )
+        if not isinstance(cluster_method, Clusterer):
+            raise ValueError("The KlusterFoldValidation only works on cluster methods with .fit_predict.")
 
         self.cluster_method = cluster_method
         self.n_splits = None
@@ -128,5 +128,3 @@ class KlusterFoldValidation:
             return True
         except NotFittedError:
             return False
-
-

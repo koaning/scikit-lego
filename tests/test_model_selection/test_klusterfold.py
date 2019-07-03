@@ -59,5 +59,4 @@ def test_splits_fitted(cluster_method, random_xy_dataset_regr):
 def test_no_split(random_xy_dataset_regr):
     # With only one split, the method should raise a ValueError
     cluster_method = DummyCluster(n_splits=1)
-    kf = KlusterFoldValidation(cluster_method=cluster_method)
-
+    KlusterFoldValidation(cluster_method=cluster_method)
