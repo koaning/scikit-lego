@@ -53,6 +53,12 @@ class GroupedEstimator(BaseEstimator):
         self.groups = groups
         self.use_fallback = use_fallback
 
+    def __remove_groups_from_x(self, X):
+        try:
+            return X.drop(columns=self.groups, inplace=False)
+        except AttributeError:  # np.array
+            return np.delete(X, self.groups, axis=1)
+
     def fit(self, X, y):
         """
         Fit the model using X, y as training data. Will also learn the groups
@@ -62,7 +68,14 @@ class GroupedEstimator(BaseEstimator):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
-        check_X_y(X, y)
+        try:
+            check_X_y(X, y)
+        except ValueError as e:
+            if 'could not convert string to float' in str(e):
+                check_X_y(self.__remove_groups_from_x(X), y)
+            else:
+                raise e
+
         pred_col = 'the-column-that-i-want-to-predict-but-dont-have-the-name-for'
         if isinstance(X, np.ndarray):
             X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
@@ -92,7 +105,14 @@ class GroupedEstimator(BaseEstimator):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
-        check_array(X)
+        try:
+            check_array(X)
+        except ValueError as e:
+            if 'could not convert string to float' in str(e):
+                check_array(self.__remove_groups_from_x(X))
+            else:
+                raise e
+
         check_is_fitted(self, ['estimators_', 'groups_', 'group_colnames_',
                                'X_colnames_', 'fallback_'])
         if isinstance(X, np.ndarray):
