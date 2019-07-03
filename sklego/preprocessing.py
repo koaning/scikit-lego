@@ -458,10 +458,6 @@ class InformationFilter(BaseEstimator, TransformerMixin):
                     (in the case of numpy) or string (in the case of pandas).
     """
     def __init__(self, columns):
-        """
-
-        :param columns:
-        """
         self.columns = columns
         # sklearn does not allow `as_list` immediately because of cloning reasons
         self.cols = as_list(columns)
