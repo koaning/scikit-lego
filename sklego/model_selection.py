@@ -1,6 +1,8 @@
-from sklearn.model_selection._split import _BaseKFold
 import numpy as np
 import pandas as pd
+from datetime import timedelta
+from sklearn.exceptions import NotFittedError
+from sklearn.utils import check_array
 
 
 class TimeGapSplit:
@@ -91,51 +93,58 @@ class TimeGapSplit:
         return sum(1 for x in self.split(X, y, groups))
 
 
-class KlusterFoldValidation(_BaseKFold):
+class KlusterFoldValidation:
     """
-    K-Means cross validator
+    KlusterFold cross validator
 
-    :param n_splits: Number of splits (clusters) to fold on
+    - Create folds based on provided cluster method
+
     :param cluster_method: Clustering method with fit_predict attribute
     """
 
-    def __init__(self, random_state, cluster_method=None):
+    def __init__(self, cluster_method=None):
         if not hasattr(cluster_method, "fit_predict"):
             raise TypeError(
                 "Provide a cluster method which supports fit_predict operation"
             )
 
-        super(KlusterFoldValidation, self).__init__(
-            n_splits=3, shuffle=False, random_state=random_state
-        )
-
         self.cluster_method = cluster_method
+        self.n_splits = None
 
-    def _iter_test_indices(self, X, y=None, groups=None):
+    def split(self, X, y=None, groups=None):
         """
         Generator to iterate over the indices
 
-        :param X: Data to perform folds on
-        :param y: Not used but required for _BaseKfold
-        :param groups: Not used but required for _BaseKfold
+        :param X: Array to split on
+        :param y: Always ignored, exists for compatibility
+        :param groups: Always ignored, exists for compatibility
         """
-        if isinstance(X, pd.DataFrame):
-            X = X.values
 
-        clusters = self.cluster_method.fit_predict(X)
+        X = check_array(X)
+
+        if not self._method_is_fitted(X):
+            self.cluster_method.fit(X)
+        clusters = self.cluster_method.predict(X)
 
         self.n_splits = len(np.unique(clusters))
 
-        if self.n_splits == 0:
+        if self.n_splits < 2:
             raise ValueError(
                 f"Clustering method resulted in {self.n_splits} cluster, too few for fold validation"
             )
 
         for label in np.unique(clusters):
-            yield np.where(clusters == label)[0]
+            yield (np.where(clusters != label)[0], np.where(clusters == label)[0])
 
+    def _method_is_fitted(self, X):
+        """
+        :param X: Array to use if the method is fitted
+        :return: True if fitted, else False
+        """
+        try:
+            self.cluster_method.predict(X[0:1, :])
+            return True
+        except NotFittedError:
+            return False
 
-import pandas as pd
-import numpy as np
-from datetime import timedelta
 
