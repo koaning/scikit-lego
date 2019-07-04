@@ -57,6 +57,10 @@ def test_splits_fitted(cluster_method, random_xy_dataset_regr):
 
 @pytest.mark.xfail(raises=ValueError)
 def test_no_split(random_xy_dataset_regr):
+    X, y = random_xy_dataset_regr
     # With only one split, the method should raise a ValueError
     cluster_method = DummyCluster(n_splits=1)
-    KlusterFoldValidation(cluster_method=cluster_method)
+    kf = KlusterFoldValidation(cluster_method=cluster_method)
+    for train_index, test_index in kf.split(X):
+        assert len(train_index) > 0
+        assert len(test_index) > 0
