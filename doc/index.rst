@@ -64,5 +64,7 @@ Usage
    mixture-methods
    naive-bayes
    meta
+   fairness.ipynb
+   timegapsplit.ipynb
    preprocessing
    api/modules
