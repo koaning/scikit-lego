@@ -9,14 +9,42 @@ from sklego.metrics import p_percent_score
 from tests.conftest import general_checks, nonmeta_checks, classifier_checks
 
 
-@pytest.mark.parametrize("test_fn", flatten([
-    general_checks,
-    nonmeta_checks,
-    classifier_checks,
-]))
+@pytest.mark.parametrize(
+    "test_fn", flatten([general_checks, nonmeta_checks, classifier_checks])
+)
 def test_standard_checks(test_fn):
-    trf = FairClassifier(covariance_threshold=None, C=1, penalty='none', sensitive_cols=[0])
+    trf = FairClassifier(
+        covariance_threshold=None,
+        C=1,
+        penalty="none",
+        sensitive_cols=[0],
+        train_sensitive_cols=True,
+    )
     test_fn(FairClassifier.__name__, trf)
+
+
+def _test_same(dataset):
+    X, y = dataset
+    if X.shape[1] == 1:
+        # If we only have one column (which is also the sensitive one) we can't fit
+        return True
+
+    sensitive_cols = [0]
+    X_without_sens = np.delete(X, sensitive_cols, axis=1)
+    lr = LogisticRegression(penalty="none", solver="lbfgs")
+    fair = FairClassifier(
+        covariance_threshold=None, sensitive_cols=sensitive_cols, penalty="none"
+    )
+    try:
+        fair.fit(X, y)
+    except SolverError:
+        pass
+    else:
+        lr.fit(X_without_sens, y)
+        normal_pred = lr.predict_proba(X_without_sens)
+        fair_pred = fair.predict_proba(X)
+        np.testing.assert_almost_equal(normal_pred, fair_pred, decimal=2)
+        assert np.sum(lr.predict(X_without_sens) != fair.predict(X)) / len(X) < 0.01
 
 
 def test_same_logistic(random_xy_dataset_clf):
@@ -25,19 +53,7 @@ def test_same_logistic(random_xy_dataset_clf):
     for binary classification problems when we set a high threshold in the case where we set
     the covariance_threshold to None
     """
-    X, y = random_xy_dataset_clf
-
-    lr = LogisticRegression(penalty='none', solver='lbfgs')
-    fair = FairClassifier(covariance_threshold=None, sensitive_cols=[0], penalty='none')
-    try:
-        fair.fit(X, y)
-    except SolverError:
-        pass
-    else:
-        lr.fit(X, y)
-
-        np.testing.assert_almost_equal(lr.predict_proba(X), fair.predict_proba(X), decimal=2)
-        assert np.sum(lr.predict(X) != fair.predict(X)) / len(X) < 0.01
+    _test_same(random_xy_dataset_clf)
 
 
 def test_same_logistic_multiclass(random_xy_dataset_multiclf):
@@ -46,19 +62,7 @@ def test_same_logistic_multiclass(random_xy_dataset_multiclf):
     for multiclass problems when we set a high threshold in the case where we set
     the covariance_threshold to None
     """
-    X, y = random_xy_dataset_multiclf
-
-    lr = LogisticRegression(penalty='none', solver='lbfgs', multi_class='ovr')
-    fair = FairClassifier(covariance_threshold=None, sensitive_cols=[0], penalty='none')
-    try:
-        fair.fit(X, y)
-    except SolverError:
-        pass
-    else:
-        lr.fit(X, y)
-
-        np.testing.assert_almost_equal(lr.predict_proba(X), fair.predict_proba(X), decimal=2)
-        assert np.sum(lr.predict(X) != fair.predict(X)) / len(X) < 0.01
+    _test_same(random_xy_dataset_multiclf)
 
 
 def test_regularization(sensitive_classification_dataset):
@@ -67,7 +71,9 @@ def test_regularization(sensitive_classification_dataset):
 
     prev_theta_norm = np.inf
     for C in [1, 0.5, 0.2, 0.1]:
-        fair = FairClassifier(covariance_threshold=None, sensitive_cols=['x1'], C=C).fit(X, y)
+        fair = FairClassifier(
+            covariance_threshold=None, sensitive_cols=["x1"], C=C
+        ).fit(X, y)
         theta_norm = np.abs(np.sum(fair.coef_))
         assert theta_norm < prev_theta_norm
         prev_theta_norm = theta_norm
@@ -76,11 +82,16 @@ def test_regularization(sensitive_classification_dataset):
 def test_fairness(sensitive_classification_dataset):
     """tests whether fairness (measured by p percent score) increases as we decrease the covariance threshold"""
     X, y = sensitive_classification_dataset
-    scorer = p_percent_score('x1')
+    scorer = p_percent_score("x1")
 
     prev_fairness = -np.inf
     for cov_threshold in [None, 10, 0.5, 0.1]:
-        fair = FairClassifier(covariance_threshold=cov_threshold, sensitive_cols=['x1'], penalty='none').fit(X, y)
+        fair = FairClassifier(
+            covariance_threshold=cov_threshold,
+            sensitive_cols=["x1"],
+            penalty="none",
+            train_sensitive_cols=True,
+        ).fit(X, y)
         fairness = scorer(fair, X, y)
         assert fairness >= prev_fairness
         prev_fairness = fairness
