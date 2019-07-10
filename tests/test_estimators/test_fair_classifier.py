@@ -90,7 +90,7 @@ def test_fairness(sensitive_classification_dataset):
             covariance_threshold=cov_threshold,
             sensitive_cols=["x1"],
             penalty="none",
-            train_sensitive_cols=True,
+            train_sensitive_cols=False,
         ).fit(X, y)
         fairness = scorer(fair, X, y)
         assert fairness >= prev_fairness

@@ -220,6 +220,8 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         return expit(decision_2d)
 
     def decision_function(self, X):
+        X = check_array(X)
+
         if not self.train_sensitive_cols:
             X = np.delete(X, self.sensitive_col_idx_, axis=1)
         return super().decision_function(X)
