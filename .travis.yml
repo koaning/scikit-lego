@@ -15,3 +15,4 @@ script:
   - flake8
   - pytest --disable-warnings --cov=sklego
   - python -m doctest -v sklego/*.py
+  - pytest --nbval-lax doc/*.ipynb
