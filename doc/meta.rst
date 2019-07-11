@@ -170,4 +170,62 @@ Again, we show the predictions:
 Note that these predictions seems to yield the lowest error but take it
 with a grain of salt since these errors are only based on the train set.
 
+Decayed Estimation
+------------------
+
+Often you are interested in predicting the future. You use the data from
+the past in an attempt to achieve this and it could be said that perhaps
+data from the far history is less relevant than data from the recent past.
+
+This is the idea behind the `DecayEstimator` meta-model. It looks at the
+order of data going in and it will assign a higher importance to recent rows
+that occurred recently and a lower importance to older rows. Recency is based
+on the order so it is imporant that the dataset that you pass in is correctly
+ordered beforehand.
+
+We'll demonstrate how it works by applying it on a simulated timeseries problem.
+
+.. code-block:: python
+
+    from sklearn.dummy import DummyRegressor
+    from sklego.meta import GroupedEstimator, DecayEstimator
+    from sklego.datasets import make_simpleseries
+
+    df = (pd.DataFrame({"yt": make_simpleseries(seed=1),
+                       "date": pd.date_range("2000-01-01", periods=len(yt))})
+          .assign(m=lambda d: d.date.dt.month)
+          .reset_index())
+
+    plt.figure(figsize=(12, 3))
+    plt.plot(make_simpleseries(seed=1));
+
+
+.. image:: _static/decay1.png
+   :align: center
+
+We will create two models on this dataset. One model calculates the average
+value per month in our timeseries and the other does the same thing but will
+decay the importance of making accurate predictions for the far history.
+
+.. code-block:: python
+
+    mod1 = (GroupedEstimator(DummyRegressor(), groups=["m"])
+            .fit(df[['m']], df['yt']))
+
+
+    mod2 = (GroupedEstimator(DecayEstimator(DummyRegressor(), decay=0.9), groups=["m"])
+            .fit(df[['index', 'm']], df['yt']))
+
+    plt.figure(figsize=(12, 3))
+    plt.plot(df['yt'], alpha=0.5);
+    plt.plot(mod1.predict(df[['m']]), label="grouped")
+    plt.plot(mod2.predict(df[['index', 'm']]), label="decayed")
+    plt.legend()
+
+.. image:: _static/decay2.png
+   :align: center
+
+The decay parameter has a lot of influence on the effect of the model but one
+can clearly see that we shift focus to the more recent data.
+
 .. _DummyRegressor: https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html

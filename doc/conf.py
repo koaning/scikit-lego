@@ -25,7 +25,7 @@ author = 'Vincent and Others[tm]'
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
+release = '0.2.0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -133,7 +133,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'scikit-lego.tex', 'scikit-lego Documentation',
-     'Vincent and Others{[}tm{]}', 'manual'),
+     'Vincent, Matthijs and Others{[}tm{]}', 'manual'),
 ]
 
 
