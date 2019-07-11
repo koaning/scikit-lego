@@ -45,9 +45,12 @@ class TrainOnlyTransformerMixin(TransformerMixin):
 
     }
 
-    def fit(self, X, y):
+    def fit(self, X, y=None):
         """Calculates the hash of X_train"""
-        check_X_y(X, y, estimator=self)
+        if y is None:
+            check_array(X, estimator=self)
+        else:
+            check_X_y(X, y, estimator=self)
         self.X_hash_ = self._hash(X)
         self.dim_ = X.shape[1]
         return self
