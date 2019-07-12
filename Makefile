@@ -22,6 +22,7 @@ test: doctest
 check: flake test
 
 docs:
+	rm -rf doc/.ipynb_checkpoints
 	sphinx-build doc docs
 
 clean:
