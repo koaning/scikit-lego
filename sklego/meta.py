@@ -75,18 +75,17 @@ class GroupedEstimator(BaseEstimator):
         """Check that all elements of X are non-missing and finite"""
         if np.any(pd.isnull(X)):
             raise ValueError("X has NaN values")
-        try:
+        try:  # if X cannot be converted to numeric, checking infinites does not make sense
             if np.any(np.isinf(X)):
                 raise ValueError("X has infinite values")
-        except TypeError:  # X cannot be converted to numeric, so checking infinites does not make sense
+        except TypeError:
             pass
 
     def __validate(self, X, y=None):
-        try:
-            X_data = X.drop(columns=self.groups, inplace=False)
-        except AttributeError:  # np.array
-            X_data = np.delete(X, self.groups, axis=1)
+        # Split the model data from the grouping columns
+        X_data = self.__remove_groups_from_x(X)
 
+        # We want to use __validate in both fit and predict, so y can be None
         if y is not None:
             check_X_y(X_data, y)
         else:

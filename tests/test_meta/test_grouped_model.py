@@ -17,6 +17,7 @@ from sklego.datasets import load_chicken
     estimator_checks.check_estimators_overwrite_params,
     estimator_checks.check_estimators_pickle,
     estimator_checks.check_fit2d_1sample,
+    # estimator_checks.check_fit1d not tested because in 1d we cannot have both groups and data
     estimator_checks.check_dont_overwrite_parameters,
     estimator_checks.check_sample_weights_invariance,
     estimator_checks.check_get_params_invariance,
