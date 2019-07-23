@@ -55,13 +55,11 @@ class GroupedEstimator(BaseEstimator):
         self.use_fallback = use_fallback
 
     def __check_group_cols_exist(self, X):
-        try:
+        if isinstance(X, pd.DataFrame):
             x_cols = set(X.columns)
-        except AttributeError:
-            try:
-                ncols = X.shape[1]
-            except IndexError:
-                ncols = 1
+        else:
+            ncols = 1 if X.ndim == 1 else X.shape[1]
+
             x_cols = set(range(ncols))
 
         # Check whether grouping columns exist
@@ -95,9 +93,9 @@ class GroupedEstimator(BaseEstimator):
         self.__check_group_cols_exist(X)
 
     def __remove_groups_from_x(self, X):
-        try:
+        if isinstance(X, pd.DataFrame):
             return X.drop(columns=self.groups, inplace=False)
-        except AttributeError:  # np.array
+        else:
             return np.delete(X, self.groups, axis=1)
 
     def fit(self, X, y):
@@ -122,16 +120,19 @@ class GroupedEstimator(BaseEstimator):
 
         self.X_colnames_ = [_ for _ in X.columns if _ not in self.group_colnames_ and _ is not pred_col]
         self.fallback_ = None
+
         if self.use_fallback:
             subset_x = X[self.X_colnames_]
             self.fallback_ = clone(self.estimator).fit(subset_x, y)
 
         self.groups_ = X[self.group_colnames_].drop_duplicates()
 
-        self.estimators_ = (X
-                            .groupby(self.group_colnames_)
-                            .apply(lambda d: clone(self.estimator).fit(d[self.X_colnames_], d[pred_col]))
-                            .to_dict())
+        self.estimators_ = (
+            X
+            .groupby(self.group_colnames_)
+            .apply(lambda d: clone(self.estimator).fit(d[self.X_colnames_], d[pred_col]))
+            .to_dict()
+        )
         return self
 
     def predict(self, X):
