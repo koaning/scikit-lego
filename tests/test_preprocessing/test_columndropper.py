@@ -16,19 +16,21 @@ def df():
 
 def test_drop_two(df):
     result_df = ColumnDropper(['a', 'b']).fit_transform(df)
-    expected_df = pd.DataFrame({"c": ["a", "b", "a", "b", "c", "c"],
-                         "d": ["b", "a", "a", "b", "a", "b"],
-                         "e": [0, 1, 0, 1, 0, 1]})
+    expected_df = pd.DataFrame({
+        "c": ["a", "b", "a", "b", "c", "c"],
+        "d": ["b", "a", "a", "b", "a", "b"],
+        "e": [0, 1, 0, 1, 0, 1]})
 
     assert_frame_equal(result_df, expected_df)
 
 
 def test_drop_one(df):
     result_df = ColumnDropper(['e']).fit_transform(df)
-    expected_df = pd.DataFrame({"a": [1, 2, 3, 4, 5, 6],
-                         "b": [10, 9, 8, 7, 6, 5],
-                         "c": ["a", "b", "a", "b", "c", "c"],
-                         "d": ["b", "a", "a", "b", "a", "b"]})
+    expected_df = pd.DataFrame({
+        "a": [1, 2, 3, 4, 5, 6],
+        "b": [10, 9, 8, 7, 6, 5],
+        "c": ["a", "b", "a", "b", "c", "c"],
+        "d": ["b", "a", "a", "b", "a", "b"]})
 
     assert_frame_equal(result_df, expected_df)
 
@@ -46,9 +48,10 @@ def test_drop_not_in_frame(df):
 def test_drop_one_in_pipeline(df):
     pipe = make_pipeline(ColumnDropper(['e']))
     result_df = pipe.fit_transform(df)
-    expected_df = pd.DataFrame({"a": [1, 2, 3, 4, 5, 6],
-                         "b": [10, 9, 8, 7, 6, 5],
-                         "c": ["a", "b", "a", "b", "c", "c"],
-                         "d": ["b", "a", "a", "b", "a", "b"]})
+    expected_df = pd.DataFrame({
+        "a": [1, 2, 3, 4, 5, 6],
+        "b": [10, 9, 8, 7, 6, 5],
+        "c": ["a", "b", "a", "b", "c", "c"],
+        "d": ["b", "a", "a", "b", "a", "b"]})
 
     assert_frame_equal(result_df, expected_df)
