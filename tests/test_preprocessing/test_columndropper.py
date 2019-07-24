@@ -1,5 +1,6 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal
+from sklearn.pipeline import make_pipeline
 import pytest
 from sklego.preprocessing import ColumnDropper
 
@@ -41,3 +42,13 @@ def test_drop_not_in_frame(df):
     with pytest.raises(KeyError):
         ColumnDropper(['f']).fit_transform(df)
 
+
+def test_drop_one_in_pipeline(df):
+    pipe = make_pipeline(ColumnDropper(['e']))
+    result_df = pipe.fit_transform(df)
+    expected_df = pd.DataFrame({"a": [1, 2, 3, 4, 5, 6],
+                         "b": [10, 9, 8, 7, 6, 5],
+                         "c": ["a", "b", "a", "b", "c", "c"],
+                         "d": ["b", "a", "a", "b", "a", "b"]})
+
+    assert_frame_equal(result_df, expected_df)
