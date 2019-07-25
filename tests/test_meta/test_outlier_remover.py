@@ -1,5 +1,5 @@
 import pytest
-from pandas.tests.extension.numpy_.test_numpy_nested import np
+import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.cluster import KMeans
 from sklearn.pipeline import Pipeline

@@ -1,5 +1,5 @@
 import pytest
-from pandas.tests.extension.numpy_.test_numpy_nested import np
+import numpy as np
 from sklearn import clone
 from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LinearRegression, Ridge
