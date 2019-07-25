@@ -54,6 +54,52 @@ class GroupedEstimator(BaseEstimator):
         self.groups = groups
         self.use_fallback = use_fallback
 
+    def __check_group_cols_exist(self, X):
+        """Check whether the specified grouping columns are in X"""
+        if isinstance(X, pd.DataFrame):
+            x_cols = set(X.columns)
+        else:
+            ncols = 1 if X.ndim == 1 else X.shape[1]
+
+            x_cols = set(range(ncols))
+
+        diff = set(as_list(self.groups)) - x_cols
+        if len(diff) > 0:
+            raise KeyError(f'{diff} not in columns of X ({x_cols})')
+
+    @staticmethod
+    def __check_missing_and_inf(X):
+        """Check that all elements of X are non-missing and finite, needed because check_array cannot handle strings"""
+        if np.any(pd.isnull(X)):
+            raise ValueError("X has NaN values")
+        try:
+            if np.any(np.isinf(X)):
+                raise ValueError("X has infinite values")
+        except TypeError:
+            # if X cannot be converted to numeric, checking infinites does not make sense
+            pass
+
+    def __validate(self, X, y=None):
+        """Validate the input, used in both fit and predict"""
+        # Split the model data from the grouping columns, this part is checked `regularly`
+        X_data = self.__remove_groups_from_x(X)
+
+        # __validate is used in both fit and predict, so y can be None
+        if y is not None:
+            check_X_y(X_data, y)
+        else:
+            check_array(X_data)
+
+        self.__check_missing_and_inf(X)
+        self.__check_group_cols_exist(X)
+
+    def __remove_groups_from_x(self, X):
+        """Remove the grouping columns from X"""
+        if isinstance(X, pd.DataFrame):
+            return X.drop(columns=self.groups, inplace=False)
+        else:
+            return np.delete(X, self.groups, axis=1)
+
     def fit(self, X, y):
         """
         Fit the model using X, y as training data. Will also learn the groups
@@ -63,7 +109,8 @@ class GroupedEstimator(BaseEstimator):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
-        check_X_y(X, y)
+        self.__validate(X, y)
+
         pred_col = 'the-column-that-i-want-to-predict-but-dont-have-the-name-for'
         if isinstance(X, np.ndarray):
             X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
@@ -71,19 +118,23 @@ class GroupedEstimator(BaseEstimator):
 
         self.group_colnames_ = [str(_) for _ in as_list(self.groups)]
         if any([c not in X.columns for c in self.group_colnames_]):
-            raise ValueError(f"{self.group_colnames_} not in {X.columns}")
+            raise KeyError(f"{self.group_colnames_} not in {X.columns}")
+
         self.X_colnames_ = [_ for _ in X.columns if _ not in self.group_colnames_ and _ is not pred_col]
         self.fallback_ = None
+
         if self.use_fallback:
             subset_x = X[self.X_colnames_]
             self.fallback_ = clone(self.estimator).fit(subset_x, y)
 
         self.groups_ = X[self.group_colnames_].drop_duplicates()
 
-        self.estimators_ = (X
-                            .groupby(self.group_colnames_)
-                            .apply(lambda d: clone(self.estimator).fit(d[self.X_colnames_], d[pred_col]))
-                            .to_dict())
+        self.estimators_ = (
+            X
+            .groupby(self.group_colnames_)
+            .apply(lambda d: clone(self.estimator).fit(d[self.X_colnames_], d[pred_col]))
+            .to_dict()
+        )
         return self
 
     def predict(self, X):
@@ -93,7 +144,8 @@ class GroupedEstimator(BaseEstimator):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
-        check_array(X)
+        self.__validate(X)
+
         check_is_fitted(self, ['estimators_', 'groups_', 'group_colnames_',
                                'X_colnames_', 'fallback_'])
         if isinstance(X, np.ndarray):
