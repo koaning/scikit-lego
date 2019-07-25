@@ -26,30 +26,30 @@ from sklego.datasets import load_chicken
     estimator_checks.check_set_params,
 ]))
 def test_estimator_checks(test_fn):
-    clf = GroupedEstimator(estimator=LinearRegression(), groups=[0], use_fallback=True)
+    clf = GroupedEstimator(estimator=LinearRegression(), groups=[0], use_fallback=True, shrinkage=False)
     test_fn(GroupedEstimator.__name__ + "_fallback", clf)
 
-    clf = GroupedEstimator(estimator=LinearRegression(), groups=[0], use_fallback=False)
+    clf = GroupedEstimator(estimator=LinearRegression(), groups=[0], use_fallback=False, shrinkage=False)
     test_fn(GroupedEstimator.__name__ + "_nofallback", clf)
 
 
 def test_chickweight_df1_keys():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=False)
     mod.fit(df[['time', 'diet']], df['weight'])
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
 
 
 def test_chickweight_df2_keys():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="chick")
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="chick", shrinkage=False)
     mod.fit(df[['time', 'chick']], df['weight'])
     assert set(mod.estimators_.keys()) == set(range(1, 50 + 1))
 
 
 def test_chickweight_can_do_fallback():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=False)
     mod.fit(df[['time', 'diet']], df['weight'])
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
@@ -61,7 +61,8 @@ def test_fallback_can_raise_error():
     df = load_chicken(give_pandas=True)
     mod = GroupedEstimator(estimator=LinearRegression(),
                            groups="diet",
-                           use_fallback=False)
+                           use_fallback=False,
+                           shrinkage=False)
     mod.fit(df[['time', 'diet']], df['weight'])
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
     with pytest.raises(ValueError):
@@ -70,7 +71,7 @@ def test_fallback_can_raise_error():
 
 def test_chickweight_raise_error_cols_missing1():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=False)
     mod.fit(df[['time', 'diet']], df['weight'])
     with pytest.raises(KeyError):
         mod.predict(df[['time', 'chick']])
@@ -78,7 +79,7 @@ def test_chickweight_raise_error_cols_missing1():
 
 def test_chickweight_raise_error_cols_missing2():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=False)
     mod.fit(df[['time', 'diet']], df['weight'])
     with pytest.raises(ValueError):
         mod.predict(df[['diet', 'chick']])
@@ -86,7 +87,7 @@ def test_chickweight_raise_error_cols_missing2():
 
 def test_chickweight_np_keys():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups=[1, 2])
+    mod = GroupedEstimator(estimator=LinearRegression(), groups=[1, 2], shrinkage=False)
     mod.fit(df[['time', 'chick', 'diet']].values, df['weight'].values)
     # there should still only be 50 groups on this dataset
     assert len(mod.estimators_.keys()) == 50
@@ -103,5 +104,5 @@ def test_chickweigt_string_groups():
     y = df['weight']
 
     # This should NOT raise errors
-    GroupedEstimator(LinearRegression(), groups=['diet']).fit(X, y).predict(X)
-    GroupedEstimator(LinearRegression(), groups=1).fit(X_np, y).predict(X_np)
+    GroupedEstimator(LinearRegression(), groups=['diet'], shrinkage=False).fit(X, y).predict(X)
+    GroupedEstimator(LinearRegression(), groups=1, shrinkage=False).fit(X_np, y).predict(X_np)

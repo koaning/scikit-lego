@@ -49,10 +49,11 @@ class GroupedEstimator(BaseEstimator):
     the group parameter is not found during `.predict()`
     """
 
-    def __init__(self, estimator, groups, use_fallback=True):
+    def __init__(self, estimator, groups, use_fallback=True, shrinkage=True):
         self.estimator = estimator
         self.groups = groups
-        self.use_fallback = use_fallback
+        self.use_fallback = use_fallback  # Do we need this in case of shrinkage?
+        self.shrinkage = shrinkage
 
     def __check_group_cols_exist(self, X):
         """Check whether the specified grouping columns are in X"""
@@ -100,6 +101,14 @@ class GroupedEstimator(BaseEstimator):
         else:
             return np.delete(X, self.groups, axis=1)
 
+    def __fit_grouped_estimator(self, X, target_col, value_columns, group_columns):
+        return (
+            X
+            .groupby(group_columns)
+            .apply(lambda d: clone(self.estimator).fit(d[value_columns], d[target_col]))
+            .to_dict()
+        )
+
     def fit(self, X, y):
         """
         Fit the model using X, y as training data. Will also learn the groups
@@ -117,24 +126,34 @@ class GroupedEstimator(BaseEstimator):
         X = X.assign(**{pred_col: y})
 
         self.group_colnames_ = [str(_) for _ in as_list(self.groups)]
+
+        # List of all hierarchical subsets of columns
+        self.group_colnames_hierarchical_ = [
+            self.group_colnames_[:level+1] for level in range(len(self.group_colnames_))
+        ]
+
         if any([c not in X.columns for c in self.group_colnames_]):
             raise KeyError(f"{self.group_colnames_} not in {X.columns}")
 
-        self.X_colnames_ = [_ for _ in X.columns if _ not in self.group_colnames_ and _ is not pred_col]
+        self.value_colnames_ = [_ for _ in X.columns if _ not in self.group_colnames_ and _ is not pred_col]
         self.fallback_ = None
 
         if self.use_fallback:
-            subset_x = X[self.X_colnames_]
+            subset_x = X[self.value_colnames_]
             self.fallback_ = clone(self.estimator).fit(subset_x, y)
 
-        self.groups_ = X[self.group_colnames_].drop_duplicates()
+        if self.shrinkage:
+            self.estimators_ = {}
 
-        self.estimators_ = (
-            X
-            .groupby(self.group_colnames_)
-            .apply(lambda d: clone(self.estimator).fit(d[self.X_colnames_], d[pred_col]))
-            .to_dict()
-        )
+            for level_colnames in self.group_colnames_hierarchical_:
+                self.estimators_.update(
+                    self.__fit_grouped_estimator(X, pred_col, self.value_colnames_, level_colnames)
+                )
+        else:
+            self.estimators_ = self.__fit_grouped_estimator(X, pred_col, self.value_colnames_, self.group_colnames_)
+
+        self.groups_ = list(self.estimators_.keys())
+
         return self
 
     def predict(self, X):
@@ -147,29 +166,33 @@ class GroupedEstimator(BaseEstimator):
         self.__validate(X)
 
         check_is_fitted(self, ['estimators_', 'groups_', 'group_colnames_',
-                               'X_colnames_', 'fallback_'])
+                               'value_colnames_', 'fallback_'])
         if isinstance(X, np.ndarray):
             X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
 
         if any([c not in X.columns for c in self.group_colnames_]):
             raise ValueError(f"group columns {self.group_colnames_} not in {X.columns}")
-        if any([c not in X.columns for c in self.X_colnames_]):
-            raise ValueError(f"columns to use {self.X_colnames_} not in {X.columns}")
+        if any([c not in X.columns for c in self.value_colnames_]):
+            raise ValueError(f"columns to use {self.value_colnames_} not in {X.columns}")
 
         try:
             return (X
                     .groupby(self.group_colnames_, as_index=False)
                     .apply(lambda d: pd.DataFrame(
-                        self.estimators_.get(d.name, self.fallback_).predict(d[self.X_colnames_]), index=d.index))
+                        self.estimators_.get(d.name, self.fallback_).predict(d[self.value_colnames_]), index=d.index))
                     .values
                     .squeeze())
         except AttributeError:
-            culprits = set(pd.concat([X[self.group_colnames_].drop_duplicates().assign(new=1),
-                                      self.groups_.assign(new=0)])
-                           .drop_duplicates()
-                           .loc[lambda d: d['new'] == 1]
-                           .itertuples())
-            raise ValueError(f"found a group(s) {culprits} in `.predict` that was not in `.fit`")
+            # if not self.shrinkage:
+            #     culprits = set(pd.concat([X[self.group_colnames_].drop_duplicates().assign(new=1),
+            #                               self.groups_.assign(new=0)])
+            #                    .drop_duplicates()
+            #                    .loc[lambda d: d['new'] == 1]
+            #                    .itertuples())
+            #     raise ValueError(f"found a group(s) {culprits} in `.predict` that was not in `.fit`")
+            # else:
+                # TODO: Update this error message
+            raise ValueError("A group in `.predict` was not in `.fit`")
 
 
 class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
