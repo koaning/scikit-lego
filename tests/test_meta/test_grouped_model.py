@@ -1,5 +1,6 @@
 import pytest
 import pandas as pd
+import numpy as np
 from sklearn.utils import estimator_checks
 from sklearn.linear_model import LinearRegression
 
@@ -15,9 +16,8 @@ from sklego.datasets import load_chicken
     estimator_checks.check_estimators_nan_inf,
     estimator_checks.check_estimators_overwrite_params,
     estimator_checks.check_estimators_pickle,
-    estimator_checks.check_fit2d_predict1d,
     estimator_checks.check_fit2d_1sample,
-    estimator_checks.check_fit1d,
+    # estimator_checks.check_fit1d not tested because in 1d we cannot have both groups and data
     estimator_checks.check_dont_overwrite_parameters,
     estimator_checks.check_sample_weights_invariance,
     estimator_checks.check_get_params_invariance,
@@ -72,7 +72,7 @@ def test_chickweight_raise_error_cols_missing1():
     df = load_chicken(give_pandas=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
     mod.fit(df[['time', 'diet']], df['weight'])
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         mod.predict(df[['time', 'chick']])
 
 
@@ -90,3 +90,18 @@ def test_chickweight_np_keys():
     mod.fit(df[['time', 'chick', 'diet']].values, df['weight'].values)
     # there should still only be 50 groups on this dataset
     assert len(mod.estimators_.keys()) == 50
+
+
+def test_chickweigt_string_groups():
+
+    df = load_chicken(give_pandas=True)
+    df['diet'] = ['omgomgomg' + s for s in df['diet'].astype(str)]
+
+    X = df[['time', 'diet']]
+    X_np = np.array(X)
+
+    y = df['weight']
+
+    # This should NOT raise errors
+    GroupedEstimator(LinearRegression(), groups=['diet']).fit(X, y).predict(X)
+    GroupedEstimator(LinearRegression(), groups=1).fit(X_np, y).predict(X_np)
