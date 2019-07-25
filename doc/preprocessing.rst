@@ -5,6 +5,120 @@ There are many preprocessors in scikit-lego and in this document we
 would like to highlight a few such that you might be inspired to use
 pipelines a little bit more flexibly.
 
+Estimators as Transformers
+**************************
+
+Sometimes you'd like the output of a model to be available as a feature
+that you might use as input for another model. The issue here is that
+scikit learn pipelines usually only allow a single model at the end of
+a pipeline. One solution to this problem is to turn the model into a transformer.
+To convert a model to become a transformer you can use the `EstimatorTransformer`
+from the `meta` module.
+
+Example 1
+---------
+
+Let's demonstrate one example. Below we describe how to create a pipeline
+with two models that each see the same dataset. Note that the output of this
+pipeline is still only a transformer pipeline.
+
+.. image:: _static/estimator-transformer-1.png
+
+.. code-block:: python
+
+    import numpy as np
+    import pandas as pd
+
+    from sklearn.pipeline import FeatureUnion, Pipeline
+    from sklearn.linear_model import LinearRegression, Ridge
+
+    from sklego.meta import EstimatorTransformer
+    from sklego.preprocessing import ColumnSelector
+
+    np.random.seed(42)
+    n = 1000
+    X = np.random.uniform(0, 1, (n, 2))
+    y = X.sum(axis=1) + np.random.uniform(0, 1, (n,))
+    df = pd.DataFrame({"x1": X[:, 0], "x2": X[:, 1], "y": y})
+
+    pipeline = Pipeline([
+        ("grab_columns", ColumnSelector(["x1", "x2"])),
+        ("ml_features", FeatureUnion([
+            ("model_1",  EstimatorTransformer(LinearRegression())),
+            ("model_2",  EstimatorTransformer(Ridge()))
+        ]))
+    ])
+
+    pipeline.fit(df, y).transform(df)
+
+
+
+Example 2
+---------
+
+Here's another example that works a little bit differently. Here
+we have two models that each see different data.
+
+.. image:: _static/estimator-transformer-2.png
+
+.. code-block:: python
+
+    pipeline = Pipeline([
+        ("grab_columns", ColumnSelector(["x1", "x2"])),
+        ("ml_features", FeatureUnion([
+            ("p1", Pipeline([
+                ("grab1", ColumnSelector(["x1"])),
+                ("mod1", EstimatorTransformer(LinearRegression()))
+            ])),
+            ("p2", Pipeline([
+                ("grab2", ColumnSelector(["x2"])),
+                ("mod2", EstimatorTransformer(LinearRegression()))
+            ]))
+        ]))
+    ])
+
+    pipeline.fit(df, y).transform(df)
+
+
+Column Capping
+**************
+
+Some models are great at interpolation but less good at extrapolation.
+One way to potentially circumvent this problem is by capping extreme
+valeus that occur in the dataset **X**.
+
+.. image:: _static/column-capper.png
+
+To see how they work we demonstrate a few examples below.
+
+.. code-block:: python
+
+    import numpy as np
+    import pandas as pd
+    from sklego.preprocessing import ColumnCapper
+
+    np.random.seed(42)
+    X = np.random.uniform(0, 1, (100000, 2))
+
+    cc = ColumnCapper()
+    output = cc.fit(X).transform(X)
+    output.min(axis=0) # array([0.05120598, 0.0502972 ])
+    output.max(axis=0) # array([0.95030677, 0.95088171])
+
+    cc = ColumnCapper(quantile_range=(10, 90))
+    output = cc.fit(X).transform(X)
+    output.min(axis=0) # array([0.10029693, 0.09934085])
+    output.max(axis=0) # array([0.90020412, 0.89859006])
+
+Note that the column capper does not deal with missing values
+but it does support pandas dataframes as well as infinite values.
+
+.. code-block:: python
+
+    arr = np.array([[0.0, np.inf], [-np.inf, 1.0]])
+    cc.transform(arr) # array([[0.10029693, 0.89859006], [0.10029693, 0.89859006]])
+
+
 Patsy Formulas
 **************
 
@@ -17,7 +131,7 @@ wrapper such that you can also use these in your pipelines.
 .. code-block:: python
 
     import pandas as pd
-    from sklego.transformers import PatsyTransformer
+    from sklego.preprocessing import PatsyTransformer
 
     df = pd.DataFrame({"a": [1, 2, 3, 4, 5],
                        "b": ["yes", "yes", "no", "maybe", "yes"],

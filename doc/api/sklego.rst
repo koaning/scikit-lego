@@ -36,6 +36,14 @@ sklego.meta module
     :undoc-members:
     :show-inheritance:
 
+sklego.model\_selection module
+------------------------------
+
+.. automodule:: sklego.model_selection
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sklego.mixture module
 ---------------------
 
