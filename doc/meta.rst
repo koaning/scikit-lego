@@ -9,10 +9,72 @@ model.
 
 This part of the documentation will highlight a few of them.
 
+Thresholder
+-----------
+
+The thresholder can help tweak recall and precision of a model
+by moving the threshold value of `predict_proba`. Commonly this
+threshold is set at 0.5 for two classes. This meta-model can
+decorate an estimator with two classes such that the threshold
+moves.
+
+We demonstrate the working below. First we'll generate a skewed dataset.
+
+.. code-block:: python
+
+    import numpy as np
+    import matplotlib.pylab as plt
+
+    from sklearn.pipeline import Pipeline
+    from sklearn.datasets import make_blobs
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import precision_score, recall_score, accuracy_score, make_scorer
+
+    from sklego.meta import Thresholder
+
+    X, y = make_blobs(1000, centers=[(0, 0), (1.5, 1.5)], cluster_std=[1, 0.5])
+    plt.scatter(X[:, 0], X[:, 1], c=y, s=5);
+
+.. image:: _static/skewed-data.png
+   :align: center
+
+Next we'll make a cross validation pipeline to try out this thresholder.
+
+.. code-block:: python
+
+    pipe = Pipeline([
+        ("model", Thresholder(LogisticRegression(solver='lbfgs'), threshold=0.1))
+    ])
+
+    mod = GridSearchCV(estimator=pipe,
+                       param_grid = {"model__threshold": np.linspace(0.1, 0.9, 50)},
+                       scoring={"precision": make_scorer(precision_score),
+                                "recall": make_scorer(recall_score),
+                                "accuracy": make_scorer(accuracy_score)},
+                       refit="precision",
+                       cv=5)
+
+    mod.fit(X, y);
+
+With this cross validation trained, we'll make a chart to show the
+effect of changing the threshold value.
+
+.. code-block:: python
+
+    (pd.DataFrame(mod.cv_results_)
+     .set_index("param_model__threshold")
+     [['mean_test_precision', 'mean_test_recall', 'mean_test_accuracy']]
+     .plot())
+
+.. image:: _static/threshold-results.png
+   :align: center
+
+Increasing the threshold will increase the precision but as expected this is at the
+cost of recall (and accuracy).
+
 Grouped Estimation
 ------------------
-
-A kind introduction to "meta"-models is the `GroupedEstimator`.
 
 .. image:: _static/grouped-model.png
 
