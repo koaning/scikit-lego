@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pd
+
+from typing import Tuple, List, Union
+
 from sklearn import clone
 from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array, FLOAT_DTYPES
@@ -48,12 +51,13 @@ class GroupedEstimator(BaseEstimator):
     :param use_fallback: weather or not to fall back to a general model in case
     the group parameter is not found during `.predict()`
     """
-
-    def __init__(self, estimator, groups, use_fallback=True, shrinkage=True):
+    def __init__(self, estimator, groups, use_fallback=True, shrinkage=True, shrinkage_func=None, shrinkage_tol=None):
         self.estimator = estimator
         self.groups = groups
         self.use_fallback = use_fallback  # Do we need this in case of shrinkage?
         self.shrinkage = shrinkage
+        self.shrinkage_function = shrinkage_func
+        self.shrinkage_tol = shrinkage_tol
 
     def __check_group_cols_exist(self, X):
         """Check whether the specified grouping columns are in X"""
@@ -109,6 +113,41 @@ class GroupedEstimator(BaseEstimator):
             .to_dict()
         )
 
+    def __constant_shrinkage(self, arr: np.ndarray):
+        alpha = self.shrinkage_tol
+        relative_fractions = np.array([alpha * (1 - alpha) ** (len(arr) - i - 1) for i in range(len(arr))])
+        return relative_fractions/relative_fractions.sum()
+
+    def __relative_shrinkage(self, arr: list):
+        arr = np.array(arr)
+        return arr/arr.sum()
+
+    def __set_shrinkage_function(self):
+        if isinstance(self.shrinkage_function, str):
+            self.shrinkage_function_ = {
+                "constant": self.__constant_shrinkage,
+                "relative": self.__relative_shrinkage,
+            }.get(self.shrinkage_function)
+        else:
+            self.shrinkage_function_ = self.shrinkage_function
+
+    def __get_shrinkage_factor(self, X):
+        """Get for all complete groups an array of shrinkages"""
+        counts = X.groupby(self.group_colnames_).size()
+
+        hierarchical_counts = {
+            complete_group: [counts[tuple(subgroup)].sum() for subgroup in self.__expanding_list(complete_group, tuple)]
+            for complete_group in self.complete_groups_
+        }
+
+        self.__set_shrinkage_function()
+
+        shrinkage_factors = {
+            group: self.shrinkage_function_(counts) for group, counts in hierarchical_counts.items()
+        }
+
+        return shrinkage_factors
+
     def fit(self, X, y):
         """
         Fit the model using X, y as training data. Will also learn the groups
@@ -128,9 +167,7 @@ class GroupedEstimator(BaseEstimator):
         self.group_colnames_ = [str(_) for _ in as_list(self.groups)]
 
         # List of all hierarchical subsets of columns
-        self.group_colnames_hierarchical_ = [
-            self.group_colnames_[:level+1] for level in range(len(self.group_colnames_))
-        ]
+        self.group_colnames_hierarchical_ = self.__expanding_list(self.group_colnames_, list)
 
         if any([c not in X.columns for c in self.group_colnames_]):
             raise KeyError(f"{self.group_colnames_} not in {X.columns}")
@@ -153,8 +190,35 @@ class GroupedEstimator(BaseEstimator):
             self.estimators_ = self.__fit_grouped_estimator(X, pred_col, self.value_colnames_, self.group_colnames_)
 
         self.groups_ = list(self.estimators_.keys())
+        self.complete_groups_ = [group for group in self.groups_ if len(as_list(group)) == len(self.group_colnames_)]
+
+        self.shrinkage_factors_ = self.__get_shrinkage_factor(X)
 
         return self
+
+    def __predict_group(self, X, group_colnames):
+        return (
+            X
+            .groupby(group_colnames, as_index=False)
+            .apply(lambda d: pd.DataFrame(
+                self.estimators_.get(d.name, self.fallback_).predict(d[self.value_colnames_]), index=d.index))
+            .values
+            .squeeze()
+        )
+
+    def __predict_shrinkage_groups(self, X):
+
+        # DataFrame with predictions for all levels per row
+        hierarchical_predictions = pd.concat([
+            pd.Series(self.__predict_group(X, level_columns)) for level_columns in self.group_colnames_hierarchical_
+        ], axis=1)
+
+        # This is a Series with values the arrays
+        shrinkage_factors = X[self.group_colnames_].agg(func=tuple, axis=1).map(self.shrinkage_factors_)
+        # So convert it to a dataframe
+        shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
+
+        return (hierarchical_predictions * shrinkage_factors).sum(axis=1)
 
     def predict(self, X):
         """
@@ -176,12 +240,10 @@ class GroupedEstimator(BaseEstimator):
             raise ValueError(f"columns to use {self.value_colnames_} not in {X.columns}")
 
         try:
-            return (X
-                    .groupby(self.group_colnames_, as_index=False)
-                    .apply(lambda d: pd.DataFrame(
-                        self.estimators_.get(d.name, self.fallback_).predict(d[self.value_colnames_]), index=d.index))
-                    .values
-                    .squeeze())
+            if not self.shrinkage:
+                return self.__predict_group(X, group_colnames=self.group_colnames_)
+            else:
+                return self.__predict_shrinkage_groups(X)
         except AttributeError:
             # if not self.shrinkage:
             #     culprits = set(pd.concat([X[self.group_colnames_].drop_duplicates().assign(new=1),
@@ -193,6 +255,23 @@ class GroupedEstimator(BaseEstimator):
             # else:
                 # TODO: Update this error message
             raise ValueError("A group in `.predict` was not in `.fit`")
+
+    def __expanding_list(self, list_to_extent: List[str], return_type=list) -> Union[List[list], List[tuple]]:
+        """
+        Make a expanding list of lists by making tuples of the first element, the first 2 elements etc.
+
+        :param list_to_extent:
+        :param return_type: type of the elements of the list (tuple or list)
+
+        :Example:
+
+        >>> __expanding_list('test')
+        [['test']]
+
+        >>> __expanding_list(['test1', 'test2', 'test3'])
+        [['test1'], ['test1', 'test2'], ['test1', 'test2', 'test3']]
+        """
+        return [return_type(list_to_extent[:n+1]) for n in range(len(as_list(list_to_extent)))]
 
 
 class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
