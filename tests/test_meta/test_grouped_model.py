@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.utils import estimator_checks
 from sklearn.linear_model import LinearRegression
+from sklearn.dummy import DummyRegressor
 
 from sklego.common import flatten
 from sklego.meta import GroupedEstimator
@@ -106,3 +107,64 @@ def test_chickweigt_string_groups():
     # This should NOT raise errors
     GroupedEstimator(LinearRegression(), groups=['diet'], shrinkage=False).fit(X, y).predict(X)
     GroupedEstimator(LinearRegression(), groups=1, shrinkage=False).fit(X_np, y).predict(X_np)
+
+
+@pytest.fixture
+def shrinkage_data():
+    df = pd.DataFrame({
+        "Planet": ["Earth", "Earth", "Earth", "Earth"],
+        "Country": ["NL", "NL", "BE", "BE"],
+        "City": ["Amsterdam", "Rotterdam", "Antwerp", "Brussels"],
+        "Feature": [2, 6, 4, 8],
+        "Target": [1, 3, 2, 4]
+    })
+
+    means = {"Earth": 2.5, "NL": 2, "BE": 3, "Amsterdam": 1, "Rotterdam": 3, "Antwerp": 2, "Brussels": 4}
+
+    return df, means
+
+
+def test_constant_shrinkage(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    shrink_est = GroupedEstimator(
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_func="constant", shrinkage_tol=0.1
+    )
+
+    shrinkage_factors = np.array([0.01, 0.09, 0.9])
+
+    shrink_est.fit(X, y)
+
+    expected_prediction = [
+        np.array([means["Earth"], means["NL"], means["Amsterdam"]]) @ shrinkage_factors,
+        np.array([means["Earth"], means["NL"], means["Rotterdam"]]) @ shrinkage_factors,
+        np.array([means["Earth"], means["BE"], means["Antwerp"]]) @ shrinkage_factors,
+        np.array([means["Earth"], means["BE"], means["Brussels"]]) @ shrinkage_factors,
+    ]
+
+    assert expected_prediction == shrink_est.predict(X).tolist()
+
+
+def test_relative_shrinkage(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    shrink_est = GroupedEstimator(
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_func="relative", shrinkage_tol=0.1
+    )
+
+    shrinkage_factors = np.array([4, 2, 1]) / 7
+
+    shrink_est.fit(X, y)
+
+    expected_prediction = [
+        np.array([means["Earth"], means["NL"], means["Amsterdam"]]) @ shrinkage_factors,
+        np.array([means["Earth"], means["NL"], means["Rotterdam"]]) @ shrinkage_factors,
+        np.array([means["Earth"], means["BE"], means["Antwerp"]]) @ shrinkage_factors,
+        np.array([means["Earth"], means["BE"], means["Brussels"]]) @ shrinkage_factors,
+    ]
+
+    assert expected_prediction == shrink_est.predict(X).tolist()
