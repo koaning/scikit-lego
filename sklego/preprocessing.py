@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from patsy import dmatrix, build_design_matrices, PatsyError
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.compose import ColumnTransformer
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
 
@@ -609,3 +610,120 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         """Checks if input of the Selector is of the required dtype"""
         if not isinstance(X, pd.DataFrame):
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
+
+class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
+    """Selects a column and transforms it into multiple feautures  
+    """
+    def __init__(self, column=0, remainder="passthrough", n_periods=12, floor='floor', ceil='max'):
+        self.column = column
+        self.remainder = "passthrough"
+        self.n_periods = n_periods
+        self.floor = floor
+        self.ceil = ceil
+        self.pipeline = None
+
+    def fit(self, X, y=None):
+        self.pipeline = ColumnTransformer(
+            [
+                (
+                    "repeatingbasis",
+                    _RepeatingBasisFunction(n_periods=self.periods, floor=self.floor, ceil=self.ceil),
+                    self.column,
+                )
+            ],
+            remainder=self.remainder,
+        )
+        
+        self.pipeline.fit(X,y)
+
+        return self
+
+    def transform(self, X):
+        check_is_fitted(self, ["pipeline_"])
+        return  self.pipeline_.transform(X)
+
+
+class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
+    def __init__(self, n_periods: int = 12, floor='min', ceil='max'):
+        self.n_periods = n_periods
+        self.floor = floor
+        self.ceil = ceil
+
+
+    def fit(self, X, y=None):
+        """Fits the estimator"""
+        
+        # TODO: refactor this
+        if len(X.shape) == 1:
+            X = X.reshape(-1,1)
+        # This transformer only accepts one feature as input
+        if X.shape[1] != 1:
+            raise ValueError(f"X should have exactly one column, it has: {X.shape[1]}")
+
+        # TODO figure out what this does
+        X = check_array(X, estimator=self)
+
+    
+        # find min and max for standardization if not given explicitly
+        # get array
+        if type(X) == pd.DataFrame:
+            X = X.values
+        if self.floor == 'min':
+            self.floor = X.min()
+        if self.ceil == 'max':
+            self.ceil = X.max()
+
+        # exclude the last value because it's identical to the first for repeating basis functions
+        self.bases_ = np.linspace(0, 1, self.n_periods + 1)[:-1]
+        
+        # curves should narrower (wider) when we have more (fewer) basis functions
+        self.width_ = 1 / self.n_periods
+        
+        return self
+    
+    def transform(self, X):
+        # reshape because ColumnTransformer passes the values on as an array
+        # we need it to be a 1 column matrix
+        if len(X.shape) == 1:
+            X = X.reshape(-1,1)
+               
+        # TODO figure out waht this does
+        check_is_fitted(self, ["bases_", "width_"])
+        X = check_array(X, estimator=self)
+
+        # This transformer only accepts one feature as input
+        if X.shape[1] != 1:
+            raise ValueError(f"X should have exactly one column, it has: {X.shape[1]}")
+
+        # get array
+        if type(X) == pd.DataFrame:
+            X = X.values
+
+        # MinMax Scale to 0-1
+        X = (X - self.floor) / (self.ceil - self.floor)
+        
+        base_distances = self._array_bases_distances(X, self.bases_)
+
+        # apply rbf function to series for each basis
+        return self._rbf(base_distances)
+
+    def _array_base_distance(self, arr: np.ndarray, base: float) -> np.ndarray:
+        """Calculates the distances between all array values and the base,
+        where 0 and 1 are assumed to be at the same position"""
+        abs_diff_0 = np.abs(arr - base)
+        abs_diff_1 = 1 - abs_diff_0
+        concat = np.concatenate((abs_diff_0.reshape(-1, 1), abs_diff_1.reshape(-1, 1)), axis=1)
+        final = concat.min(axis=1)
+        return final
+
+    def _array_bases_distances(self, array, bases):
+        """Calculates the distances between all combinations of array and bases values"""
+        array = array.reshape(-1, 1)
+        bases = bases.reshape(1, -1)
+
+        return np.apply_along_axis(
+            lambda b: self._array_base_distance(array, base=b), axis=0, arr=bases
+        )
+
+    def _rbf(self, arr):
+        return np.exp(-(arr / self.width_) ** 2)
