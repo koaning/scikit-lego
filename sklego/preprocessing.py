@@ -614,12 +614,15 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     """
     This is a transformer for features with some form of circularity. 
-    E.g. for days of the week, day 7 is as close to day 6 as it is to day 1.
+    E.g. for days of the week you might face the problem that, conceptually, day 7 is as 
+    close to day 6 as it is to day 1. While numerically their distance is different.
+    This transformer solves that problem.
     The transformer selects a column and transforms it with a give number of repeating (radial) basis functions.
-    Radial basis functions are bell-curve functions which take the original data as input.
+    Radial basis functions are bell-curve shaped functions which take the original data as input.
     The basis functions are equally spaced over the input data range (specified with floor and ceil).
     The key feature of repeating basis funtions is that they are continuous when moving
-    from the min to the max.
+    from the min to the max. As a result these repeating basis functions can capture the 
+    the "close" to the center of each respective basis function
 
     :type column: int or list, default=0
     :param column: Indexes the data on its second axis. Integers are interpreted as
@@ -644,7 +647,9 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         scale the input data to a 0-1 range.
     """
 
-    def __init__(self, column=0, remainder="passthrough", n_periods=12, floor='min', ceil='max'):
+    def __init__(
+        self, column=0, remainder="passthrough", n_periods=12, floor="min", ceil="max"
+    ):
         self.column = column
         self.remainder = "passthrough"
         self.n_periods = n_periods
@@ -657,73 +662,70 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
             [
                 (
                     "repeatingbasis",
-                    _RepeatingBasisFunction(n_periods=self.n_periods, floor=self.floor, ceil=self.ceil),
+                    _RepeatingBasisFunction(
+                        n_periods=self.n_periods, floor=self.floor, ceil=self.ceil
+                    ),
                     [self.column],
                 )
             ],
             remainder=self.remainder,
         )
-        
-        self.pipeline.fit(X,y)
+
+        self.pipeline.fit(X, y)
 
         return self
 
     def transform(self, X):
         check_is_fitted(self, ["pipeline"])
-        return  self.pipeline.transform(X)
+        return self.pipeline.transform(X)
 
 
 class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
-    def __init__(self, n_periods: int = 12, floor='min', ceil='max'):
+    def __init__(self, n_periods: int = 12, floor="min", ceil="max"):
         self.n_periods = n_periods
         self.floor = floor
         self.ceil = ceil
 
-
     def fit(self, X, y=None):
-        """Fits the estimator"""
-        # TODO figure out what this does
         X = check_array(X, estimator=self)
-    
+
         # find min and max for standardization if not given explicitly
-        if self.floor == 'min':
+        if self.floor == "min":
             self.floor = X.min()
-        if self.ceil == 'max':
+        if self.ceil == "max":
             self.ceil = X.max()
 
         # exclude the last value because it's identical to the first for repeating basis functions
         self.bases_ = np.linspace(0, 1, self.n_periods + 1)[:-1]
-        
+
         # curves should narrower (wider) when we have more (fewer) basis functions
         self.width_ = 1 / self.n_periods
-        
+
         return self
-    
+
     def transform(self, X):
-        # This transformer only accepts one feature as input
-        if (len(X.shape) == 1) or (X.shape[1] != 1):
-            raise ValueError(f"X should have exactly one column, it has shape: {X.shape}")
-
-        # TODO figure out what this does
+        X = check_array(X, estimator=self, ensure_2d=True)
         check_is_fitted(self, ["bases_", "width_"])
-        X = check_array(X, estimator=self)
-
+        # This transformer only accepts one feature as input
+        if len(X.shape) == 1:
+            raise ValueError(f"X should have exactly one column, it has: {X.shape[1]}")
 
         # MinMax Scale to 0-1
         X = (X - self.floor) / (self.ceil - self.floor)
-        
+
         base_distances = self._array_bases_distances(X, self.bases_)
 
         # apply rbf function to series for each basis
         return self._rbf(base_distances)
-
 
     def _array_base_distance(self, arr: np.ndarray, base: float) -> np.ndarray:
         """Calculates the distances between all array values and the base,
         where 0 and 1 are assumed to be at the same position"""
         abs_diff_0 = np.abs(arr - base)
         abs_diff_1 = 1 - abs_diff_0
-        concat = np.concatenate((abs_diff_0.reshape(-1, 1), abs_diff_1.reshape(-1, 1)), axis=1)
+        concat = np.concatenate(
+            (abs_diff_0.reshape(-1, 1), abs_diff_1.reshape(-1, 1)), axis=1
+        )
         final = concat.min(axis=1)
         return final
 
