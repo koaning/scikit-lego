@@ -614,7 +614,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     """Selects a column and transforms it into multiple feautures  
     """
-    def __init__(self, column=0, remainder="passthrough", n_periods=12, floor='floor', ceil='max'):
+    def __init__(self, column=0, remainder="passthrough", n_periods=12, floor='min', ceil='max'):
         self.column = column
         self.remainder = "passthrough"
         self.n_periods = n_periods
@@ -627,8 +627,8 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
             [
                 (
                     "repeatingbasis",
-                    _RepeatingBasisFunction(n_periods=self.periods, floor=self.floor, ceil=self.ceil),
-                    self.column,
+                    _RepeatingBasisFunction(n_periods=self.n_periods, floor=self.floor, ceil=self.ceil),
+                    [self.column],
                 )
             ],
             remainder=self.remainder,
@@ -639,8 +639,8 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         return self
 
     def transform(self, X):
-        check_is_fitted(self, ["pipeline_"])
-        return  self.pipeline_.transform(X)
+        check_is_fitted(self, ["pipeline"])
+        return  self.pipeline.transform(X)
 
 
 class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
@@ -652,22 +652,14 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
 
     def fit(self, X, y=None):
         """Fits the estimator"""
-        
-        # TODO: refactor this
-        if len(X.shape) == 1:
-            X = X.reshape(-1,1)
-        # This transformer only accepts one feature as input
-        if X.shape[1] != 1:
-            raise ValueError(f"X should have exactly one column, it has: {X.shape[1]}")
-
+        # TODO: check if needed
+        if (type(X) == pd.DataFrame):
+            X = X.values
+                
         # TODO figure out what this does
         X = check_array(X, estimator=self)
-
     
         # find min and max for standardization if not given explicitly
-        # get array
-        if type(X) == pd.DataFrame:
-            X = X.values
         if self.floor == 'min':
             self.floor = X.min()
         if self.ceil == 'max':
@@ -682,22 +674,24 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         return self
     
     def transform(self, X):
-        # reshape because ColumnTransformer passes the values on as an array
-        # we need it to be a 1 column matrix
-        if len(X.shape) == 1:
-            X = X.reshape(-1,1)
-               
-        # TODO figure out waht this does
+        # This transformer only accepts one feature as input
+        if (len(X.shape) == 1) or (X.shape[1] != 1):
+            raise ValueError(f"X should have exactly one column, it has shape: {X.shape}")
+
+        # TODO check if needed get array needed for numpy operations later
+        if type(X) == pd.DataFrame:
+            # prepare for returning df
+            return_df = True
+            col_name = X.columns[0]
+            # transform to numpy array for easy processing
+            X = X.values
+        else:
+            return_df = False
+
+        # TODO figure out what this does
         check_is_fitted(self, ["bases_", "width_"])
         X = check_array(X, estimator=self)
 
-        # This transformer only accepts one feature as input
-        if X.shape[1] != 1:
-            raise ValueError(f"X should have exactly one column, it has: {X.shape[1]}")
-
-        # get array
-        if type(X) == pd.DataFrame:
-            X = X.values
 
         # MinMax Scale to 0-1
         X = (X - self.floor) / (self.ceil - self.floor)
@@ -705,7 +699,13 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         base_distances = self._array_bases_distances(X, self.bases_)
 
         # apply rbf function to series for each basis
-        return self._rbf(base_distances)
+        X_transformed = self._rbf(base_distances)
+
+        if return_df:
+            return pd.DataFrame(data=X_transformed,
+                                columns=[f"{col_name}_rbf{i}" for i in range(self.n_periods)])
+        else:
+            return X_transformed
 
     def _array_base_distance(self, arr: np.ndarray, base: float) -> np.ndarray:
         """Calculates the distances between all array values and the base,
