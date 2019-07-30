@@ -612,8 +612,38 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
 
 class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
-    """Selects a column and transforms it into multiple feautures  
     """
+    This is a transformer for features with some form of circularity. 
+    E.g. for days of the week, day 7 is as close to day 6 as it is to day 1.
+    The transformer selects a column and transforms it with a give number of repeating (radial) basis functions.
+    Radial basis functions are bell-curve functions which take the original data as input.
+    The basis functions are equally spaced over the input data range (specified with floor and ceil).
+    The key feature of repeating basis funtions is that they are continuous when moving
+    from the min to the max.
+
+    :type column: int or list, default=0
+    :param column: Indexes the data on its second axis. Integers are interpreted as
+        positional columns, while strings can reference DataFrame columns by name.
+    
+    :type remainder: {'drop', 'passthrough'}, default="drop"
+    :param remainder: By default, only the specified column is transformed, and the 
+        non-specified columns are dropped. (default of ``'drop'``). By specifying 
+        ``remainder='passthrough'``, all remaining columns will be automatically passed 
+        through. This subset of columns is concatenated with the output of the transformer.
+
+    :type n_periods: int, default=12
+    :param n_periods: number of basis functions to create, i.e., the number of columns that
+        will exit the transformer.
+
+    :type floor: float or 'min', default='min'
+    :param floor: the value at which the basis function should equal the ceiling. Used
+        to scale the input data to a 0-1 range.
+
+    :type ceil: float or 'max', default='max'
+    :param ceil: the value at which the basis function should equal the floor. Used to
+        scale the input data to a 0-1 range.
+    """
+
     def __init__(self, column=0, remainder="passthrough", n_periods=12, floor='min', ceil='max'):
         self.column = column
         self.remainder = "passthrough"
@@ -652,10 +682,6 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
 
     def fit(self, X, y=None):
         """Fits the estimator"""
-        # TODO: check if needed
-        if (type(X) == pd.DataFrame):
-            X = X.values
-                
         # TODO figure out what this does
         X = check_array(X, estimator=self)
     
@@ -678,16 +704,6 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         if (len(X.shape) == 1) or (X.shape[1] != 1):
             raise ValueError(f"X should have exactly one column, it has shape: {X.shape}")
 
-        # TODO check if needed get array needed for numpy operations later
-        if type(X) == pd.DataFrame:
-            # prepare for returning df
-            return_df = True
-            col_name = X.columns[0]
-            # transform to numpy array for easy processing
-            X = X.values
-        else:
-            return_df = False
-
         # TODO figure out what this does
         check_is_fitted(self, ["bases_", "width_"])
         X = check_array(X, estimator=self)
@@ -699,13 +715,8 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         base_distances = self._array_bases_distances(X, self.bases_)
 
         # apply rbf function to series for each basis
-        X_transformed = self._rbf(base_distances)
+        return self._rbf(base_distances)
 
-        if return_df:
-            return pd.DataFrame(data=X_transformed,
-                                columns=[f"{col_name}_rbf{i}" for i in range(self.n_periods)])
-        else:
-            return X_transformed
 
     def _array_base_distance(self, arr: np.ndarray, base: float) -> np.ndarray:
         """Calculates the distances between all array values and the base,
