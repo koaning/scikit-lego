@@ -41,6 +41,38 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         return getattr(self.estimator_, self.predict_func)(X).reshape(-1, 1)
 
 
+def constant_shrinkage(group_sizes: list, alpha: float) -> np.ndarray:
+    """
+    The augmented prediction for each level is the weighted average between its prediction and the augmented
+    prediction for its parent.
+
+    Let $\hat{y}_i$ be the prediction at level $i$, with $i=0$ being the root, than the augmented prediction
+    $\hat{y}_i^* = \alpha \hat{y}_i + (1 - \alpha) \hat{y}_{i-1}^*$, with $\hat{y}_0^* = \hat{y}_0$.
+
+
+    """
+    return np.array(
+        [alpha ** (len(group_sizes) - 1)]
+        + [alpha ** (len(group_sizes) - 1 - i) * (1 - alpha) for i in range(1, len(group_sizes) - 1)]
+        + [(1 - alpha)]
+    )
+
+
+def relative_shrinkage(group_sizes: list) -> np.ndarray:
+    """Weigh each group according to it's size"""
+    return np.array(group_sizes)
+
+
+def min_n_obs_shrinkage(group_sizes: list, min_n_obs) -> np.ndarray:
+    """Use only the smallest group with a certain amount of observations"""
+    if min_n_obs > max(group_sizes):
+        raise ValueError(f"There is no group with size greater than or equal to {min_n_obs}")
+
+    res = np.zeros(len(group_sizes))
+    res[np.argmin(np.array(group_sizes) >= min_n_obs) - 1] = 1
+    return res
+
+
 class GroupedEstimator(BaseEstimator):
     """
     Construct an estimator per data group. Splits data by values of a
@@ -48,17 +80,27 @@ class GroupedEstimator(BaseEstimator):
 
     :param estimator: the model/pipeline to be applied per group
     :param groups: the column(s) of the matrix/dataframe to select as a grouping parameter set
-    :param use_fallback: weather or not to fall back to a general model in case
+    :param use_fallback: whether or not to fall back to a general model in case
     the group parameter is not found during `.predict()`
+    :param shrinkage: Whether or not to use a shrinkage estimation
+    :param shrinkage_function: {"constant", "min_n_obs", "relative"} or a function, default "constant"
+                               * constant: shrinked prediction for a level is weighted average of its prediction and its
+                                           parents prediction
+                               * min_n_obs: shrinked prediction is the prediction for the smallest group with at least
+                                            n observations in it
+                               * relative: each group-level is weight according to its size
+                               * function: a function that takes a list of group lengths and returns an array of the
+                               same size with the weights for each group
+    :param shrinkage_param: Parameters to pass to the shrinkage function
     """
-    def __init__(self, estimator, groups, use_fallback=True, shrinkage=True, shrinkage_func="constant",
+    def __init__(self, estimator, groups, use_fallback=True, shrinkage=True, shrinkage_function="constant",
                  shrinkage_tol=0.1):
         self.estimator = estimator
         self.groups = groups
         self.use_fallback = use_fallback  # Do we need this in case of shrinkage?
         self.shrinkage = shrinkage
-        self.shrinkage_function = shrinkage_func  # Default is constant
-        self.shrinkage_tol = shrinkage_tol
+        self.shrinkage_function = shrinkage_function  # Default is constant
+        self.shrinkage_param = shrinkage_tol
 
     def __check_group_cols_exist(self, X):
         """Check whether the specified grouping columns are in X"""
@@ -96,6 +138,7 @@ class GroupedEstimator(BaseEstimator):
         if X_data.shape[1] > 0 and y is not None:
             check_X_y(X_data, y)
         elif y is not None:
+            # X can be empty in, for example, a Dummy estimator
             check_array(y, ensure_2d=False)
         elif X_data.shape[1] > 0:
             check_array(X_data)
@@ -118,43 +161,23 @@ class GroupedEstimator(BaseEstimator):
             .to_dict()
         )
 
-    def __constant_shrinkage(self, group_sizes: list) -> np.ndarray:
-        """
-        The augmented prediction for each level is the weighted average between its prediction and the augmented
-        prediction for its parent.
-
-        Let $\hat{y}_i$ be the prediction at level $i$, with $i=0$ being the root, than the augmented prediction
-        $\hat{y}_i^* = \alpha \hat{y}_i + (1 - \alpha) \hat{y}_{i-1}^*$, with $\hat{y}_0^* = \hat{y}_0$.
-
-
-        """
-        alpha = self.shrinkage_tol
-
-        return np.array(
-            [alpha ** (len(group_sizes) - 1)]
-            + [alpha ** (len(group_sizes) - 1 - i) * (1 - alpha) for i in range(1, len(group_sizes) - 1)]
-            + [(1 - alpha)]
-        )
-
-    def __relative_shrinkage(self, group_sizes: list) -> np.ndarray:
-        """Weigh each group according to it's size"""
-        return np.array(group_sizes)
-
-    def __min_n_obs_shrinkage(self, group_sizes: list) -> np.ndarray:
-        """Use only the smallest group with a certain amount of observations"""
-        if self.shrinkage_tol > max(group_sizes):
-            raise ValueError(f"There is no group with size greater than or equal to {self.shrinkage_tol}")
-
-        res = np.zeros(len(group_sizes))
-        res[np.argmin(np.array(group_sizes) >= self.shrinkage_tol) - 1] = 1
-        return res
+    def __check_shrinkage_func(self):
+        """Validate the shrinkage function"""
+        group_lengths = [10, 5, 2]
+        expected_shape = np.array(group_lengths).shape
+        try:
+            result = self.shrinkage_function_(group_lengths)
+            if not isinstance(result, np.ndarray):
+                raise ValueError(f"shrinkage_function({group_lengths}) should return an np.ndarray")
+            if result.shape != expected_shape:
+                raise ValueError(f"shrinkage_function({group_lengths}).shape should be {expected_shape}")
 
     def __set_shrinkage_function(self):
         if isinstance(self.shrinkage_function, str):
             shrink_options = {
-                "constant": self.__constant_shrinkage,
-                "relative": self.__relative_shrinkage,
-                "min_n_obs": self.__min_n_obs_shrinkage,
+                "constant": constant_shrinkage,
+                "relative": relative_shrinkage,
+                "min_n_obs": min_n_obs_shrinkage,
             }
             try:
                 self.shrinkage_function_ = shrink_options.get(self.shrinkage_function)
@@ -235,6 +258,7 @@ class GroupedEstimator(BaseEstimator):
         return self
 
     def __predict_group(self, X, group_colnames):
+        """Make predictions for all groups"""
         try:
             return (
                 X
@@ -245,6 +269,7 @@ class GroupedEstimator(BaseEstimator):
                 .squeeze()
             )
         except AttributeError:
+            # Handle new groups
             culprits = (
                 set(X[self.group_colnames_].agg(func=tuple, axis=1))
                 - set(self.estimators_.keys())
@@ -252,7 +277,7 @@ class GroupedEstimator(BaseEstimator):
             raise ValueError(f"found a group(s) {culprits} in `.predict` that was not in `.fit`")
 
     def __predict_shrinkage_groups(self, X):
-
+        """Make predictions for all shrinkage groups"""
         # DataFrame with predictions for all levels per row
         hierarchical_predictions = pd.concat([
             pd.Series(self.__predict_group(X, level_columns)) for level_columns in self.group_colnames_hierarchical_
@@ -264,6 +289,7 @@ class GroupedEstimator(BaseEstimator):
         shrinkage_factors = prediction_groups.map(self.shrinkage_factors_)
 
         if any(shrinkage_factors.isnull()):
+            # Handle new groups
             diff = set(prediction_groups) - set(self.shrinkage_factors_.keys())
 
             raise ValueError(f"found a group(s) {diff} in `.predict` that was not in `.fit`")
@@ -275,7 +301,7 @@ class GroupedEstimator(BaseEstimator):
 
     def predict(self, X):
         """
-        Predict new data by making random guesses.
+        Predict on new data.
 
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
