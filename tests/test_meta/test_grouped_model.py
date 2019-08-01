@@ -170,3 +170,38 @@ def test_relative_shrinkage(shrinkage_data):
 
     assert expected_prediction == shrink_est.predict(X).tolist()
 
+
+def test_min_n_obs_shrinkage(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    shrink_est = GroupedEstimator(
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_func="min_n_obs", shrinkage_tol=2
+    )
+
+    shrink_est.fit(X, y)
+
+    expected_prediction = [
+        means["NL"],
+        means["NL"],
+        means["BE"],
+        means["BE"],
+    ]
+
+    assert expected_prediction == shrink_est.predict(X).tolist()
+
+
+def test_unexisting_shrinkage_func(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    with pytest.raises(ValueError):
+        unexisting_func = "some_highly_unlikely_function_name"
+
+        shrink_est = GroupedEstimator(
+            DummyRegressor(), ["Planet", 'Country'], shrinkage=True, shrinkage_func=unexisting_func, shrinkage_tol=2
+        )
+
+        shrink_est.fit(X, y)

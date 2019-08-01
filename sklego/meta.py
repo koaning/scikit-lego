@@ -51,12 +51,13 @@ class GroupedEstimator(BaseEstimator):
     :param use_fallback: weather or not to fall back to a general model in case
     the group parameter is not found during `.predict()`
     """
-    def __init__(self, estimator, groups, use_fallback=True, shrinkage=True, shrinkage_func=None, shrinkage_tol=None):
+    def __init__(self, estimator, groups, use_fallback=True, shrinkage=True, shrinkage_func="constant",
+                 shrinkage_tol=0.1):
         self.estimator = estimator
         self.groups = groups
         self.use_fallback = use_fallback  # Do we need this in case of shrinkage?
         self.shrinkage = shrinkage
-        self.shrinkage_function = shrinkage_func
+        self.shrinkage_function = shrinkage_func  # Default is constant
         self.shrinkage_tol = shrinkage_tol
 
     def __check_group_cols_exist(self, X):
@@ -117,21 +118,49 @@ class GroupedEstimator(BaseEstimator):
             .to_dict()
         )
 
-    def __constant_shrinkage(self, arr: np.ndarray):
-        alpha = self.shrinkage_tol
-        relative_fractions = np.array([alpha * (1 - alpha) ** (len(arr) - i - 1) for i in range(len(arr))])
-        return relative_fractions/relative_fractions.sum()
+    def __constant_shrinkage(self, group_sizes: list) -> np.ndarray:
+        """
+        The augmented prediction for each level is the weighted average between its prediction and the augmented
+        prediction for its parent.
 
-    def __relative_shrinkage(self, arr: list):
-        arr = np.array(arr)
-        return arr/arr.sum()
+        Let $\hat{y}_i$ be the prediction at level $i$, with $i=0$ being the root, than the augmented prediction
+        $\hat{y}_i^* = \alpha \hat{y}_i + (1 - \alpha) \hat{y}_{i-1}^*$, with $\hat{y}_0^* = \hat{y}_0$.
+
+
+        """
+        alpha = self.shrinkage_tol
+
+        return np.array(
+            [alpha ** (len(group_sizes) - 1)]
+            + [alpha ** (len(group_sizes) - 1 - i) * (1 - alpha) for i in range(1, len(group_sizes) - 1)]
+            + [(1 - alpha)]
+        )
+
+    def __relative_shrinkage(self, group_sizes: list) -> np.ndarray:
+        """Weigh each group according to it's size"""
+        return np.array(group_sizes)
+
+    def __min_n_obs_shrinkage(self, group_sizes: list) -> np.ndarray:
+        """Use only the smallest group with a certain amount of observations"""
+        if self.shrinkage_tol > max(group_sizes):
+            raise ValueError(f"There is no group with size greater than or equal to {self.shrinkage_tol}")
+
+        res = np.zeros(len(group_sizes))
+        res[np.argmin(np.array(group_sizes) >= self.shrinkage_tol) - 1] = 1
+        return res
 
     def __set_shrinkage_function(self):
         if isinstance(self.shrinkage_function, str):
-            self.shrinkage_function_ = {
+            shrink_options = {
                 "constant": self.__constant_shrinkage,
                 "relative": self.__relative_shrinkage,
-            }.get(self.shrinkage_function)
+                "min_n_obs": self.__min_n_obs_shrinkage,
+            }
+            try:
+                self.shrinkage_function_ = shrink_options.get(self.shrinkage_function)
+            except AttributeError:
+                raise ValueError(f"The specified shrink function {self.shrinkage_function} is not valid, "
+                                 f"choose from {list(shrink_options.keys())}")
         else:
             self.shrinkage_function_ = self.shrinkage_function
 
@@ -150,9 +179,12 @@ class GroupedEstimator(BaseEstimator):
             group: self.shrinkage_function_(counts) for group, counts in hierarchical_counts.items()
         }
 
+        # Make sure that the factors sum to one
+        shrinkage_factors = {group: value / value.sum() for group, value in shrinkage_factors.items()}
+
         return shrinkage_factors
 
-    def fit(self, X, y):
+    def fit(self, X, y=None):
         """
         Fit the model using X, y as training data. Will also learn the groups
         that exist within the dataset.
