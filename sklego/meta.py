@@ -61,6 +61,8 @@ class GroupedEstimator(BaseEstimator):
 
     def __check_group_cols_exist(self, X):
         """Check whether the specified grouping columns are in X"""
+        if X.shape[1] == 0:
+            raise ValueError(f"0 feature(s) (shape=({X.shape[0]}, 0)) while a minimum of 1 is required.")
         if isinstance(X, pd.DataFrame):
             x_cols = set(X.columns)
         else:
@@ -90,9 +92,11 @@ class GroupedEstimator(BaseEstimator):
         X_data = self.__remove_groups_from_x(X)
 
         # __validate is used in both fit and predict, so y can be None
-        if y is not None:
+        if X_data.shape[1] > 0 and y is not None:
             check_X_y(X_data, y)
-        else:
+        elif y is not None:
+            check_array(y, ensure_2d=False)
+        elif X_data.shape[1] > 0:
             check_array(X_data)
 
         self.__check_missing_and_inf(X)
@@ -148,52 +152,6 @@ class GroupedEstimator(BaseEstimator):
 
         return shrinkage_factors
 
-    def __check_group_cols_exist(self, X):
-        """Check whether the specified grouping columns are in X"""
-        if isinstance(X, pd.DataFrame):
-            x_cols = set(X.columns)
-        else:
-            ncols = 1 if X.ndim == 1 else X.shape[1]
-
-            x_cols = set(range(ncols))
-
-        diff = set(as_list(self.groups)) - x_cols
-        if len(diff) > 0:
-            raise KeyError(f'{diff} not in columns of X ({x_cols})')
-
-    @staticmethod
-    def __check_missing_and_inf(X):
-        """Check that all elements of X are non-missing and finite, needed because check_array cannot handle strings"""
-        if np.any(pd.isnull(X)):
-            raise ValueError("X has NaN values")
-        try:
-            if np.any(np.isinf(X)):
-                raise ValueError("X has infinite values")
-        except TypeError:
-            # if X cannot be converted to numeric, checking infinites does not make sense
-            pass
-
-    def __validate(self, X, y=None):
-        """Validate the input, used in both fit and predict"""
-        # Split the model data from the grouping columns, this part is checked `regularly`
-        X_data = self.__remove_groups_from_x(X)
-
-        # __validate is used in both fit and predict, so y can be None
-        if y is not None:
-            check_X_y(X_data, y)
-        else:
-            check_array(X_data)
-
-        self.__check_missing_and_inf(X)
-        self.__check_group_cols_exist(X)
-
-    def __remove_groups_from_x(self, X):
-        """Remove the grouping columns from X"""
-        if isinstance(X, pd.DataFrame):
-            return X.drop(columns=self.groups, inplace=False)
-        else:
-            return np.delete(X, self.groups, axis=1)
-
     def fit(self, X, y):
         """
         Fit the model using X, y as training data. Will also learn the groups
@@ -235,10 +193,12 @@ class GroupedEstimator(BaseEstimator):
         else:
             self.estimators_ = self.__fit_grouped_estimator(X, pred_col, self.value_colnames_, self.group_colnames_)
 
-        self.groups_ = list(self.estimators_.keys())
-        self.complete_groups_ = [group for group in self.groups_ if len(as_list(group)) == len(self.group_colnames_)]
+        self.groups_ = as_list(self.estimators_.keys())
 
-        self.shrinkage_factors_ = self.__get_shrinkage_factor(X)
+        if self.shrinkage:
+            self.complete_groups_ = [grp for grp in self.groups_ if len(as_list(grp)) == len(self.group_colnames_)]
+
+            self.shrinkage_factors_ = self.__get_shrinkage_factor(X)
 
         return self
 
@@ -317,7 +277,11 @@ class GroupedEstimator(BaseEstimator):
         >>> __expanding_list(['test1', 'test2', 'test3'])
         [['test1'], ['test1', 'test2'], ['test1', 'test2', 'test3']]
         """
-        return [return_type(list_to_extent[:n+1]) for n in range(len(as_list(list_to_extent)))]
+        listed = as_list(list_to_extent)
+        if len(listed) <= 1:
+            return listed
+
+        return [return_type(listed[:n+1]) for n in range(len(listed))]
 
 
 class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):

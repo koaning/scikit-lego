@@ -115,7 +115,6 @@ def shrinkage_data():
         "Planet": ["Earth", "Earth", "Earth", "Earth"],
         "Country": ["NL", "NL", "BE", "BE"],
         "City": ["Amsterdam", "Rotterdam", "Antwerp", "Brussels"],
-        "Feature": [2, 6, 4, 8],
         "Target": [1, 3, 2, 4]
     })
 
@@ -136,6 +135,8 @@ def test_constant_shrinkage(shrinkage_data):
     shrinkage_factors = np.array([0.01, 0.09, 0.9])
 
     shrink_est.fit(X, y)
+
+    print(shrink_est.shrinkage_factors_)
 
     expected_prediction = [
         np.array([means["Earth"], means["NL"], means["Amsterdam"]]) @ shrinkage_factors,
