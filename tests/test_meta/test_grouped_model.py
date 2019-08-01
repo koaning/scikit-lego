@@ -106,3 +106,4 @@ def test_chickweigt_string_groups():
     # This should NOT raise errors
     GroupedEstimator(LinearRegression(), groups=['diet'], shrinkage=False).fit(X, y).predict(X)
     GroupedEstimator(LinearRegression(), groups=1, shrinkage=False).fit(X_np, y).predict(X_np)
+
