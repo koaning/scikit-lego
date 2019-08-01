@@ -205,3 +205,21 @@ def test_unexisting_shrinkage_func(shrinkage_data):
         )
 
         shrink_est.fit(X, y)
+
+
+def test_unseen_groups_shrinkage(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    shrink_est = GroupedEstimator(
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_func="constant", shrinkage_tol=0.1
+    )
+
+    shrink_est.fit(X, y)
+
+
+    unseen_group = pd.DataFrame({"Planet": ["Earth"], 'Country': ["DE"], 'City': ["Hamburg"]})
+
+    with pytest.raises(ValueError):
+        shrink_est.predict(X=pd.concat([unseen_group] * 4, axis=0))

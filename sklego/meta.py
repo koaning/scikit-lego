@@ -235,14 +235,21 @@ class GroupedEstimator(BaseEstimator):
         return self
 
     def __predict_group(self, X, group_colnames):
-        return (
-            X
-            .groupby(group_colnames, as_index=False)
-            .apply(lambda d: pd.DataFrame(
-                self.estimators_.get(d.name, self.fallback_).predict(d[self.value_colnames_]), index=d.index))
-            .values
-            .squeeze()
-        )
+        try:
+            return (
+                X
+                .groupby(group_colnames, as_index=False)
+                .apply(lambda d: pd.DataFrame(
+                    self.estimators_.get(d.name, self.fallback_).predict(d[self.value_colnames_]), index=d.index))
+                .values
+                .squeeze()
+            )
+        except AttributeError:
+            culprits = (
+                set(X[self.group_colnames_].agg(func=tuple, axis=1))
+                - set(self.estimators_.keys())
+            )
+            raise ValueError(f"found a group(s) {culprits} in `.predict` that was not in `.fit`")
 
     def __predict_shrinkage_groups(self, X):
 
@@ -252,7 +259,15 @@ class GroupedEstimator(BaseEstimator):
         ], axis=1)
 
         # This is a Series with values the arrays
-        shrinkage_factors = X[self.group_colnames_].agg(func=tuple, axis=1).map(self.shrinkage_factors_)
+        prediction_groups = X[self.group_colnames_].agg(func=tuple, axis=1)
+
+        shrinkage_factors = prediction_groups.map(self.shrinkage_factors_)
+
+        if any(shrinkage_factors.isnull()):
+            diff = set(prediction_groups) - set(self.shrinkage_factors_.keys())
+
+            raise ValueError(f"found a group(s) {diff} in `.predict` that was not in `.fit`")
+
         # So convert it to a dataframe
         shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
 
@@ -277,22 +292,10 @@ class GroupedEstimator(BaseEstimator):
         if any([c not in X.columns for c in self.value_colnames_]):
             raise ValueError(f"columns to use {self.value_colnames_} not in {X.columns}")
 
-        try:
-            if not self.shrinkage:
-                return self.__predict_group(X, group_colnames=self.group_colnames_)
-            else:
-                return self.__predict_shrinkage_groups(X)
-        except AttributeError:
-            # if not self.shrinkage:
-            #     culprits = set(pd.concat([X[self.group_colnames_].drop_duplicates().assign(new=1),
-            #                               self.groups_.assign(new=0)])
-            #                    .drop_duplicates()
-            #                    .loc[lambda d: d['new'] == 1]
-            #                    .itertuples())
-            #     raise ValueError(f"found a group(s) {culprits} in `.predict` that was not in `.fit`")
-            # else:
-                # TODO: Update this error message
-            raise ValueError("A group in `.predict` was not in `.fit`")
+        if not self.shrinkage:
+            return self.__predict_group(X, group_colnames=self.group_colnames_)
+        else:
+            return self.__predict_shrinkage_groups(X)
 
     def __expanding_list(self, list_to_extent: List[str], return_type=list) -> Union[List[list], List[tuple]]:
         """
