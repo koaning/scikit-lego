@@ -63,7 +63,7 @@ Usage
    contribution
    mixture-methods
    naive-bayes
-   meta
+   meta.ipynb
    fairness.ipynb
    timegapsplit.ipynb
    preprocessing

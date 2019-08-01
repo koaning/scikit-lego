@@ -168,3 +168,4 @@ def test_relative_shrinkage(shrinkage_data):
     ]
 
     assert expected_prediction == shrink_est.predict(X).tolist()
+

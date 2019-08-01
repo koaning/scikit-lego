@@ -148,6 +148,52 @@ class GroupedEstimator(BaseEstimator):
 
         return shrinkage_factors
 
+    def __check_group_cols_exist(self, X):
+        """Check whether the specified grouping columns are in X"""
+        if isinstance(X, pd.DataFrame):
+            x_cols = set(X.columns)
+        else:
+            ncols = 1 if X.ndim == 1 else X.shape[1]
+
+            x_cols = set(range(ncols))
+
+        diff = set(as_list(self.groups)) - x_cols
+        if len(diff) > 0:
+            raise KeyError(f'{diff} not in columns of X ({x_cols})')
+
+    @staticmethod
+    def __check_missing_and_inf(X):
+        """Check that all elements of X are non-missing and finite, needed because check_array cannot handle strings"""
+        if np.any(pd.isnull(X)):
+            raise ValueError("X has NaN values")
+        try:
+            if np.any(np.isinf(X)):
+                raise ValueError("X has infinite values")
+        except TypeError:
+            # if X cannot be converted to numeric, checking infinites does not make sense
+            pass
+
+    def __validate(self, X, y=None):
+        """Validate the input, used in both fit and predict"""
+        # Split the model data from the grouping columns, this part is checked `regularly`
+        X_data = self.__remove_groups_from_x(X)
+
+        # __validate is used in both fit and predict, so y can be None
+        if y is not None:
+            check_X_y(X_data, y)
+        else:
+            check_array(X_data)
+
+        self.__check_missing_and_inf(X)
+        self.__check_group_cols_exist(X)
+
+    def __remove_groups_from_x(self, X):
+        """Remove the grouping columns from X"""
+        if isinstance(X, pd.DataFrame):
+            return X.drop(columns=self.groups, inplace=False)
+        else:
+            return np.delete(X, self.groups, axis=1)
+
     def fit(self, X, y):
         """
         Fit the model using X, y as training data. Will also learn the groups
