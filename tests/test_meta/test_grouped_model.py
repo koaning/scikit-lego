@@ -129,7 +129,8 @@ def test_constant_shrinkage(shrinkage_data):
     X, y = df.drop(columns="Target"), df['Target']
 
     shrink_est = GroupedEstimator(
-        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_func="constant", shrinkage_tol=0.1
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_function="constant", 
+        alpha=0.1
     )
 
     shrinkage_factors = np.array([0.01, 0.09, 0.9])
@@ -154,7 +155,7 @@ def test_relative_shrinkage(shrinkage_data):
     X, y = df.drop(columns="Target"), df['Target']
 
     shrink_est = GroupedEstimator(
-        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_func="relative", shrinkage_tol=0.1
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_function="relative",
     )
 
     shrinkage_factors = np.array([4, 2, 1]) / 7
@@ -177,7 +178,8 @@ def test_min_n_obs_shrinkage(shrinkage_data):
     X, y = df.drop(columns="Target"), df['Target']
 
     shrink_est = GroupedEstimator(
-        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_func="min_n_obs", shrinkage_tol=2
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_function="min_n_obs",
+        min_n_obs=2
     )
 
     shrink_est.fit(X, y)
@@ -201,7 +203,8 @@ def test_unexisting_shrinkage_func(shrinkage_data):
         unexisting_func = "some_highly_unlikely_function_name"
 
         shrink_est = GroupedEstimator(
-            DummyRegressor(), ["Planet", 'Country'], shrinkage=True, shrinkage_func=unexisting_func, shrinkage_tol=2
+            DummyRegressor(), ["Planet", 'Country'], shrinkage=True, shrinkage_function=unexisting_func,
+            min_n_obs=2
         )
 
         shrink_est.fit(X, y)
@@ -213,11 +216,11 @@ def test_unseen_groups_shrinkage(shrinkage_data):
     X, y = df.drop(columns="Target"), df['Target']
 
     shrink_est = GroupedEstimator(
-        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_func="constant", shrinkage_tol=0.1
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_function="constant",
+        alpha=0.1
     )
 
     shrink_est.fit(X, y)
-
 
     unseen_group = pd.DataFrame({"Planet": ["Earth"], 'Country': ["DE"], 'City': ["Hamburg"]})
 

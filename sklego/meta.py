@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from typing import Tuple, List, Union
+from typing import List, Union
 
 from sklearn import clone
 from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin
@@ -42,7 +42,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
 
 def constant_shrinkage(group_sizes: list, alpha: float) -> np.ndarray:
-    """
+    r"""
     The augmented prediction for each level is the weighted average between its prediction and the augmented
     prediction for its parent.
 
@@ -82,7 +82,7 @@ class GroupedEstimator(BaseEstimator):
     :param groups: the column(s) of the matrix/dataframe to select as a grouping parameter set
     :param use_fallback: whether or not to fall back to a general model in case
     the group parameter is not found during `.predict()`
-    :param shrinkage: Whether or not to use a shrinkage estimation
+    :param shrinkage: Whether or not to use a shrinkage estimation, default False
     :param shrinkage_function: {"constant", "min_n_obs", "relative"} or a function, default "constant"
                                * constant: shrinked prediction for a level is weighted average of its prediction and its
                                            parents prediction
@@ -91,16 +91,15 @@ class GroupedEstimator(BaseEstimator):
                                * relative: each group-level is weight according to its size
                                * function: a function that takes a list of group lengths and returns an array of the
                                same size with the weights for each group
-    :param shrinkage_param: Parameters to pass to the shrinkage function
+    :param **kwargs: keyword arguments to the shrinkage function
     """
-    def __init__(self, estimator, groups, use_fallback=True, shrinkage=True, shrinkage_function="constant",
-                 shrinkage_tol=0.1):
+    def __init__(self, estimator, groups, use_fallback=True, shrinkage=False, shrinkage_function="constant", **kwargs):
         self.estimator = estimator
         self.groups = groups
         self.use_fallback = use_fallback  # Do we need this in case of shrinkage?
         self.shrinkage = shrinkage
         self.shrinkage_function = shrinkage_function  # Default is constant
-        self.shrinkage_param = shrinkage_tol
+        self.kwargs = kwargs
 
     def __check_group_cols_exist(self, X):
         """Check whether the specified grouping columns are in X"""
@@ -201,7 +200,8 @@ class GroupedEstimator(BaseEstimator):
         self.__set_shrinkage_function()
 
         shrinkage_factors = {
-            group: self.shrinkage_function_(counts) for group, counts in hierarchical_counts.items()
+            group: self.shrinkage_function_(counts, **self.kwargs)
+            for group, counts in hierarchical_counts.items()
         }
 
         # Make sure that the factors sum to one
@@ -334,11 +334,9 @@ class GroupedEstimator(BaseEstimator):
 
         :Example:
 
-        >>> __expanding_list('test')
-        [['test']]
+        __expanding_list('test') -> [['test']]
 
-        >>> __expanding_list(['test1', 'test2', 'test3'])
-        [['test1'], ['test1', 'test2'], ['test1', 'test2', 'test3']]
+        __expanding_list(['test1', 'test2', 'test3']) -> [['test1'], ['test1', 'test2'], ['test1', 'test2', 'test3']]
         """
         listed = as_list(list_to_extent)
         if len(listed) <= 1:
