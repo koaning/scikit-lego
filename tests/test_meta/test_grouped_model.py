@@ -129,15 +129,13 @@ def test_constant_shrinkage(shrinkage_data):
     X, y = df.drop(columns="Target"), df['Target']
 
     shrink_est = GroupedEstimator(
-        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_function="constant", 
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_function="constant",
         alpha=0.1
     )
 
     shrinkage_factors = np.array([0.01, 0.09, 0.9])
 
     shrink_est.fit(X, y)
-
-    print(shrink_est.shrinkage_factors_)
 
     expected_prediction = [
         np.array([means["Earth"], means["NL"], means["Amsterdam"]]) @ shrinkage_factors,

@@ -152,13 +152,18 @@ class GroupedEstimator(BaseEstimator):
         else:
             return np.delete(X, self.groups, axis=1)
 
-    def __fit_grouped_estimator(self, X, target_col, value_columns, group_columns):
-        return (
-            X
-            .groupby(group_columns)
-            .apply(lambda d: clone(self.estimator).fit(d[value_columns], d[target_col]))
-            .to_dict()
-        )
+    def __fit_grouped_estimator(self, X, y, value_columns, group_columns):
+        group_indices = X.groupby(group_columns).indices
+
+        try:
+            grouped_estimations = {
+                group: clone(self.estimator).fit(X.loc[indices, value_columns], y.loc[indices])
+                for group, indices in group_indices.items()
+            }
+        except KeyError:
+            raise KeyError("The indices of y and X should match")
+
+        return grouped_estimations
 
     def __check_shrinkage_func(self):
         """Validate the shrinkage function"""
@@ -223,7 +228,10 @@ class GroupedEstimator(BaseEstimator):
         pred_col = 'the-column-that-i-want-to-predict-but-dont-have-the-name-for'
         if isinstance(X, np.ndarray):
             X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
-        X = X.assign(**{pred_col: y})
+
+        if isinstance(y, np.ndarray):
+            cols = pred_col if y.ndim == 1 else ["_".join([pred_col, i]) for i in range(y.shape[1])]
+            y = pd.Series(y, name=cols) if y.ndim == 1 else pd.DataFrame(y, columns=cols)
 
         self.group_colnames_ = [str(_) for _ in as_list(self.groups)]
 
@@ -233,7 +241,7 @@ class GroupedEstimator(BaseEstimator):
         if any([c not in X.columns for c in self.group_colnames_]):
             raise KeyError(f"{self.group_colnames_} not in {X.columns}")
 
-        self.value_colnames_ = [_ for _ in X.columns if _ not in self.group_colnames_ and _ is not pred_col]
+        self.value_colnames_ = [_ for _ in X.columns if _ not in self.group_colnames_]
         self.fallback_ = None
 
         if self.use_fallback:
@@ -245,10 +253,10 @@ class GroupedEstimator(BaseEstimator):
 
             for level_colnames in self.group_colnames_hierarchical_:
                 self.estimators_.update(
-                    self.__fit_grouped_estimator(X, pred_col, self.value_colnames_, level_colnames)
+                    self.__fit_grouped_estimator(X, y, self.value_colnames_, level_colnames)
                 )
         else:
-            self.estimators_ = self.__fit_grouped_estimator(X, pred_col, self.value_colnames_, self.group_colnames_)
+            self.estimators_ = self.__fit_grouped_estimator(X, y, self.value_colnames_, self.group_colnames_)
 
         self.groups_ = as_list(self.estimators_.keys())
 
