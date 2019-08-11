@@ -617,12 +617,13 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     E.g. for days of the week you might face the problem that, conceptually, day 7 is as 
     close to day 6 as it is to day 1. While numerically their distance is different.
     This transformer remedies that problem.
-    The transformer selects a column and transforms it with a given number of repeating (radial) basis functions.
-    Radial basis functions are bell-curve shaped functions which take the original data as input.
-    The basis functions are equally spaced over the input range.
-    The key feature of repeating basis funtions is that they are continuous when moving
-    from the min to the max. As a result these repeating basis functions can capture the 
-    the "close" to the center of each respective basis function
+    The transformer selects a column and transforms it with a given number of repeating 
+    (radial) basis functions. Radial basis functions are bell-curve shaped functions 
+    which take the original data as input. The basis functions are equally spaced over 
+    the input range. The key feature of repeating basis funtions is that they are 
+    continuous when moving from the max to the min of the input range. As a result these 
+    repeating basis functions can capture how close each datapoint is to the center of 
+    each repeating basis function, even when the input data has a circular nature.
 
     :type column: int or list, default=0
     :param column: Indexes the data on its second axis. Integers are interpreted as
