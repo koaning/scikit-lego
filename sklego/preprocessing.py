@@ -616,10 +616,10 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     This is a transformer for features with some form of circularity. 
     E.g. for days of the week you might face the problem that, conceptually, day 7 is as 
     close to day 6 as it is to day 1. While numerically their distance is different.
-    This transformer solves that problem.
-    The transformer selects a column and transforms it with a give number of repeating (radial) basis functions.
+    This transformer remedies that problem.
+    The transformer selects a column and transforms it with a given number of repeating (radial) basis functions.
     Radial basis functions are bell-curve shaped functions which take the original data as input.
-    The basis functions are equally spaced over the input data range (specified with floor and ceil).
+    The basis functions are equally spaced over the input range.
     The key feature of repeating basis funtions is that they are continuous when moving
     from the min to the max. As a result these repeating basis functions can capture the 
     the "close" to the center of each respective basis function
@@ -638,23 +638,16 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     :param n_periods: number of basis functions to create, i.e., the number of columns that
         will exit the transformer.
 
-    :type floor: float or 'min', default='min'
-    :param floor: the value at which the basis function should equal the ceiling. Used
-        to scale the input data to a 0-1 range.
-
-    :type ceil: float or 'max', default='max'
-    :param ceil: the value at which the basis function should equal the floor. Used to
-        scale the input data to a 0-1 range.
+    :type input_range: tuple or None, default=None
+    :param input_range: the values at which the data repeats itself. For example, for days of
+        the week this is (1,7). If input_range=None it is inferred from the training data. 
     """
 
-    def __init__(
-        self, column=0, remainder="passthrough", n_periods=12, floor="min", ceil="max"
-    ):
+    def __init__(self, column=0, remainder="passthrough", n_periods=12, input_range=None):
         self.column = column
         self.remainder = "passthrough"
         self.n_periods = n_periods
-        self.floor = floor
-        self.ceil = ceil
+        self.input_range = input_range
         self.pipeline = None
 
     def fit(self, X, y=None):
@@ -662,9 +655,7 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
             [
                 (
                     "repeatingbasis",
-                    _RepeatingBasisFunction(
-                        n_periods=self.n_periods, floor=self.floor, ceil=self.ceil
-                    ),
+                    _RepeatingBasisFunction(n_periods=self.n_periods, input_range=self.input_range),
                     [self.column],
                 )
             ],
@@ -681,19 +672,16 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
 
 
 class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
-    def __init__(self, n_periods: int = 12, floor="min", ceil="max"):
+    def __init__(self, n_periods: int = 12, input_range=None):
         self.n_periods = n_periods
-        self.floor = floor
-        self.ceil = ceil
+        self.input_range = input_range
 
     def fit(self, X, y=None):
         X = check_array(X, estimator=self)
 
         # find min and max for standardization if not given explicitly
-        if self.floor == "min":
-            self.floor = X.min()
-        if self.ceil == "max":
-            self.ceil = X.max()
+        if self.input_range is None:
+            self.input_range = (X.min(), X.max())
 
         # exclude the last value because it's identical to the first for repeating basis functions
         self.bases_ = np.linspace(0, 1, self.n_periods + 1)[:-1]
@@ -711,7 +699,7 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
             raise ValueError(f"X should have exactly one column, it has: {X.shape[1]}")
 
         # MinMax Scale to 0-1
-        X = (X - self.floor) / (self.ceil - self.floor)
+        X = (X - self.input_range[0]) / (self.input_range[1] - self.input_range[0])
 
         base_distances = self._array_bases_distances(X, self.bases_)
 
