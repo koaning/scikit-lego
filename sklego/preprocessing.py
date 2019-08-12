@@ -614,26 +614,26 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
 class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     """
-    This is a transformer for features with some form of circularity. 
-    E.g. for days of the week you might face the problem that, conceptually, day 7 is as 
+    This is a transformer for features with some form of circularity.
+    E.g. for days of the week you might face the problem that, conceptually, day 7 is as
     close to day 6 as it is to day 1. While numerically their distance is different.
     This transformer remedies that problem.
-    The transformer selects a column and transforms it with a given number of repeating 
-    (radial) basis functions. Radial basis functions are bell-curve shaped functions 
-    which take the original data as input. The basis functions are equally spaced over 
-    the input range. The key feature of repeating basis funtions is that they are 
-    continuous when moving from the max to the min of the input range. As a result these 
-    repeating basis functions can capture how close each datapoint is to the center of 
+    The transformer selects a column and transforms it with a given number of repeating
+    (radial) basis functions. Radial basis functions are bell-curve shaped functions
+    which take the original data as input. The basis functions are equally spaced over
+    the input range. The key feature of repeating basis funtions is that they are
+    continuous when moving from the max to the min of the input range. As a result these
+    repeating basis functions can capture how close each datapoint is to the center of
     each repeating basis function, even when the input data has a circular nature.
 
     :type column: int or list, default=0
     :param column: Indexes the data on its second axis. Integers are interpreted as
         positional columns, while strings can reference DataFrame columns by name.
-    
+
     :type remainder: {'drop', 'passthrough'}, default="drop"
-    :param remainder: By default, only the specified column is transformed, and the 
-        non-specified columns are dropped. (default of ``'drop'``). By specifying 
-        ``remainder='passthrough'``, all remaining columns will be automatically passed 
+    :param remainder: By default, only the specified column is transformed, and the
+        non-specified columns are dropped. (default of ``'drop'``). By specifying
+        ``remainder='passthrough'``, all remaining columns will be automatically passed
         through. This subset of columns is concatenated with the output of the transformer.
 
     :type n_periods: int, default=12
@@ -642,7 +642,7 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
 
     :type input_range: tuple or None, default=None
     :param input_range: the values at which the data repeats itself. For example, for days of
-        the week this is (1,7). If input_range=None it is inferred from the training data. 
+        the week this is (1,7). If input_range=None it is inferred from the training data.
     """
 
     def __init__(
