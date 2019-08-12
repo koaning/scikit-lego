@@ -611,6 +611,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         if not isinstance(X, pd.DataFrame):
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
 
+
 class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     """
     This is a transformer for features with some form of circularity. 
@@ -644,7 +645,9 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         the week this is (1,7). If input_range=None it is inferred from the training data. 
     """
 
-    def __init__(self, column=0, remainder="passthrough", n_periods=12, input_range=None):
+    def __init__(
+        self, column=0, remainder="passthrough", n_periods=12, input_range=None
+    ):
         self.column = column
         self.remainder = "passthrough"
         self.n_periods = n_periods
@@ -656,7 +659,9 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
             [
                 (
                     "repeatingbasis",
-                    _RepeatingBasisFunction(n_periods=self.n_periods, input_range=self.input_range),
+                    _RepeatingBasisFunction(
+                        n_periods=self.n_periods, input_range=self.input_range
+                    ),
                     [self.column],
                 )
             ],
