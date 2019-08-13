@@ -649,7 +649,7 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         self, column=0, remainder="passthrough", n_periods=12, input_range=None
     ):
         self.column = column
-        self.remainder = "passthrough"
+        self.remainder = remainder 
         self.n_periods = n_periods
         self.input_range = input_range
         self.pipeline = None
