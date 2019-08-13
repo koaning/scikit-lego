@@ -17,6 +17,7 @@ def df():
         }
     )
 
+
 def test_int_indexing(df):
     X, y = df[["a", "b", "c", "d"]], df[["e"]]
     tf = RepeatingBasisFunction(column=0, n_periods=4, remainder="passthrough")
@@ -33,6 +34,7 @@ def test_drop_remainder(df):
     X, y = df[["a", "b", "c", "d"]], df[["e"]]
     tf = RepeatingBasisFunction(column="b", n_periods=4, remainder="drop")
     assert tf.fit(X, y).transform(X).shape == (6, 4)
+
 
 def test_dataframe_equals_array(df):
     X, y = df[["a", "b", "c", "d"]], df[["e"]]

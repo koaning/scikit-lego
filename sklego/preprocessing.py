@@ -646,10 +646,10 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     """
 
     def __init__(
-        self, column=0, remainder="passthrough", n_periods=12, input_range=None
+        self, column=0, remainder="drop", n_periods=12, input_range=None
     ):
         self.column = column
-        self.remainder = remainder 
+        self.remainder = remainder
         self.n_periods = n_periods
         self.input_range = input_range
         self.pipeline = None
