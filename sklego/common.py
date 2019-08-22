@@ -132,3 +132,28 @@ def flatten(nested_iterable):
             yield from flatten(el)
         else:
             yield el
+
+
+def expanding_list(list_to_extent, return_type=list):
+    """
+    Make a expanding list of lists by making tuples of the first element, the first 2 elements etc.
+
+    :param list_to_extent:
+    :param return_type: type of the elements of the list (tuple or list)
+
+    :Example:
+
+    >>> expanding_list('test')
+    [['test']]
+
+    >>> expanding_list(['test1', 'test2', 'test3'])
+    [['test1'], ['test1', 'test2'], ['test1', 'test2', 'test3']]
+
+    >>> expanding_list(['test1', 'test2', 'test3'], tuple)
+    [('test1',), ('test1', 'test2'), ('test1', 'test2', 'test3')]
+    """
+    listed = as_list(list_to_extent)
+    if len(listed) <= 1:
+        return [listed]
+
+    return [return_type(listed[:n+1]) for n in range(len(listed))]
