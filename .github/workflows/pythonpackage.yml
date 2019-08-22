@@ -25,4 +25,8 @@ jobs:
     - name: flake8
       run: flake8
     - name: pytest
-      run: pytest
+      run: pytest --disable-warnings --cov=sklego
+    - name: doctest
+      run: python -m doctest -v sklego/*.py
+    - name: test notebooks
+      run: pytest --nbval-lax doc/*.ipynb
