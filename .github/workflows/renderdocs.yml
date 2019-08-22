@@ -1,0 +1,24 @@
+name: Python package
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.6]
+        os: [ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v1
+    - name: setup ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: install
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+    - name: build docs
+      run: sphinx-build doc docs
