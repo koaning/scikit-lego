@@ -1,4 +1,4 @@
-name: Python package
+name: Render Docs
 
 on: [push]
 
