@@ -66,5 +66,5 @@ Usage
    meta.ipynb
    fairness.ipynb
    timegapsplit.ipynb
-   preprocessing
+   preprocessing.ipynb
    api/modules
