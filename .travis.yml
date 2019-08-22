@@ -12,7 +12,7 @@ install:
   - pip install .[dev]
   - pip freeze
 script:
-  - flake8
-  - pytest --disable-warnings --cov=sklego
-  - python -m doctest -v sklego/*.py
-  - pytest --nbval-lax doc/*.ipynb
+  - time flake8
+  - time pytest --disable-warnings --cov=sklego
+  - time python -m doctest -v sklego/*.py
+  - time pytest --nbval-lax doc/*.ipynb

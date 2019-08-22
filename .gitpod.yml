@@ -1,3 +1,12 @@
 tasks:
-  - init: pyenv local 3.7.2 && pip install -e ".[dev]"
-    command: python setup.py develop
+  - init: >
+      pyenv local 3.7.2 &&
+      pip install --upgrade pip &&
+      pip install -e . &&
+      pip install .[dev] &&
+      pip freeze
+    command: >
+      time flake8
+      time pytest --disable-warnings --cov=sklego
+      time python -m doctest -v sklego/*.py
+      time pytest --nbval-lax doc/*.ipynb
