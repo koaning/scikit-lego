@@ -224,3 +224,10 @@ def test_unseen_groups_shrinkage(shrinkage_data):
 
     with pytest.raises(ValueError):
         shrink_est.predict(X=pd.concat([unseen_group] * 4, axis=0))
+
+
+def test_bad_shrinkage_value_error():
+    with pytest.raises(ValueError):
+        df = load_chicken(give_pandas=True)
+        mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage="dinosaurhead")
+        mod.fit(df[['time', 'diet']], df['weight'])
