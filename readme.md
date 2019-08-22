@@ -1,6 +1,4 @@
-[![Build Status](https://travis-ci.org/koaning/scikit-lego.svg?branch=master)](https://travis-ci.org/koaning/scikit-lego)
-(https://ci.appveyor.com/api/projects/status/66r9jjs844v8c5qh?svg=true)](https://ci.appveyor.com/project/koaning/scikit-lego)
-[![Documentation Status](https://readthedocs.org/projects/scikit-lego/badge/?version=latest)](https://scikit-lego.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/koaning/scikit-lego.svg?branch=master)](https://travis-ci.org/koaning/scikit-lego) [![Build Status](https://ci.appveyor.com/api/projects/status/66r9jjs844v8c5qh?svg=true)](https://ci.appveyor.com/project/koaning/scikit-lego) [![Documentation Status](https://readthedocs.org/projects/scikit-lego/badge/?version=latest)](https://scikit-lego.readthedocs.io/en/latest/?badge=latest) [![Downloads](https://pepy.tech/badge/scikit-lego/month)](https://pepy.tech/project/scikit-lego/month)
 
 
 
