@@ -27,30 +27,30 @@ from sklego.datasets import load_chicken
     estimator_checks.check_set_params,
 ]))
 def test_estimator_checks(test_fn):
-    clf = GroupedEstimator(estimator=LinearRegression(), groups=[0], use_fallback=True, shrinkage=False)
+    clf = GroupedEstimator(estimator=LinearRegression(), groups=[0], use_fallback=True, shrinkage=None)
     test_fn(GroupedEstimator.__name__ + "_fallback", clf)
 
-    clf = GroupedEstimator(estimator=LinearRegression(), groups=[0], use_fallback=False, shrinkage=False)
+    clf = GroupedEstimator(estimator=LinearRegression(), groups=[0], use_fallback=False, shrinkage=None)
     test_fn(GroupedEstimator.__name__ + "_nofallback", clf)
 
 
 def test_chickweight_df1_keys():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=False)
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=None)
     mod.fit(df[['time', 'diet']], df['weight'])
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
 
 
 def test_chickweight_df2_keys():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="chick", shrinkage=False)
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="chick", shrinkage=None)
     mod.fit(df[['time', 'chick']], df['weight'])
     assert set(mod.estimators_.keys()) == set(range(1, 50 + 1))
 
 
 def test_chickweight_can_do_fallback():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=False)
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=None)
     mod.fit(df[['time', 'diet']], df['weight'])
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
@@ -63,7 +63,7 @@ def test_fallback_can_raise_error():
     mod = GroupedEstimator(estimator=LinearRegression(),
                            groups="diet",
                            use_fallback=False,
-                           shrinkage=False)
+                           shrinkage=None)
     mod.fit(df[['time', 'diet']], df['weight'])
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
     with pytest.raises(ValueError):
@@ -72,15 +72,15 @@ def test_fallback_can_raise_error():
 
 def test_chickweight_raise_error_cols_missing1():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=False)
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=None)
     mod.fit(df[['time', 'diet']], df['weight'])
-    with pytest.raises(KeyError):
+    with pytest.raises(ValueError):
         mod.predict(df[['time', 'chick']])
 
 
 def test_chickweight_raise_error_cols_missing2():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=False)
+    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage=None)
     mod.fit(df[['time', 'diet']], df['weight'])
     with pytest.raises(ValueError):
         mod.predict(df[['diet', 'chick']])
@@ -88,7 +88,7 @@ def test_chickweight_raise_error_cols_missing2():
 
 def test_chickweight_np_keys():
     df = load_chicken(give_pandas=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups=[1, 2], shrinkage=False)
+    mod = GroupedEstimator(estimator=LinearRegression(), groups=[1, 2], shrinkage=None)
     mod.fit(df[['time', 'chick', 'diet']].values, df['weight'].values)
     # there should still only be 50 groups on this dataset
     assert len(mod.estimators_.keys()) == 50
@@ -105,8 +105,8 @@ def test_chickweigt_string_groups():
     y = df['weight']
 
     # This should NOT raise errors
-    GroupedEstimator(LinearRegression(), groups=['diet'], shrinkage=False).fit(X, y).predict(X)
-    GroupedEstimator(LinearRegression(), groups=1, shrinkage=False).fit(X_np, y).predict(X_np)
+    GroupedEstimator(LinearRegression(), groups=['diet'], shrinkage=None).fit(X, y).predict(X)
+    GroupedEstimator(LinearRegression(), groups=1, shrinkage=None).fit(X_np, y).predict(X_np)
 
 
 @pytest.fixture
@@ -129,7 +129,7 @@ def test_constant_shrinkage(shrinkage_data):
     X, y = df.drop(columns="Target"), df['Target']
 
     shrink_est = GroupedEstimator(
-        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_function="constant",
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage="constant",
         alpha=0.1
     )
 
@@ -153,7 +153,7 @@ def test_relative_shrinkage(shrinkage_data):
     X, y = df.drop(columns="Target"), df['Target']
 
     shrink_est = GroupedEstimator(
-        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_function="relative",
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage="relative",
     )
 
     shrinkage_factors = np.array([4, 2, 1]) / 7
@@ -176,7 +176,7 @@ def test_min_n_obs_shrinkage(shrinkage_data):
     X, y = df.drop(columns="Target"), df['Target']
 
     shrink_est = GroupedEstimator(
-        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_function="min_n_obs",
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage="min_n_obs",
         min_n_obs=2
     )
 
@@ -201,7 +201,7 @@ def test_unexisting_shrinkage_func(shrinkage_data):
         unexisting_func = "some_highly_unlikely_function_name"
 
         shrink_est = GroupedEstimator(
-            DummyRegressor(), ["Planet", 'Country'], shrinkage=True, shrinkage_function=unexisting_func,
+            DummyRegressor(), ["Planet", 'Country'], shrinkage=unexisting_func,
             min_n_obs=2
         )
 
@@ -214,7 +214,7 @@ def test_unseen_groups_shrinkage(shrinkage_data):
     X, y = df.drop(columns="Target"), df['Target']
 
     shrink_est = GroupedEstimator(
-        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=True, shrinkage_function="constant",
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage="constant",
         alpha=0.1
     )
 

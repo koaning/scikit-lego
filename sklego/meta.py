@@ -1,14 +1,11 @@
 import numpy as np
 import pandas as pd
-
-from typing import List, Union
-
 from sklearn import clone
 from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array, FLOAT_DTYPES
 
 from sklego.base import ProbabilisticClassifier
-from sklego.common import as_list, TrainOnlyTransformerMixin
+from sklego.common import as_list, expanding_list, TrainOnlyTransformerMixin
 
 
 class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
@@ -80,41 +77,74 @@ class GroupedEstimator(BaseEstimator):
 
     :param estimator: the model/pipeline to be applied per group
     :param groups: the column(s) of the matrix/dataframe to select as a grouping parameter set
+    :param value_columns: Columns to use in the prediction. If None (default), use all non-grouping columns
     :param use_fallback: whether or not to fall back to a general model in case
     the group parameter is not found during `.predict()`
-    :param shrinkage: Whether or not to use a shrinkage estimation, default False
-    :param shrinkage_function: {"constant", "min_n_obs", "relative"} or a function, default "constant"
-                               * constant: shrinked prediction for a level is weighted average of its prediction and its
-                                           parents prediction
-                               * min_n_obs: shrinked prediction is the prediction for the smallest group with at least
-                                            n observations in it
-                               * relative: each group-level is weight according to its size
-                               * function: a function that takes a list of group lengths and returns an array of the
-                               same size with the weights for each group
-    :param **kwargs: keyword arguments to the shrinkage function
+    :param shrinkage: How to perform shrinkage.
+                        None: No shrinkage (default)
+                        {"constant", "min_n_obs", "relative"} or a callable
+                        * constant: shrinked prediction for a level is weighted average of its prediction and its
+                                    parents prediction
+                        * min_n_obs: shrinked prediction is the prediction for the smallest group with at least
+                                     n observations in it
+                        * relative: each group-level is weight according to its size
+                        * function: a function that takes a list of group lengths and returns an array of the
+                                    same size with the weights for each group
+    :param **shrinkage_kwargs: keyword arguments to the shrinkage function
     """
-    def __init__(self, estimator, groups, use_fallback=True, shrinkage=False, shrinkage_function="constant", **kwargs):
+    def __init__(self, estimator, groups, value_columns=None, use_fallback=True, shrinkage=None, **shrinkage_kwargs):
         self.estimator = estimator
         self.groups = groups
+        self.value_columns = value_columns
         self.use_fallback = use_fallback  # Do we need this in case of shrinkage?
         self.shrinkage = shrinkage
-        self.shrinkage_function = shrinkage_function  # Default is constant
-        self.kwargs = kwargs
+        self.shrinkage_kwargs = shrinkage_kwargs
 
-    def __check_group_cols_exist(self, X):
+    def __set_shrinkage_function(self):
+        if isinstance(self.shrinkage, str):
+            # Predefined shrinkage functions
+            shrink_options = {
+                "constant": constant_shrinkage,
+                "relative": relative_shrinkage,
+                "min_n_obs": min_n_obs_shrinkage,
+            }
+            try:
+                self.shrinkage_function = shrink_options.get(self.shrinkage)
+            except AttributeError:
+                raise ValueError(f"The specified shrinkage function {self.shrinkage} is not valid, "
+                                 f"choose from {list(shrink_options.keys())} or supply a callable.")
+        elif callable(self.shrinkage):
+            self.__check_shrinkage_func()
+            self.shrinkage_function = self.shrinkage_function
+        else:
+            raise ValueError(f"Invalid shrinkage specified. Should be either None (no shrinkage), str or callable.")
+
+    def __check_shrinkage_func(self):
+        """Validate the shrinkage function if a function is specified"""
+        group_lengths = [10, 5, 2]
+        expected_shape = np.array(group_lengths).shape
+        try:
+            result = self.shrinkage(group_lengths)
+        except Exception as e:
+            raise ValueError(f"Caught an exception while checking the shrinkage function: {str(e)}") from e
+        else:
+            if not isinstance(result, np.ndarray):
+                raise ValueError(f"shrinkage_function({group_lengths}) should return an np.ndarray")
+            if result.shape != expected_shape:
+                raise ValueError(f"shrinkage_function({group_lengths}).shape should be {expected_shape}")
+
+    @staticmethod
+    def __check_cols_exist(X, cols):
         """Check whether the specified grouping columns are in X"""
         if X.shape[1] == 0:
             raise ValueError(f"0 feature(s) (shape=({X.shape[0]}, 0)) while a minimum of 1 is required.")
-        if isinstance(X, pd.DataFrame):
-            x_cols = set(X.columns)
-        else:
-            ncols = 1 if X.ndim == 1 else X.shape[1]
 
-            x_cols = set(range(ncols))
+        # X has been converted to a DataFrame
+        x_cols = set(X.columns)
+        diff = set(as_list(cols)) - x_cols
 
-        diff = set(as_list(self.groups)) - x_cols
         if len(diff) > 0:
-            raise KeyError(f'{diff} not in columns of X ({x_cols})')
+            raise ValueError(f'{diff} not in columns of X {x_cols}')
 
     @staticmethod
     def __check_missing_and_inf(X):
@@ -130,82 +160,51 @@ class GroupedEstimator(BaseEstimator):
 
     def __validate(self, X, y=None):
         """Validate the input, used in both fit and predict"""
-        # Split the model data from the grouping columns, this part is checked `regularly`
-        X_data = self.__remove_groups_from_x(X)
+        self.__check_cols_exist(X, self.value_colnames_)
+        self.__check_cols_exist(X, self.group_colnames_)
 
-        # __validate is used in both fit and predict, so y can be None
+        # Split the model data from the grouping columns, this part is checked `regularly`
+        X_data = X.loc[:, self.value_colnames_]
+
+        # y can be None because __validate used in predict, X can have no columns if the estimator only uses y
         if X_data.shape[1] > 0 and y is not None:
-            check_X_y(X_data, y)
+            check_X_y(X_data, y, multi_output=True)
         elif y is not None:
-            # X can be empty in, for example, a Dummy estimator
             check_array(y, ensure_2d=False)
         elif X_data.shape[1] > 0:
             check_array(X_data)
 
         self.__check_missing_and_inf(X)
-        self.__check_group_cols_exist(X)
-
-    def __remove_groups_from_x(self, X):
-        """Remove the grouping columns from X"""
-        if isinstance(X, pd.DataFrame):
-            return X.drop(columns=self.groups, inplace=False)
-        else:
-            return np.delete(X, self.groups, axis=1)
 
     def __fit_grouped_estimator(self, X, y, value_columns, group_columns):
+        # Reset indices such that they are the same in X and y
+        X, y = X.reset_index(drop=True), y.reset_index(drop=True)
+
         group_indices = X.groupby(group_columns).indices
 
-        try:
-            grouped_estimations = {
-                group: clone(self.estimator).fit(X.loc[indices, value_columns], y.loc[indices])
-                for group, indices in group_indices.items()
-            }
-        except KeyError:
-            raise KeyError("The indices of y and X should match")
+        grouped_estimations = {
+            group: clone(self.estimator).fit(X.loc[indices, value_columns], y.loc[indices])
+            for group, indices in group_indices.items()
+        }
 
         return grouped_estimations
-
-    def __check_shrinkage_func(self):
-        """Validate the shrinkage function"""
-        group_lengths = [10, 5, 2]
-        expected_shape = np.array(group_lengths).shape
-        try:
-            result = self.shrinkage_function_(group_lengths)
-            if not isinstance(result, np.ndarray):
-                raise ValueError(f"shrinkage_function({group_lengths}) should return an np.ndarray")
-            if result.shape != expected_shape:
-                raise ValueError(f"shrinkage_function({group_lengths}).shape should be {expected_shape}")
-        except Exception as e:
-            raise ValueError(f"Caught an exception while checking the shrinkage function: {str(e)}")
-
-    def __set_shrinkage_function(self):
-        if isinstance(self.shrinkage_function, str):
-            shrink_options = {
-                "constant": constant_shrinkage,
-                "relative": relative_shrinkage,
-                "min_n_obs": min_n_obs_shrinkage,
-            }
-            try:
-                self.shrinkage_function_ = shrink_options.get(self.shrinkage_function)
-            except AttributeError:
-                raise ValueError(f"The specified shrink function {self.shrinkage_function} is not valid, "
-                                 f"choose from {list(shrink_options.keys())}")
-        else:
-            self.shrinkage_function_ = self.shrinkage_function
 
     def __get_shrinkage_factor(self, X):
         """Get for all complete groups an array of shrinkages"""
         counts = X.groupby(self.group_colnames_).size()
 
+        # Groups that are split on all
+        most_granular_groups = [grp for grp in self.groups_ if len(as_list(grp)) == len(self.group_colnames_)]
+
+        # For each hierarchy level in each most granular group, get the number of observations
         hierarchical_counts = {
-            complete_group: [counts[tuple(subgroup)].sum() for subgroup in self.__expanding_list(complete_group, tuple)]
-            for complete_group in self.complete_groups_
+            granular_group: [counts[tuple(subgroup)].sum() for subgroup in expanding_list(granular_group, tuple)]
+            for granular_group in most_granular_groups
         }
 
-        self.__set_shrinkage_function()
-
+        # For each hierarchy level in each most granular group, get the shrinkage factor
         shrinkage_factors = {
-            group: self.shrinkage_function_(counts, **self.kwargs)
+            group: self.shrinkage_function(counts, **self.shrinkage_kwargs)
             for group, counts in hierarchical_counts.items()
         }
 
@@ -213,6 +212,21 @@ class GroupedEstimator(BaseEstimator):
         shrinkage_factors = {group: value / value.sum() for group, value in shrinkage_factors.items()}
 
         return shrinkage_factors
+
+    @staticmethod
+    def __convert_input_to_pandas(X, y=None):
+        if isinstance(X, np.ndarray):
+            X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
+
+        if y is not None:
+            if isinstance(y, np.ndarray):
+                pred_col = 'the-column-that-i-want-to-predict-but-dont-have-the-name-for'
+                cols = pred_col if y.ndim == 1 else ["_".join([pred_col, i]) for i in range(y.shape[1])]
+                y = pd.Series(y, name=cols) if y.ndim == 1 else pd.DataFrame(y, columns=cols)
+
+            return X, y
+
+        return X
 
     def fit(self, X, y=None):
         """
@@ -223,32 +237,28 @@ class GroupedEstimator(BaseEstimator):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
-        self.__validate(X, y)
+        X, y = self.__convert_input_to_pandas(X, y)
 
-        pred_col = 'the-column-that-i-want-to-predict-but-dont-have-the-name-for'
-        if isinstance(X, np.ndarray):
-            X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
-
-        if isinstance(y, np.ndarray):
-            cols = pred_col if y.ndim == 1 else ["_".join([pred_col, i]) for i in range(y.shape[1])]
-            y = pd.Series(y, name=cols) if y.ndim == 1 else pd.DataFrame(y, columns=cols)
+        if self.shrinkage is not None:
+            self.__set_shrinkage_function()
 
         self.group_colnames_ = [str(_) for _ in as_list(self.groups)]
+        if self.value_columns is not None:
+            self.value_colnames_ = [str(_) for _ in as_list(self.value_columns)]
+        else:
+            self.value_colnames_ = [_ for _ in X.columns if _ not in self.group_colnames_]
+        self.__validate(X, y)
 
         # List of all hierarchical subsets of columns
-        self.group_colnames_hierarchical_ = self.__expanding_list(self.group_colnames_, list)
+        self.group_colnames_hierarchical_ = expanding_list(self.group_colnames_, list)
 
-        if any([c not in X.columns for c in self.group_colnames_]):
-            raise KeyError(f"{self.group_colnames_} not in {X.columns}")
-
-        self.value_colnames_ = [_ for _ in X.columns if _ not in self.group_colnames_]
         self.fallback_ = None
 
         if self.use_fallback:
             subset_x = X[self.value_colnames_]
             self.fallback_ = clone(self.estimator).fit(subset_x, y)
 
-        if self.shrinkage:
+        if self.shrinkage is not None:
             self.estimators_ = {}
 
             for level_colnames in self.group_colnames_hierarchical_:
@@ -260,9 +270,7 @@ class GroupedEstimator(BaseEstimator):
 
         self.groups_ = as_list(self.estimators_.keys())
 
-        if self.shrinkage:
-            self.complete_groups_ = [grp for grp in self.groups_ if len(as_list(grp)) == len(self.group_colnames_)]
-
+        if self.shrinkage is not None:
             self.shrinkage_factors_ = self.__get_shrinkage_factor(X)
 
         return self
@@ -288,14 +296,15 @@ class GroupedEstimator(BaseEstimator):
 
     def __predict_shrinkage_groups(self, X):
         """Make predictions for all shrinkage groups"""
-        # DataFrame with predictions for all levels per row
+        # DataFrame with predictions for each hierarchy level, per row
         hierarchical_predictions = pd.concat([
             pd.Series(self.__predict_group(X, level_columns)) for level_columns in self.group_colnames_hierarchical_
         ], axis=1)
 
-        # This is a Series with values the arrays
+        # This is a Series with values the tuples of hierarchical grouping
         prediction_groups = X[self.group_colnames_].agg(func=tuple, axis=1)
 
+        # This is a Series of arrays
         shrinkage_factors = prediction_groups.map(self.shrinkage_factors_)
 
         if any(shrinkage_factors.isnull()):
@@ -304,7 +313,7 @@ class GroupedEstimator(BaseEstimator):
 
             raise ValueError(f"found a group(s) {diff} in `.predict` that was not in `.fit`")
 
-        # So convert it to a dataframe
+        # Convert the Series of arrays it to a DataFrame
         shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
 
         return (hierarchical_predictions * shrinkage_factors).sum(axis=1)
@@ -316,10 +325,11 @@ class GroupedEstimator(BaseEstimator):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
+        X = self.__convert_input_to_pandas(X)
         self.__validate(X)
 
-        check_is_fitted(self, ['estimators_', 'groups_', 'group_colnames_',
-                               'value_colnames_', 'fallback_'])
+        check_is_fitted(self, ['estimators_', 'groups_', 'group_colnames_', 'value_colnames_', 'fallback_'])
+
         if isinstance(X, np.ndarray):
             X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
 
@@ -328,29 +338,10 @@ class GroupedEstimator(BaseEstimator):
         if any([c not in X.columns for c in self.value_colnames_]):
             raise ValueError(f"columns to use {self.value_colnames_} not in {X.columns}")
 
-        if not self.shrinkage:
+        if self.shrinkage is None:
             return self.__predict_group(X, group_colnames=self.group_colnames_)
         else:
             return self.__predict_shrinkage_groups(X)
-
-    def __expanding_list(self, list_to_extent: List[str], return_type=list) -> Union[List[list], List[tuple]]:
-        """
-        Make a expanding list of lists by making tuples of the first element, the first 2 elements etc.
-
-        :param list_to_extent:
-        :param return_type: type of the elements of the list (tuple or list)
-
-        :Example:
-
-        __expanding_list('test') -> [['test']]
-
-        __expanding_list(['test1', 'test2', 'test3']) -> [['test1'], ['test1', 'test2'], ['test1', 'test2', 'test3']]
-        """
-        listed = as_list(list_to_extent)
-        if len(listed) <= 1:
-            return listed
-
-        return [return_type(listed[:n+1]) for n in range(len(listed))]
 
 
 class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
