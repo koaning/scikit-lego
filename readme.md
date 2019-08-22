@@ -1,7 +1,5 @@
 [![Documentation Status](https://readthedocs.org/projects/scikit-lego/badge/?version=latest)](https://scikit-lego.readthedocs.io/en/latest/?badge=latest) [![Downloads](https://pepy.tech/badge/scikit-lego/month)](https://pepy.tech/project/scikit-lego/month)
 
-
-
 # scikit-lego
 
 ![](images/logo.png)
@@ -68,8 +66,6 @@ Here's a list of features that this library currently offers:
 - `sklego.naive_bayes.GaussianMixtureNB` classifies by training a 1D GMM per column per class
 - `sklego.mixture.GMMClassifier` classifies by training a GMM per class
 - `sklego.mixture.GMMOutlierDetector` detects outliers based on a trained GMM
-- `sklego.pandas_utils.log_step` a simple logger-decorator for pandas pipeline steps
-- `sklego.pandas_utils.add_lags` adds lag values of certain columns in pandas
 - `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier
 - `sklego.meta.DecayEstimator` adds decay to the sample_weight that the model accepts
 - `sklego.meta.GroupedEstimator` can split the data into runs and run a model on each
@@ -77,6 +73,9 @@ Here's a list of features that this library currently offers:
 - `sklego.metrics.correlation_score` calculates correlation between model output and feature
 - `sklego.metrics.p_percent_score` proxy for model fairness with regards to sensitive attribute
 - `sklego.datasets.load_chicken` loads in the joyful chickweight dataset
+- `sklego.datasets.make_simpleseries` make a simulated timeseries
+- `sklego.pandas_utils.log_step` a simple logger-decorator for pandas pipeline steps
+- `sklego.pandas_utils.add_lags` adds lag values of certain columns in pandas
 
 ## New Features
 
