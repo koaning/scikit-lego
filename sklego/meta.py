@@ -45,8 +45,6 @@ def constant_shrinkage(group_sizes: list, alpha: float) -> np.ndarray:
 
     Let $\hat{y}_i$ be the prediction at level $i$, with $i=0$ being the root, than the augmented prediction
     $\hat{y}_i^* = \alpha \hat{y}_i + (1 - \alpha) \hat{y}_{i-1}^*$, with $\hat{y}_0^* = \hat{y}_0$.
-
-
     """
     return np.array(
         [alpha ** (len(group_sizes) - 1)]
@@ -79,15 +77,15 @@ class GroupedEstimator(BaseEstimator):
     :param groups: the column(s) of the matrix/dataframe to select as a grouping parameter set
     :param value_columns: Columns to use in the prediction. If None (default), use all non-grouping columns
     :param shrinkage: How to perform shrinkage.
-                        None: No shrinkage (default)
-                        {"constant", "min_n_obs", "relative"} or a callable
-                        * constant: shrinked prediction for a level is weighted average of its prediction and its
-                                    parents prediction
-                        * min_n_obs: shrinked prediction is the prediction for the smallest group with at least
-                                     n observations in it
-                        * relative: each group-level is weight according to its size
-                        * function: a function that takes a list of group lengths and returns an array of the
-                                    same size with the weights for each group
+                      None: No shrinkage (default)
+                      {"constant", "min_n_obs", "relative"} or a callable
+                      * constant: shrinked prediction for a level is weighted average of its prediction and its
+                                  parents prediction
+                      * min_n_obs: shrinked prediction is the prediction for the smallest group with at least
+                                   n observations in it
+                      * relative: each group-level is weight according to its size
+                      * function: a function that takes a list of group lengths and returns an array of the
+                                  same size with the weights for each group
     :param use_global_model: With shrinkage: whether to have a model over the entire input as first group
                              Without shrinkage: whether or not to fall back to a general model in case the group
                              parameter is not found during `.predict()`
@@ -241,8 +239,7 @@ class GroupedEstimator(BaseEstimator):
 
     def fit(self, X, y=None):
         """
-        Fit the model using X, y as training data. Will also learn the groups
-        that exist within the dataset.
+        Fit the model using X, y as training data. Will also learn the groups that exist within the dataset.
 
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :param y: array-like, shape=(n_samples,) training data.
