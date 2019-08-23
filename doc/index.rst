@@ -67,4 +67,5 @@ Usage
    fairness.ipynb
    timegapsplit.ipynb
    preprocessing.ipynb
+   debug_pipeline.ipynb
    api/modules
