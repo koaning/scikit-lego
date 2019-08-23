@@ -18,6 +18,7 @@ doctest:
 test: doctest
 	pytest --disable-warnings --cov=sklego
 	rm -rf .coverage*
+	pytest --nbval-lax doc/*.ipynb
 
 check: flake test
 
