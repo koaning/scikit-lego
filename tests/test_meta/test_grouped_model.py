@@ -66,24 +66,26 @@ def test_fallback_can_raise_error():
                            shrinkage=None)
     mod.fit(df[['time', 'diet']], df['weight'])
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         mod.predict(to_predict)
+        assert "found a group" in str(e)
 
 
 def test_chickweight_raise_error_cols_missing1():
     df = load_chicken(give_pandas=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
     mod.fit(df[['time', 'diet']], df['weight'])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         mod.predict(df[['time', 'chick']])
-
+        assert "not in columns" in str(e)
 
 def test_chickweight_raise_error_cols_missing2():
     df = load_chicken(give_pandas=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
     mod.fit(df[['time', 'diet']], df['weight'])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         mod.predict(df[['diet', 'chick']])
+        assert "not in columns" in str(e)
 
 
 def test_chickweight_np_keys():
@@ -242,7 +244,7 @@ def test_unexisting_shrinkage_func(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df['Target']
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         unexisting_func = "some_highly_unlikely_function_name"
 
         shrink_est = GroupedEstimator(
@@ -250,6 +252,8 @@ def test_unexisting_shrinkage_func(shrinkage_data):
         )
 
         shrink_est.fit(X, y)
+
+        assert "shrinkage function" in str(e)
 
 
 def test_unseen_groups_shrinkage(shrinkage_data):
@@ -266,12 +270,14 @@ def test_unseen_groups_shrinkage(shrinkage_data):
 
     unseen_group = pd.DataFrame({"Planet": ["Earth"], 'Country': ["DE"], 'City': ["Hamburg"]})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         shrink_est.predict(X=pd.concat([unseen_group] * 4, axis=0))
+        assert "found a group" in str(e)
 
 
 def test_bad_shrinkage_value_error():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         df = load_chicken(give_pandas=True)
         mod = GroupedEstimator(estimator=LinearRegression(), groups="diet", shrinkage="dinosaurhead",)
         mod.fit(df[['time', 'diet']], df['weight'])
+        assert "shrinkage function" in str(e)
