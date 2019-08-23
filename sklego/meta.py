@@ -78,8 +78,6 @@ class GroupedEstimator(BaseEstimator):
     :param estimator: the model/pipeline to be applied per group
     :param groups: the column(s) of the matrix/dataframe to select as a grouping parameter set
     :param value_columns: Columns to use in the prediction. If None (default), use all non-grouping columns
-    :param use_fallback: whether or not to fall back to a general model in case
-    the group parameter is not found during `.predict()`
     :param shrinkage: How to perform shrinkage.
                         None: No shrinkage (default)
                         {"constant", "min_n_obs", "relative"} or a callable
@@ -90,14 +88,19 @@ class GroupedEstimator(BaseEstimator):
                         * relative: each group-level is weight according to its size
                         * function: a function that takes a list of group lengths and returns an array of the
                                     same size with the weights for each group
+    :param use_global_model: With shrinkage: whether to have a model over the entire input as first group
+                             Without shrinkage: whether or not to fall back to a general model in case the group
+                             parameter is not found during `.predict()`
     :param **shrinkage_kwargs: keyword arguments to the shrinkage function
     """
-    def __init__(self, estimator, groups, value_columns=None, use_fallback=True, shrinkage=None, **shrinkage_kwargs):
+    def __init__(
+            self, estimator, groups, value_columns=None, shrinkage=None, use_global_model=True, **shrinkage_kwargs
+    ):
         self.estimator = estimator
         self.groups = groups
         self.value_columns = value_columns
-        self.use_fallback = use_fallback  # Do we need this in case of shrinkage?
         self.shrinkage = shrinkage
+        self.use_global_model = use_global_model
         self.shrinkage_kwargs = shrinkage_kwargs
 
     def __set_shrinkage_function(self):
@@ -108,14 +111,15 @@ class GroupedEstimator(BaseEstimator):
                 "relative": relative_shrinkage,
                 "min_n_obs": min_n_obs_shrinkage,
             }
+
             try:
-                self.shrinkage_function = shrink_options.get(self.shrinkage)
-            except AttributeError:
+                self.shrinkage_function_ = shrink_options[self.shrinkage]
+            except KeyError:
                 raise ValueError(f"The specified shrinkage function {self.shrinkage} is not valid, "
                                  f"choose from {list(shrink_options.keys())} or supply a callable.")
         elif callable(self.shrinkage):
             self.__check_shrinkage_func()
-            self.shrinkage_function = self.shrinkage_function
+            self.shrinkage_function_ = self.shrinkage
         else:
             raise ValueError(f"Invalid shrinkage specified. Should be either None (no shrinkage), str or callable.")
 
@@ -160,6 +164,9 @@ class GroupedEstimator(BaseEstimator):
 
     def __validate(self, X, y=None):
         """Validate the input, used in both fit and predict"""
+        if self.shrinkage and len(as_list(self.groups)) == 1 and not self.use_global_model:
+            raise ValueError("Cannot do shrinkage with a single group if use_global_model is False")
+
         self.__check_cols_exist(X, self.value_colnames_)
         self.__check_cols_exist(X, self.group_colnames_)
 
@@ -204,7 +211,7 @@ class GroupedEstimator(BaseEstimator):
 
         # For each hierarchy level in each most granular group, get the shrinkage factor
         shrinkage_factors = {
-            group: self.shrinkage_function(counts, **self.shrinkage_kwargs)
+            group: self.shrinkage_function_(counts, **self.shrinkage_kwargs)
             for group, counts in hierarchical_counts.items()
         }
 
@@ -213,10 +220,14 @@ class GroupedEstimator(BaseEstimator):
 
         return shrinkage_factors
 
-    @staticmethod
-    def __convert_input_to_pandas(X, y=None):
+    def __prepare_input_data(self, X, y=None):
         if isinstance(X, np.ndarray):
             X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
+
+        if self.shrinkage is not None and self.use_global_model:
+            global_col = "a-column-that-is-constant-for-all-data"
+            X = X.assign(**{global_col: "global"})
+            self.groups = [global_col] + as_list(self.groups)
 
         if y is not None:
             if isinstance(y, np.ndarray):
@@ -237,12 +248,13 @@ class GroupedEstimator(BaseEstimator):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
-        X, y = self.__convert_input_to_pandas(X, y)
+        X, y = self.__prepare_input_data(X, y)
 
         if self.shrinkage is not None:
             self.__set_shrinkage_function()
 
         self.group_colnames_ = [str(_) for _ in as_list(self.groups)]
+
         if self.value_columns is not None:
             self.value_colnames_ = [str(_) for _ in as_list(self.value_columns)]
         else:
@@ -254,7 +266,7 @@ class GroupedEstimator(BaseEstimator):
 
         self.fallback_ = None
 
-        if self.use_fallback:
+        if self.shrinkage is None and self.use_global_model:
             subset_x = X[self.value_colnames_]
             self.fallback_ = clone(self.estimator).fit(subset_x, y)
 
@@ -325,13 +337,10 @@ class GroupedEstimator(BaseEstimator):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
-        X = self.__convert_input_to_pandas(X)
+        X = self.__prepare_input_data(X)
         self.__validate(X)
 
         check_is_fitted(self, ['estimators_', 'groups_', 'group_colnames_', 'value_colnames_', 'fallback_'])
-
-        if isinstance(X, np.ndarray):
-            X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
 
         if any([c not in X.columns for c in self.group_colnames_]):
             raise ValueError(f"group columns {self.group_colnames_} not in {X.columns}")
