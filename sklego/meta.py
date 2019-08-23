@@ -304,11 +304,16 @@ class GroupedEstimator(BaseEstimator):
                 set(X[self.group_colnames_].agg(func=tuple, axis=1))
                 - set(self.estimators_.keys())
             )
+
+            if self.shrinkage is not None and self.use_global_model:
+                # Remove the global group from the culprits because the user did not specify
+                culprits = {culprit[1:] for culprit in culprits}
+
             raise ValueError(f"found a group(s) {culprits} in `.predict` that was not in `.fit`")
 
     def __predict_shrinkage_groups(self, X):
         """Make predictions for all shrinkage groups"""
-        # DataFrame with predictions for each hierarchy level, per row
+        # DataFrame with predictions for each hierarchy level, per row. Missing groups errors are thrown here.
         hierarchical_predictions = pd.concat([
             pd.Series(self.__predict_group(X, level_columns)) for level_columns in self.group_colnames_hierarchical_
         ], axis=1)
@@ -318,12 +323,6 @@ class GroupedEstimator(BaseEstimator):
 
         # This is a Series of arrays
         shrinkage_factors = prediction_groups.map(self.shrinkage_factors_)
-
-        if any(shrinkage_factors.isnull()):
-            # Handle new groups
-            diff = set(prediction_groups) - set(self.shrinkage_factors_.keys())
-
-            raise ValueError(f"found a group(s) {diff} in `.predict` that was not in `.fit`")
 
         # Convert the Series of arrays it to a DataFrame
         shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
@@ -341,11 +340,6 @@ class GroupedEstimator(BaseEstimator):
         self.__validate(X)
 
         check_is_fitted(self, ['estimators_', 'groups_', 'group_colnames_', 'value_colnames_', 'fallback_'])
-
-        if any([c not in X.columns for c in self.group_colnames_]):
-            raise ValueError(f"group columns {self.group_colnames_} not in {X.columns}")
-        if any([c not in X.columns for c in self.value_colnames_]):
-            raise ValueError(f"columns to use {self.value_colnames_} not in {X.columns}")
 
         if self.shrinkage is None:
             return self.__predict_group(X, group_colnames=self.group_colnames_)

@@ -195,6 +195,122 @@ def test_min_n_obs_shrinkage(shrinkage_data):
     assert expected_prediction == shrink_est.predict(X).tolist()
 
 
+def test_min_n_obs_shrinkage_too_little_obs(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    too_big_n_obs = X.shape[0] + 1
+
+    shrink_est = GroupedEstimator(
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage="min_n_obs", use_global_model=False,
+        min_n_obs=too_big_n_obs
+    )
+
+    with pytest.raises(ValueError) as e:
+        shrink_est.fit(X, y)
+
+        assert f"There is no group with size greater than or equal to {too_big_n_obs}" in str(e)
+
+
+def test_custom_shrinkage(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    def shrinkage_func(group_sizes):
+        n = len(group_sizes)
+        return np.repeat(1/n, n)
+
+    shrink_est = GroupedEstimator(
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=shrinkage_func, use_global_model=False,
+    )
+
+    shrinkage_factors = np.array([1, 1, 1]) / 3
+
+    shrink_est.fit(X, y)
+
+    expected_prediction = [
+        np.array([means["Earth"], means["NL"], means["Amsterdam"]]) @ shrinkage_factors,
+        np.array([means["Earth"], means["NL"], means["Rotterdam"]]) @ shrinkage_factors,
+        np.array([means["Earth"], means["BE"], means["Antwerp"]]) @ shrinkage_factors,
+        np.array([means["Earth"], means["BE"], means["Brussels"]]) @ shrinkage_factors,
+    ]
+
+    assert expected_prediction == shrink_est.predict(X).tolist()
+
+
+def test_custom_shrinkage_wrong_return_type(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    def shrinkage_func(group_sizes):
+        return group_sizes
+
+    with pytest.raises(ValueError) as e:
+        shrink_est = GroupedEstimator(
+            DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=shrinkage_func, use_global_model=False,
+        )
+
+        shrink_est.fit(X, y)
+
+        assert "should return an np.ndarray" in str(e)
+
+
+def test_custom_shrinkage_wrong_length(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    def shrinkage_func(group_sizes):
+        n = len(group_sizes)
+        return np.repeat(1/n, n+1)
+
+    with pytest.raises(ValueError) as e:
+        shrink_est = GroupedEstimator(
+            DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=shrinkage_func, use_global_model=False,
+        )
+
+        shrink_est.fit(X, y)
+
+        assert ".shape should be " in str(e)
+
+
+def test_custom_shrinkage_raises_error(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    def shrinkage_func(group_sizes):
+        raise KeyError("This function is bad and you should feel bad")
+
+    with pytest.raises(ValueError) as e:
+        shrink_est = GroupedEstimator(
+            DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=shrinkage_func, use_global_model=False,
+        )
+
+        shrink_est.fit(X, y)
+
+        assert "you should feel bad" in str(e) and "while checking the shrinkage function" in str(e)
+
+
+@pytest.mark.parametrize("wrong_func", [list(), tuple(), dict(), 9])
+def test_invalid_shrinkage(shrinkage_data, wrong_func):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    with pytest.raises(ValueError) as e:
+        shrink_est = GroupedEstimator(
+            DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage=wrong_func, use_global_model=False,
+        )
+
+        shrink_est.fit(X, y)
+
+        assert "Invalid shrinkage specified." in str(e)
+
+
 def test_global_model_shrinkage(shrinkage_data):
     df, means = shrinkage_data
 
@@ -240,6 +356,21 @@ def test_shrinkage_single_group(shrinkage_data):
     assert expected_prediction == shrink_est.predict(X).tolist()
 
 
+def test_shrinkage_single_group_no_global(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    with pytest.raises(ValueError) as e:
+        shrink_est = GroupedEstimator(
+            DummyRegressor(), 'Country', value_columns=[], shrinkage="constant", use_global_model=False,
+            alpha=0.1
+        )
+        shrink_est.fit(X, y)
+
+        assert "Cannot do shrinkage with a single group if use_global_model is False" in str(e)
+
+
 def test_unexisting_shrinkage_func(shrinkage_data):
     df, means = shrinkage_data
 
@@ -274,6 +405,43 @@ def test_unseen_groups_shrinkage(shrinkage_data):
     with pytest.raises(ValueError) as e:
         shrink_est.predict(X=pd.concat([unseen_group] * 4, axis=0))
         assert "found a group" in str(e)
+
+
+def test_predict_missing_group_column(shrinkage_data):
+    df, means = shrinkage_data
+
+    X, y = df.drop(columns="Target"), df['Target']
+
+    shrink_est = GroupedEstimator(
+        DummyRegressor(), ["Planet", 'Country', 'City'], shrinkage="constant", use_global_model=False,
+        alpha=0.1
+    )
+
+    shrink_est.fit(X, y)
+
+    with pytest.raises(ValueError) as e:
+        shrink_est.predict(X.drop(columns=['Country']))
+        assert "group columns" in str(e)
+
+
+def test_predict_missing_value_column(shrinkage_data):
+    df, means = shrinkage_data
+
+    value_column = "predictor"
+
+    X, y = df.drop(columns="Target"), df['Target']
+    X = X.assign(**{value_column: np.random.normal(size=X.shape[0])})
+
+    shrink_est = GroupedEstimator(
+        LinearRegression(), ["Planet", 'Country', 'City'], shrinkage="constant", use_global_model=False,
+        alpha=0.1
+    )
+
+    shrink_est.fit(X, y)
+
+    with pytest.raises(ValueError) as e:
+        shrink_est.predict(X.drop(columns=[value_column]))
+        assert "columns to use" in str(e)
 
 
 def test_bad_shrinkage_value_error():
