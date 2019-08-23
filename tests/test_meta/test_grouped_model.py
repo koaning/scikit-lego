@@ -79,6 +79,7 @@ def test_chickweight_raise_error_cols_missing1():
         mod.predict(df[['time', 'chick']])
         assert "not in columns" in str(e)
 
+
 def test_chickweight_raise_error_cols_missing2():
     df = load_chicken(give_pandas=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
