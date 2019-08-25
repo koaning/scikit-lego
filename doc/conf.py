@@ -20,12 +20,12 @@
 
 project = 'scikit-lego'
 copyright = '2019, Vincent, Matthijs and ManyOthers[tm]'
-author = 'Vincent and Others[tm]'
+author = 'Vincent, Matthijs and ManyOthers[tm]'
 
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '0.2.0'
+release = '0.3.0'
 
 # -- General configuration ---------------------------------------------------
 
