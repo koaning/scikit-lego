@@ -1,6 +1,7 @@
 import numpy as np
 import warnings
 
+
 def correlation_score(column):
     """
     The correlation score can score how well the estimator predictions
@@ -54,11 +55,11 @@ def p_percent_score(column, positive_target=1):
         # If we never predict a positive target for one of the subgroups, the model is by definition not
         # fair so we return 0
         if p_y1_z1 == 0:
-            warnings.warn(f"No samples with y_hat == {positive_target} for {column} == 1, returning 0")
+            warnings.warn(f"No samples with y_hat == {positive_target} for {column} == 1, returning 0", RuntimeWarning)
             return 0
 
         if p_y1_z0 == 0:
-            warnings.warn(f"No samples with y_hat == {positive_target} for {column} == 0, returning 0")
+            warnings.warn(f"No samples with y_hat == {positive_target} for {column} == 0, returning 0", RuntimeWarning)
             return 0
 
         p_percent = np.minimum(p_y1_z1 / p_y1_z0, p_y1_z0 / p_y1_z1)
