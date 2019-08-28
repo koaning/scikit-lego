@@ -29,7 +29,7 @@ def test_p_percent_pandas_multiclass(sensitive_multiclass_classification_dataset
         LogisticRegression(),
     ).fit(X, y)
     assert p_percent_score("x2")(mod_fair, X) == pytest.approx(0.9333333)
-    assert p_percent_score("x2", positive_target=2)(mod_fair, X) == 1
+    assert p_percent_score("x2", positive_target=2)(mod_fair, X) == 0
 
 
 def test_p_percent_numpy(sensitive_classification_dataset):
