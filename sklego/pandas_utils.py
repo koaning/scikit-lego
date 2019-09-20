@@ -34,6 +34,7 @@ def log_step(func=None, *, level=logging.INFO):
     if func is None:
         return partial(log_step, level=level)
 
+    @wraps(func)
     def wrapper(*args, **kwargs):
         logger = logging.getLogger(sys.modules[func.__module__].__name__)
 
