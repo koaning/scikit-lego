@@ -97,4 +97,4 @@ def test_timegapsplit_plot_print():
 
     cv.plot(X_train)
 
-    cv.printInfo(X_train)
+    cv.summary(X_train)

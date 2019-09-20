@@ -50,6 +50,17 @@ class TimeGapSplit:
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
 
+    def join_date_and_x(self, X):
+        """
+        Make a DataFrame indexed by the pandas index (the same as date_series) with date column joined with that index
+        and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn
+        :param pandas.DataFrame X:
+        """
+        X_index_df = pd.DataFrame(range(len(X)), columns=['np_index'], index=X.index)
+        X_index_df = X_index_df.join(self.date_serie)
+
+        return X_index_df
+
     def split(self, X, y=None, groups=None):
         """
         Generate indices to split data into training and test set.
@@ -58,10 +69,7 @@ class TimeGapSplit:
         :param groups: Always ignored, exists for compatibility
         """
 
-        # Make a DataFrame indexed by the pandas index (the same as date_series) with date column joined with that index
-        # and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn
-        X_index_df = pd.DataFrame(range(len(X)), columns=['np_index'], index=X.index)
-        X_index_df = X_index_df.join(self.date_serie)
+        X_index_df = self.join_date_and_x(X)
         X_index_df = X_index_df.sort_values('__date__', ascending=True)
 
         if len(X) != len(X_index_df):
@@ -107,28 +115,37 @@ class TimeGapSplit:
             plt.plot(y_dates, i*np.ones(y_dates.shape), c="orange")
             plt.legend(('training', 'validation'))
 
-    def printInfo(self, X):
+    def summary(self, X):
         """
         Describe all folds
         :param pandas.DataFrame X:
+        :returns: ``pd.DataFrame`` summary of all folds
         """
-        def printSplitInfo(X, indicies):
-            mindate = self.date_serie.loc[X.iloc[indicies].index].min()
-            maxdate = self.date_serie.loc[X.iloc[indicies].index].max()
-            dates = self.date_serie[(self.date_serie >= mindate) & (self.date_serie <= maxdate)]
-            print("{} unique days, {}, nbr_samples: {}".format(
-                len(dates.unique()),
-                pd.to_datetime(maxdate, format='%Y%m%d') - pd.to_datetime(mindate, format='%Y%m%d'),
-                len(indicies)))
-            print("start: {} \t end  : {}".format(mindate, maxdate))
+        summary = pd.DataFrame()
+        X_index_df = self.join_date_and_x(X)
 
-        print("Nbr folds: {}\n".format(len(list(self.split(X)))))
+        def printSplitInfo(X, indicies, j, part, summary):
+            dates = X_index_df.iloc[indicies]['__date__']
+            mindate = dates.min()
+            maxdate = dates.max()
+
+            s = pd.Series({
+                'Start date': mindate,
+                'End date': maxdate,
+                'Period': pd.to_datetime(maxdate, format='%Y%m%d') - pd.to_datetime(mindate, format='%Y%m%d'),
+                'Unique days': len(dates.unique()),
+                'nbr samples': len(indicies),
+            }, name=(j, part))
+            summary = summary.append(s)
+            return summary
+
+        j = 0
         for i in self.split(X):
-            print("Train:")
-            printSplitInfo(X, i[0])
-            print("Valid:")
-            printSplitInfo(X, i[1])
-            print()
+            summary = printSplitInfo(X, i[0], j, "train", summary)
+            summary = printSplitInfo(X, i[1], j, "valid", summary)
+            j = j + 1
+
+        return summary
 
 
 class KlusterFoldValidation:
