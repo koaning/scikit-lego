@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn import clone
-from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin
+from sklearn.base import BaseEstimator, TransformerMixin, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array, FLOAT_DTYPES
@@ -430,7 +430,7 @@ class DecayEstimator(BaseEstimator):
         return self.estimator_.score(X, y)
 
 
-class Thresholder(BaseEstimator):
+class Thresholder(BaseEstimator, ClassifierMixin):
     """
     Takes a two class estimator and moves the threshold. This way you might
     design the algorithm to only accept a certain class if the probability
@@ -478,7 +478,7 @@ class Thresholder(BaseEstimator):
         return self.estimator_.score(X, y)
 
 
-class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin):
+class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     """
     The ConfusionBalancer attempts to give it's child estimator a more balanced
     output by learning from the confusion matrix during training. The idea is that
@@ -493,12 +493,9 @@ class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin):
     :param model: a scikit learn compatible classification model that has predict_proba
     :param alpha: a hyperparameter between 0 and 1, determines how much to apply smoothing
     """
-    def __init__(self, model, alpha: float = 0.5):
-        self.model = model
+    def __init__(self, estimator, alpha: float = 0.5):
+        self.estimator = estimator
         self.alpha = alpha
-
-    def _is_classifier(self):
-        return any(['ClassifierMixin' in p.__name__ for p in type(self.model).__bases__])
 
     def fit(self, X, y):
         """
@@ -508,12 +505,12 @@ class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
-        X, y = check_X_y(X, y, estimator=self.model, dtype=FLOAT_DTYPES)
-        if not self._is_classifier():
-            raise ValueError("ConfusionBalancer only accepts classifiers with predict_proba as a model.")
-        self.model.fit(X, y)
+        X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
+        if not isinstance(self.estimator, ProbabilisticClassifier):
+            raise ValueError("The ConfusionBalancer meta model only works on classifcation models with .predict_proba.")
+        self.estimator.fit(X, y)
         self.classes_ = unique_labels(y)
-        cfm = confusion_matrix(y, self.model.predict(X)).T
+        cfm = confusion_matrix(y, self.estimator.predict(X)).T
         self.cfm_ = cfm / cfm.sum(axis=1).reshape(-1, 1)
         return self
 
@@ -525,7 +522,7 @@ class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin):
         :return: array, shape=(n_samples, n_classes) the predicted data
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        preds = self.model.predict_proba(X)
+        preds = self.estimator.predict_proba(X)
         return (1 - self.alpha) * preds + self.alpha * preds @ self.cfm_
 
     def predict(self, X):
