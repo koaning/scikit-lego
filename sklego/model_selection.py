@@ -6,6 +6,10 @@ from sklearn.utils import check_array
 
 from sklego.base import Clusterer
 
+import matplotlib.pyplot as plt
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
+
 
 class TimeGapSplit:
     """
@@ -23,8 +27,7 @@ class TimeGapSplit:
     Each validation fold doesn't overlap. The entire 'window' moves by 1 valid_duration until there is not enough data.
     The number of folds is automatically defined that way.
 
-    :param pandas.DataFrame df: DataFrame that should have all the indices of X used in split()
-    :param str date_col: Name of the column of datetime in the df.
+    :param pandas.Series date_serie: Serie with the date, that should have all the indices of X used in split()
     :param datetime.timedelta train_duration: historical training data.
     :param datetime.timedelta valid_duration: retraining frequency.
     :param datetime.timedelta gap_duration: forward looking window of the target.
@@ -34,13 +37,15 @@ class TimeGapSplit:
         the training data.
     """
 
-    def __init__(self, df, date_col, train_duration, valid_duration, gap_duration=timedelta(0)):
+    def __init__(self, date_serie, train_duration, valid_duration, gap_duration=timedelta(0)):
         if train_duration <= gap_duration:
             raise AssertionError("gap_duration is longer than train_duration, it should be shorter.")
 
-        df[date_col] = pd.to_datetime(df[date_col])
-        self.df = df
-        self.date_col = date_col
+        if not date_serie.index.is_unique:
+            raise AssertionError("date_serie doesn't have a unique index")
+
+        self.date_serie = date_serie.copy()
+        self.date_serie = self.date_serie.rename('__date__')
         self.train_duration = train_duration
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
@@ -52,31 +57,78 @@ class TimeGapSplit:
         :param y: Always ignored, exists for compatibility
         :param groups: Always ignored, exists for compatibility
         """
-        date_series = self.df.loc[X.index][self.date_col]
-        date_series = date_series.sort_values(ascending=True)
-        date_min = date_series.min()
-        date_max = date_series.max()
+
+        # Make a DataFrame indexed by the pandas index (the same as date_series) with date column joined with that index
+        # and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn
+        X_index_df = pd.DataFrame(range(len(X)), columns=['np_index'], index=X.index)
+        X_index_df = X_index_df.join(self.date_serie)
+        X_index_df = X_index_df.sort_values('__date__', ascending=True)
+
+        if len(X) != len(X_index_df):
+            raise AssertionError("X and X_index_df are not the same lenght, "
+                                 "there must be some index missing in 'self.date_serie'")
+
+        date_min = X_index_df['__date__'].min()
+        date_max = X_index_df['__date__'].max()
 
         current_date = date_min
         while True:
             if current_date + self.train_duration + self.valid_duration > date_max:
                 break
 
-            train_i = date_series[
-                (date_series >= current_date) &
-                (date_series < current_date + self.train_duration - self.gap_duration)].index.values
-            valid_i = date_series[
-                (date_series >= current_date + self.train_duration) &
-                (date_series < current_date + self.train_duration + self.valid_duration)].index.values
+            X_train_df = X_index_df[
+                (X_index_df['__date__'] >= current_date) &
+                (X_index_df['__date__'] < current_date + self.train_duration - self.gap_duration)]
+            X_valid_df = X_index_df[
+                (X_index_df['__date__'] >= current_date + self.train_duration) &
+                (X_index_df['__date__'] < current_date + self.train_duration + self.valid_duration)]
 
             current_date = current_date + self.valid_duration
 
-            yield (np.array([X.index.get_loc(i) for i in train_i]),
-                   np.array([X.index.get_loc(i) for i in valid_i]))
+            yield (X_train_df['np_index'].values,
+                   X_valid_df['np_index'].values)
 
     def get_n_splits(self, X=None, y=None, groups=None):
 
         return sum(1 for x in self.split(X, y, groups))
+
+    def plot(self, X):
+        """
+        Plot all the folds on time axis
+        :param pandas.DataFrame X:
+        """
+
+        plt.figure(figsize=(16, 4))
+        for i, split in enumerate(self.split(X)):
+            x_idx, y_idx = split
+            x_dates = self.date_serie.iloc[x_idx].unique()
+            y_dates = self.date_serie.iloc[y_idx].unique()
+            plt.plot(x_dates, i*np.ones(x_dates.shape), c="steelblue")
+            plt.plot(y_dates, i*np.ones(y_dates.shape), c="orange")
+            plt.legend(('training', 'validation'))
+
+    def printInfo(self, X):
+        """
+        Describe all folds
+        :param pandas.DataFrame X:
+        """
+        def printSplitInfo(X, indicies):
+            mindate = self.date_serie.loc[X.iloc[indicies].index].min()
+            maxdate = self.date_serie.loc[X.iloc[indicies].index].max()
+            dates = self.date_serie[(self.date_serie >= mindate) & (self.date_serie <= maxdate)]
+            print("{} unique days, {}, nbr_samples: {}".format(
+                len(dates.unique()),
+                pd.to_datetime(maxdate, format='%Y%m%d') - pd.to_datetime(mindate, format='%Y%m%d'),
+                len(indicies)))
+            print("start: {} \t end  : {}".format(mindate, maxdate))
+
+        print("Nbr folds: {}\n".format(len(list(self.split(X)))))
+        for i in self.split(X):
+            print("Train:")
+            printSplitInfo(X, i[0])
+            print("Valid:")
+            printSplitInfo(X, i[1])
+            print()
 
 
 class KlusterFoldValidation:
