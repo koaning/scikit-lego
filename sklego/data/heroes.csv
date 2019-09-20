@@ -1,0 +1,85 @@
+name,attack_type,role,health,attack,attack_spd
+Artanis,Melee,Bruiser,2470,111,1
+Chen,Melee,Bruiser,2473,90,1.11
+Dehaka,Melee,Bruiser,2434,100,1.11
+Imperius,Melee,Bruiser,2450,122,0.83
+Leoric,Melee,Bruiser,2550,109,0.77
+Malthael,Melee,Bruiser,1962,82,0.91
+Ragnaros,Melee,Bruiser,2075,180,0.83
+Rexxar,Ranged,Bruiser,1810,125,0.87
+Sonya,Melee,Bruiser,2450,84,1.25
+Thrall,Melee,Bruiser,1876,173,0.91
+Varian,Melee,Bruiser,2116,74,1.25
+Xul,Melee,Bruiser,2000,110,1.2
+Yrel,Melee,Bruiser,2678,155,0.77
+Alexstrasza,Ranged,Healer,1698,73,1.00
+Ana,Ranged,Healer,1598,30,1.33
+Anduin,Ranged,Healer,1665,85,0.83
+Auriel,Ranged,Healer,1700,68,1.25
+Brightwing,Ranged,Healer,1450,81,1.11
+Deckard,Melee,Healer,1700,63,0.91
+Kharazim,Melee,Healer,2027,60,2
+LiLi,Ranged,Healer,1500,60,1.25
+Lt.Morales,Ranged,Healer,1545,83,1
+Lúcio,Ranged,Healer,1442,23,0.8
+Malfurion,Ranged,Healer,1525,60,1.11
+Rehgar,Melee,Healer,2000,106,1.25
+Stukov,Melee,Healer,1765,261,0.67
+Tyrande,Ranged,Healer,1511,55,1.33
+Uther,Melee,Healer,2156,75,1
+Whitemane,Ranged,Healer,1400,60,1.18
+Alarak,Melee,Melee Assassin,1900,150,1
+Gazlowe,Melee,Melee Assassin,1826,95,1.25
+Illidan,Melee,Melee Assassin,1650,78,1.82
+Kerrigan,Melee,Melee Assassin,1764,115,1.25
+Maiev,Melee,Melee Assassin,2021,145,1.11
+Murky,Melee,Melee Assassin,730,60,1.25
+Qhira,Melee,Melee Assassin,1950,100,1.0
+Samuro,Melee,Melee Assassin,1725,110,1.67
+TheButcher,Melee,Melee Assassin,2154,130,1.11
+Valeera,Melee,Melee Assassin,2047,79,2.00
+Zeratul,Melee,Melee Assassin,1622,126,1.11
+Azmodan,Ranged,Ranged Assassin,2464.2,85,1
+Cassia,Ranged,Ranged Assassin,1840,130,1.33
+Chromie,Ranged,Ranged Assassin,1390,82,1.0
+Falstad,Ranged,Ranged Assassin,1365,104,1.43
+Fenix,Ranged,Ranged Assassin,1140,83,0.74
+Gall,Ranged,Ranged Assassin,,,
+Genji,Ranged,Ranged Assassin,1620,44,1.00
+Gul'dan,Ranged,Ranged Assassin,1700,60,1
+Hanzo,Ranged,Ranged Assassin,1323,198,0.67
+Jaina,Ranged,Ranged Assassin,1365,60,1
+Junkrat,Ranged,Ranged Assassin,1350,116,1.00
+Kael'thas,Ranged,Ranged Assassin,1520,65,1.11
+Kel'Thuzad,Ranged,Ranged Assassin,1445,72,1.0
+Li-Ming,Ranged,Ranged Assassin,1232,63,1.00
+Lunara,Ranged,Ranged Assassin,1430,90,1.11
+Mephisto,Ranged,Ranged Assassin,1968,66,1
+Nazeebo,Ranged,Ranged Assassin,1502,88,1.11
+Nova,Ranged,Ranged Assassin,1300,105,1
+Orphea,Ranged,Ranged Assassin,1525,88,1.2
+Probius,Ranged,Ranged Assassin,1260,33,1.11
+Raynor,Ranged,Ranged Assassin,1450,101,1.25
+Sgt.Hammer,Ranged,Ranged Assassin,1720,140,1
+Sylvanas,Ranged,Ranged Assassin,1650,81,1.67
+Tracer,Ranged,Ranged Assassin,1280,26,8.0
+Tychus,Ranged,Ranged Assassin,1925,50,4.00
+Valla,Ranged,Ranged Assassin,1340,75,1.67
+Zagara,Ranged,Ranged Assassin,1575,76,1.25
+Zul'jin,Ranged,Ranged Assassin,1875,94,1.25
+Abathur,Melee,Support,685,26,1.43
+Medivh,Ranged,Support,1470,80,1.11
+Tassadar,Ranged,Support,1350,15,4.00
+Zarya,Ranged,Support,2292,20,4.00
+Anub'arak,Melee,Tank,2100,81,1
+Arthas,Melee,Tank,2782,95,1
+Blaze,Ranged,Tank,2900,55,1.00
+Cho,Melee,Tank,2850,130,0.91
+Diablo,Melee,Tank,2670,105,0.95
+E.T.C.,Melee,Tank,2250,99,1.25
+Garrosh,Melee,Tank,2060,137,0.83
+Johanna,Melee,Tank,2700,99,0.91
+Mal'Ganis,Melee,Tank,2600,100,0.91
+Muradin,Melee,Tank,2765,88,1.11
+Stitches,Melee,Tank,3060,85,0.91
+Tyrael,Melee,Tank,2517,78,1.25

@@ -14,7 +14,6 @@ def load_chicken(return_X_y=False, give_pandas=False):
 
     :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
     :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
-    :return: (**X**, **y**) unless dataframe is returned
 
     :Example:
 
@@ -50,7 +49,6 @@ def load_abalone(return_X_y=False, give_pandas=False):
 
     :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
     :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
-    :return: (**X**, **y**) unless dataframe is returned
 
     :Example:
 
@@ -78,6 +76,34 @@ def load_abalone(return_X_y=False, give_pandas=False):
     X = df[['length', 'diameter', 'height', 'whole_weight', 'shucked_weight',
             'viscera_weight', 'shell_weight', 'rings']].values
     y = df['sex'].values
+    if return_X_y:
+        return X, y
+    return {'data': X, 'target': y}
+
+
+def load_heroes(return_X_y=False, give_pandas=False):
+    """
+    A dataset from a video game: "heroes of the storm". The goal of the dataset
+    is to predict the attack type.
+    :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
+    :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
+
+    :Example:
+    >>> X, y = load_heroes(return_X_y=True)
+    >>> X.shape
+    (84, 5)
+    >>> y.shape
+    (84,)
+    >>> df = load_heroes(give_pandas=True)
+    >>> df.columns
+    Index(['name', 'attack_type', 'role', 'health', 'attack', 'attack_spd'], dtype='object')
+    """
+    filepath = resource_filename("sklego", os.path.join("data", "heroes.csv"))
+    df = pd.read_csv(filepath)
+    if give_pandas:
+        return df
+    X = df[['name', 'role', 'health', 'attack', 'attack_spd']].values
+    y = df['attack_type'].values
     if return_X_y:
         return X, y
     return {'data': X, 'target': y}
