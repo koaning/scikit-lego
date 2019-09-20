@@ -4,13 +4,19 @@ import warnings
 
 def correlation_score(column):
     """
-    The correlation score can score how well the estimator predictions
-    correlate with a given column. This is especially usefull to use
-    in situations where "fairness" is a theme.
-    :param column: Name of the column (when X is a dataframe)
-    or the index of the column (when X is a numpy array).
-    :return: Negative correlation between estimator.predict(X) and X[colum]
-    (in gridsearch, larger is better and we want to typically punish correlation).
+    The correlation score can score how well the estimator predictions correlate with a given column.
+    This is especially usefull to use in situations where "fairness" is a theme.
+
+    `correlation_score` takes a column on which to calculate the correlation and returns a metric function
+
+    Usage:
+    `correlation_score('gender')(clf, X, y)`
+
+
+    :param column: Name of the column (when X is a dataframe) or the index of the column (when X is a numpy array).
+    :return:
+        A function which calculates the negative correlation between estimator.predict(X) and X[colum]
+        (in gridsearch, larger is better and we want to typically punish correlation).
     """
     def correlation_metric(estimator, X, y_true=None):
         """Remember: X is the thing going *in* to your pipeline."""
@@ -30,13 +36,15 @@ def p_percent_score(column, positive_target=1):
 
     This is especially usefull to use in situations where "fairness" is a theme.
 
+    Usage:
+    `p_percent_score('gender')(clf, X, y)`
+
     source:
     - M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
 
-    :param column: Name of the column (when X is a dataframe)
-    or the index of the column (when X is a numpy array).
+    :param column: Name of the column (when X is a dataframe) or the index of the column (when X is a numpy array).
     :param positive_target: The name of the class which is associated with a positive outcome
-    :return: p percent score
+    :return: a function that calculates the p percent score for z = column
     """
     def impl(estimator, X, y_true=None):
         """Remember: X is the thing going *in* to your pipeline."""
