@@ -513,8 +513,8 @@ class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin):
             raise ValueError("ConfusionBalancer only accepts classifiers with predict_proba as a model.")
         self.model.fit(X, y)
         self.classes_ = unique_labels(y)
-        cfm = confusion_matrix(y, self.model.predict(X))
-        self.cfm_ = cfm/cfm.sum(axis=1)
+        cfm = confusion_matrix(y, self.model.predict(X)).T
+        self.cfm_ = cfm / cfm.sum(axis=1).reshape(-1, 1)
         return self
 
     def predict_proba(self, X):
@@ -526,7 +526,7 @@ class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin):
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         preds = self.model.predict_proba(X)
-        return preds * self.alpha + (1-self.alpha) * preds @ self.cfm_
+        return (1 - self.alpha) * preds + self.alpha * preds @ self.cfm_
 
     def predict(self, X):
         """
