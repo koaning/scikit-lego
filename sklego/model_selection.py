@@ -9,27 +9,29 @@ from sklego.base import Clusterer
 
 class TimeGapSplit:
     """
-    Time Series cross-validator
-    ---------------------------
     Provides train/test indices to split time series data samples.
+
     This cross-validation object is a variation of TimeSeriesSplit with the following differences:
-    1. The splits are made based on datetime duration, instead of number of rows.
-    2. The user specifies the training and the validation durations
-    3. The user can specify a 'gap' duration that is omitted from the end part of the training split
-    Those 3 parameters can be used to really replicate how the model
+
+    - The splits are made based on datetime duration, instead of number of rows.
+    - The user specifies the training and the validation durations
+    - The user can specify a 'gap' duration that is omitted from the end part of the training split
+
+    The 3 duration parameters can be used to really replicate how the model
     is going to be used in production in batch learning.
-    i.e. you can fix:
-    1. The historical training data
-    2. The retraining frequency
-    3. The period of the forward looking window necessary to create the target.
-    This period at the end of your training fold is dropped due to lack of recent data to create your target.
+
     Each validation fold doesn't overlap. The entire 'window' moves by 1 valid_duration until there is not enough data.
     The number of folds is automatically defined that way.
+
     :param pandas.DataFrame df: DataFrame that should have all the indices of X used in split()
-    :param str date_col: Name of the column of datetime in the df
-    :param datetime.timedelta train_duration: historical training data
-    :param datetime.timedelta valid_duration: retraining frequency
-    :param datetime.timedelta gap_duration: forward looking window of the target
+    :param str date_col: Name of the column of datetime in the df.
+    :param datetime.timedelta train_duration: historical training data.
+    :param datetime.timedelta valid_duration: retraining frequency.
+    :param datetime.timedelta gap_duration: forward looking window of the target.
+        The period of the forward looking window necessary to create your target variable.
+        This period is dropped at the end of your training folds due to lack of recent data.
+        In production you would have not been able to create the target for that period, and you would have drop it from
+        the training data.
     """
 
     def __init__(self, df, date_col, train_duration, valid_duration, gap_duration=timedelta(0)):
