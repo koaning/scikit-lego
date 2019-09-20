@@ -19,7 +19,7 @@ def load_chicken(return_X_y=False, give_pandas=False):
     :Example:
 
     >>> from sklego.datasets import load_chicken
-    >>> X, y = load_chicken()
+    >>> X, y = load_chicken(return_X_y=True)
     >>> X.shape
     (578, 3)
     >>> y.shape
@@ -62,7 +62,8 @@ def load_abalone(return_X_y=False, give_pandas=False):
     (4177,)
     >>> load_abalone(give_pandas=True).columns
     Index(['sex', 'length', 'diameter', 'height', 'whole_weight', 'shucked_weight',
-           'viscera_weight', 'shell_weight', 'rings'], dtype='object')
+           'viscera_weight', 'shell_weight', 'rings'],
+          dtype='object')
 
     The dataset was copied from Kaggle and can originally be found in: can be found in the folowing sources:
 
