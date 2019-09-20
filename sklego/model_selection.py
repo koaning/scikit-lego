@@ -16,12 +16,13 @@ class TimeGapSplit:
     1. The splits are made based on datetime duration, instead of number of rows.
     2. The user specifies the training and the validation durations
     3. The user can specify a 'gap' duration that is omitted from the end part of the training split
+
     Those 3 parameters can be used to really replicate how the model
-    is going to be used in production in batch learning.
-    i.e. you can fix:
+    is going to be used in production in batch learning. i.e. you can fix:
     1. The historical training data
     2. The retraining frequency
     3. The period of the forward looking window necessary to create the target.
+
     This period at the end of your training fold is dropped due to lack of recent data to create your target.
     Each validation fold doesn't overlap. The entire 'window' moves by 1 valid_duration until there is not enough data.
     The number of folds is automatically defined that way.
