@@ -105,15 +105,19 @@ class TimeGapSplit:
         Plot all the folds on time axis
         :param pandas.DataFrame X:
         """
+        X_index_df = self.join_date_and_x(X)
 
         plt.figure(figsize=(16, 4))
         for i, split in enumerate(self.split(X)):
             x_idx, y_idx = split
-            x_dates = self.date_serie.iloc[x_idx].unique()
-            y_dates = self.date_serie.iloc[y_idx].unique()
+            x_dates = X_index_df.iloc[x_idx]['__date__'].unique()
+            y_dates = X_index_df.iloc[y_idx]['__date__'].unique()
             plt.plot(x_dates, i*np.ones(x_dates.shape), c="steelblue")
             plt.plot(y_dates, i*np.ones(y_dates.shape), c="orange")
-            plt.legend(('training', 'validation'))
+
+        plt.legend(('training', 'validation'), loc='upper left')
+        plt.axvline(x=X_index_df['__date__'].min(), color='gray', label='x')
+        plt.axvline(x=X_index_df['__date__'].max(), color='gray', label='d')
 
     def summary(self, X):
         """
