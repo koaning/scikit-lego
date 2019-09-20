@@ -1,7 +1,7 @@
-sklego
+API Reference
 ======
 
 .. toctree::
    :maxdepth: 4
 
-   sklego
+   API Reference

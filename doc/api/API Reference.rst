@@ -4,6 +4,23 @@ sklego package
 Submodules
 ----------
 
+
+sklego.base module
+----------------------
+
+.. automodule:: sklego.base
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sklego.common module
+----------------------
+
+.. automodule:: sklego.common
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 sklego.datasets module
 ----------------------
 
@@ -36,18 +53,26 @@ sklego.meta module
     :undoc-members:
     :show-inheritance:
 
-sklego.model\_selection module
-------------------------------
+sklego.metrics module
+----------------------
 
-.. automodule:: sklego.model_selection
+.. automodule:: sklego.metrics
     :members:
     :undoc-members:
     :show-inheritance:
 
 sklego.mixture module
----------------------
+----------------------
 
 .. automodule:: sklego.mixture
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+sklego.model\_selection module
+------------------------------
+
+.. automodule:: sklego.model_selection
     :members:
     :undoc-members:
     :show-inheritance:
