@@ -68,4 +68,6 @@ Usage
    timegapsplit.ipynb
    preprocessing.ipynb
    debug_pipeline.ipynb
+   pandas_pipeline.ipynb
+
    api/modules

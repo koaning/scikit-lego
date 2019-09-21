@@ -15,22 +15,16 @@ def log_step(func=None, *, level=logging.INFO):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
 
-    Usage:
-    ```
-    @log_step
-    def remove_outliers(df, min_obs=5):
-    pass
-    ```
+    :Example:
+    >>> @log_step
+    ... def remove_outliers(df, min_obs=5):
+    ...     pass
 
-    It's also possible to set the desired logging level to for example debug or info
-    ```
-    @log_step(level=logging.INFO)
-    def remove_outliers(df, min_obs=5):
-    pass
-    ```
+    >>> @log_step(level=logging.INFO)
+    ... def remove_outliers(df, min_obs=5):
+    ...     pass
+
     """
-    if not callable(func):
-        raise ValueError('log_step was called with something other than a function. Did you forget to ')
     if func is None:
         return partial(log_step, level=level)
 
@@ -48,7 +42,7 @@ def log_step(func=None, *, level=logging.INFO):
                    f"n_obs={result.shape[0]} n_col={result.shape[1]} time={time_taken}"
                    )
 
-        return func(*args, **kwargs)
+        return result
 
     return wrapper
 
