@@ -3,6 +3,7 @@ import autograd.numpy as np
 import pandas as pd
 from autograd import grad
 from autograd.test_util import check_grads
+from deprecated.sphinx import deprecated
 from scipy.special._ufuncs import expit
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.linear_model.base import LinearClassifierMixin
@@ -86,9 +87,9 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         return np.dot(X, self.coefs_)
 
 
-class FairClassifier(BaseEstimator, LinearClassifierMixin):
+class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
     r"""
-    A fair logistic regression classifier.
+    A logistic regression classifier which can be constrained on demographic parity (p% score).
 
     Minimizes the Log loss while constraining the correlation between the specified `sensitive_cols` and the
     distance to the decision boundary of the classifier.
@@ -126,6 +127,12 @@ class FairClassifier(BaseEstimator, LinearClassifierMixin):
             multi_class
         ]
         return multiclass_meta(_FairClassifier(*args, **kwargs), n_jobs=n_jobs)
+
+
+@deprecated(version='0.7.0', reason="Please use `sklego.linear_model.DemographicParityClassifier instead`")
+class FairClassifier(DemographicParityClassifier):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
 class _FairClassifier(BaseEstimator, LinearClassifierMixin):
@@ -230,5 +237,3 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         if self.fit_intercept:
             return np.c_[np.ones(len(X)), X]
 
-
-_FairClassifier.__doc__ = FairClassifier.__doc__
