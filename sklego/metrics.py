@@ -114,7 +114,7 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
     :return: a function (clf, X, y_true) -> float that calculates the equal opportunity score for z = column
     """
 
-    def impl(estimator, X, y_true=None):
+    def impl(estimator, X, y_true):
         """Remember: X is the thing going *in* to your pipeline."""
         sensitive_col = (
             X[:, sensitive_column] if isinstance(X, np.ndarray) else X[sensitive_column]
@@ -127,8 +127,8 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
             )
 
         y_hat = estimator.predict(X)
-        y_given_z1_y1 = y_hat[(sensitive_col == 1) & (y_true == 1)]
-        y_given_z0_y1 = y_hat[(sensitive_col == 0) & (y_true == 1)]
+        y_given_z1_y1 = y_hat[(sensitive_col == 1) & (y_true == positive_target)]
+        y_given_z0_y1 = y_hat[(sensitive_col == 0) & (y_true == positive_target)]
 
         # If we never predict a positive target for one of the subgroups, the model is by definition not
         # fair so we return 0
