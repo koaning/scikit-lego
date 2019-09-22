@@ -87,59 +87,10 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         return np.dot(X, self.coefs_)
 
 
-class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
-    r"""
-    A logistic regression classifier which can be constrained on demographic parity (p% score).
-
-    Minimizes the Log loss while constraining the correlation between the specified `sensitive_cols` and the
-    distance to the decision boundary of the classifier.
-
-    Only works for binary classification problems
-
-    .. math::
-        \begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i},
-        \boldsymbol{\theta}\right) \\
-        {\text { subject to }} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right) d
-        \boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
-        {} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
-        d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}
-
-    Source:
-    - M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
-
-    :param covariance_threshold: The maximum allowed covariance between the sensitive attributes and the distance to the
-    decision boundary. If set to None, no fairness constraint is enforced
-    :param sensitive_cols: List of sensitive column names(when X is a dataframe)
-    or a list of column indices when X is a numpy array.
-    :param C: Inverse of regularization strength; must be a positive float.
-    Like in support vector machines, smaller values specify stronger regularization.
-    :param penalty: Used to specify the norm used in the penalization. Expects 'none' or 'l1'
-    :param fit_intercept: Specifies if a constant (a.k.a. bias or intercept) should be added to the decision function.
-    :param max_iter: Maximum number of iterations taken for the solvers to converge.
-    :param train_sensitive_cols: Indicates whether the model should use the sensitive columns in the fit step.
-    :param multi_class: The method to use for multiclass predictions
-    :param n_jobs: The amount of parallel jobs thata should be used to fit multiclass models
-
-    """
-
-    def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
-        multiclass_meta = {"ovr": OneVsRestClassifier, "ovo": OneVsOneClassifier}[
-            multi_class
-        ]
-        return multiclass_meta(_FairClassifier(*args, **kwargs), n_jobs=n_jobs)
-
-
-@deprecated(version='0.7.0', reason="Please use `sklego.linear_model.DemographicParityClassifier instead`")
-class FairClassifier(DemographicParityClassifier):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-
 class _FairClassifier(BaseEstimator, LinearClassifierMixin):
     def __init__(
         self,
-        covariance_threshold,
-        sensitive_cols,
+        sensitive_cols=None,
         C=1.0,
         penalty="l1",
         fit_intercept=True,
@@ -149,7 +100,6 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         self.sensitive_cols = sensitive_cols
         self.fit_intercept = fit_intercept
         self.penalty = penalty
-        self.covariance_threshold = covariance_threshold
         self.max_iter = max_iter
         self.train_sensitive_cols = train_sensitive_cols
         self.C = C
@@ -186,6 +136,11 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         self._solve(sensitive, X, y)
         return self
 
+    def constraints(self, y_hat, y_true, sensitive, n_obs):
+        raise NotImplementedError(
+            "subclasses of _FairClassifier should implement constraints"
+        )
+
     def _solve(self, sensitive, X, y):
         n_obs, n_features = X.shape
         theta = cp.Variable(n_features)
@@ -200,11 +155,7 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         if self.penalty == "l1":
             log_likelihood -= cp.sum((1 / self.C) * cp.norm(theta[1:]))
 
-        dec_boundary_cov = y_hat @ (sensitive - np.mean(sensitive, axis=0)) / n_obs
-
-        constraints = []
-        if self.covariance_threshold is not None:
-            constraints.append(cp.abs(dec_boundary_cov) <= self.covariance_threshold)
+        constraints = self.constraints(y_hat, y, sensitive, n_obs)
 
         problem = cp.Problem(cp.Maximize(log_likelihood), constraints)
         problem.solve(max_iters=self.max_iter)
@@ -237,3 +188,76 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         if self.fit_intercept:
             return np.c_[np.ones(len(X)), X]
 
+
+class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
+    r"""
+    A logistic regression classifier which can be constrained on demographic parity (p% score).
+
+    Minimizes the Log loss while constraining the correlation between the specified `sensitive_cols` and the
+    distance to the decision boundary of the classifier.
+
+    Only works for binary classification problems
+
+    .. math::
+        \begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i},
+        \boldsymbol{\theta}\right) \\
+        {\text { subject to }} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right) d
+        \boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
+        {} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
+        d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}
+
+    Source:
+    - M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
+
+    :param covariance_threshold: The maximum allowed covariance between the sensitive attributes and the distance to the
+    decision boundary. If set to None, no fairness constraint is enforced
+    :param sensitive_cols: List of sensitive column names(when X is a dataframe)
+    or a list of column indices when X is a numpy array.
+    :param C: Inverse of regularization strength; must be a positive float.
+    Like in support vector machines, smaller values specify stronger regularization.
+    :param penalty: Used to specify the norm used in the penalization. Expects 'none' or 'l1'
+    :param fit_intercept: Specifies if a constant (a.k.a. bias or intercept) should be added to the decision function.
+    :param max_iter: Maximum number of iterations taken for the solvers to converge.
+    :param train_sensitive_cols: Indicates whether the model should use the sensitive columns in the fit step.
+    :param multi_class: The method to use for multiclass predictions
+    :param n_jobs: The amount of parallel jobs thata should be used to fit multiclass models
+
+    """
+
+    def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
+
+        multiclass_meta = {"ovr": OneVsRestClassifier, "ovo": OneVsOneClassifier}[
+            multi_class
+        ]
+        return multiclass_meta(
+            _DemographicParityClassifer(*args, **kwargs), n_jobs=n_jobs
+        )
+
+
+@deprecated(
+    version="0.7.0",
+    reason="Please use `sklego.linear_model.DemographicParityClassifier instead`",
+)
+class FairClassifier(DemographicParityClassifier):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class _DemographicParityClassifer(_FairClassifier):
+    def __init__(self, covariance_threshold, **kwargs):
+        super().__init__(**kwargs)
+        self.covariance_threshold = covariance_threshold
+
+    def constraints(self, y_hat, y_true, sensitive, n_obs):
+        if self.covariance_threshold is not None:
+            dec_boundary_cov = y_hat @ (sensitive - np.mean(sensitive, axis=0)) / n_obs
+            return [cp.abs(dec_boundary_cov) <= self.covariance_threshold]
+        else:
+            return []
+
+    @classmethod
+    def _get_param_names(cls):
+        return sorted(
+            super(_DemographicParityClassifer, cls)._get_param_names()
+            + _FairClassifier._get_param_names()
+        )
