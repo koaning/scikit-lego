@@ -4,7 +4,7 @@ import pandas as pd
 from pkg_resources import resource_filename
 
 
-def load_chicken(give_pandas=False):
+def load_chicken(return_X_y=False, give_pandas=False):
     """
     Loads the chicken dataset. The chicken data has 578 rows and 4 columns
     from an experiment on the effect of diet on early growth of chicks.
@@ -12,13 +12,13 @@ def load_chicken(give_pandas=False):
     day thereafter until day 20. They were also measured on day 21.
     There were four groups on chicks on different protein diets.
 
+    :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
     :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
-    :return: (**X**, **y**) unless dataframe is returned
 
     :Example:
 
     >>> from sklego.datasets import load_chicken
-    >>> X, y = load_chicken()
+    >>> X, y = load_chicken(return_X_y=True)
     >>> X.shape
     (578, 3)
     >>> y.shape
@@ -35,7 +35,79 @@ def load_chicken(give_pandas=False):
     df = pd.read_csv(filepath)
     if give_pandas:
         return df
-    return df[['time', 'diet', 'chick']].values, df['weight'].values
+    if give_pandas:
+        return df
+    X, y = df[['time', 'diet', 'chick']].values, df['weight'].values
+    if return_X_y:
+        return X, y
+    return {'data': X, 'target': y}
+
+
+def load_abalone(return_X_y=False, give_pandas=False):
+    """
+    Loads the abalone dataset where the goal is to predict the gender of the creature.
+
+    :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
+    :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
+
+    :Example:
+
+    >>> from sklego.datasets import load_abalone
+    >>> X, y = load_abalone(return_X_y=True)
+    >>> X.shape
+    (4177, 8)
+    >>> y.shape
+    (4177,)
+    >>> load_abalone(give_pandas=True).columns
+    Index(['sex', 'length', 'diameter', 'height', 'whole_weight', 'shucked_weight',
+           'viscera_weight', 'shell_weight', 'rings'],
+          dtype='object')
+
+    The dataset was copied from Kaggle and can originally be found in: can be found in the folowing sources:
+
+    - Warwick J Nash, Tracy L Sellers, Simon R Talbot, Andrew J Cawthorn and Wes B Ford (1994)
+    "The Population Biology of Abalone (_Haliotis_ species) in Tasmania."
+    Sea Fisheries Division, Technical Report No. 48 (ISSN 1034-3288)
+    """
+    filepath = resource_filename("sklego", os.path.join("data", "abalone.csv"))
+    df = pd.read_csv(filepath)
+    if give_pandas:
+        return df
+    X = df[['length', 'diameter', 'height', 'whole_weight', 'shucked_weight',
+            'viscera_weight', 'shell_weight', 'rings']].values
+    y = df['sex'].values
+    if return_X_y:
+        return X, y
+    return {'data': X, 'target': y}
+
+
+def load_heroes(return_X_y=False, give_pandas=False):
+    """
+    A dataset from a video game: "heroes of the storm". The goal of the dataset
+    is to predict the attack type. Note that the pandas dataset returns more information.
+    This is because we wanted to keep the X simple in the return_X_y case.
+    :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
+    :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
+
+    :Example:
+    >>> X, y = load_heroes(return_X_y=True)
+    >>> X.shape
+    (84, 2)
+    >>> y.shape
+    (84,)
+    >>> df = load_heroes(give_pandas=True)
+    >>> df.columns
+    Index(['name', 'attack_type', 'role', 'health', 'attack', 'attack_spd'], dtype='object')
+    """
+    filepath = resource_filename("sklego", os.path.join("data", "heroes.csv"))
+    df = pd.read_csv(filepath)
+    if give_pandas:
+        return df
+    X = df[['health', 'attack']].values
+    y = df['attack_type'].values
+    if return_X_y:
+        return X, y
+    return {'data': X, 'target': y}
 
 
 def make_simpleseries(n_samples=365*5, trend=0.001, season_trend=0.001, noise=0.5,
