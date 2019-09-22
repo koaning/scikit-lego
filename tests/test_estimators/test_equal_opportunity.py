@@ -4,8 +4,8 @@ from cvxpy import SolverError
 from sklearn.linear_model import LogisticRegression
 
 from sklego.common import flatten
-from sklego.linear_model import DemographicParityClassifier
-from sklego.metrics import p_percent_score
+from sklego.linear_model import EqualOpportunityClassifier
+from sklego.metrics import equal_opportunity_score
 from tests.conftest import general_checks, nonmeta_checks, classifier_checks
 
 
@@ -13,14 +13,15 @@ from tests.conftest import general_checks, nonmeta_checks, classifier_checks
     "test_fn", flatten([general_checks, nonmeta_checks, classifier_checks])
 )
 def test_standard_checks(test_fn):
-    trf = DemographicParityClassifier(
+    trf = EqualOpportunityClassifier(
         covariance_threshold=None,
+        positive_target=True,
         C=1,
         penalty="none",
         sensitive_cols=[0],
         train_sensitive_cols=True,
     )
-    test_fn(DemographicParityClassifier.__name__, trf)
+    test_fn(EqualOpportunityClassifier.__name__, trf)
 
 
 def _test_same(dataset):
@@ -32,8 +33,8 @@ def _test_same(dataset):
     sensitive_cols = [0]
     X_without_sens = np.delete(X, sensitive_cols, axis=1)
     lr = LogisticRegression(penalty="none", solver="lbfgs")
-    fair = DemographicParityClassifier(
-        covariance_threshold=None, sensitive_cols=sensitive_cols, penalty="none"
+    fair = EqualOpportunityClassifier(
+        covariance_threshold=None, sensitive_cols=sensitive_cols, penalty="none", positive_target=True,
     )
     try:
         fair.fit(X, y)
@@ -71,8 +72,8 @@ def test_regularization(sensitive_classification_dataset):
 
     prev_theta_norm = np.inf
     for C in [1, 0.5, 0.2, 0.1]:
-        fair = DemographicParityClassifier(
-            covariance_threshold=None, sensitive_cols=["x1"], C=C
+        fair = EqualOpportunityClassifier(
+            covariance_threshold=None, sensitive_cols=["x1"], C=C, positive_target=True,
         ).fit(X, y)
         theta_norm = np.abs(np.sum(fair.coef_))
         assert theta_norm < prev_theta_norm
@@ -82,12 +83,13 @@ def test_regularization(sensitive_classification_dataset):
 def test_fairness(sensitive_classification_dataset):
     """tests whether fairness (measured by p percent score) increases as we decrease the covariance threshold"""
     X, y = sensitive_classification_dataset
-    scorer = p_percent_score("x1")
+    scorer = equal_opportunity_score("x1")
 
     prev_fairness = -np.inf
     for cov_threshold in [None, 10, 0.5, 0.1]:
-        fair = DemographicParityClassifier(
+        fair = EqualOpportunityClassifier(
             covariance_threshold=cov_threshold,
+            positive_target=True,
             sensitive_cols=["x1"],
             penalty="none",
             train_sensitive_cols=False,

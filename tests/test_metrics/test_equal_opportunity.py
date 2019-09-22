@@ -3,7 +3,7 @@ import types
 import pandas as pd
 import warnings
 
-from pandas.tests.extension.numpy_.test_numpy_nested import np
+import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 
@@ -44,7 +44,10 @@ def test_p_percent_pandas_multiclass():
     mod_1 = types.SimpleNamespace()
 
     mod_1.predict = lambda X: np.array([2, 0, 1, 0, 1, 0, 1, 2])
-    assert equal_opportunity_score(sensitive_column="x2", positive_target=2)(mod_1, X, np.array([2, 0, 1, 0, 1, 0, 1, 2])) == 1
+    assert equal_opportunity_score(
+        sensitive_column="x2",
+        positive_target=2
+    )(mod_1, X, np.array([2, 0, 1, 0, 1, 0, 1, 2])) == 1
 
     mod_1.predict = lambda X: np.array([1, 0, 1, 0, 1, 0, 0, 1])
     assert equal_opportunity_score(sensitive_column="x2", positive_target=2)(mod_1, X, y) == 0
