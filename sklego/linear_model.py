@@ -209,12 +209,15 @@ class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
     Source:
     - M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
 
-    :param covariance_threshold: The maximum allowed covariance between the sensitive attributes and the distance to the
-    decision boundary. If set to None, no fairness constraint is enforced
-    :param sensitive_cols: List of sensitive column names(when X is a dataframe)
-    or a list of column indices when X is a numpy array.
-    :param C: Inverse of regularization strength; must be a positive float.
-    Like in support vector machines, smaller values specify stronger regularization.
+    :param covariance_threshold:
+        The maximum allowed covariance between the sensitive attributes and the distance to the
+        decision boundary. If set to None, no fairness constraint is enforced
+    :param sensitive_cols:
+        List of sensitive column names(when X is a dataframe)
+        or a list of column indices when X is a numpy array.
+    :param C:
+        Inverse of regularization strength; must be a positive float.
+        Like in support vector machines, smaller values specify stronger regularization.
     :param penalty: Used to specify the norm used in the penalization. Expects 'none' or 'l1'
     :param fit_intercept: Specifies if a constant (a.k.a. bias or intercept) should be added to the decision function.
     :param max_iter: Maximum number of iterations taken for the solvers to converge.
@@ -283,13 +286,16 @@ class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
     where POS is the subset of the population where y_true = 1
 
 
-    :param covariance_threshold: The maximum allowed covariance between the sensitive attributes and the distance to the
-    decision boundary. If set to None, no fairness constraint is enforced
+    :param covariance_threshold:
+        The maximum allowed covariance between the sensitive attributes and the distance to the
+        decision boundary. If set to None, no fairness constraint is enforced
     :param positive_target: The name of the class which is associated with a positive outcome
-    :param sensitive_cols: List of sensitive column names(when X is a dataframe)
-    or a list of column indices when X is a numpy array.
-    :param C: Inverse of regularization strength; must be a positive float.
-    Like in support vector machines, smaller values specify stronger regularization.
+    :param sensitive_cols:
+        List of sensitive column names(when X is a dataframe)
+        or a list of column indices when X is a numpy array.
+    :param C:
+        Inverse of regularization strength; must be a positive float.
+        Like in support vector machines, smaller values specify stronger regularization.
     :param penalty: Used to specify the norm used in the penalization. Expects 'none' or 'l1'
     :param fit_intercept: Specifies if a constant (a.k.a. bias or intercept) should be added to the decision function.
     :param max_iter: Maximum number of iterations taken for the solvers to converge.
