@@ -238,7 +238,7 @@ class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
     version="0.4.0",
     reason="Please use `sklego.linear_model.DemographicParityClassifier instead`",
 )
-class DemographicParityClassifier(DemographicParityClassifier):
+class FairClassifier(DemographicParityClassifier):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
