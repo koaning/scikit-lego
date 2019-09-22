@@ -492,10 +492,12 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
 
     :param model: a scikit learn compatible classification model that has predict_proba
     :param alpha: a hyperparameter between 0 and 1, determines how much to apply smoothing
+    :param cfm_smooth: a smoothing parameter for the confusion matrices to ensure zeros don't exist
     """
-    def __init__(self, estimator, alpha: float = 0.5):
+    def __init__(self, estimator, alpha: float = 0.5, cfm_smooth=0):
         self.estimator = estimator
         self.alpha = alpha
+        self.cfm_smooth = cfm_smooth
 
     def fit(self, X, y):
         """
@@ -510,7 +512,7 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             raise ValueError("The ConfusionBalancer meta model only works on classifcation models with .predict_proba.")
         self.estimator.fit(X, y)
         self.classes_ = unique_labels(y)
-        cfm = confusion_matrix(y, self.estimator.predict(X)).T
+        cfm = confusion_matrix(y, self.estimator.predict(X)).T + self.cfm_smooth
         self.cfm_ = cfm / cfm.sum(axis=1).reshape(-1, 1)
         return self
 

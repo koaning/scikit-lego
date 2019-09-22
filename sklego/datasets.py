@@ -84,14 +84,15 @@ def load_abalone(return_X_y=False, give_pandas=False):
 def load_heroes(return_X_y=False, give_pandas=False):
     """
     A dataset from a video game: "heroes of the storm". The goal of the dataset
-    is to predict the attack type.
+    is to predict the attack type. Note that the pandas dataset returns more information.
+    This is because we wanted to keep the X simple in the return_X_y case.
     :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
     :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
 
     :Example:
     >>> X, y = load_heroes(return_X_y=True)
     >>> X.shape
-    (84, 5)
+    (84, 2)
     >>> y.shape
     (84,)
     >>> df = load_heroes(give_pandas=True)
@@ -102,7 +103,7 @@ def load_heroes(return_X_y=False, give_pandas=False):
     df = pd.read_csv(filepath)
     if give_pandas:
         return df
-    X = df[['name', 'role', 'health', 'attack', 'attack_spd']].values
+    X = df[['health', 'attack']].values
     y = df['attack_type'].values
     if return_X_y:
         return X, y
