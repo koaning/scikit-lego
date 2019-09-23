@@ -29,7 +29,7 @@ class TimeGapSplit:
 
     :param pandas.Series date_serie: Serie with the date, that should have all the indices of X used in split()
     :param datetime.timedelta train_duration: historical training data.
-    :param datetime.timedelta valid_duration: retraining frequency.
+    :param datetime.timedelta valid_duration: retraining period.
     :param datetime.timedelta gap_duration: forward looking window of the target.
         The period of the forward looking window necessary to create your target variable.
         This period is dropped at the end of your training folds due to lack of recent data.
