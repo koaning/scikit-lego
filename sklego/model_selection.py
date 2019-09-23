@@ -39,10 +39,10 @@ class TimeGapSplit:
 
     def __init__(self, date_serie, train_duration, valid_duration, gap_duration=timedelta(0)):
         if train_duration <= gap_duration:
-            raise AssertionError("gap_duration is longer than train_duration, it should be shorter.")
+            raise ValueError("gap_duration is longer than train_duration, it should be shorter.")
 
         if not date_serie.index.is_unique:
-            raise AssertionError("date_serie doesn't have a unique index")
+            raise ValueError("date_serie doesn't have a unique index")
 
         self.date_serie = date_serie.copy()
         self.date_serie = self.date_serie.rename('__date__')
@@ -128,7 +128,7 @@ class TimeGapSplit:
         summary = pd.DataFrame()
         X_index_df = self.join_date_and_x(X)
 
-        def printSplitInfo(X, indicies, j, part, summary):
+        def get_split_info(X, indicies, j, part, summary):
             dates = X_index_df.iloc[indicies]['__date__']
             mindate = dates.min()
             maxdate = dates.max()
@@ -145,8 +145,8 @@ class TimeGapSplit:
 
         j = 0
         for i in self.split(X):
-            summary = printSplitInfo(X, i[0], j, "train", summary)
-            summary = printSplitInfo(X, i[1], j, "valid", summary)
+            summary = get_split_info(X, i[0], j, "train", summary)
+            summary = get_split_info(X, i[1], j, "valid", summary)
             j = j + 1
 
         return summary
