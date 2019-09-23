@@ -1,9 +1,9 @@
 import pytest
-from sklego.datasets import load_chicken, make_simpleseries
+from sklego.datasets import load_chicken, load_abalone, make_simpleseries
 
 
 def test_chickweight1():
-    X, y = load_chicken()
+    X, y = load_chicken(return_X_y=True)
     assert X.shape == (578, 3)
     assert y.shape[0] == 578
 
@@ -11,6 +11,17 @@ def test_chickweight1():
 def test_chickweight2():
     df = load_chicken(give_pandas=True)
     assert df.shape == (578, 4)
+
+
+def test_abalone1():
+    X, y = load_abalone(return_X_y=True)
+    assert X.shape == (4177, 8)
+    assert y.shape[0] == 4177
+
+
+def test_abalone2():
+    df = load_abalone(give_pandas=True)
+    assert df.shape == (4177, 9)
 
 
 def test_simpleseries_constant_season():
