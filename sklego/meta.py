@@ -537,3 +537,33 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         check_is_fitted(self, ['cfm_', 'classes_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
+
+
+class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
+    def __init__(self, estimator, prior):
+        self.estimator = estimator
+        self.prior = prior
+
+    def fit(self, X, y):
+        X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
+        if not isinstance(self.estimator, ClassifierMixin):
+            raise ValueError("The SubjectiveClassifier meta model only works on classifcation models")
+        self.estimator.fit(X, y)
+        self.cfm_ = pd.DataFrame(
+            confusion_matrix(y, self.estimator.predict(X)),
+            index=self.estimator.classes_,
+            columns=self.estimator.classes_
+        )
+        return self
+
+    def _likelihood(self, predicted_class, given_class):
+        return self.cfm_.loc[given_class, predicted_class] / self.cfm_.loc[given_class].sum()
+
+    def _evidence(self, predicted_class):
+        return sum([
+            self._likelihood(predicted_class, given_class) * self.prior[given_class]
+            for given_class in self.estimator.classes_
+        ])
+
+    def _posterior(self, y, y_hat):
+        return self._likelihood(y_hat, y) * self.prior[y] / self._evidence(y_hat)
