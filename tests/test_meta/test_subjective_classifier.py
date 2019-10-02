@@ -11,5 +11,7 @@ def test_posterior_computation():
     # pretend fit() was called
     subjective_model.estimator.classes_ = np.array([0, 1])
     subjective_model.cfm_ = pd.DataFrame(np.array([[90, 10], [10, 90]]), index=[0, 1], columns=[0, 1])
+    assert 0.973 == pytest.approx(subjective_model._posterior(0, 0), 0.001)
+    assert 0.692 == pytest.approx(subjective_model._posterior(1, 1), 0.001)
     assert 1 == pytest.approx(subjective_model._posterior(0, 0) + subjective_model._posterior(1, 0), 0.00001)
     assert 1 == pytest.approx(subjective_model._posterior(1, 1) + subjective_model._posterior(0, 1), 0.00001)
