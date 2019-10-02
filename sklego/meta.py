@@ -547,7 +547,7 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     def fit(self, X, y):
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
         if not isinstance(self.estimator, ClassifierMixin):
-            raise ValueError("The SubjectiveClassifier meta model only works on classifcation models")
+            raise ValueError("The SubjectiveClassifier meta model only works on classification models")
         self.estimator.fit(X, y)
         self.cfm_ = pd.DataFrame(
             confusion_matrix(y, self.estimator.predict(X)),
