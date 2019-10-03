@@ -3,9 +3,26 @@ import pandas as pd
 import pytest
 from sklearn.cluster import DBSCAN
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge, LogisticRegression
 
+from sklego.common import flatten
 from sklego.meta import SubjectiveClassifier
+from tests.conftest import general_checks, classifier_checks
+
+
+@pytest.mark.parametrize("test_fn", flatten([
+    general_checks,
+    classifier_checks
+]))
+def test_estimator_checks_classification(test_fn):
+    if test_fn.__name__ == 'check_classifiers_classes':
+        prior = {'one': 0.1, 'two': 0.1, 'three': 0.1, -1: 0.1, 1: 0.6}  # nonsensical prior to make sklearn check pass
+    else:
+        prior = {0: 0.7, 1: 0.2, 2: 0.1}
+
+    # Some of the sklearn checkers generate random y data with 3 classes, so prior needs to have these classes
+    estimator = SubjectiveClassifier(LogisticRegression(), prior)
+    test_fn(SubjectiveClassifier.__name__, estimator)
 
 
 @pytest.mark.parametrize(

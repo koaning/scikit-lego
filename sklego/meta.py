@@ -586,3 +586,12 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         y_hats = self.estimator.predict(X)  # these are ignorant of the prior
         return np.array([[self._posterior(y, y_hat) for y in self.estimator.classes_] for y_hat in y_hats])
+
+    def predict(self, X):
+        check_is_fitted(self, ['cfm_'])
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        return self.estimator.classes_[self.predict_proba(X).argmax(axis=1)]
+
+    @property
+    def classes_(self):
+        return self.estimator.classes_
