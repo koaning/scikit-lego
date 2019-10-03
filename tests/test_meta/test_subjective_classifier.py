@@ -27,7 +27,7 @@ def test_posterior_computation(classes, prior, cfm, first_class_posterior):
     subjective_model.cfm_ = pd.DataFrame(np.array(cfm), index=classes, columns=classes)
     assert pytest.approx(subjective_model._posterior(classes[0], classes[0]), 0.001) == first_class_posterior
     for clazz in classes:
-        assert 1 == pytest.approx(sum([subjective_model._posterior(pred, clazz) for pred in classes]), 0.00001)
+        assert pytest.approx(sum([subjective_model._posterior(pred, clazz) for pred in classes]), 0.00001) == 1
 
 
 def test_fit_stores_confusion_matrix(mocker):
@@ -36,9 +36,9 @@ def test_fit_stores_confusion_matrix(mocker):
     mock_inner_estimator.classes_ = np.array([23, 42])
     subjective_model = SubjectiveClassifier(mock_inner_estimator, {42: 0.8, 23: 0.2})
     subjective_model.fit(np.zeros((100, 2)), np.array([42] * 80 + [23] * 20))
-    assert [23, 42] == subjective_model.cfm_.index.tolist()
-    assert [23, 42] == subjective_model.cfm_.columns.tolist()
-    assert [[10, 10], [0, 80]] == subjective_model.cfm_.values.tolist()
+    assert subjective_model.cfm_.index.tolist() == [23, 42]
+    assert subjective_model.cfm_.columns.tolist() == [23, 42]
+    assert subjective_model.cfm_.values.tolist() == [[10, 10], [0, 80]]
 
 
 @pytest.mark.parametrize(
