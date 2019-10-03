@@ -547,7 +547,10 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     def fit(self, X, y):
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
         if not isinstance(self.estimator, ClassifierMixin):
-            raise ValueError("The SubjectiveClassifier meta model only works on classification models")
+            raise ValueError('The SubjectiveClassifier meta model only works on classification models')
+        if set(y) - set(self.prior.keys()):
+            raise ValueError(f'Training data is inconsistent with prior: no prior defined for classes '
+                             f'{set(y) - set(self.prior.keys())}')
         self.estimator.fit(X, y)
         self.cfm_ = pd.DataFrame(
             confusion_matrix(y, self.estimator.predict(X)),

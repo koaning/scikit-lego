@@ -16,7 +16,7 @@ from sklego.meta import SubjectiveClassifier
     ]
 )
 def test_posterior_computation(classes, prior, cfm, first_class_posterior):
-    subjective_model = SubjectiveClassifier(RandomForestClassifier, dict(zip(classes, prior)))
+    subjective_model = SubjectiveClassifier(RandomForestClassifier(), dict(zip(classes, prior)))
     # pretend fit() was called
     subjective_model.estimator.classes_ = np.array(classes)
     subjective_model.cfm_ = pd.DataFrame(np.array(cfm), index=classes, columns=classes)
@@ -34,3 +34,16 @@ def test_fit_stores_confusion_matrix(mocker):
     assert [23, 42] == subjective_model.cfm_.index.tolist()
     assert [23, 42] == subjective_model.cfm_.columns.tolist()
     assert [[10, 10], [0, 80]] == subjective_model.cfm_.values.tolist()
+
+
+@pytest.mark.parametrize(
+    'prior, y', [
+        ({'a': 0.8, 'b': 0.2}, ['a', 'c']),  # class from train data not defined in prior
+        ({'a': 0.8, 'b': 0.2}, [0, 1]),  # different data types
+    ]
+)
+def test_fit_y_data_inconsistent_with_prior_failure_conditions(prior, y):
+    with pytest.raises(ValueError) as exc:
+        SubjectiveClassifier(RandomForestClassifier(), prior).fit(np.zeros((len(y), 2)), np.array(y))
+
+    assert str(exc.value).startswith('Training data is inconsistent with prior')
