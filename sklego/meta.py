@@ -569,4 +569,9 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         ])
 
     def _posterior(self, y, y_hat):
-        return self._likelihood(y_hat, y) * self.prior[y] / self._evidence(y_hat)
+        y_hat_evidence = self._evidence(y_hat)
+        return (
+            (self._likelihood(y_hat, y) * self.prior[y] / y_hat_evidence)
+            if y_hat_evidence > 0
+            else self.prior[y]  # in case confusion matrix has all-zero column for y_hat
+        )
