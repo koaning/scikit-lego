@@ -518,7 +518,7 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
 
     def predict_proba(self, X):
         """
-        Predict new data.
+        Predict new data, with probabilities
 
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples, n_classes) the predicted data
@@ -529,7 +529,7 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
 
     def predict(self, X):
         """
-        Predict new data, with probabilities
+        Predict new data.
 
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
