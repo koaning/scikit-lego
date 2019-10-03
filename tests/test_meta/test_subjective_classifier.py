@@ -50,3 +50,15 @@ def test_fit_y_data_inconsistent_with_prior_failure_conditions(prior, y):
         SubjectiveClassifier(RandomForestClassifier(), prior).fit(np.zeros((len(y), 2)), np.array(y))
 
     assert str(exc.value).startswith('Training data is inconsistent with prior')
+
+
+def test_predict_proba(mocker):
+    mock_inner_estimator = mocker.Mock(RandomForestClassifier)
+    mock_inner_estimator.predict.return_value = np.array([0, 1])
+    mock_inner_estimator.classes_ = [0, 1, 2]
+    subjective_model = SubjectiveClassifier(mock_inner_estimator, {0: 0.7, 1: 0.2, 2: 0.1})
+    # pretend fit() was called
+    subjective_model.cfm_ = pd.DataFrame(np.array([[80, 10, 10], [10, 90, 0], [0, 0, 100]]))
+    posterior_probabilities = subjective_model.predict_proba(np.zeros((2, 2)))
+    assert posterior_probabilities.shape == (2, 3)
+    assert np.isclose(posterior_probabilities.sum(axis=1), 1).all()

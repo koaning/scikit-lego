@@ -575,3 +575,8 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             if y_hat_evidence > 0
             else self.prior[y]  # in case confusion matrix has all-zero column for y_hat
         )
+
+    def predict_proba(self, X):
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        y_hats = self.estimator.predict(X)  # these are ignorant of the prior
+        return np.array([[self._posterior(y, y_hat) for y in self.estimator.classes_] for y_hat in y_hats])
