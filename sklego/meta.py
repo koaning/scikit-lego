@@ -541,13 +541,19 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
 
 class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     def __init__(self, estimator, prior):
+        if not isinstance(estimator, ClassifierMixin):
+            raise ValueError(
+                'Invalid inner estimator: the SubjectiveClassifier meta model only works on classification models'
+            )
+
+        if sum(prior.values()) != 1:
+            raise ValueError('Invalid prior: the prior probabilities of all classes should sum to 1')
+
         self.estimator = estimator
         self.prior = prior
 
     def fit(self, X, y):
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
-        if not isinstance(self.estimator, ClassifierMixin):
-            raise ValueError('The SubjectiveClassifier meta model only works on classification models')
         if set(y) - set(self.prior.keys()):
             raise ValueError(f'Training data is inconsistent with prior: no prior defined for classes '
                              f'{set(y) - set(self.prior.keys())}')

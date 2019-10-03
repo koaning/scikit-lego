@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.cluster import DBSCAN
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import Ridge
 
 from sklego.meta import SubjectiveClassifier
 
@@ -62,3 +64,17 @@ def test_predict_proba(mocker):
     posterior_probabilities = subjective_model.predict_proba(np.zeros((2, 2)))
     assert posterior_probabilities.shape == (2, 3)
     assert np.isclose(posterior_probabilities.sum(axis=1), 1).all()
+
+
+@pytest.mark.parametrize(
+    'inner_estimator, prior, expected_error_msg', [
+        (DBSCAN(), {'a': 1}, 'Invalid inner estimator'),
+        (Ridge(), {'a': 1}, 'Invalid inner estimator'),
+        (RandomForestClassifier(), {'a': 0.8, 'b': 0.1}, 'Invalid prior')
+    ]
+)
+def test_params_failure_conditions(inner_estimator, prior, expected_error_msg):
+    with pytest.raises(ValueError) as exc:
+        SubjectiveClassifier(inner_estimator, prior)
+
+    assert str(exc.value).startswith(expected_error_msg)
