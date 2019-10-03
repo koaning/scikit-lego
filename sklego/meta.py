@@ -546,7 +546,7 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
                 'Invalid inner estimator: the SubjectiveClassifier meta model only works on classification models'
             )
 
-        if sum(prior.values()) != 1:
+        if not np.isclose(sum(prior.values()), 1):
             raise ValueError('Invalid prior: the prior probabilities of all classes should sum to 1')
 
         self.estimator = estimator
