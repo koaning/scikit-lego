@@ -9,7 +9,7 @@ from sklego.base import Clusterer
 
 class TimeGapSplit:
     """
-    Provides train/test indices to split time series data samples.
+    Provides train/test indices to split time series data samples .
 
     This cross-validation object is a variation of TimeSeriesSplit with the following differences:
 
