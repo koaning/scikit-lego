@@ -116,6 +116,7 @@ class TimeGapSplit:
             plt.plot(y_dates, i*np.ones(y_dates.shape), c="orange")
 
         plt.legend(('training', 'validation'), loc='upper left')
+        plt.ylabel('Fold id')
         plt.axvline(x=X_index_df['__date__'].min(), color='gray', label='x')
         plt.axvline(x=X_index_df['__date__'].max(), color='gray', label='d')
 
