@@ -47,7 +47,7 @@ def test_timegapsplit_too_big_gap():
                      train_duration=timedelta(days=5),
                      valid_duration=timedelta(days=3),
                      gap_duration=timedelta(days=5))
-    except AssertionError:
+    except ValueError:
         print("Successfully failed")
 
 
