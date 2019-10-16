@@ -558,35 +558,34 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         self.prior = prior
         self.evidence = evidence
 
+    def _likelihood(self, predicted_class, given_class, cfm):
+        return cfm[given_class, predicted_class] / cfm[given_class, :].sum()
+
+    def _evidence(self, predicted_class, cfm):
+        return sum([
+            self._likelihood(predicted_class, given_class, cfm) * self.prior[self.estimator.classes_[given_class]]
+            for given_class in range(cfm.shape[0])
+        ])
+
+    def _posterior(self, y, y_hat, cfm):
+        y_hat_evidence = self._evidence(y_hat, cfm)
+        return (
+            (self._likelihood(y_hat, y, cfm) * self.prior[self.estimator.classes_[y]] / y_hat_evidence)
+            if y_hat_evidence > 0
+            else self.prior[y]  # in case confusion matrix has all-zero column for y_hat
+        )
+
     def fit(self, X, y):
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
         if set(y) - set(self.prior.keys()):
             raise ValueError(f'Training data is inconsistent with prior: no prior defined for classes '
                              f'{set(y) - set(self.prior.keys())}')
         self.estimator.fit(X, y)
-        self.cfm_ = pd.DataFrame(
-            confusion_matrix(y, self.estimator.predict(X)),
-            index=self.estimator.classes_,
-            columns=self.estimator.classes_
-        )
-        return self
-
-    def _likelihood(self, predicted_class, given_class):
-        return self.cfm_.loc[given_class, predicted_class] / self.cfm_.loc[given_class].sum()
-
-    def _evidence(self, predicted_class):
-        return sum([
-            self._likelihood(predicted_class, given_class) * self.prior[given_class]
-            for given_class in self.estimator.classes_
+        cfm = confusion_matrix(y, self.estimator.predict(X))
+        self.posterior_matrix_ = np.array([
+            [self._posterior(y, y_hat, cfm) for y_hat in range(cfm.shape[0])] for y in range(cfm.shape[0])
         ])
-
-    def _posterior(self, y, y_hat):
-        y_hat_evidence = self._evidence(y_hat)
-        return (
-            (self._likelihood(y_hat, y) * self.prior[y] / y_hat_evidence)
-            if y_hat_evidence > 0
-            else self.prior[y]  # in case confusion matrix has all-zero column for y_hat
-        )
+        return self
 
     @staticmethod
     def _weighted_proba(weights, y_hat_probas):
@@ -599,7 +598,7 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         return y_hat_discrete
 
     def predict_proba(self, X):
-        check_is_fitted(self, ['cfm_'])
+        check_is_fitted(self, ['posterior_matrix_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         y_hats = self.estimator.predict_proba(X)  # these are ignorant of the prior
 
@@ -607,14 +606,11 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             prior_weights = np.array([self.prior[klass] for klass in self.estimator.classes_])
             return self._weighted_proba(prior_weights, y_hats)
         else:
-            class_y_hats = self.estimator.classes_[y_hats.argmax(axis=1)]
-            posterior_probas = np.array(
-                [[self._posterior(y, y_hat) for y in self.estimator.classes_] for y_hat in class_y_hats]
-            )
+            posterior_probas = self._to_discrete(y_hats) @ self.posterior_matrix_.T
             return self._weighted_proba(posterior_probas, y_hats) if self.evidence == 'both' else posterior_probas
 
     def predict(self, X):
-        check_is_fitted(self, ['cfm_'])
+        check_is_fitted(self, ['posterior_matrix_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.estimator.classes_[self.predict_proba(X).argmax(axis=1)]
 

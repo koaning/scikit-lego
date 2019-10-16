@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import pytest
 from sklearn.cluster import DBSCAN
 from sklearn.ensemble import RandomForestClassifier
@@ -37,25 +36,17 @@ def test_estimator_checks_classification(test_fn):
         ([0, 1, 2], [0.2, 0.1, 0.7], [[80, 0, 20], [0, 0, 100], [10, 0, 90]], 0.696)  # biased, n classes
     ]
 )
-def test_posterior_computation(classes, prior, cfm, first_class_posterior):
-    subjective_model = SubjectiveClassifier(RandomForestClassifier(), dict(zip(classes, prior)))
-    # pretend fit() was called
-    subjective_model.estimator.classes_ = np.array(classes)
-    subjective_model.cfm_ = pd.DataFrame(np.array(cfm), index=classes, columns=classes)
-    assert pytest.approx(subjective_model._posterior(classes[0], classes[0]), 0.001) == first_class_posterior
-    for clazz in classes:
-        assert pytest.approx(sum([subjective_model._posterior(pred, clazz) for pred in classes]), 0.00001) == 1
-
-
-def test_fit_stores_confusion_matrix(mocker):
-    mock_inner_estimator = mocker.Mock(RandomForestClassifier)
-    mock_inner_estimator.predict.return_value = np.array([42] * 90 + [23] * 10)
-    mock_inner_estimator.classes_ = np.array([23, 42])
-    subjective_model = SubjectiveClassifier(mock_inner_estimator, {42: 0.8, 23: 0.2})
-    subjective_model.fit(np.zeros((100, 2)), np.array([42] * 80 + [23] * 20))
-    assert subjective_model.cfm_.index.tolist() == [23, 42]
-    assert subjective_model.cfm_.columns.tolist() == [23, 42]
-    assert subjective_model.cfm_.values.tolist() == [[10, 10], [0, 80]]
+def test_posterior_computation(mocker, classes, prior, cfm, first_class_posterior):
+    def mock_confusion_matrix(y, y_pred):
+        return np.array(cfm)
+    mocker.patch('sklego.meta.confusion_matrix', side_effect=mock_confusion_matrix)
+    mock_estimator = mocker.Mock(RandomForestClassifier())
+    mock_estimator.classes_ = classes
+    subjective_model = SubjectiveClassifier(mock_estimator, dict(zip(classes, prior)))
+    subjective_model.fit(np.zeros((10, 10)), np.array([classes[0]]*10))
+    setattr(subjective_model.estimator, 'classes', np.array(classes))
+    assert pytest.approx(subjective_model.posterior_matrix_[0, 0], 0.001) == first_class_posterior
+    assert np.isclose(subjective_model.posterior_matrix_.sum(axis=0), 1).all()
 
 
 @pytest.mark.parametrize(
@@ -99,12 +90,14 @@ def test_weighted_proba(weights, y_hats, expected_probas):
     ]
 )
 def test_predict_proba(mocker, evidence_type, expected_probas):
+    def mock_confusion_matrix(y, y_pred):
+        return np.array([[80, 20], [10, 90]])
+    mocker.patch('sklego.meta.confusion_matrix', side_effect=mock_confusion_matrix)
     mock_inner_estimator = mocker.Mock(RandomForestClassifier)
     mock_inner_estimator.predict_proba.return_value = np.array([[0.8, 0.2], [1, 0], [0.5, 0.5], [0.2, 0.8]])
     mock_inner_estimator.classes_ = np.array([0, 1])
     subjective_model = SubjectiveClassifier(mock_inner_estimator, {0: 0.8, 1: 0.2}, evidence=evidence_type)
-    # pretend fit() was called
-    subjective_model.cfm_ = pd.DataFrame(np.array([[80, 20], [10, 90]]))
+    subjective_model.fit(np.zeros((10, 10)), np.zeros(10))
     posterior_probabilities = subjective_model.predict_proba(np.zeros((4, 2)))
     assert posterior_probabilities.shape == (4, 2)
     assert np.isclose(posterior_probabilities, np.array(expected_probas), atol=0.01).all()
