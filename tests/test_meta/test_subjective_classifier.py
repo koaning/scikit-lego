@@ -71,10 +71,23 @@ def test_fit_y_data_inconsistent_with_prior_failure_conditions(prior, y):
     assert str(exc.value).startswith('Training data is inconsistent with prior')
 
 
+@pytest.mark.parametrize(
+    'weights,y_hats,expected_probas', [
+        ([0.8, 0.2], [[1, 0], [0.5, 0.5], [0.8, 0.2]], [[1, 0], [0.8, 0.2], [0.94, 0.06]]),
+        ([0.5, 0.5], [[1, 0], [0.5, 0.5], [0.8, 0.2]], [[1, 0], [0.5, 0.5], [0.8, 0.2]]),
+        ([[0.8, 0.2], [0.5, 0.5]], [[1, 0], [0.8, 0.2]], [[1, 0], [0.8, 0.2]])
+    ]
+)
+def test_weighted_proba(weights, y_hats, expected_probas):
+    assert np.isclose(
+        SubjectiveClassifier._weighted_proba(np.array(weights), np.array(y_hats)), np.array(expected_probas), atol=1e-02
+    ).all()
+
+
 def test_predict_proba(mocker):
     mock_inner_estimator = mocker.Mock(RandomForestClassifier)
-    mock_inner_estimator.predict.return_value = np.array([0, 1])
-    mock_inner_estimator.classes_ = [0, 1, 2]
+    mock_inner_estimator.predict_proba.return_value = np.array([[0, 1, 0], [1, 0, 0]])
+    mock_inner_estimator.classes_ = np.array([0, 1, 2])
     subjective_model = SubjectiveClassifier(mock_inner_estimator, {0: 0.7, 1: 0.2, 2: 0.1})
     # pretend fit() was called
     subjective_model.cfm_ = pd.DataFrame(np.array([[80, 10, 10], [10, 90, 0], [0, 0, 100]]))

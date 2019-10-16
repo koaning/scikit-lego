@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn import clone
 from sklearn.base import BaseEstimator, TransformerMixin, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import normalize
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array, FLOAT_DTYPES
 
@@ -587,11 +588,24 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             else self.prior[y]  # in case confusion matrix has all-zero column for y_hat
         )
 
+    @staticmethod
+    def _weighted_proba(weights, y_hat_probas):
+        return normalize(weights * y_hat_probas, norm='l1')
+
     def predict_proba(self, X):
         check_is_fitted(self, ['cfm_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        y_hats = self.estimator.predict(X)  # these are ignorant of the prior
-        return np.array([[self._posterior(y, y_hat) for y in self.estimator.classes_] for y_hat in y_hats])
+        y_hats = self.estimator.predict_proba(X)  # these are ignorant of the prior
+
+        if self.evidence == 'predict_proba':
+            prior_weights = np.array([self.prior[klass] for klass in self.estimator.classes_])
+            return self._weighted_proba(prior_weights, y_hats)
+        else:
+            class_y_hats = self.estimator.classes_[y_hats.argmax(axis=1)]
+            posterior_probas = np.array(
+                [[self._posterior(y, y_hat) for y in self.estimator.classes_] for y_hat in class_y_hats]
+            )
+            return self._weighted_proba(posterior_probas, y_hats) if self.evidence == 'both' else posterior_probas
 
     def predict(self, X):
         check_is_fitted(self, ['cfm_'])
