@@ -84,16 +84,23 @@ def test_weighted_proba(weights, y_hats, expected_probas):
     ).all()
 
 
-def test_predict_proba(mocker):
+@pytest.mark.parametrize(
+    'evidence_type,expected_probas', [
+        ('predict_proba', [[0.94, 0.06], [1, 0], [0.8, 0.2], [0.5, 0.5]]),
+        ('confusion_matrix', [[0.97, 0.03], [0.97, 0.03], [0.97, 0.03], [0.47, 0.53]]),
+        ('both', [[0.99, 0.01], [1, 0], [0.97, 0.03], [0.18, 0.82]])
+    ]
+)
+def test_predict_proba(mocker, evidence_type, expected_probas):
     mock_inner_estimator = mocker.Mock(RandomForestClassifier)
-    mock_inner_estimator.predict_proba.return_value = np.array([[0, 1, 0], [1, 0, 0]])
-    mock_inner_estimator.classes_ = np.array([0, 1, 2])
-    subjective_model = SubjectiveClassifier(mock_inner_estimator, {0: 0.7, 1: 0.2, 2: 0.1})
+    mock_inner_estimator.predict_proba.return_value = np.array([[0.8, 0.2], [1, 0], [0.5, 0.5], [0.2, 0.8]])
+    mock_inner_estimator.classes_ = np.array([0, 1])
+    subjective_model = SubjectiveClassifier(mock_inner_estimator, {0: 0.8, 1: 0.2}, evidence=evidence_type)
     # pretend fit() was called
-    subjective_model.cfm_ = pd.DataFrame(np.array([[80, 10, 10], [10, 90, 0], [0, 0, 100]]))
-    posterior_probabilities = subjective_model.predict_proba(np.zeros((2, 2)))
-    assert posterior_probabilities.shape == (2, 3)
-    assert np.isclose(posterior_probabilities.sum(axis=1), 1).all()
+    subjective_model.cfm_ = pd.DataFrame(np.array([[80, 20], [10, 90]]))
+    posterior_probabilities = subjective_model.predict_proba(np.zeros((4, 2)))
+    assert posterior_probabilities.shape == (4, 2)
+    assert np.isclose(posterior_probabilities, np.array(expected_probas), atol=0.01).all()
 
 
 @pytest.mark.parametrize(
