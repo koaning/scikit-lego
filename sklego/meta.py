@@ -592,6 +592,12 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     def _weighted_proba(weights, y_hat_probas):
         return normalize(weights * y_hat_probas, norm='l1')
 
+    @staticmethod
+    def _to_discrete(y_hat_probas):
+        y_hat_discrete = np.zeros(y_hat_probas.shape)
+        y_hat_discrete[np.arange(y_hat_probas.shape[0]), y_hat_probas.argmax(axis=1)] = 1
+        return y_hat_discrete
+
     def predict_proba(self, X):
         check_is_fitted(self, ['cfm_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)

@@ -71,6 +71,13 @@ def test_fit_y_data_inconsistent_with_prior_failure_conditions(prior, y):
     assert str(exc.value).startswith('Training data is inconsistent with prior')
 
 
+def test_to_discrete():
+    assert np.isclose(
+        SubjectiveClassifier._to_discrete(np.array([[1, 0], [0.8, 0.2], [0.5, 0.5], [0.2, 0.8]])),
+        np.array([[1, 0], [1, 0], [1, 0], [0, 1]])
+    ).all()
+
+
 @pytest.mark.parametrize(
     'weights,y_hats,expected_probas', [
         ([0.8, 0.2], [[1, 0], [0.5, 0.5], [0.8, 0.2]], [[1, 0], [0.8, 0.2], [0.94, 0.06]]),
