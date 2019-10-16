@@ -84,14 +84,15 @@ def test_predict_proba(mocker):
 
 
 @pytest.mark.parametrize(
-    'inner_estimator, prior, expected_error_msg', [
-        (DBSCAN(), {'a': 1}, 'Invalid inner estimator'),
-        (Ridge(), {'a': 1}, 'Invalid inner estimator'),
-        (RandomForestClassifier(), {'a': 0.8, 'b': 0.1}, 'Invalid prior')
+    'inner_estimator, prior, evidence, expected_error_msg', [
+        (DBSCAN(), {'a': 1}, 'both', 'Invalid inner estimator'),
+        (Ridge(), {'a': 1}, 'predict_proba', 'Invalid inner estimator'),
+        (RandomForestClassifier(), {'a': 0.8, 'b': 0.1}, 'confusion_matrix', 'Invalid prior'),
+        (RandomForestClassifier(), {'a': 0.8, 'b': 0.2}, 'foo_evidence', 'Invalid evidence')
     ]
 )
-def test_params_failure_conditions(inner_estimator, prior, expected_error_msg):
+def test_params_failure_conditions(inner_estimator, prior, evidence, expected_error_msg):
     with pytest.raises(ValueError) as exc:
-        SubjectiveClassifier(inner_estimator, prior)
+        SubjectiveClassifier(inner_estimator, prior, evidence)
 
     assert str(exc.value).startswith(expected_error_msg)

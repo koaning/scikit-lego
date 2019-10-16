@@ -540,7 +540,7 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
 
 
 class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
-    def __init__(self, estimator, prior):
+    def __init__(self, estimator, prior, evidence='both'):
         if not isinstance(estimator, ClassifierMixin):
             raise ValueError(
                 'Invalid inner estimator: the SubjectiveClassifier meta model only works on classification models'
@@ -549,8 +549,13 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         if not np.isclose(sum(prior.values()), 1):
             raise ValueError('Invalid prior: the prior probabilities of all classes should sum to 1')
 
+        valid_evidence_types = ['predict_proba', 'confusion_matrix', 'both']
+        if evidence not in valid_evidence_types:
+            raise ValueError(f'Invalid evidence: the provided evidence should be one of {valid_evidence_types}')
+
         self.estimator = estimator
         self.prior = prior
+        self.evidence = evidence
 
     def fit(self, X, y):
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
