@@ -1,6 +1,3 @@
-
-import inspect
-
 import numpy as np
 from scipy.optimize import minimize_scalar
 from sklearn.base import BaseEstimator, ClassifierMixin, OutlierMixin
