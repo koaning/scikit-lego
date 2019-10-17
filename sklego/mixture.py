@@ -12,15 +12,27 @@ from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
 from scipy.stats import gaussian_kde
 
 
-def _check_gmm_keywords(kwargs):
-    for key in kwargs.keys():
-        if key not in inspect.signature(GaussianMixture).parameters.keys():
-            raise ValueError(f"Keyword argument {key} is not in `sklearn.mixture.GaussianMixture`")
-
-
 class GMMClassifier(BaseEstimator, ClassifierMixin):
-    def __init__(self, **gmm_kwargs):
-        self.gmm_kwargs = gmm_kwargs
+    def __init__(self, n_components=1, covariance_type='full', tol=1e-3, reg_covar=1e-6,
+                 max_iter=100, n_init=1, init_params='kmeans', weights_init=None, means_init=None,
+                 precisions_init=None, random_state=None, warm_start=False):
+        """
+        The GMMClassifier trains a Gaussian Mixture Model for each class in y on a dataset X. Once
+        a density is trained for each class we can evaluate the likelihood scores to see which class
+        is more likely. All parameters of the model are an exact copy of the parameters in scikit-learn.
+        """
+        self.n_components = n_components
+        self.covariance_type = covariance_type
+        self.tol = tol
+        self.reg_covar = reg_covar
+        self.max_iter = max_iter
+        self.n_init = n_init
+        self.init_params = init_params
+        self.weights_init = weights_init
+        self.means_init = means_init
+        self.precisions_init = precisions_init
+        self.random_state = random_state
+        self.warm_start = warm_start
 
     def fit(self, X: np.array, y: np.array) -> "GMMClassifier":
         """
@@ -34,12 +46,16 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
-        _check_gmm_keywords(self.gmm_kwargs)
         self.gmms_ = {}
         self.classes_ = unique_labels(y)
         for c in self.classes_:
             subset_x, subset_y = X[y == c], y[y == c]
-            self.gmms_[c] = GaussianMixture(**self.gmm_kwargs).fit(subset_x, subset_y)
+            mixture = GaussianMixture(n_components=self.n_components, covariance_type=self.covariance_type,
+                                      tol=self.tol, reg_covar=self.reg_covar, max_iter=self.max_iter,
+                                      n_init=self.n_init, init_params=self.init_params, weights_init=self.weights_init,
+                                      means_init=self.means_init, precisions_init=self.precisions_init,
+                                      random_state=self.random_state, warm_start=self.warm_start)
+            self.gmms_[c] = mixture.fit(subset_x, subset_y)
         return self
 
     def predict(self, X):
@@ -64,7 +80,6 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
     outliers if their likelihood score is too low.
 
     :param threshold: the limit at which the model thinks an outlier appears, must be between (0, 1)
-    :param gmm_kwargs: features that are passed to the `GaussianMixture` from sklearn
     :param method: the method that the threshold will be applied to, possible values = [stddev, default=quantile]
 
     If you select method="quantile" then the threshold value represents the
@@ -73,12 +88,25 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
     If you select method="stddev" then the threshold value represents the
     numbers of standard deviations before calling something an outlier.
     """
-    def __init__(self, threshold=0.99, method='quantile', random_state=42, **gmm_kwargs):
-        self.gmm_kwargs = gmm_kwargs
+    def __init__(self, threshold=0.99, method='quantile', n_components=1, covariance_type='full', tol=1e-3,
+                 reg_covar=1e-6, max_iter=100, n_init=1, init_params='kmeans', weights_init=None, means_init=None,
+                 precisions_init=None, random_state=None, warm_start=False):
         self.threshold = threshold
         self.method = method
         self.random_state = random_state
         self.allowed_methods = ["quantile", "stddev"]
+        self.n_components = n_components
+        self.covariance_type = covariance_type
+        self.tol = tol
+        self.reg_covar = reg_covar
+        self.max_iter = max_iter
+        self.n_init = n_init
+        self.init_params = init_params
+        self.weights_init = weights_init
+        self.means_init = means_init
+        self.precisions_init = precisions_init
+        self.random_state = random_state
+        self.warm_start = warm_start
 
     def fit(self, X: np.array, y=None) -> "GMMOutlierDetector":
         """
@@ -101,8 +129,12 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         if self.method not in self.allowed_methods:
             raise ValueError(f"Method not recognised. Method must be in {self.allowed_methods}")
 
-        _check_gmm_keywords(self.gmm_kwargs)
-        self.gmm_ = GaussianMixture(**self.gmm_kwargs, random_state=self.random_state).fit(X)
+        self.gmm_ = GaussianMixture(n_components=self.n_components, covariance_type=self.covariance_type,
+                                    tol=self.tol, reg_covar=self.reg_covar, max_iter=self.max_iter,
+                                    n_init=self.n_init, init_params=self.init_params, weights_init=self.weights_init,
+                                    means_init=self.means_init, precisions_init=self.precisions_init,
+                                    random_state=self.random_state, warm_start=self.warm_start)
+        self.gmm_.fit(X)
         score_samples = self.gmm_.score_samples(X)
 
         if self.method == "quantile":
@@ -127,10 +159,7 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         return self.gmm_.score_samples(X) * -1
 
     def decision_function(self, X):
-
-        # We subtract self.offset_ to make 0 be the threshold value for being
-        # an outlier:
-
+        # We subtract self.offset_ to make 0 be the threshold value for being an outlier:
         return self.score_samples(X) + self.likelihood_threshold_
 
     def predict(self, X):
