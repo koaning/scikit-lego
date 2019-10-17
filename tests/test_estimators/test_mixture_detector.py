@@ -47,10 +47,6 @@ def test_value_error_threshold(dataset):
     with pytest.raises(ValueError):
         GMMOutlierDetector(threshold=-10).fit(dataset)
     with pytest.raises(ValueError):
-        GMMOutlierDetector(megatondinosaurhead=1).fit(dataset)
-    with pytest.raises(ValueError):
-        GMMOutlierDetector(method="dinosaurhead").fit(dataset)
-    with pytest.raises(ValueError):
         GMMOutlierDetector(threshold=-10, method="stddev").fit(dataset)
 
 
