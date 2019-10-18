@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from sklego.common import flatten
-from sklego.mixture import GMMClassifier
+from sklego.mixture import GMMClassifier,BayesianGMMClassifier
 from sklego.testing import check_shape_remains_same_classifier
 from tests.conftest import nonmeta_checks, general_checks, estimator_checks
 
@@ -25,9 +25,12 @@ from tests.conftest import nonmeta_checks, general_checks, estimator_checks
 def test_estimator_checks(test_fn):
     clf = GMMClassifier()
     test_fn(GMMClassifier.__name__, clf)
+    clf = BayesianGMMClassifier()
+    test_fn(BayesianGMMClassifier.__name__, clf)
 
 
 def test_obvious_usecase():
     X = np.concatenate([np.random.normal(-10, 1, (100, 2)), np.random.normal(10, 1, (100, 2))])
     y = np.concatenate([np.zeros(100), np.ones(100)])
     assert (GMMClassifier().fit(X, y).predict(X) == y).all()
+    assert (BayesianGMMClassifier().fit(X, y).predict(X) == y).all()

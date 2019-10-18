@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 
 from sklego.dummy import RandomRegressor
 from sklego.linear_model import DeadZoneRegressor
-from sklego.mixture import GMMClassifier, GMMOutlierDetector
+from sklego.mixture import GMMClassifier, BayesianGMMClassifier, GMMOutlierDetector, BayesianGMMOutlierDetector
 from tests.conftest import id_func
 
 
@@ -23,8 +23,11 @@ def test_shape_regression(estimator, random_xy_dataset_regr):
 
 @pytest.mark.parametrize("estimator", [
     GMMClassifier(),
+    BayesianGMMClassifier(),
     GMMOutlierDetector(threshold=0.999, method="quantile"),
-    GMMOutlierDetector(threshold=2, method="stddev")
+    GMMOutlierDetector(threshold=2, method="stddev"),
+    BayesianGMMOutlierDetector(threshold=0.999, method="quantile"),
+    BayesianGMMOutlierDetector(threshold=2, method="stddev")
 ], ids=id_func)
 def test_shape_classification(estimator, random_xy_dataset_clf):
     X, y = random_xy_dataset_clf

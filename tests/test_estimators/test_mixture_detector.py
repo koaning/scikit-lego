@@ -3,7 +3,7 @@ import pytest
 from sklearn.utils import estimator_checks
 
 from sklego.common import flatten
-from sklego.mixture import GMMOutlierDetector
+from sklego.mixture import GMMOutlierDetector, BayesianGMMOutlierDetector
 from tests.conftest import nonmeta_checks, general_checks
 
 
@@ -21,6 +21,12 @@ def test_estimator_checks(test_fn):
 
     clf_stddev = GMMOutlierDetector(threshold=2, method="stddev")
     test_fn(GMMOutlierDetector.__name__ + '_stddev', clf_stddev)
+
+    bayes_clf_quantile = BayesianGMMOutlierDetector(threshold=0.999, method="quantile")
+    test_fn(BayesianGMMOutlierDetector.__name__ + '_quantile', bayes_clf_quantile)
+
+    bayes_clf_stddev = BayesianGMMOutlierDetector(threshold=2, method="stddev")
+    test_fn(BayesianGMMOutlierDetector.__name__ + '_stddev', bayes_clf_stddev)
 
 
 @pytest.fixture
