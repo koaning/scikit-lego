@@ -84,7 +84,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         """
         self._check_X_for_type(X)
         self.type_columns_ = list(X.select_dtypes(include=self.include, exclude=self.exclude))
-
+        self.X_dtypes_ = X.dtypes
         if len(self.type_columns_) == 0:
             raise ValueError(f'Provided type(s) results in empty dateframe')
 
@@ -96,10 +96,14 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
 
         :param X: pandas dataframe to select dtypes for
         """
-        check_is_fitted(self, 'type_columns_')
+        check_is_fitted(self, ['type_columns_', 'X_dtypes_'])
+        if (self.X_dtypes_ != X.dtypes).any():
+            raise ValueError(f'Column dtypes were not equal during fit and transform. Fit types: \n'
+                             f'{self.X_dtypes_}\n'
+                             f'transform: \n'
+                             f'{X.dtypes}')
 
         self._check_X_for_type(X)
-
         transformed_df = X.select_dtypes(include=self.include, exclude=self.exclude)
 
         if set(list(transformed_df)) != set(self.type_columns_):
