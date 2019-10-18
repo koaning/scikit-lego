@@ -41,10 +41,9 @@ def test_posterior_computation(mocker, classes, prior, cfm, first_class_posterio
         return np.array(cfm)
     mocker.patch('sklego.meta.confusion_matrix', side_effect=mock_confusion_matrix)
     mock_estimator = mocker.Mock(RandomForestClassifier())
-    mock_estimator.classes_ = classes
+    mock_estimator.classes_ = np.array(classes)
     subjective_model = SubjectiveClassifier(mock_estimator, dict(zip(classes, prior)))
     subjective_model.fit(np.zeros((10, 10)), np.array([classes[0]]*10))
-    setattr(subjective_model.estimator, 'classes', np.array(classes))
     assert pytest.approx(subjective_model.posterior_matrix_[0, 0], 0.001) == first_class_posterior
     assert np.isclose(subjective_model.posterior_matrix_.sum(axis=0), 1).all()
 

@@ -551,14 +551,14 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
 
     def _evidence(self, predicted_class, cfm):
         return sum([
-            self._likelihood(predicted_class, given_class, cfm) * self.prior[self.estimator.classes_[given_class]]
+            self._likelihood(predicted_class, given_class, cfm) * self.prior[self.classes_[given_class]]
             for given_class in range(cfm.shape[0])
         ])
 
     def _posterior(self, y, y_hat, cfm):
         y_hat_evidence = self._evidence(y_hat, cfm)
         return (
-            (self._likelihood(y_hat, y, cfm) * self.prior[self.estimator.classes_[y]] / y_hat_evidence)
+            (self._likelihood(y_hat, y, cfm) * self.prior[self.classes_[y]] / y_hat_evidence)
             if y_hat_evidence > 0
             else self.prior[y]  # in case confusion matrix has all-zero column for y_hat
         )
@@ -603,7 +603,7 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         y_hats = self.estimator.predict_proba(X)  # these are ignorant of the prior
 
         if self.evidence == 'predict_proba':
-            prior_weights = np.array([self.prior[klass] for klass in self.estimator.classes_])
+            prior_weights = np.array([self.prior[klass] for klass in self.classes_])
             return self._weighted_proba(prior_weights, y_hats)
         else:
             posterior_probas = self._to_discrete(y_hats) @ self.posterior_matrix_.T
@@ -612,7 +612,7 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     def predict(self, X):
         check_is_fitted(self, ['posterior_matrix_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        return self.estimator.classes_[self.predict_proba(X).argmax(axis=1)]
+        return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     @property
     def classes_(self):
