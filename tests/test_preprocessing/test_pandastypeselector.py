@@ -46,6 +46,21 @@ def test_get_params_np(include, exclude):
     }
 
 
+def test_value_error_differrent_dtyes():
+    fit_df = pd.DataFrame({
+        'a': [1, 2, 3],
+        'b': [4, 5, 6]
+    })
+    transform_df = pd.DataFrame({
+        'a': [4, 5, 6],
+        'b': ['4', '5', '6']
+    })
+    transformer = PandasTypeSelector(exclude=['category']).fit(fit_df)
+
+    with pytest.raises(ValueError):
+        transformer.transform(transform_df)
+
+
 def test_value_error_empty(random_xy_dataset_regr):
     transformer = PandasTypeSelector(exclude=['number'])
     X, y = random_xy_dataset_regr
