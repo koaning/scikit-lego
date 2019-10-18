@@ -586,17 +586,17 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             else self.prior[y]  # in case confusion matrix has all-zero column for y_hat
         )
 
-    """
-    Fits the inner estimator based on the data.
-    
-    Raises a `ValueError` if the `y` vector contains classes that are not specified in the prior, or if the prior is
-    not a valid probability distribution (i.e. does not sum to 1).
-
-    :param X: array-like, shape=(n_columns, n_samples,) training data.
-    :param y: array-like, shape=(n_samples,) training data.
-    :return: Returns an instance of self.
-    """
     def fit(self, X, y):
+        """
+        Fits the inner estimator based on the data.
+
+        Raises a `ValueError` if the `y` vector contains classes that are not specified in the prior, or if the prior is
+        not a valid probability distribution (i.e. does not sum to 1).
+
+        :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :param y: array-like, shape=(n_samples,) training data.
+        :return: Returns an instance of self.
+        """
         if not isinstance(self.estimator, ClassifierMixin):
             raise ValueError(
                 'Invalid inner estimator: the SubjectiveClassifier meta model only works on classification models'
@@ -630,13 +630,13 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         y_hat_discrete[np.arange(y_hat_probas.shape[0]), y_hat_probas.argmax(axis=1)] = 1
         return y_hat_discrete
 
-    """
-    Returns probability distribution of the class, based on the provided data.
-
-    :param X: array-like, shape=(n_columns, n_samples,) training data.
-    :return: array, shape=(n_samples, n_classes) the predicted data
-    """
     def predict_proba(self, X):
+        """
+        Returns probability distribution of the class, based on the provided data.
+
+        :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :return: array, shape=(n_samples, n_classes) the predicted data
+        """
         check_is_fitted(self, ['posterior_matrix_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         y_hats = self.estimator.predict_proba(X)  # these are ignorant of the prior
@@ -648,13 +648,13 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             posterior_probas = self._to_discrete(y_hats) @ self.posterior_matrix_.T
             return self._weighted_proba(posterior_probas, y_hats) if self.evidence == 'both' else posterior_probas
 
-    """
-    Returns predicted class, based on the provided data.
-
-    :param X: array-like, shape=(n_columns, n_samples,) training data.
-    :return: array, shape=(n_samples, n_classes) the predicted data
-    """
     def predict(self, X):
+        """
+        Returns predicted class, based on the provided data.
+
+        :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :return: array, shape=(n_samples, n_classes) the predicted data
+        """
         check_is_fitted(self, ['posterior_matrix_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
