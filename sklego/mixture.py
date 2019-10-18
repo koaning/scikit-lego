@@ -262,7 +262,9 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
     numbers of standard deviations before calling something an outlier.
 
     There are other settings too, these are best described in the BayesianGaussianMixture
-    documentation found here: https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html.
+    documentation found here:
+
+    https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html.
     """
     def __init__(self, threshold=0.99, method='quantile', n_components=1, covariance_type='full', tol=0.001,
                  reg_covar=1e-06, max_iter=100, n_init=1, init_params='kmeans',
