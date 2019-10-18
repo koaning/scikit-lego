@@ -1,6 +1,6 @@
-'''
+"""
 Pipelines, variances to the :class:`sklearn.pipeline.Pipeline` object.
-'''
+"""
 
 
 import logging
@@ -11,7 +11,7 @@ from sklearn.utils.validation import check_memory
 
 
 def default_log_callback(output, execution_time, **kwargs):
-    '''
+    """
     The default log callback which logs the step name, shape of the output and
     the execution time of the step.
 
@@ -28,15 +28,14 @@ def default_log_callback(output, execution_time, **kwargs):
             :param dict input_kwargs: The input key-word arguments.
             :param output: The output of the function.
             :param execution_time float: The execution time.
-    '''
+    """
     logger = logging.getLogger(__name__)
     step_result, step = output
-    logger.info(f'[{step}] shape={step_result.shape} '
-                f'time={int(execution_time)}s')
+    logger.info(f"[{step}] shape={step_result.shape} " f"time={int(execution_time)}s")
 
 
 def _log_wrapper(log_callback=default_log_callback):
-    '''
+    """
     Function wrapper to log information after the function is called, about the
     function, input args, input kwargs, output and the execution time.
 
@@ -46,21 +45,29 @@ def _log_wrapper(log_callback=default_log_callback):
         same arguments as the default.
     :returns: The function wrapped with a log callback.
     :rtype: function
-    '''
+    """
+
     def _(func):
         def _(*args, **kwargs):
             start_time = time.time()
             output = func(*args, **kwargs)
             execution_time = time.time() - start_time
-            log_callback(func=func, input_args=args, input_kwargs=kwargs,
-                         output=output, execution_time=execution_time)
+            log_callback(
+                func=func,
+                input_args=args,
+                input_kwargs=kwargs,
+                output=output,
+                execution_time=execution_time,
+            )
             return output
+
         return _
+
     return _
 
 
 def _cache_with_function_log_statement(log_callback=default_log_callback):
-    '''
+    """
     Wraps the `func` with :func:`_log_wrapper` before passing it to
     :method:`_cache`.
 
@@ -68,15 +75,13 @@ def _cache_with_function_log_statement(log_callback=default_log_callback):
         The log callback function. Defaults to :func:default_log_callback.
 
     :returns: The cache where its function is wrapped with a log statement.
-    '''
-    def _(
-            self,
-            func=None,
-            *args,
-            **kwargs):
+    """
+
+    def _(self, func=None, *args, **kwargs):
         if callable(func):
             func = _log_wrapper(log_callback)(func)
         return self._cache(func=func, *args, **kwargs)
+
     return _
 
 
@@ -259,13 +264,7 @@ class DebugPipeline(Pipeline):
      [11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111.]]
     '''
 
-    def __init__(
-            self,
-            steps,
-            memory=None,
-            verbose=False,
-            *,
-            log_callback=None):
+    def __init__(self, steps, memory=None, verbose=False, *, log_callback=None):
         self.log_callback = log_callback
         super().__init__(steps=steps, memory=memory, verbose=verbose)
 
@@ -274,7 +273,7 @@ class DebugPipeline(Pipeline):
         # When no log callback function is given, change nothing.
         # Or, if the memory cache was changed, set it back to its original.
         if self._log_callback is None:
-            if hasattr(self._memory, '_cache'):
+            if hasattr(self._memory, "_cache"):
                 self._memory.cache = self._memory._cache
             return self._memory
 
@@ -282,10 +281,11 @@ class DebugPipeline(Pipeline):
 
         # Overwrite cache function of memory such that it logs the
         # output when the function is called
-        if not hasattr(self._memory, '_cache'):
+        if not hasattr(self._memory, "_cache"):
             self._memory._cache = self._memory.cache
         self._memory.cache = _cache_with_function_log_statement(
-            self._log_callback).__get__(self._memory, self._memory.__class__)
+            self._log_callback
+        ).__get__(self._memory, self._memory.__class__)
         return self._memory
 
     @memory.setter
@@ -299,5 +299,5 @@ class DebugPipeline(Pipeline):
     @log_callback.setter
     def log_callback(self, func):
         self._log_callback = func
-        if self._log_callback == 'default':
+        if self._log_callback == "default":
             self._log_callback = default_log_callback

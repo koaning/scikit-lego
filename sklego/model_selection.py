@@ -33,9 +33,13 @@ class TimeGapSplit:
     :param datetime.timedelta gap_duration: forward looking window of the target
     """
 
-    def __init__(self, df, date_col, train_duration, valid_duration, gap_duration=timedelta(0)):
+    def __init__(
+        self, df, date_col, train_duration, valid_duration, gap_duration=timedelta(0)
+    ):
         if train_duration <= gap_duration:
-            raise AssertionError("gap_duration is longer than train_duration, it should be shorter.")
+            raise AssertionError(
+                "gap_duration is longer than train_duration, it should be shorter."
+            )
 
         df[date_col] = pd.to_datetime(df[date_col])
         self.df = df
@@ -62,16 +66,23 @@ class TimeGapSplit:
                 break
 
             train_i = date_series[
-                (date_series >= current_date) &
-                (date_series < current_date + self.train_duration - self.gap_duration)].index.values
+                (date_series >= current_date)
+                & (date_series < current_date + self.train_duration - self.gap_duration)
+            ].index.values
             valid_i = date_series[
-                (date_series >= current_date + self.train_duration) &
-                (date_series < current_date + self.train_duration + self.valid_duration)].index.values
+                (date_series >= current_date + self.train_duration)
+                & (
+                    date_series
+                    < current_date + self.train_duration + self.valid_duration
+                )
+            ].index.values
 
             current_date = current_date + self.valid_duration
 
-            yield (np.array([X.index.get_loc(i) for i in train_i]),
-                   np.array([X.index.get_loc(i) for i in valid_i]))
+            yield (
+                np.array([X.index.get_loc(i) for i in train_i]),
+                np.array([X.index.get_loc(i) for i in valid_i]),
+            )
 
     def get_n_splits(self, X=None, y=None, groups=None):
 
@@ -89,7 +100,9 @@ class KlusterFoldValidation:
 
     def __init__(self, cluster_method=None):
         if not isinstance(cluster_method, Clusterer):
-            raise ValueError("The KlusterFoldValidation only works on cluster methods with .fit_predict.")
+            raise ValueError(
+                "The KlusterFoldValidation only works on cluster methods with .fit_predict."
+            )
 
         self.cluster_method = cluster_method
         self.n_splits = None

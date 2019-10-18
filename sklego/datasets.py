@@ -37,10 +37,10 @@ def load_chicken(return_X_y=False, give_pandas=False):
         return df
     if give_pandas:
         return df
-    X, y = df[['time', 'diet', 'chick']].values, df['weight'].values
+    X, y = df[["time", "diet", "chick"]].values, df["weight"].values
     if return_X_y:
         return X, y
-    return {'data': X, 'target': y}
+    return {"data": X, "target": y}
 
 
 def load_abalone(return_X_y=False, give_pandas=False):
@@ -73,12 +73,22 @@ def load_abalone(return_X_y=False, give_pandas=False):
     df = pd.read_csv(filepath)
     if give_pandas:
         return df
-    X = df[['length', 'diameter', 'height', 'whole_weight', 'shucked_weight',
-            'viscera_weight', 'shell_weight', 'rings']].values
-    y = df['sex'].values
+    X = df[
+        [
+            "length",
+            "diameter",
+            "height",
+            "whole_weight",
+            "shucked_weight",
+            "viscera_weight",
+            "shell_weight",
+            "rings",
+        ]
+    ].values
+    y = df["sex"].values
     if return_X_y:
         return X, y
-    return {'data': X, 'target': y}
+    return {"data": X, "target": y}
 
 
 def load_heroes(return_X_y=False, give_pandas=False):
@@ -103,15 +113,23 @@ def load_heroes(return_X_y=False, give_pandas=False):
     df = pd.read_csv(filepath)
     if give_pandas:
         return df
-    X = df[['health', 'attack']].values
-    y = df['attack_type'].values
+    X = df[["health", "attack"]].values
+    y = df["attack_type"].values
     if return_X_y:
         return X, y
-    return {'data': X, 'target': y}
+    return {"data": X, "target": y}
 
 
-def make_simpleseries(n_samples=365*5, trend=0.001, season_trend=0.001, noise=0.5,
-                      give_pandas=False, seed=None, stack_noise=False, start_date=None):
+def make_simpleseries(
+    n_samples=365 * 5,
+    trend=0.001,
+    season_trend=0.001,
+    noise=0.5,
+    give_pandas=False,
+    seed=None,
+    stack_noise=False,
+    start_date=None,
+):
     """
     Generate a very simple timeseries dataset to play with. The generator
     assumes to generate daily data with a season, trend and noise.
@@ -145,8 +163,10 @@ def make_simpleseries(n_samples=365*5, trend=0.001, season_trend=0.001, noise=0.
     if stack_noise:
         noise = noise.cumsum()
     r1, r2 = np.random.normal(0, 1, 2)
-    seasonality = r1*np.sin(time/365*2*np.pi) + r2*np.cos(time/365*4*np.pi + 1)
-    result = seasonality + season_trend*seasonality*time + trend * time + noise
+    seasonality = r1 * np.sin(time / 365 * 2 * np.pi) + r2 * np.cos(
+        time / 365 * 4 * np.pi + 1
+    )
+    result = seasonality + season_trend * seasonality * time + trend * time + noise
     if give_pandas:
         if start_date:
             stamps = pd.date_range(start_date, periods=n_samples)

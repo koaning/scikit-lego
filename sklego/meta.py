@@ -1,11 +1,21 @@
 import numpy as np
 import pandas as pd
 from sklearn import clone
-from sklearn.base import BaseEstimator, TransformerMixin, ClassifierMixin, MetaEstimatorMixin
+from sklearn.base import (
+    BaseEstimator,
+    TransformerMixin,
+    ClassifierMixin,
+    MetaEstimatorMixin,
+)
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import normalize
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_is_fitted, check_X_y, check_array, FLOAT_DTYPES
+from sklearn.utils.validation import (
+    check_is_fitted,
+    check_X_y,
+    check_array,
+    FLOAT_DTYPES,
+)
 
 from sklego.base import ProbabilisticClassifier
 from sklego.common import as_list, expanding_list, TrainOnlyTransformerMixin
@@ -19,7 +29,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     :param predict_func: The function called on the estimator when transforming e.g. (`predict`, `predict_proba`)
     """
 
-    def __init__(self, estimator, predict_func='predict'):
+    def __init__(self, estimator, predict_func="predict"):
         self.estimator = estimator
         self.predict_func = predict_func
 
@@ -37,7 +47,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
         Returns an array of shape `(X.shape[0], )`.
         """
-        check_is_fitted(self, 'estimator_')
+        check_is_fitted(self, "estimator_")
         return getattr(self.estimator_, self.predict_func)(X).reshape(-1, 1)
 
 
@@ -51,7 +61,10 @@ def constant_shrinkage(group_sizes: list, alpha: float) -> np.ndarray:
     """
     return np.array(
         [alpha ** (len(group_sizes) - 1)]
-        + [alpha ** (len(group_sizes) - 1 - i) * (1 - alpha) for i in range(1, len(group_sizes) - 1)]
+        + [
+            alpha ** (len(group_sizes) - 1 - i) * (1 - alpha)
+            for i in range(1, len(group_sizes) - 1)
+        ]
         + [(1 - alpha)]
     )
 
@@ -64,7 +77,9 @@ def relative_shrinkage(group_sizes: list) -> np.ndarray:
 def min_n_obs_shrinkage(group_sizes: list, min_n_obs) -> np.ndarray:
     """Use only the smallest group with a certain amount of observations"""
     if min_n_obs > max(group_sizes):
-        raise ValueError(f"There is no group with size greater than or equal to {min_n_obs}")
+        raise ValueError(
+            f"There is no group with size greater than or equal to {min_n_obs}"
+        )
 
     res = np.zeros(len(group_sizes))
     res[np.argmin(np.array(group_sizes) >= min_n_obs) - 1] = 1
@@ -94,8 +109,15 @@ class GroupedEstimator(BaseEstimator):
                              parameter is not found during `.predict()`
     :param **shrinkage_kwargs: keyword arguments to the shrinkage function
     """
+
     def __init__(
-            self, estimator, groups, value_columns=None, shrinkage=None, use_global_model=True, **shrinkage_kwargs
+        self,
+        estimator,
+        groups,
+        value_columns=None,
+        shrinkage=None,
+        use_global_model=True,
+        **shrinkage_kwargs,
     ):
         self.estimator = estimator
         self.groups = groups
@@ -116,13 +138,17 @@ class GroupedEstimator(BaseEstimator):
             try:
                 self.shrinkage_function_ = shrink_options[self.shrinkage]
             except KeyError:
-                raise ValueError(f"The specified shrinkage function {self.shrinkage} is not valid, "
-                                 f"choose from {list(shrink_options.keys())} or supply a callable.")
+                raise ValueError(
+                    f"The specified shrinkage function {self.shrinkage} is not valid, "
+                    f"choose from {list(shrink_options.keys())} or supply a callable."
+                )
         elif callable(self.shrinkage):
             self.__check_shrinkage_func()
             self.shrinkage_function_ = self.shrinkage
         else:
-            raise ValueError(f"Invalid shrinkage specified. Should be either None (no shrinkage), str or callable.")
+            raise ValueError(
+                f"Invalid shrinkage specified. Should be either None (no shrinkage), str or callable."
+            )
 
     def __check_shrinkage_func(self):
         """Validate the shrinkage function if a function is specified"""
@@ -131,25 +157,33 @@ class GroupedEstimator(BaseEstimator):
         try:
             result = self.shrinkage(group_lengths)
         except Exception as e:
-            raise ValueError(f"Caught an exception while checking the shrinkage function: {str(e)}") from e
+            raise ValueError(
+                f"Caught an exception while checking the shrinkage function: {str(e)}"
+            ) from e
         else:
             if not isinstance(result, np.ndarray):
-                raise ValueError(f"shrinkage_function({group_lengths}) should return an np.ndarray")
+                raise ValueError(
+                    f"shrinkage_function({group_lengths}) should return an np.ndarray"
+                )
             if result.shape != expected_shape:
-                raise ValueError(f"shrinkage_function({group_lengths}).shape should be {expected_shape}")
+                raise ValueError(
+                    f"shrinkage_function({group_lengths}).shape should be {expected_shape}"
+                )
 
     @staticmethod
     def __check_cols_exist(X, cols):
         """Check whether the specified grouping columns are in X"""
         if X.shape[1] == 0:
-            raise ValueError(f"0 feature(s) (shape=({X.shape[0]}, 0)) while a minimum of 1 is required.")
+            raise ValueError(
+                f"0 feature(s) (shape=({X.shape[0]}, 0)) while a minimum of 1 is required."
+            )
 
         # X has been converted to a DataFrame
         x_cols = set(X.columns)
         diff = set(as_list(cols)) - x_cols
 
         if len(diff) > 0:
-            raise ValueError(f'{diff} not in columns of X {x_cols}')
+            raise ValueError(f"{diff} not in columns of X {x_cols}")
 
     @staticmethod
     def __check_missing_and_inf(X):
@@ -165,8 +199,14 @@ class GroupedEstimator(BaseEstimator):
 
     def __validate(self, X, y=None):
         """Validate the input, used in both fit and predict"""
-        if self.shrinkage and len(as_list(self.groups)) == 1 and not self.use_global_model:
-            raise ValueError("Cannot do shrinkage with a single group if use_global_model is False")
+        if (
+            self.shrinkage
+            and len(as_list(self.groups)) == 1
+            and not self.use_global_model
+        ):
+            raise ValueError(
+                "Cannot do shrinkage with a single group if use_global_model is False"
+            )
 
         self.__check_cols_exist(X, self.value_colnames_)
         self.__check_cols_exist(X, self.group_colnames_)
@@ -191,7 +231,9 @@ class GroupedEstimator(BaseEstimator):
         group_indices = X.groupby(group_columns).indices
 
         grouped_estimations = {
-            group: clone(self.estimator).fit(X.loc[indices, value_columns], y.loc[indices])
+            group: clone(self.estimator).fit(
+                X.loc[indices, value_columns], y.loc[indices]
+            )
             for group, indices in group_indices.items()
         }
 
@@ -202,11 +244,18 @@ class GroupedEstimator(BaseEstimator):
         counts = X.groupby(self.group_colnames_).size()
 
         # Groups that are split on all
-        most_granular_groups = [grp for grp in self.groups_ if len(as_list(grp)) == len(self.group_colnames_)]
+        most_granular_groups = [
+            grp
+            for grp in self.groups_
+            if len(as_list(grp)) == len(self.group_colnames_)
+        ]
 
         # For each hierarchy level in each most granular group, get the number of observations
         hierarchical_counts = {
-            granular_group: [counts[tuple(subgroup)].sum() for subgroup in expanding_list(granular_group, tuple)]
+            granular_group: [
+                counts[tuple(subgroup)].sum()
+                for subgroup in expanding_list(granular_group, tuple)
+            ]
             for granular_group in most_granular_groups
         }
 
@@ -217,7 +266,9 @@ class GroupedEstimator(BaseEstimator):
         }
 
         # Make sure that the factors sum to one
-        shrinkage_factors = {group: value / value.sum() for group, value in shrinkage_factors.items()}
+        shrinkage_factors = {
+            group: value / value.sum() for group, value in shrinkage_factors.items()
+        }
 
         return shrinkage_factors
 
@@ -232,9 +283,19 @@ class GroupedEstimator(BaseEstimator):
 
         if y is not None:
             if isinstance(y, np.ndarray):
-                pred_col = 'the-column-that-i-want-to-predict-but-dont-have-the-name-for'
-                cols = pred_col if y.ndim == 1 else ["_".join([pred_col, i]) for i in range(y.shape[1])]
-                y = pd.Series(y, name=cols) if y.ndim == 1 else pd.DataFrame(y, columns=cols)
+                pred_col = (
+                    "the-column-that-i-want-to-predict-but-dont-have-the-name-for"
+                )
+                cols = (
+                    pred_col
+                    if y.ndim == 1
+                    else ["_".join([pred_col, i]) for i in range(y.shape[1])]
+                )
+                y = (
+                    pd.Series(y, name=cols)
+                    if y.ndim == 1
+                    else pd.DataFrame(y, columns=cols)
+                )
 
             return X, y
 
@@ -258,7 +319,9 @@ class GroupedEstimator(BaseEstimator):
         if self.value_columns is not None:
             self.value_colnames_ = [str(_) for _ in as_list(self.value_columns)]
         else:
-            self.value_colnames_ = [_ for _ in X.columns if _ not in self.group_colnames_]
+            self.value_colnames_ = [
+                _ for _ in X.columns if _ not in self.group_colnames_
+            ]
         self.__validate(X, y)
 
         # List of all hierarchical subsets of columns
@@ -275,10 +338,14 @@ class GroupedEstimator(BaseEstimator):
 
             for level_colnames in self.group_colnames_hierarchical_:
                 self.estimators_.update(
-                    self.__fit_grouped_estimator(X, y, self.value_colnames_, level_colnames)
+                    self.__fit_grouped_estimator(
+                        X, y, self.value_colnames_, level_colnames
+                    )
                 )
         else:
-            self.estimators_ = self.__fit_grouped_estimator(X, y, self.value_colnames_, self.group_colnames_)
+            self.estimators_ = self.__fit_grouped_estimator(
+                X, y, self.value_colnames_, self.group_colnames_
+            )
 
         self.groups_ = as_list(self.estimators_.keys())
 
@@ -291,32 +358,41 @@ class GroupedEstimator(BaseEstimator):
         """Make predictions for all groups"""
         try:
             return (
-                X
-                .groupby(group_colnames, as_index=False)
-                .apply(lambda d: pd.DataFrame(
-                    self.estimators_.get(d.name, self.fallback_).predict(d[self.value_colnames_]), index=d.index))
-                .values
-                .squeeze()
+                X.groupby(group_colnames, as_index=False)
+                .apply(
+                    lambda d: pd.DataFrame(
+                        self.estimators_.get(d.name, self.fallback_).predict(
+                            d[self.value_colnames_]
+                        ),
+                        index=d.index,
+                    )
+                )
+                .values.squeeze()
             )
         except AttributeError:
             # Handle new groups
-            culprits = (
-                set(X[self.group_colnames_].agg(func=tuple, axis=1))
-                - set(self.estimators_.keys())
+            culprits = set(X[self.group_colnames_].agg(func=tuple, axis=1)) - set(
+                self.estimators_.keys()
             )
 
             if self.shrinkage is not None and self.use_global_model:
                 # Remove the global group from the culprits because the user did not specify
                 culprits = {culprit[1:] for culprit in culprits}
 
-            raise ValueError(f"found a group(s) {culprits} in `.predict` that was not in `.fit`")
+            raise ValueError(
+                f"found a group(s) {culprits} in `.predict` that was not in `.fit`"
+            )
 
     def __predict_shrinkage_groups(self, X):
         """Make predictions for all shrinkage groups"""
         # DataFrame with predictions for each hierarchy level, per row. Missing groups errors are thrown here.
-        hierarchical_predictions = pd.concat([
-            pd.Series(self.__predict_group(X, level_columns)) for level_columns in self.group_colnames_hierarchical_
-        ], axis=1)
+        hierarchical_predictions = pd.concat(
+            [
+                pd.Series(self.__predict_group(X, level_columns))
+                for level_columns in self.group_colnames_hierarchical_
+            ],
+            axis=1,
+        )
 
         # This is a Series with values the tuples of hierarchical grouping
         prediction_groups = X[self.group_colnames_].agg(func=tuple, axis=1)
@@ -339,7 +415,16 @@ class GroupedEstimator(BaseEstimator):
         X = self.__prepare_input_data(X)
         self.__validate(X)
 
-        check_is_fitted(self, ['estimators_', 'groups_', 'group_colnames_', 'value_colnames_', 'fallback_'])
+        check_is_fitted(
+            self,
+            [
+                "estimators_",
+                "groups_",
+                "group_colnames_",
+                "value_colnames_",
+                "fallback_",
+            ],
+        )
 
         if self.shrinkage is None:
             return self.__predict_group(X, group_colnames=self.group_colnames_)
@@ -355,6 +440,7 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
     :param refit: If True, fits the estimator during pipeline.fit().
 
     """
+
     def __init__(self, outlier_detector, refit=True):
         self.outlier_detector = outlier_detector
         self.refit = refit
@@ -368,7 +454,7 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
         return self
 
     def transform_train(self, X):
-        check_is_fitted(self, 'estimator_')
+        check_is_fitted(self, "estimator_")
         predictions = self.estimator_.predict(X)
         check_array(predictions, estimator=self.outlier_detector, ensure_2d=False)
         return X[predictions != -1]
@@ -393,7 +479,9 @@ class DecayEstimator(BaseEstimator):
         self.func = decay_func
 
     def _is_classifier(self):
-        return any(['ClassifierMixin' in p.__name__ for p in type(self.model).__bases__])
+        return any(
+            ["ClassifierMixin" in p.__name__ for p in type(self.model).__bases__]
+        )
 
     def fit(self, X, y):
         """
@@ -410,7 +498,9 @@ class DecayEstimator(BaseEstimator):
             self.estimator_.fit(X, y, sample_weight=self.weights_)
         except TypeError as e:
             if "sample_weight" in str(e):
-                raise TypeError(f"Model {type(self.model).__name__}.fit() does not have 'sample_weight'")
+                raise TypeError(
+                    f"Model {type(self.model).__name__}.fit() does not have 'sample_weight'"
+                )
         if self._is_classifier():
             self.classes_ = self.estimator_.classes_
         return self
@@ -423,8 +513,8 @@ class DecayEstimator(BaseEstimator):
         :return: array, shape=(n_samples,) the predicted data
         """
         if self._is_classifier():
-            check_is_fitted(self, ['classes_'])
-        check_is_fitted(self, ['weights_', 'estimator_'])
+            check_is_fitted(self, ["classes_"])
+        check_is_fitted(self, ["weights_", "estimator_"])
         return self.estimator_.predict(X)
 
     def score(self, X, y):
@@ -453,11 +543,15 @@ class Thresholder(BaseEstimator, ClassifierMixin):
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         self.estimator_ = clone(self.model)
         if not isinstance(self.estimator_, ProbabilisticClassifier):
-            raise ValueError("The Thresholder meta model only works on classifcation models with .predict_proba.")
+            raise ValueError(
+                "The Thresholder meta model only works on classifcation models with .predict_proba."
+            )
         self.estimator_.fit(X, y)
         self.classes_ = self.estimator_.classes_
         if len(self.classes_) != 2:
-            raise ValueError("The Thresholder meta model only works on models with two classes.")
+            raise ValueError(
+                "The Thresholder meta model only works on models with two classes."
+            )
         return self
 
     def predict(self, X):
@@ -467,12 +561,12 @@ class Thresholder(BaseEstimator, ClassifierMixin):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
-        check_is_fitted(self, ['classes_', 'estimator_'])
+        check_is_fitted(self, ["classes_", "estimator_"])
         predicate = self.estimator_.predict_proba(X)[:, 1] > self.threshold
         return np.where(predicate, self.classes_[1], self.classes_[0])
 
     def predict_proba(self, X):
-        check_is_fitted(self, ['classes_', 'estimator_'])
+        check_is_fitted(self, ["classes_", "estimator_"])
         return self.estimator_.predict_proba(X)
 
     def score(self, X, y):
@@ -495,6 +589,7 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     :param alpha: a hyperparameter between 0 and 1, determines how much to apply smoothing
     :param cfm_smooth: a smoothing parameter for the confusion matrices to ensure zeros don't exist
     """
+
     def __init__(self, estimator, alpha: float = 0.5, cfm_smooth=0):
         self.estimator = estimator
         self.alpha = alpha
@@ -510,7 +605,9 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         """
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
         if not isinstance(self.estimator, ProbabilisticClassifier):
-            raise ValueError("The ConfusionBalancer meta model only works on classifcation models with .predict_proba.")
+            raise ValueError(
+                "The ConfusionBalancer meta model only works on classifcation models with .predict_proba."
+            )
         self.estimator.fit(X, y)
         self.classes_ = unique_labels(y)
         cfm = confusion_matrix(y, self.estimator.predict(X)).T + self.cfm_smooth
@@ -535,7 +632,7 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
-        check_is_fitted(self, ['cfm_', 'classes_'])
+        check_is_fitted(self, ["cfm_", "classes_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
@@ -564,7 +661,8 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     confusion matrix (obtained from the train data used in `fit()`). In case of `both` (default), the the inner
     estimator's `predict_proba()` results are multiplied by the posterior probabilities.
     """
-    def __init__(self, estimator, prior, evidence='both'):
+
+    def __init__(self, estimator, prior, evidence="both"):
         self.estimator = estimator
         self.prior = prior
         self.evidence = evidence
@@ -573,15 +671,22 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         return cfm[given_class, predicted_class] / cfm[given_class, :].sum()
 
     def _evidence(self, predicted_class, cfm):
-        return sum([
-            self._likelihood(predicted_class, given_class, cfm) * self.prior[self.classes_[given_class]]
-            for given_class in range(cfm.shape[0])
-        ])
+        return sum(
+            [
+                self._likelihood(predicted_class, given_class, cfm)
+                * self.prior[self.classes_[given_class]]
+                for given_class in range(cfm.shape[0])
+            ]
+        )
 
     def _posterior(self, y, y_hat, cfm):
         y_hat_evidence = self._evidence(y_hat, cfm)
         return (
-            (self._likelihood(y_hat, y, cfm) * self.prior[self.classes_[y]] / y_hat_evidence)
+            (
+                self._likelihood(y_hat, y, cfm)
+                * self.prior[self.classes_[y]]
+                / y_hat_evidence
+            )
             if y_hat_evidence > 0
             else self.prior[y]  # in case confusion matrix has all-zero column for y_hat
         )
@@ -599,35 +704,46 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         """
         if not isinstance(self.estimator, ClassifierMixin):
             raise ValueError(
-                'Invalid inner estimator: the SubjectiveClassifier meta model only works on classification models'
+                "Invalid inner estimator: the SubjectiveClassifier meta model only works on classification models"
             )
 
         if not np.isclose(sum(self.prior.values()), 1):
-            raise ValueError('Invalid prior: the prior probabilities of all classes should sum to 1')
+            raise ValueError(
+                "Invalid prior: the prior probabilities of all classes should sum to 1"
+            )
 
-        valid_evidence_types = ['predict_proba', 'confusion_matrix', 'both']
+        valid_evidence_types = ["predict_proba", "confusion_matrix", "both"]
         if self.evidence not in valid_evidence_types:
-            raise ValueError(f'Invalid evidence: the provided evidence should be one of {valid_evidence_types}')
+            raise ValueError(
+                f"Invalid evidence: the provided evidence should be one of {valid_evidence_types}"
+            )
 
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
         if set(y) - set(self.prior.keys()):
-            raise ValueError(f'Training data is inconsistent with prior: no prior defined for classes '
-                             f'{set(y) - set(self.prior.keys())}')
+            raise ValueError(
+                f"Training data is inconsistent with prior: no prior defined for classes "
+                f"{set(y) - set(self.prior.keys())}"
+            )
         self.estimator.fit(X, y)
         cfm = confusion_matrix(y, self.estimator.predict(X))
-        self.posterior_matrix_ = np.array([
-            [self._posterior(y, y_hat, cfm) for y_hat in range(cfm.shape[0])] for y in range(cfm.shape[0])
-        ])
+        self.posterior_matrix_ = np.array(
+            [
+                [self._posterior(y, y_hat, cfm) for y_hat in range(cfm.shape[0])]
+                for y in range(cfm.shape[0])
+            ]
+        )
         return self
 
     @staticmethod
     def _weighted_proba(weights, y_hat_probas):
-        return normalize(weights * y_hat_probas, norm='l1')
+        return normalize(weights * y_hat_probas, norm="l1")
 
     @staticmethod
     def _to_discrete(y_hat_probas):
         y_hat_discrete = np.zeros(y_hat_probas.shape)
-        y_hat_discrete[np.arange(y_hat_probas.shape[0]), y_hat_probas.argmax(axis=1)] = 1
+        y_hat_discrete[
+            np.arange(y_hat_probas.shape[0]), y_hat_probas.argmax(axis=1)
+        ] = 1
         return y_hat_discrete
 
     def predict_proba(self, X):
@@ -637,16 +753,20 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples, n_classes) the predicted data
         """
-        check_is_fitted(self, ['posterior_matrix_'])
+        check_is_fitted(self, ["posterior_matrix_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         y_hats = self.estimator.predict_proba(X)  # these are ignorant of the prior
 
-        if self.evidence == 'predict_proba':
+        if self.evidence == "predict_proba":
             prior_weights = np.array([self.prior[klass] for klass in self.classes_])
             return self._weighted_proba(prior_weights, y_hats)
         else:
             posterior_probas = self._to_discrete(y_hats) @ self.posterior_matrix_.T
-            return self._weighted_proba(posterior_probas, y_hats) if self.evidence == 'both' else posterior_probas
+            return (
+                self._weighted_proba(posterior_probas, y_hats)
+                if self.evidence == "both"
+                else posterior_probas
+            )
 
     def predict(self, X):
         """
@@ -655,7 +775,7 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples, n_classes) the predicted data
         """
-        check_is_fitted(self, ['posterior_matrix_'])
+        check_is_fitted(self, ["posterior_matrix_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
