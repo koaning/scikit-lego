@@ -1,6 +1,5 @@
 import pytest
 import numpy as np
-from cvxpy import SolverError
 from sklearn.linear_model import LogisticRegression
 
 from sklego.common import flatten
