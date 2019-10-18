@@ -541,6 +541,29 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
 
 
 class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
+    """
+    Corrects predictions of the inner classifier by taking into account a (subjective) prior distribution of the
+    classes.
+
+    This can be useful when there is a difference in class distribution between the training data set and
+    the real world. Using the confusion matrix of the inner classifier and the prior, the posterior probability for a
+    class, given the prediction of the inner classifier, can be computed. The background for this posterior estimation
+    is given `in this article <https://lucdemortier.github.io/articles/16/PerformanceMetrics>_`.
+
+    Based on the `evidence` attribute, this meta estimator's predictions are based on simple weighing of the inner
+    estimator's `predict_proba()` results, the posterior probabilities based on the confusion matrix, or a combination
+    of the two approaches.
+
+    :param estimator: An sklearn-compatible classifier estimator
+    :param prior: A dict of class->frequency representing the prior (a.k.a. subjective real-world) class
+    distribution. The class frequencies should sum to 1.
+    :param evidence: A string indicating which evidence should be used to correct the inner estimator's predictions.
+    Should be one of 'predict_proba', 'confusion_matrix', or 'both' (default). If `predict_proba`, the inner estimator's
+    `predict_proba()` results are multiplied by the prior distribution. In case of `confusion_matrix`, the inner
+    estimator's discrete predictions are converted to posterior probabilities using the prior and the inner estimator's
+    confusion matrix (obtained from the train data used in `fit()`). In case of `both` (default), the the inner
+    estimator's `predict_proba()` results are multiplied by the posterior probabilities.
+    """
     def __init__(self, estimator, prior, evidence='both'):
         self.estimator = estimator
         self.prior = prior
@@ -563,6 +586,16 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             else self.prior[y]  # in case confusion matrix has all-zero column for y_hat
         )
 
+    """
+    Fits the inner estimator based on the data.
+    
+    Raises a `ValueError` if the `y` vector contains classes that are not specified in the prior, or if the prior is
+    not a valid probability distribution (i.e. does not sum to 1).
+
+    :param X: array-like, shape=(n_columns, n_samples,) training data.
+    :param y: array-like, shape=(n_samples,) training data.
+    :return: Returns an instance of self.
+    """
     def fit(self, X, y):
         if not isinstance(self.estimator, ClassifierMixin):
             raise ValueError(
@@ -597,6 +630,12 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         y_hat_discrete[np.arange(y_hat_probas.shape[0]), y_hat_probas.argmax(axis=1)] = 1
         return y_hat_discrete
 
+    """
+    Returns probability distribution of the class, based on the provided data.
+
+    :param X: array-like, shape=(n_columns, n_samples,) training data.
+    :return: array, shape=(n_samples, n_classes) the predicted data
+    """
     def predict_proba(self, X):
         check_is_fitted(self, ['posterior_matrix_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
@@ -609,6 +648,12 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             posterior_probas = self._to_discrete(y_hats) @ self.posterior_matrix_.T
             return self._weighted_proba(posterior_probas, y_hats) if self.evidence == 'both' else posterior_probas
 
+    """
+    Returns predicted class, based on the provided data.
+
+    :param X: array-like, shape=(n_columns, n_samples,) training data.
+    :return: array, shape=(n_samples, n_classes) the predicted data
+    """
     def predict(self, X):
         check_is_fitted(self, ['posterior_matrix_'])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
