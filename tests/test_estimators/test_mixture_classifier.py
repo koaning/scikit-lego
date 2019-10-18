@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from sklego.common import flatten
-from sklego.mixture import GMMClassifier,BayesianGMMClassifier
+from sklego.mixture import GMMClassifier, BayesianGMMClassifier
 from sklego.testing import check_shape_remains_same_classifier
 from tests.conftest import nonmeta_checks, general_checks, estimator_checks
 

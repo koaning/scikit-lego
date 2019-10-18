@@ -45,4 +45,3 @@ def test_obvious_usecase(k):
     y = np.concatenate([np.zeros(100), np.ones(100)])
     assert (GaussianMixtureNB(n_components=k).fit(X, y).predict(X) == y).all()
     assert (BayesianGaussianMixtureNB(n_components=k).fit(X, y).predict(X) == y).all()
-
