@@ -113,6 +113,6 @@ def test_predict_proba(mocker, evidence_type, expected_probas):
 )
 def test_params_failure_conditions(inner_estimator, prior, evidence, expected_error_msg):
     with pytest.raises(ValueError) as exc:
-        SubjectiveClassifier(inner_estimator, prior, evidence)
+        SubjectiveClassifier(inner_estimator, prior, evidence).fit(np.zeros((2, 2)), np.zeros(2))
 
     assert str(exc.value).startswith(expected_error_msg)
