@@ -36,16 +36,14 @@ def _test_same(dataset):
     fair = EqualOpportunityClassifier(
         covariance_threshold=None, sensitive_cols=sensitive_cols, penalty="none", positive_target=True,
     )
-    try:
-        fair.fit(X, y)
-    except SolverError:
-        pass
-    else:
-        lr.fit(X_without_sens, y)
-        normal_pred = lr.predict_proba(X_without_sens)
-        fair_pred = fair.predict_proba(X)
-        np.testing.assert_almost_equal(normal_pred, fair_pred, decimal=2)
-        assert np.sum(lr.predict(X_without_sens) != fair.predict(X)) / len(X) < 0.01
+
+    fair.fit(X, y)
+    lr.fit(X_without_sens, y)
+
+    normal_pred = lr.predict_proba(X_without_sens)
+    fair_pred = fair.predict_proba(X)
+    np.testing.assert_almost_equal(normal_pred, fair_pred, decimal=2)
+    assert np.sum(lr.predict(X_without_sens) != fair.predict(X)) / len(X) < 0.01
 
 
 def test_same_logistic(random_xy_dataset_clf):
