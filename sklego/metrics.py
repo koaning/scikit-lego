@@ -1,6 +1,8 @@
 import numpy as np
 import warnings
 
+from typing import Callable
+
 
 def correlation_score(column):
     """
@@ -152,3 +154,36 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
         return score if not np.isnan(score) else 1
 
     return impl
+
+
+def subset_metric(subset_picker: Callable, metric: Callable):
+    r"""
+    Returns a method that applies the passed metric only to a specific subset. The subset picker
+    is a method that is passed the corresponding X and y_true and returns a one-dimensional
+    boolean vector where every element corresponds to a row in the data. Only the elements
+    with a True value are taken into account for the passed metric, representing a filter.
+
+    This allows users to have an easy approach to measuring metrics over different slices of
+    the population which can give insights into the model performance, either specifically for
+    fairness or in general.
+
+    Usage:
+    `subset_metric(lambda X, y_true: subset_method, metric_method)(clf, X, y)`
+
+    :param subset_picker: Method that returns a boolean mask that is used for slicing the samples
+    :param metric: The metric that needs to be applied to the subset
+    :return: a function that calculates the passed metric for the subset
+    """
+    def sliced_metric(estimator, X, y_true=None):
+        mask = subset_picker(X, y_true)
+        if isinstance(mask, np.ndarray):
+            if len(mask.shape) > 1:
+                raise ValueError("`subset_picker` should return 1-dimensional numpy array or Pandas series")
+        if np.sum(mask) == 0:
+            warnings.warn(f"No samples in subset, returning NaN", RuntimeWarning)
+            return np.nan
+        X = X[mask]
+        y_pred = estimator.predict(X)
+        y_true = y_true[mask]
+        return metric(y_true, y_pred)
+    return sliced_metric

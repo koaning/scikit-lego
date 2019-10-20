@@ -123,6 +123,16 @@ def sensitive_multiclass_classification_dataset():
     return df[['x1', 'x2']], df['y']
 
 
+@pytest.fixture
+def slicing_classification_dataset():
+    df = pd.DataFrame({
+        'x1': [1, 1, 1, 1, 0, 0, 0, 0],
+        'x2': [2, 2, 3, 3, 4, 4, 5, 5],
+        'y': [0, 0, 1, 1, 0, 1, 0, 1]
+    })
+    return df[['x1', 'x2']], df['y']
+
+
 def id_func(param):
     """Returns the repr of an object for usage in pytest parametrize"""
     return repr(param)
