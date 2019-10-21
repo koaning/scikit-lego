@@ -156,23 +156,24 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
     return impl
 
 
-def subset_metric(subset_picker: Callable, metric: Callable):
+def subset_score(subset_picker: Callable, score: Callable, **kwargs):
     r"""
-    Returns a method that applies the passed metric only to a specific subset. The subset picker
+    Returns a method that applies the passed score only to a specific subset. The subset picker
     is a method that is passed the corresponding X and y_true and returns a one-dimensional
     boolean vector where every element corresponds to a row in the data. Only the elements
-    with a True value are taken into account for the passed metric, representing a filter.
+    with a True value are taken into account for the passed score, representing a filter.
 
     This allows users to have an easy approach to measuring metrics over different slices of
     the population which can give insights into the model performance, either specifically for
     fairness or in general.
 
     Usage:
-    `subset_metric(lambda X, y_true: subset_method, metric_method)(clf, X, y)`
+    `subset_score(lambda X, y_true: X['column'] == 'A', accuracy_score)(clf, X, y)`
 
     :param subset_picker: Method that returns a boolean mask that is used for slicing the samples
-    :param metric: The metric that needs to be applied to the subset
-    :return: a function that calculates the passed metric for the subset
+    :param score: The score that needs to be applied to the subset
+    :param kwargs: Additional keyword arguments to pass to score
+    :return: a function that calculates the passed score for the subset
     """
     def sliced_metric(estimator, X, y_true=None):
         mask = subset_picker(X, y_true)
@@ -185,5 +186,5 @@ def subset_metric(subset_picker: Callable, metric: Callable):
         X = X[mask]
         y_pred = estimator.predict(X)
         y_true = y_true[mask]
-        return metric(y_true, y_pred)
+        return score(y_true, y_pred, **kwargs)
     return sliced_metric
