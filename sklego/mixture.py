@@ -234,8 +234,7 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
 
     def predict(self, X):
         """
-        Predict if a point is an outlier. If the output is -1 then
-        the model does not think it is an outlier.
+        Predict if a point is an outlier.
 
         :param X: array-like, shape=(n_columns, n_samples, ) training data.
         :return: array, shape=(n_samples,) the predicted data. 1 for inliers, -1 for outliers.
@@ -356,9 +355,7 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
 
     def predict(self, X):
         """
-        Predict if a point is an outlier. If the output is -1 then
-        the model does not think it is an outlier.
-
+        Predict if a point is an outlier.
         :param X: array-like, shape=(n_columns, n_samples, ) training data.
         :return: array, shape=(n_samples,) the predicted data. 1 for inliers, -1 for outliers.
         """
