@@ -100,7 +100,6 @@ def random_xy_dataset_multiclf(request):
     np.random.seed(42)
     X = np.random.normal(0, 2, (n, k)).astype(np_type)
     y = pd.cut(np.random.normal(0, 2, (n,)), 3).codes
-
     return X, y
 
 
