@@ -6,10 +6,6 @@ from sklearn.utils import check_array
 
 from sklego.base import Clusterer
 
-import matplotlib.pyplot as plt
-from pandas.plotting import register_matplotlib_converters
-register_matplotlib_converters()
-
 
 class TimeGapSplit:
     """
@@ -100,33 +96,13 @@ class TimeGapSplit:
 
         return sum(1 for x in self.split(X, y, groups))
 
-    def plot(self, X):
-        """
-        Plot all the folds on time axis
-        :param pandas.DataFrame X:
-        """
-        X_index_df = self.join_date_and_x(X)
-
-        plt.figure(figsize=(16, 4))
-        for i, split in enumerate(self.split(X)):
-            x_idx, y_idx = split
-            x_dates = X_index_df.iloc[x_idx]['__date__'].unique()
-            y_dates = X_index_df.iloc[y_idx]['__date__'].unique()
-            plt.plot(x_dates, i*np.ones(x_dates.shape), c="steelblue")
-            plt.plot(y_dates, i*np.ones(y_dates.shape), c="orange")
-
-        plt.legend(('training', 'validation'), loc='upper left')
-        plt.ylabel('Fold id')
-        plt.axvline(x=X_index_df['__date__'].min(), color='gray', label='x')
-        plt.axvline(x=X_index_df['__date__'].max(), color='gray', label='d')
-
     def summary(self, X):
         """
         Describe all folds
         :param pandas.DataFrame X:
         :returns: ``pd.DataFrame`` summary of all folds
         """
-        summary = pd.DataFrame()
+        summary = []
         X_index_df = self.join_date_and_x(X)
 
         def get_split_info(X, indicies, j, part, summary):
@@ -141,7 +117,7 @@ class TimeGapSplit:
                 'Unique days': len(dates.unique()),
                 'nbr samples': len(indicies),
             }, name=(j, part))
-            summary = summary.append(s)
+            summary.append(s)
             return summary
 
         j = 0
@@ -150,7 +126,7 @@ class TimeGapSplit:
             summary = get_split_info(X, i[1], j, "valid", summary)
             j = j + 1
 
-        return summary
+        return pd.DataFrame(summary)
 
 
 class KlusterFoldValidation:

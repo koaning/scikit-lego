@@ -88,13 +88,13 @@ def test_timegapsplit_with_gridsearch():
     assert best_C
 
 
-def test_timegapsplit_plot_print():
+def test_timegapsplit_summary():
 
     cv = TimeGapSplit(date_serie=df['date'],
                       train_duration=timedelta(days=5),
                       valid_duration=timedelta(days=3),
                       gap_duration=timedelta(days=0))
 
-    cv.plot(X_train)
+    summary = cv.summary(X_train)
 
-    cv.summary(X_train)
+    assert summary.shape == (12, 5)
