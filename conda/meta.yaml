@@ -1,0 +1,45 @@
+{% set name = "scikit-lego" %}
+{% set version = "0.3.3" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  url: https://github.com/koaning/{{ name }}/archive/{{ version }}.tar.gz
+  sha256: "af41a0803198434ca2ba40dfe726b9c784ced1f02f50a9d3e0a840bc3c08fec8"
+
+build:
+  number: 0
+  skip: True  # [py<35]
+  script: "{{ PYTHON }} -m pip install . -vv "
+
+requirements:
+  host:
+    - pip
+    - python
+  run:
+    - python
+    - numpy >=1.15.4
+    - scipy >=1.2.0
+    - scikit-learn >=0.20.2
+    - pandas >=0.23.4
+    - patsy >=0.5.1
+    - autograd >=1.2
+    - cvxpy >=1.0.24
+
+test:
+  imports:
+    - sklego
+
+about:
+  home: "https://github.com/koaning/scikit-lego"
+  license: "MIT"
+  license_family: "MIT"
+  license_file: "LICENSE"
+  summary: "missing blocks for sklearn pipelines"
+  doc_url: "https://scikit-lego.readthedocs.io"
+
+extra:
+  recipe-maintainers:
+    - maxibor
