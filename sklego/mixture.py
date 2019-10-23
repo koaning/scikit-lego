@@ -226,7 +226,7 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
 
-        return self.gmm_.score_samples(X) * -1
+        return -self.gmm_.score_samples(X)
 
     def decision_function(self, X):
         # We subtract self.offset_ to make 0 be the threshold value for being an outlier:
@@ -234,14 +234,15 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
 
     def predict(self, X):
         """
-        Predict if a point is an outlier. If the output is 0 then
+        Predict if a point is an outlier. If the output is -1 then
         the model does not think it is an outlier.
 
         :param X: array-like, shape=(n_columns, n_samples, ) training data.
         :return: array, shape=(n_samples,) the predicted data. 1 for inliers, -1 for outliers.
         """
         predictions = (self.decision_function(X) >= 0).astype(np.int)
-        predictions[predictions == 0] = -1
+        predictions[predictions == 1] = -1
+        predictions[predictions == 0] = 1
         return predictions
 
 
@@ -355,12 +356,13 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
 
     def predict(self, X):
         """
-        Predict if a point is an outlier. If the output is 0 then
+        Predict if a point is an outlier. If the output is -1 then
         the model does not think it is an outlier.
 
         :param X: array-like, shape=(n_columns, n_samples, ) training data.
         :return: array, shape=(n_samples,) the predicted data. 1 for inliers, -1 for outliers.
         """
         predictions = (self.decision_function(X) >= 0).astype(np.int)
-        predictions[predictions == 0] = -1
+        predictions[predictions == 1] = -1
+        predictions[predictions == 0] = 1
         return predictions
