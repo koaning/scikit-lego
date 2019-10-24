@@ -21,7 +21,7 @@ y_train = train['y']
 
 
 def test_timegapsplit():
-    cv = TimeGapSplit(df=df, date_col='date',
+    cv = TimeGapSplit(date_serie=df['date'],
                       train_duration=timedelta(days=5),
                       valid_duration=timedelta(days=3),
                       gap_duration=timedelta(days=0))
@@ -43,17 +43,17 @@ def test_timegapsplit():
 
 def test_timegapsplit_too_big_gap():
     try:
-        TimeGapSplit(df=df, date_col='date',
+        TimeGapSplit(date_serie=df['date'],
                      train_duration=timedelta(days=5),
                      valid_duration=timedelta(days=3),
                      gap_duration=timedelta(days=5))
-    except AssertionError:
+    except ValueError:
         print("Successfully failed")
 
 
 def test_timegapsplit_with_a_gap():
     gap_duration = timedelta(days=2)
-    cv_gap = TimeGapSplit(df=df, date_col='date',
+    cv_gap = TimeGapSplit(date_serie=df['date'],
                           train_duration=timedelta(days=5),
                           valid_duration=timedelta(days=3),
                           gap_duration=gap_duration)
@@ -70,7 +70,7 @@ def test_timegapsplit_with_a_gap():
 
 def test_timegapsplit_with_gridsearch():
 
-    cv = TimeGapSplit(df=df, date_col='date',
+    cv = TimeGapSplit(date_serie=df['date'],
                       train_duration=timedelta(days=5),
                       valid_duration=timedelta(days=3),
                       gap_duration=timedelta(days=0))
@@ -86,3 +86,15 @@ def test_timegapsplit_with_gridsearch():
     best_C = grid.best_estimator_.get_params()['reg__alpha']
 
     assert best_C
+
+
+def test_timegapsplit_summary():
+
+    cv = TimeGapSplit(date_serie=df['date'],
+                      train_duration=timedelta(days=5),
+                      valid_duration=timedelta(days=3),
+                      gap_duration=timedelta(days=0))
+
+    summary = cv.summary(X_train)
+
+    assert summary.shape == (12, 5)
