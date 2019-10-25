@@ -22,6 +22,12 @@ Install `scikit-lego` via pip with
 pip install scikit-lego
 ```
 
+Via [conda](https://conda.io/projects/conda/en/latest/) with
+
+```bash
+conda install -c conda-forge scikit-lego
+```
+
 Alternatively, to edit and contribute you can fork/clone and run:
 
 ```bash

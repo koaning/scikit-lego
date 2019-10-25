@@ -12,6 +12,12 @@ Install **scikit-lego** via pip with
 
    pip install scikit-lego
 
+Via conda with
+
+.. code-block:: bash
+
+   conda install -c conda-forge scikit-lego
+
 Alternatively you can fork/clone and run:
 
 .. code-block:: bash
