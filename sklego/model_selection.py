@@ -9,40 +9,53 @@ from sklego.base import Clusterer
 
 class TimeGapSplit:
     """
-    Time Series cross-validator
-    ---------------------------
     Provides train/test indices to split time series data samples.
+
     This cross-validation object is a variation of TimeSeriesSplit with the following differences:
-    1. The splits are made based on datetime duration, instead of number of rows.
-    2. The user specifies the training and the validation durations
-    3. The user can specify a 'gap' duration that is omitted from the end part of the training split
 
-    Those 3 parameters can be used to really replicate how the model
-    is going to be used in production in batch learning. i.e. you can fix:
-    1. The historical training data
-    2. The retraining frequency
-    3. The period of the forward looking window necessary to create the target.
+    - The splits are made based on datetime duration, instead of number of rows.
+    - The user specifies the training and the validation durations
+    - The user can specify a 'gap' duration that is omitted from the end part of the training split
 
-    This period at the end of your training fold is dropped due to lack of recent data to create your target.
+    The 3 duration parameters can be used to really replicate how the model
+    is going to be used in production in batch learning.
+
     Each validation fold doesn't overlap. The entire 'window' moves by 1 valid_duration until there is not enough data.
     The number of folds is automatically defined that way.
-    :param pandas.DataFrame df: DataFrame that should have all the indices of X used in split()
-    :param str date_col: Name of the column of datetime in the df
-    :param datetime.timedelta train_duration: historical training data
-    :param datetime.timedelta valid_duration: retraining frequency
-    :param datetime.timedelta gap_duration: forward looking window of the target
+
+    :param pandas.Series date_serie: Serie with the date, that should have all the indices of X used in split()
+    :param datetime.timedelta train_duration: historical training data.
+    :param datetime.timedelta valid_duration: retraining period.
+    :param datetime.timedelta gap_duration: forward looking window of the target.
+        The period of the forward looking window necessary to create your target variable.
+        This period is dropped at the end of your training folds due to lack of recent data.
+        In production you would have not been able to create the target for that period, and you would have drop it from
+        the training data.
     """
 
-    def __init__(self, df, date_col, train_duration, valid_duration, gap_duration=timedelta(0)):
+    def __init__(self, date_serie, train_duration, valid_duration, gap_duration=timedelta(0)):
         if train_duration <= gap_duration:
-            raise AssertionError("gap_duration is longer than train_duration, it should be shorter.")
+            raise ValueError("gap_duration is longer than train_duration, it should be shorter.")
 
-        df[date_col] = pd.to_datetime(df[date_col])
-        self.df = df
-        self.date_col = date_col
+        if not date_serie.index.is_unique:
+            raise ValueError("date_serie doesn't have a unique index")
+
+        self.date_serie = date_serie.copy()
+        self.date_serie = self.date_serie.rename('__date__')
         self.train_duration = train_duration
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
+
+    def join_date_and_x(self, X):
+        """
+        Make a DataFrame indexed by the pandas index (the same as date_series) with date column joined with that index
+        and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn
+        :param pandas.DataFrame X:
+        """
+        X_index_df = pd.DataFrame(range(len(X)), columns=['np_index'], index=X.index)
+        X_index_df = X_index_df.join(self.date_serie)
+
+        return X_index_df
 
     def split(self, X, y=None, groups=None):
         """
@@ -51,31 +64,69 @@ class TimeGapSplit:
         :param y: Always ignored, exists for compatibility
         :param groups: Always ignored, exists for compatibility
         """
-        date_series = self.df.loc[X.index][self.date_col]
-        date_series = date_series.sort_values(ascending=True)
-        date_min = date_series.min()
-        date_max = date_series.max()
+
+        X_index_df = self.join_date_and_x(X)
+        X_index_df = X_index_df.sort_values('__date__', ascending=True)
+
+        if len(X) != len(X_index_df):
+            raise AssertionError("X and X_index_df are not the same lenght, "
+                                 "there must be some index missing in 'self.date_serie'")
+
+        date_min = X_index_df['__date__'].min()
+        date_max = X_index_df['__date__'].max()
 
         current_date = date_min
         while True:
             if current_date + self.train_duration + self.valid_duration > date_max:
                 break
 
-            train_i = date_series[
-                (date_series >= current_date) &
-                (date_series < current_date + self.train_duration - self.gap_duration)].index.values
-            valid_i = date_series[
-                (date_series >= current_date + self.train_duration) &
-                (date_series < current_date + self.train_duration + self.valid_duration)].index.values
+            X_train_df = X_index_df[
+                (X_index_df['__date__'] >= current_date) &
+                (X_index_df['__date__'] < current_date + self.train_duration - self.gap_duration)]
+            X_valid_df = X_index_df[
+                (X_index_df['__date__'] >= current_date + self.train_duration) &
+                (X_index_df['__date__'] < current_date + self.train_duration + self.valid_duration)]
 
             current_date = current_date + self.valid_duration
 
-            yield (np.array([X.index.get_loc(i) for i in train_i]),
-                   np.array([X.index.get_loc(i) for i in valid_i]))
+            yield (X_train_df['np_index'].values,
+                   X_valid_df['np_index'].values)
 
     def get_n_splits(self, X=None, y=None, groups=None):
 
         return sum(1 for x in self.split(X, y, groups))
+
+    def summary(self, X):
+        """
+        Describe all folds
+        :param pandas.DataFrame X:
+        :returns: ``pd.DataFrame`` summary of all folds
+        """
+        summary = []
+        X_index_df = self.join_date_and_x(X)
+
+        def get_split_info(X, indicies, j, part, summary):
+            dates = X_index_df.iloc[indicies]['__date__']
+            mindate = dates.min()
+            maxdate = dates.max()
+
+            s = pd.Series({
+                'Start date': mindate,
+                'End date': maxdate,
+                'Period': pd.to_datetime(maxdate, format='%Y%m%d') - pd.to_datetime(mindate, format='%Y%m%d'),
+                'Unique days': len(dates.unique()),
+                'nbr samples': len(indicies),
+            }, name=(j, part))
+            summary.append(s)
+            return summary
+
+        j = 0
+        for i in self.split(X):
+            summary = get_split_info(X, i[0], j, "train", summary)
+            summary = get_split_info(X, i[1], j, "valid", summary)
+            j = j + 1
+
+        return pd.DataFrame(summary)
 
 
 class KlusterFoldValidation:
