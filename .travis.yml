@@ -1,0 +1,18 @@
+language: python
+matrix:
+  include:
+    - python: 3.6
+    - python: 3.7
+      dist: xenial
+      sudo: true
+before_install:
+  - pip install --upgrade pip
+install:
+  - pip install -e .
+  - pip install .[dev]
+  - pip freeze
+script:
+  - flake8
+  - pytest --disable-warnings --cov=sklego
+  - python -m doctest -v sklego/*.py
+  - pytest --nbval-lax doc/*.ipynb
