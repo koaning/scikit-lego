@@ -23,7 +23,7 @@ def mod(request):
     check_shape_remains_same_regressor
 ])
 def test_deadzone(test_fn):
-    regr = DeadZoneRegressor()
+    regr = DeadZoneRegressor(n_iter=10)
     test_fn(DeadZoneRegressor.__name__, regr)
 
 
