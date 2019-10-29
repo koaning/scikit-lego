@@ -15,7 +15,7 @@ init:
 install:
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
   - conda config --set always_yes yes --set changeps1 no
-  - conda create -n sklego-env -c pytorch %REQUIREMENTS% python=%PYTHON_VERSION%
+  - conda create -n sklego-env -c %REQUIREMENTS% python=%PYTHON_VERSION%
   - activate sklego-env
   - pip install -e .[dev]
 
