@@ -12,7 +12,9 @@ is to attempt to consolidate these into a package that offers
 code quality/testing. This project is a collaboration between
 multiple companies in the Netherlands. 
 
-Note that we're not formally affiliated with the scikit-learn project at all. Same holds with lego. 
+Note that we're not formally affiliated with the scikit-learn project at all. 
+
+The same holds with lego. LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this site.
 
 ## Installation
 
