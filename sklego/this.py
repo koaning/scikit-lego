@@ -1,6 +1,6 @@
 poem = """
 roses are red, violets are blue,
-naming your package is hard to undo. 
+naming your package is hard to undo.
 patience can make decisions in one fell swoop,
 note that LEGO® is a trademark of the LEGO Group.
 it really makes sense, we do not need to bluff,
