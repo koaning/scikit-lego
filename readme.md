@@ -14,7 +14,9 @@ multiple companies in the Netherlands. It was initiated by Matthijs
 Brouns and Vincent D. Warmerdam as a tool to teach people how
 to contribute to open source. 
 
-We're not (!) formally affiliated with the scikit-learn project at all. Same holds with lego. 
+Note that we're not formally affiliated with the scikit-learn project at all. 
+
+The same holds with lego. LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this site.
 
 ## Installation
 
