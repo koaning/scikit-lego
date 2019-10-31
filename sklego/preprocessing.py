@@ -461,11 +461,14 @@ class InformationFilter(BaseEstimator, TransformerMixin):
 
     :param columns: the columns to filter out this can be a sequence of either int
                     (in the case of numpy) or string (in the case of pandas).
+    :param alpha: parameter to control how much to filter, for alpha=1 we filter out
+                  all information while for alpha=0 we don't apply any.
     """
-    def __init__(self, columns):
+    def __init__(self, columns, alpha=1):
         self.columns = columns
         # sklearn does not allow `as_list` immediately because of cloning reasons
         self.cols = as_list(columns)
+        self.alpha = alpha
 
     def _check_coltype(self, X):
         for col in self.cols:
@@ -517,7 +520,9 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         X = check_array(X, estimator=self)
         # apply the projection and remove the column we won't need
         X_fair = X @ self.projection_
-        return np.atleast_2d(np.delete(X_fair, self.col_ids_, axis=1))
+        X_removed = np.delete(X_fair, self.col_ids_, axis=1)
+        X_orig = np.delete(X, self.col_ids_, axis=1)
+        return self.alpha * np.atleast_2d(X_removed) + (1 - self.alpha) * np.atleast_2d(X_orig)
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
