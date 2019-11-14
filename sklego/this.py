@@ -16,14 +16,14 @@ If you haven't gotten to where you're going, you aren't there yet.
 Infinity is ever present, the unknown may be ignored,
 not everything needs to be built, not everything needs to be explored.
 Change everything and you'll soon be a jerk,
-you may invent a new tool, not a way to work. 
-Some problems cannot be solved in a single day, 
+you may invent a new tool, not a way to work.
+Some problems cannot be solved in a single day,
 but if you ignore them, they sometimes go away.
 
-There's a lot of power in simplicity, 
+There's a lot of power in simplicity,
 it keeps you approach strong,
-if you understand the solution better than the problem 
-you're doing it wrong. 
+if you understand the solution better than the problem,
+you're doing it wrong.
 """
 
 print(poem)
