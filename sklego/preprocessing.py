@@ -174,10 +174,6 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, columns: list):
-        # if the columns parameter is not a list, make it into a list
-        if not isinstance(columns, list):
-            columns = [columns]
-
         self.columns = columns
 
     def fit(self, X, y=None):
@@ -188,6 +184,8 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         :param y: ``pd.Series`` labels for X. unused for column selection
         :returns: ``ColumnSelector`` object.
         """
+        if not isinstance(self.columns, list):
+            self.columns = [self.columns]
 
         self._check_X_for_type(X)
         self._check_column_names(X)
@@ -202,6 +200,9 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         if self.columns:
             return X[self.columns]
         return X
+
+    def get_feature_names(self):
+        return self.columns
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""
@@ -443,14 +444,11 @@ class InformationFilter(BaseEstimator, TransformerMixin):
     The `InformationFilter` uses a variant of the gram smidt process
     to filter information out of the dataset. This can be useful if you
     want to filter information out of a dataset because of fairness.
-
     To explain how it works: given a training matrix :math:`X` that contains
     columns :math:`x_1, ..., x_k`. If we assume columns :math:`x_1` and :math:`x_2`
     to be the sensitive columns then the information-filter will
     remove information by applying these transformations;
-
     .. math::
-
        \\begin{split}
        v_1 & = x_1 \\\\
        v_2 & = x_2 - \\frac{x_2 v_1}{v_1 v_1}\\\\
@@ -458,17 +456,18 @@ class InformationFilter(BaseEstimator, TransformerMixin):
        ... \\\\
        v_k & = x_k - \\frac{x_k v_1}{v_1 v_1} - \\frac{x_2 v_2}{v_2 v_2}
        \\end{split}
-
     Concatenating our vectors (but removing the sensitive ones) gives us
     a new training matrix :math:`X_{fair} =  [v_3, ..., v_k]`.
-
     :param columns: the columns to filter out this can be a sequence of either int
                     (in the case of numpy) or string (in the case of pandas).
+    :param alpha: parameter to control how much to filter, for alpha=1 we filter out
+                  all information while for alpha=0 we don't apply any.
     """
-    def __init__(self, columns):
+    def __init__(self, columns, alpha=1):
         self.columns = columns
         # sklearn does not allow `as_list` immediately because of cloning reasons
         self.cols = as_list(columns)
+        self.alpha = alpha
 
     def _check_coltype(self, X):
         for col in self.cols:
@@ -520,7 +519,9 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         X = check_array(X, estimator=self)
         # apply the projection and remove the column we won't need
         X_fair = X @ self.projection_
-        return np.atleast_2d(np.delete(X_fair, self.col_ids_, axis=1))
+        X_removed = np.delete(X_fair, self.col_ids_, axis=1)
+        X_orig = np.delete(X, self.col_ids_, axis=1)
+        return self.alpha * np.atleast_2d(X_removed) + (1 - self.alpha) * np.atleast_2d(X_orig)
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
@@ -594,6 +595,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
         self._check_X_for_type(X)
         self._check_column_names(X)
+        self.feature_names_ = list(X.drop(columns=self.columns).columns)
         return self
 
     def transform(self, X):
@@ -603,8 +605,11 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         :returns: ``pd.DataFrame`` with only the selected columns
         """
         if self.columns:
-            return X.drop(self.columns, axis=1)
+            return X.drop(columns=self.columns)
         return X
+
+    def get_feature_names(self):
+        return self.feature_names_
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""
