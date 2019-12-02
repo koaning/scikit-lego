@@ -78,25 +78,28 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         """
         Saves the column names for check during transform
-
         :param X: pandas dataframe to select dtypes out of
         :param y: not used in this class
         """
         self._check_X_for_type(X)
         self.type_columns_ = list(X.select_dtypes(include=self.include, exclude=self.exclude))
         self.X_dtypes_ = X.dtypes
+        self.feature_names_ = list(X.select_dtypes(include=self.include, exclude=self.exclude).columns)
+
         if len(self.type_columns_) == 0:
             raise ValueError(f'Provided type(s) results in empty dateframe')
 
         return self
 
+    def get_feature_names(self, *args, **kwargs):
+        return self.feature_names_
+
     def transform(self, X):
         """
         Transforms pandas dataframe by (de)selecting columns based on their dtype
-
         :param X: pandas dataframe to select dtypes for
         """
-        check_is_fitted(self, ['type_columns_', 'X_dtypes_'])
+        check_is_fitted(self, ['type_columns_', 'X_dtypes_', 'feature_names_'])
         if (self.X_dtypes_ != X.dtypes).any():
             raise ValueError(f'Column dtypes were not equal during fit and transform. Fit types: \n'
                              f'{self.X_dtypes_}\n'
@@ -461,14 +464,11 @@ class InformationFilter(BaseEstimator, TransformerMixin):
 
     :param columns: the columns to filter out this can be a sequence of either int
                     (in the case of numpy) or string (in the case of pandas).
-    :param alpha: parameter to control how much to filter, for alpha=1 we filter out
-                  all information while for alpha=0 we don't apply any.
     """
-    def __init__(self, columns, alpha=1):
+    def __init__(self, columns):
         self.columns = columns
         # sklearn does not allow `as_list` immediately because of cloning reasons
         self.cols = as_list(columns)
-        self.alpha = alpha
 
     def _check_coltype(self, X):
         for col in self.cols:
@@ -520,9 +520,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         X = check_array(X, estimator=self)
         # apply the projection and remove the column we won't need
         X_fair = X @ self.projection_
-        X_removed = np.delete(X_fair, self.col_ids_, axis=1)
-        X_orig = np.delete(X, self.col_ids_, axis=1)
-        return self.alpha * np.atleast_2d(X_removed) + (1 - self.alpha) * np.atleast_2d(X_orig)
+        return np.atleast_2d(np.delete(X_fair, self.col_ids_, axis=1))
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
