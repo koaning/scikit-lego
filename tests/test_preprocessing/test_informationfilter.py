@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import pandas as pd
 
 from sklearn.pipeline import Pipeline
@@ -48,6 +49,23 @@ def test_output_orthogonal():
     X_fair = InformationFilter(columns=[11, 12]).fit_transform(X)
     assert all([(c * X[:, 11]).sum() < 1E-5 for c in X_fair.T])
     assert all([(c * X[:, 12]).sum() < 1E-5 for c in X_fair.T])
+
+
+def test_alpha_param1():
+    X, y = load_boston(return_X_y=True)
+    ifilter = InformationFilter(columns=[11, 12], alpha=0.0)
+    X_removed = np.delete(X, [11, 12], axis=1)
+    assert np.isclose(ifilter.fit_transform(X), X_removed).all()
+
+
+def test_alpha_param2():
+    X, y = load_boston(return_X_y=True)
+    df = pd.DataFrame(X, columns=['crim', 'zn', 'indus', 'chas', 'nox', 'rm',
+                                  'age', 'dis', 'rad', 'tax', 'ptratio', 'b',
+                                  'lstat'])
+    ifilter = InformationFilter(columns=["b", "lstat"], alpha=0.0)
+    X_removed = df.drop(columns=["b", "lstat"]).values
+    assert np.isclose(ifilter.fit_transform(df), X_removed).all()
 
 
 def test_output_orthogonal_pandas():

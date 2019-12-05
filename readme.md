@@ -10,9 +10,13 @@ We love scikit learn but very often we find ourselves writing
 custom transformers, metrics and models. The goal of this project
 is to attempt to consolidate these into a package that offers
 code quality/testing. This project is a collaboration between
-multiple companies in the Netherlands. 
+multiple companies in the Netherlands. It was initiated by Matthijs
+Brouns and Vincent D. Warmerdam as a tool to teach people how
+to contribute to open source. 
 
-Note that we're not formally affiliated with the scikit-learn project at all. Same holds with lego. 
+Note that we're not formally affiliated with the scikit-learn project at all. 
+
+The same holds with lego. LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this site.
 
 ## Installation
 
@@ -20,6 +24,12 @@ Install `scikit-lego` via pip with
 
 ```bash
 pip install scikit-lego
+```
+
+Via [conda](https://conda.io/projects/conda/en/latest/) with
+
+```bash
+conda install -c conda-forge scikit-lego
 ```
 
 Alternatively, to edit and contribute you can fork/clone and run:
@@ -59,26 +69,44 @@ mod = Pipeline([
 
 Here's a list of features that this library currently offers:
 
-- `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
-- `sklego.preprocessing.RandomAdder` adds randomness in training
-- `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
-- `sklego.preprocessing.ColumnSelector` selects columns based on column name
-- `sklego.preprocessing.ColumnCapper` limits extreme values of the model features
-- `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independant
-- `sklego.dummy.RandomRegressor` benchmark that predicts random values
-- `sklego.naive_bayes.GaussianMixtureNB` classifies by training a 1D GMM per column per class
+- `sklego.datasets.load_abalone` loads in the abalone dataset
+- `sklego.datasets.load_chicken` loads in the joyful chickweight dataset
+- `sklego.datasets.load_heroes` loads a heroes of the storm dataset
+- `sklego.datasets.make_simpleseries` make a simulated timeseries
+- `sklego.pandas_utils.add_lags` adds lag values in a pandas dataframe
+- `sklego.pandas_utils.log_step` a useful decorator to log your pipeline steps
+- `sklego.dummy.RandomRegressor` dummy benchmark that predicts random values
+- `sklego.linear_model.DeadZoneRegressor` experimental feature that has a deadzone in the cost function
+- `sklego.linear_model.DemographicParityClassifier` logistic classifier constrained on demographic parity 
+- `sklego.linear_model.EqualOpportunityClassifier` logistic classifier constrained on equal opportunity
+- `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a 1D GMM per column per class
+- `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a bayesian 1D GMM per column per class
+- `sklego.mixture.BayesianGMMClassifier` classifies by training a bayesian GMM per class
+- `sklego.mixture.BayesianGMMOutlierDetector` detects outliers based on a trained bayesian GMM
 - `sklego.mixture.GMMClassifier` classifies by training a GMM per class
 - `sklego.mixture.GMMOutlierDetector` detects outliers based on a trained GMM
-- `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier
+- `sklego.meta.ConfusionBalancer` experimental feature that allows you to balance the confusion matrix
 - `sklego.meta.DecayEstimator` adds decay to the sample_weight that the model accepts
-- `sklego.meta.GroupedEstimator` can split the data into runs and run a model on each
 - `sklego.meta.EstimatorTransformer` adds a model output as a feature
+- `sklego.meta.GroupedEstimator` can split the data into runs and run a model on each
+- `sklego.meta.OutlierRemover` experimental method to remove outliers during training
+- `sklego.meta.SubjectiveClassifier` experimental feature to add a prior to your classifier
+- `sklego.meta.Thresholder` meta model that allows you to gridsearch over the threshold
+- `sklego.preprocessing.ColumnCapper` limits extreme values of the model features
+- `sklego.preprocessing.ColumnDropper` drops a column from pandas
+- `sklego.preprocessing.ColumnSelector` selects columns based on column name
+- `sklego.preprocessing.InformationFilter` transformer that can de-correlate features
+- `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independant
+- `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
+- `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
+- `sklego.preprocessing.RandomAdder` adds randomness in training
+- `sklego.preprocessing.RepeatingBasisFunction` repeating feature engineering, useful for timeseries
+- `sklego.model_selection.KlusterFoldValidation` experimental feature that does K folds based on clustering
+- `sklego.model_selection.TimeGapSplit` timeseries Kfold with a gap between train/test
+- `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier
 - `sklego.metrics.correlation_score` calculates correlation between model output and feature
+- `sklego.metrics.equal_opportunity_score` calculates equal opportunity metric
 - `sklego.metrics.p_percent_score` proxy for model fairness with regards to sensitive attribute
-- `sklego.datasets.load_chicken` loads in the joyful chickweight dataset
-- `sklego.datasets.make_simpleseries` make a simulated timeseries
-- `sklego.pandas_utils.log_step` a simple logger-decorator for pandas pipeline steps
-- `sklego.pandas_utils.add_lags` adds lag values of certain columns in pandas
 
 ## New Features
 
