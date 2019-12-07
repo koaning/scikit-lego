@@ -78,25 +78,28 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         """
         Saves the column names for check during transform
-
         :param X: pandas dataframe to select dtypes out of
         :param y: not used in this class
         """
         self._check_X_for_type(X)
         self.type_columns_ = list(X.select_dtypes(include=self.include, exclude=self.exclude))
         self.X_dtypes_ = X.dtypes
+        self.feature_names_ = list(X.select_dtypes(include=self.include, exclude=self.exclude).columns)
+
         if len(self.type_columns_) == 0:
             raise ValueError(f'Provided type(s) results in empty dateframe')
 
         return self
 
+    def get_feature_names(self, *args, **kwargs):
+        return self.feature_names_
+
     def transform(self, X):
         """
         Transforms pandas dataframe by (de)selecting columns based on their dtype
-
         :param X: pandas dataframe to select dtypes for
         """
-        check_is_fitted(self, ['type_columns_', 'X_dtypes_'])
+        check_is_fitted(self, ['type_columns_', 'X_dtypes_', 'feature_names_'])
         if (self.X_dtypes_ != X.dtypes).any():
             raise ValueError(f'Column dtypes were not equal during fit and transform. Fit types: \n'
                              f'{self.X_dtypes_}\n'
@@ -171,10 +174,6 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, columns: list):
-        # if the columns parameter is not a list, make it into a list
-        if not isinstance(columns, list):
-            columns = [columns]
-
         self.columns = columns
 
     def fit(self, X, y=None):
@@ -185,6 +184,8 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         :param y: ``pd.Series`` labels for X. unused for column selection
         :returns: ``ColumnSelector`` object.
         """
+        if not isinstance(self.columns, list):
+            self.columns = [self.columns]
 
         self._check_X_for_type(X)
         self._check_column_names(X)
@@ -199,6 +200,9 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         if self.columns:
             return X[self.columns]
         return X
+
+    def get_feature_names(self):
+        return self.columns
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""
@@ -440,14 +444,11 @@ class InformationFilter(BaseEstimator, TransformerMixin):
     The `InformationFilter` uses a variant of the gram smidt process
     to filter information out of the dataset. This can be useful if you
     want to filter information out of a dataset because of fairness.
-
     To explain how it works: given a training matrix :math:`X` that contains
     columns :math:`x_1, ..., x_k`. If we assume columns :math:`x_1` and :math:`x_2`
     to be the sensitive columns then the information-filter will
     remove information by applying these transformations;
-
     .. math::
-
        \\begin{split}
        v_1 & = x_1 \\\\
        v_2 & = x_2 - \\frac{x_2 v_1}{v_1 v_1}\\\\
@@ -455,10 +456,8 @@ class InformationFilter(BaseEstimator, TransformerMixin):
        ... \\\\
        v_k & = x_k - \\frac{x_k v_1}{v_1 v_1} - \\frac{x_2 v_2}{v_2 v_2}
        \\end{split}
-
     Concatenating our vectors (but removing the sensitive ones) gives us
     a new training matrix :math:`X_{fair} =  [v_3, ..., v_k]`.
-
     :param columns: the columns to filter out this can be a sequence of either int
                     (in the case of numpy) or string (in the case of pandas).
     :param alpha: parameter to control how much to filter, for alpha=1 we filter out
@@ -596,6 +595,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
         self._check_X_for_type(X)
         self._check_column_names(X)
+        self.feature_names_ = list(X.drop(columns=self.columns).columns)
         return self
 
     def transform(self, X):
@@ -605,8 +605,11 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         :returns: ``pd.DataFrame`` with only the selected columns
         """
         if self.columns:
-            return X.drop(self.columns, axis=1)
+            return X.drop(columns=self.columns)
         return X
+
+    def get_feature_names(self):
+        return self.feature_names_
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""

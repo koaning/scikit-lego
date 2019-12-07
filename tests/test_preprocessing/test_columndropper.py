@@ -55,3 +55,12 @@ def test_drop_one_in_pipeline(df):
         "d": ["b", "a", "a", "b", "a", "b"]})
 
     assert_frame_equal(result_df, expected_df)
+
+
+def test_get_feature_names():
+    df = pd.DataFrame({
+        'a': [4, 5, 6],
+        'b': ['4', '5', '6']
+    })
+    transformer = ColumnDropper('a').fit(df)
+    assert transformer.get_feature_names() == ['b']
