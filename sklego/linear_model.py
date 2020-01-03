@@ -23,12 +23,15 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         self.min_zero = min_zero
         self.fit_intercept = fit_intercept
 
-    def fit(self, X, y):
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+    def _handle_intercept(self, X):
         if self.fit_intercept:
             ones = np.ones((X.shape[0], 1))
-            print(X.shape, ones.shape)
             X = np.hstack([ones, X])
+        return X
+
+    def fit(self, X, y):
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X = self._handle_intercept(X)
 
         # Construct the problem.
         betas = cp.Variable(X.shape[1])
@@ -43,11 +46,10 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         self.coefs_ = betas.value
         return self
 
-    def predict(self, X, y):
+    def predict(self, X):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["coefs_"])
-        if self.fit_intercept:
-            X = np.hstack([np.ones(X.shape[1], 1), X])
+        X = self._handle_intercept(X)
         return np.dot(X, self.coefs_)
 
 
