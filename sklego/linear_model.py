@@ -19,25 +19,35 @@ from sklearn.utils.validation import (
 
 
 class ProbWeightRegression(BaseEstimator, RegressorMixin):
-    def __init__(self, min_zero=True):
+    def __init__(self, min_zero=True, fit_intercept=True):
         self.min_zero = min_zero
+        self.fit_intercept = fit_intercept
 
     def fit(self, X, y):
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        if self.fit_intercept:
+            ones = np.ones((X.shape[0], 1))
+            print(X.shape, ones.shape)
+            X = np.hstack([ones, X])
 
         # Construct the problem.
         betas = cp.Variable(X.shape[1])
         objective = cp.Minimize(cp.sum_squares(X * betas - y))
-        constraints = [sum(betas) <= 1]
+        constraints = [sum(betas) == 1]
         if self.min_zero:
             constraints.append(0 <= betas)
+
+        # Solve the problem.
         prob = cp.Problem(objective, constraints)
         _ = prob.solve()
         self.coefs_ = betas.value
+        return self
 
     def predict(self, X, y):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["coefs_"])
+        if self.fit_intercept:
+            X = np.hstack([np.ones(X.shape[1], 1), X])
         return np.dot(X, self.coefs_)
 
 
