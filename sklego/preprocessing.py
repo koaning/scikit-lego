@@ -174,6 +174,10 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, columns: list):
+        # if the columns parameter is not a list, make it into a list
+        if not isinstance(columns, list):
+            columns = [columns]
+
         self.columns = columns
 
     def fit(self, X, y=None):
@@ -184,9 +188,6 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         :param y: ``pd.Series`` labels for X. unused for column selection
         :returns: ``ColumnSelector`` object.
         """
-        if not isinstance(self.columns, list):
-            self.columns = [self.columns]
-
         self._check_X_for_type(X)
         self._check_column_names(X)
         return self
@@ -197,6 +198,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         :param X: ``pd.DataFrame`` on which we apply the column selection
         :returns: ``pd.DataFrame`` with only the selected columns
         """
+        self._check_X_for_type(X)
         if self.columns:
             return X[self.columns]
         return X
