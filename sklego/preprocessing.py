@@ -409,7 +409,7 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
             self.columns_ = list(X.columns)
         
         X = check_array(X, estimator=self)
-        
+
         if not X.shape[0] > 1:
             raise ValueError("Orthogonal transformation not valid for one sample")
 
