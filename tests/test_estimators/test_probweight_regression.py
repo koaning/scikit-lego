@@ -13,11 +13,11 @@ from tests.conftest import nonmeta_checks, regressor_checks, general_checks
 ]))
 def test_estimator_checks(test_fn):
     regr_min_zero = ProbWeightRegression(min_zero=True)
-    test_fn(ProbWeightRegression.__name__ + '_normal', regr_min_zero)
+    test_fn(ProbWeightRegression.__name__ + '_min_zero_true', regr_min_zero)
     regr_not_min_zero = ProbWeightRegression(min_zero=False)
-    test_fn(ProbWeightRegression.__name__ + '_normal', regr_not_min_zero)
+    test_fn(ProbWeightRegression.__name__ + '_min_zero_true_false', regr_not_min_zero)
     regr_no_intercept = ProbWeightRegression(fit_intercept=False)
-    test_fn(ProbWeightRegression.__name__ + '_uniform', regr_no_intercept)
+    test_fn(ProbWeightRegression.__name__ + '_no_intercept', regr_no_intercept)
 
 
 def test_shape_trained_model(random_xy_dataset_regr):
