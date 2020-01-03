@@ -606,6 +606,8 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         :param X: ``pd.DataFrame`` on which we apply the column selection
         :returns: ``pd.DataFrame`` with only the selected columns
         """
+        check_is_fitted(self, ['feature_names_'])
+        self._check_X_for_type(X)
         if self.columns:
             return X.drop(columns=self.columns)
         return X
