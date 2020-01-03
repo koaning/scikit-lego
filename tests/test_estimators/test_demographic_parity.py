@@ -33,7 +33,13 @@ def _test_same(dataset):
 
     sensitive_cols = [0]
     X_without_sens = np.delete(X, sensitive_cols, axis=1)
-    lr = LogisticRegression(penalty="none", solver="lbfgs")
+    lr = LogisticRegression(penalty="none", solver="lbfgs", multi_class='ovr',
+                            dual=False, tol=1e-4, C=1.0,
+                            fit_intercept=True, intercept_scaling=1, class_weight=None,
+                            random_state=None, max_iter=100,
+                            verbose=0, warm_start=False, n_jobs=None,
+                            l1_ratio=None
+                            )
     fair = DemographicParityClassifier(
         covariance_threshold=None, sensitive_cols=sensitive_cols, penalty="none"
     )
@@ -45,7 +51,7 @@ def _test_same(dataset):
         lr.fit(X_without_sens, y)
         normal_pred = lr.predict_proba(X_without_sens)
         fair_pred = fair.predict_proba(X)
-        np.testing.assert_almost_equal(normal_pred, fair_pred, decimal=2)
+        np.testing.assert_almost_equal(normal_pred, fair_pred, decimal=3)
         assert np.sum(lr.predict(X_without_sens) != fair.predict(X)) / len(X) < 0.01
 
 
