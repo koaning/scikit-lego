@@ -61,6 +61,18 @@ def test_value_error_differrent_dtyes():
         transformer.transform(transform_df)
 
 
+def test_get_feature_names():
+    df = pd.DataFrame({
+        'a': [4, 5, 6],
+        'b': ['4', '5', '6']
+    })
+    transformer_number = PandasTypeSelector(include='number').fit(df)
+    assert transformer_number.get_feature_names() == ['a']
+
+    transformer_number = PandasTypeSelector(include='object').fit(df)
+    assert transformer_number.get_feature_names() == ['b']
+
+
 def test_value_error_empty(random_xy_dataset_regr):
     transformer = PandasTypeSelector(exclude=['number'])
     X, y = random_xy_dataset_regr
