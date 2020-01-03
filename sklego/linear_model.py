@@ -18,6 +18,29 @@ from sklearn.utils.validation import (
 )
 
 
+class ProbWeightRegression(BaseEstimator, RegressorMixin):
+    def __init__(self, min_zero=True):
+        self.min_zero = min_zero
+
+    def fit(self, X, y):
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+
+        # Construct the problem.
+        betas = cp.Variable(X.shape[1])
+        objective = cp.Minimize(cp.sum_squares(X * betas - y))
+        constraints = [sum(betas) <= 1]
+        if self.min_zero:
+            constraints.append(0 <= betas)
+        prob = cp.Problem(objective, constraints)
+        _ = prob.solve()
+        self.coefs_ = betas.value
+
+    def predict(self, X, y):
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        check_is_fitted(self, ["coefs_"])
+        return np.dot(X, self.coefs_)
+
+
 class DeadZoneRegressor(BaseEstimator, RegressorMixin):
     def __init__(
         self,
