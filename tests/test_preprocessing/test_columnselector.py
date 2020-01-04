@@ -32,8 +32,8 @@ def test_select_one(df):
 
 
 def test_select_none(df):
-    result_df = ColumnSelector([]).fit_transform(df)
-    assert_frame_equal(result_df, df)
+    with pytest.raises(ValueError):
+        ColumnSelector([]).fit_transform(df)
 
 
 def test_select_not_in_frame(df):
