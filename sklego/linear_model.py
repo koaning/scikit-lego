@@ -19,7 +19,17 @@ from sklearn.utils.validation import (
 
 
 class ProbWeightRegression(BaseEstimator, RegressorMixin):
-    def __init__(self, non_negative=True, fit_intercept=True):
+    def __init__(self, non_negative=True, fit_intercept=False):
+        """
+        This regressor assumes that all input signals in `X` need to be reweighted 
+        with weights that sum up to one in order to predict `y`. This can be very useful
+        in combination with `sklego.meta.EstimatorTransformer` because it allows you
+        to construct an ensemble. 
+
+        :param non_negative: boolean, default=True, setting that forces all weights to be >= 0 
+        :param fit_intercept: boolean, default=False, setting that adds a constant value intercept,
+        note that the coefficient in this intercept is just like any other weight as far as reweighting is concerned
+        """
         self.non_negative = non_negative
         self.fit_intercept = fit_intercept
 
@@ -30,6 +40,13 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         return X
 
     def fit(self, X, y):
+        """
+        Fit the model using X, y as training data.
+
+        :param X: array-like, shape=(n_columns, n_samples, ) training data.
+        :param y: array-like, shape=(n_samples, ) training data.
+        :return: Returns an instance of self.
+        """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         X = self._handle_intercept(X)
 
@@ -47,6 +64,12 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X):
+        """
+        Fit the model using X, y as training data.
+
+        :param X: array-like, shape=(n_columns, n_samples, ) training data.
+        :return: Returns an array of predictions shape=(n_samples,)
+        """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["coefs_"])
         X = self._handle_intercept(X)
