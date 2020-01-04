@@ -33,7 +33,7 @@ def load_arrests(return_X_y=False, give_pandas=False):
     The documentation page of the dataset from the package can be viewed here:
     http://vincentarelbundock.github.io/Rdatasets/doc/carData/Arrests.html
     """
-    filepath = resource_filename("sklego", os.path.join("data", "arrests.csv"))
+    filepath = resource_filename("sklego", os.path.join("data", "arrests.zip"))
     df = pd.read_csv(filepath)
     if give_pandas:
         return df
@@ -72,7 +72,7 @@ def load_chicken(return_X_y=False, give_pandas=False):
     - Crowder, M. and Hand, D. (1990), Analysis of Repeated Measures, Chapman and Hall (example 5.3)
     - Hand, D. and Crowder, M. (1996), Practical Longitudinal Data Analysis, Chapman and Hall (table A.2)
     """
-    filepath = resource_filename("sklego", os.path.join("data", "chickweight.csv"))
+    filepath = resource_filename("sklego", os.path.join("data", "chickweight.zip"))
     df = pd.read_csv(filepath)
     if give_pandas:
         return df
@@ -110,7 +110,7 @@ def load_abalone(return_X_y=False, give_pandas=False):
     "The Population Biology of Abalone (_Haliotis_ species) in Tasmania."
     Sea Fisheries Division, Technical Report No. 48 (ISSN 1034-3288)
     """
-    filepath = resource_filename("sklego", os.path.join("data", "abalone.csv"))
+    filepath = resource_filename("sklego", os.path.join("data", "abalone.zip"))
     df = pd.read_csv(filepath)
     if give_pandas:
         return df
@@ -140,7 +140,7 @@ def load_heroes(return_X_y=False, give_pandas=False):
     >>> df.columns
     Index(['name', 'attack_type', 'role', 'health', 'attack', 'attack_spd'], dtype='object')
     """
-    filepath = resource_filename("sklego", os.path.join("data", "heroes.csv"))
+    filepath = resource_filename("sklego", os.path.join("data", "heroes.zip"))
     df = pd.read_csv(filepath)
     if give_pandas:
         return df
