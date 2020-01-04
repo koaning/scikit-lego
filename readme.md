@@ -1,6 +1,10 @@
 [![Build status](https://github.com/koaning/scikit-lego/workflows/Unit%20Tests/badge.svg)](https://github.com/{github_id}/{repository}/workflows/{workflow_name}/badge.svg)
 [![Documentation Status](https://readthedocs.org/projects/scikit-lego/badge/?version=latest)](https://scikit-lego.readthedocs.io/en/latest/?badge=latest)
 [![Downloads](https://pepy.tech/badge/scikit-lego/month)](https://pepy.tech/project/scikit-lego/month)
+[![Version](https://img.shields.io/pypi/v/scikit-lego)](https://pypi.org/project/scikit-lego/)
+![](https://img.shields.io/github/license/koaning/scikit-lego)
+![](https://img.shields.io/pypi/pyversions/scikit-lego)
+![](https://img.shields.io/github/contributors/koaning/scikit-lego)
 
 # scikit-lego
 
