@@ -12,9 +12,9 @@ from tests.conftest import nonmeta_checks, regressor_checks, general_checks
     regressor_checks
 ]))
 def test_estimator_checks(test_fn):
-    regr_min_zero = ProbWeightRegression(min_zero=True)
+    regr_min_zero = ProbWeightRegression(non_negative=True)
     test_fn(ProbWeightRegression.__name__ + '_min_zero_true', regr_min_zero)
-    regr_not_min_zero = ProbWeightRegression(min_zero=False)
+    regr_not_min_zero = ProbWeightRegression(non_negative=False)
     test_fn(ProbWeightRegression.__name__ + '_min_zero_true_false', regr_not_min_zero)
     regr_no_intercept = ProbWeightRegression(fit_intercept=False)
     test_fn(ProbWeightRegression.__name__ + '_no_intercept', regr_no_intercept)
