@@ -21,12 +21,12 @@ from sklearn.utils.validation import (
 class ProbWeightRegression(BaseEstimator, RegressorMixin):
     def __init__(self, non_negative=True, fit_intercept=False):
         """
-        This regressor assumes that all input signals in `X` need to be reweighted 
+        This regressor assumes that all input signals in `X` need to be reweighted
         with weights that sum up to one in order to predict `y`. This can be very useful
         in combination with `sklego.meta.EstimatorTransformer` because it allows you
-        to construct an ensemble. 
+        to construct an ensemble.
 
-        :param non_negative: boolean, default=True, setting that forces all weights to be >= 0 
+        :param non_negative: boolean, default=True, setting that forces all weights to be >= 0
         :param fit_intercept: boolean, default=False, setting that adds a constant value intercept,
         note that the coefficient in this intercept is just like any other weight as far as reweighting is concerned
         """
