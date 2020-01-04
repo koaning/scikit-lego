@@ -71,6 +71,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     :param include: types to be included in the dataframe
     :param exclude: types to be exluded in the dataframe
     """
+
     def __init__(self, include=None, exclude=None):
         self.include = include
         self.exclude = exclude
@@ -189,6 +190,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         :returns: ``ColumnSelector`` object.
         """
         self._check_X_for_type(X)
+        self._check_column_length()
         self._check_column_names(X)
         return self
 
@@ -205,6 +207,11 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 
     def get_feature_names(self):
         return self.columns
+
+    def _check_column_length(self):
+        """Check if no column is selected"""
+        if len(self.columns) == 0:
+            raise ValueError("Expected columns to be at least of length 1, found length of 0 instead")
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""
@@ -284,6 +291,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
     2  7.000   NaN
     3  8.700  13.8
     """
+
     def __init__(self, quantile_range=(5.0, 95.0), interpolation='linear', discard_infs=False, copy=True):
 
         self._check_quantile_range(quantile_range)
@@ -407,7 +415,7 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
         """
         if type(X) is pd.core.frame.DataFrame:
             self.columns_ = list(X.columns)
-        
+
         X = check_array(X, estimator=self)
 
         if not X.shape[0] > 1:
@@ -429,7 +437,7 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
         if type(X) is pd.core.frame.DataFrame:
             if not self.columns_ == list(X.columns):
                 raise KeyError('Columns were not equal during fit and transform')
-        
+
         if self.normalize:
             check_is_fitted(self, ['inv_R_', 'normalization_vector_'])
         else:
@@ -472,6 +480,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
     :param alpha: parameter to control how much to filter, for alpha=1 we filter out
                   all information while for alpha=0 we don't apply any.
     """
+
     def __init__(self, columns, alpha=1):
         self.columns = columns
         # sklearn does not allow `as_list` immediately because of cloning reasons
@@ -605,6 +614,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         self._check_X_for_type(X)
         self._check_column_names(X)
         self.feature_names_ = list(X.drop(columns=self.columns).columns)
+        self._check_column_length()
         return self
 
     def transform(self, X):
@@ -621,6 +631,11 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
     def get_feature_names(self):
         return self.feature_names_
+
+    def _check_column_length(self):
+        """Check if all columns are droped"""
+        if len(self.feature_names_) == 0:
+            raise ValueError(f"Dropping {self.columns} would result in an empty output DataFrame")
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""
