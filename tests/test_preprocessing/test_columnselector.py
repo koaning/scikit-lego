@@ -31,6 +31,11 @@ def test_select_one(df):
     assert_frame_equal(result_df, expected_df)
 
 
+def test_select_all(df):
+    result_df = ColumnSelector(['a', 'b', 'c', 'd', 'e']).fit_transform(df)
+    assert_frame_equal(result_df, df)
+
+
 def test_select_none(df):
     with pytest.raises(ValueError):
         ColumnSelector([]).fit_transform(df)
