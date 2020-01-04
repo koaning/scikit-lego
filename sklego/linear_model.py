@@ -19,8 +19,8 @@ from sklearn.utils.validation import (
 
 
 class ProbWeightRegression(BaseEstimator, RegressorMixin):
-    def __init__(self, min_zero=True, fit_intercept=True):
-        self.min_zero = min_zero
+    def __init__(self, non_negative=True, fit_intercept=True):
+        self.non_negative = non_negative
         self.fit_intercept = fit_intercept
 
     def _handle_intercept(self, X):
@@ -37,12 +37,12 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         betas = cp.Variable(X.shape[1])
         objective = cp.Minimize(cp.sum_squares(X * betas - y))
         constraints = [sum(betas) == 1]
-        if self.min_zero:
+        if self.non_negative:
             constraints.append(0 <= betas)
 
         # Solve the problem.
         prob = cp.Problem(objective, constraints)
-        _ = prob.solve()
+        prob.solve()
         self.coefs_ = betas.value
         return self
 
