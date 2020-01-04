@@ -683,10 +683,9 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         self.remainder = remainder
         self.n_periods = n_periods
         self.input_range = input_range
-        self.pipeline = None
 
     def fit(self, X, y=None):
-        self.pipeline = ColumnTransformer(
+        self.pipeline_ = ColumnTransformer(
             [
                 (
                     "repeatingbasis",
@@ -699,13 +698,13 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
             remainder=self.remainder,
         )
 
-        self.pipeline.fit(X, y)
+        self.pipeline_.fit(X, y)
 
         return self
 
     def transform(self, X):
-        check_is_fitted(self, ["pipeline"])
-        return self.pipeline.transform(X)
+        check_is_fitted(self, ["pipeline_"])
+        return self.pipeline_.transform(X)
 
 
 class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
