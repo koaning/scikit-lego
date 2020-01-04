@@ -13,7 +13,6 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
     :param str strategy: how we want to select random values, can be "uniform" or "normal"
     :param int seed: the seed value, default: 42
     """
-
     def __init__(self, strategy="uniform", random_state=None):
         self.allowed_strategies = ("uniform", "normal")
         self.random_state = random_state
