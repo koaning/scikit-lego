@@ -413,9 +413,6 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
         Store the inverse of R of the QR decomposition of X, which can be used to calculate the orthogonal projection
         of X. If normalization is required, also stores a vector with normalization terms
         """
-        if type(X) is pd.core.frame.DataFrame:
-            self.columns_ = list(X.columns)
-
         X = check_array(X, estimator=self)
 
         if not X.shape[0] > 1:
@@ -434,10 +431,6 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """Transforms X using the fitted inverse of R. Normalizes the result if required"""
-        if type(X) is pd.core.frame.DataFrame:
-            if not self.columns_ == list(X.columns):
-                raise KeyError('Columns were not equal during fit and transform')
-
         if self.normalize:
             check_is_fitted(self, ['inv_R_', 'normalization_vector_'])
         else:
