@@ -8,3 +8,8 @@ repos:
     -   id: check-docstring-first
     -   id: check-merge-conflict
     -   id: check-added-large-files
+-   repo: https://github.com/codespell-project/codespell
+    rev: v1.16.0
+    hooks:
+    -   id: codespell
+        files: sklego/*.py
