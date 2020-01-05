@@ -51,8 +51,6 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if X.shape[1] != self.dim_:
             raise ValueError(f'Unexpected input dimension {X.shape[1]}, expected {self.dim_}')
-        if self.strategy not in self.allowed_strategies:
-            raise ValueError(f"strategy {self.strategy} is not in {self.allowed_strategies}")
 
         if self.strategy == 'normal':
             return rs.normal(self.mu_, self.sigma_, X.shape[0])
