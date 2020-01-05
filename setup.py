@@ -5,10 +5,9 @@ import sklego
 
 base_packages = ["numpy>=1.16.0", "scipy>=1.2.0", "scikit-learn>=0.20.2",
                  "pandas>=0.23.4", "patsy>=0.5.1", "autograd>=1.2", "cvxpy>=1.0.24", "Deprecated>=1.2.6"]
-docs_packages = ["sphinx>=1.8.5", "sphinx_rtd_theme>=0.4.3", "nbsphinx==0.4.2"]
-dev_packages = docs_packages + ["flake8>=3.6.0", "matplotlib>=3.0.2", "pytest>=4.0.2", "nbval>=0.9.1",
-                                "plotnine>=0.5.1", "jupyter>=1.0.0", "jupyterlab>=0.35.4", "pytest-cov>=2.6.1",
-                                "pytest-mock>=1.6.3"]
+docs_packages = ["sphinx>=1.8.5", "sphinx_rtd_theme>=0.4.3", "nbsphinx>=0.4.2"]
+test_packages = ["flake8>=3.6.0", "nbval>=0.9.1", "pytest>=4.0.2", "pytest-cov>=2.6.1", "pytest-mock>=1.6.3"]
+dev_packages = docs_packages + test_packages + ["matplotlib>=3.0.2", "plotnine>=0.5.1", "jupyter>=1.0.0", "jupyterlab>=0.35.4",]
 
 
 def read(fname):
@@ -28,7 +27,8 @@ setup(
     install_requires=base_packages,
     extras_require={
         "docs": docs_packages,
-        "dev": dev_packages
+        "dev": dev_packages,
+        "test": test_packages
     },
     classifiers=['Intended Audience :: Developers',
                  'Intended Audience :: Science/Research',

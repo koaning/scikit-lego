@@ -10,6 +10,7 @@ install:
 
 develop:
 	pip install -e ".[dev]"
+	pre-commit install
 	python setup.py develop
 
 doctest:
