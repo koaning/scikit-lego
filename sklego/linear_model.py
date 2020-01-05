@@ -19,25 +19,16 @@ from sklearn.utils.validation import (
 
 
 class ProbWeightRegression(BaseEstimator, RegressorMixin):
-    def __init__(self, non_negative=True, fit_intercept=False):
-        """
-        This regressor assumes that all input signals in `X` need to be reweighted
-        with weights that sum up to one in order to predict `y`. This can be very useful
-        in combination with `sklego.meta.EstimatorTransformer` because it allows you
-        to construct an ensemble.
+    """
+    This regressor assumes that all input signals in `X` need to be reweighted
+    with weights that sum up to one in order to predict `y`. This can be very useful
+    in combination with `sklego.meta.EstimatorTransformer` because it allows you
+    to construct an ensemble.
 
-        :param non_negative: boolean, default=True, setting that forces all weights to be >= 0
-        :param fit_intercept: boolean, default=False, setting that adds a constant value intercept,
-        note that the coefficient in this intercept is just like any other weight as far as reweighting is concerned
-        """
+    :param non_negative: boolean, default=True, setting that forces all weights to be >= 0
+    """
+    def __init__(self, non_negative=True):
         self.non_negative = non_negative
-        self.fit_intercept = fit_intercept
-
-    def _handle_intercept(self, X):
-        if self.fit_intercept:
-            ones = np.ones((X.shape[0], 1))
-            X = np.hstack([ones, X])
-        return X
 
     def fit(self, X, y):
         """
@@ -48,7 +39,6 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         :return: Returns an instance of self.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        X = self._handle_intercept(X)
 
         # Construct the problem.
         betas = cp.Variable(X.shape[1])
@@ -72,7 +62,6 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["coefs_"])
-        X = self._handle_intercept(X)
         return np.dot(X, self.coefs_)
 
 

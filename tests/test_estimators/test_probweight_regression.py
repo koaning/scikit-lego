@@ -16,16 +16,10 @@ def test_estimator_checks(test_fn):
     test_fn(ProbWeightRegression.__name__ + '_min_zero_true', regr_min_zero)
     regr_not_min_zero = ProbWeightRegression(non_negative=False)
     test_fn(ProbWeightRegression.__name__ + '_min_zero_true_false', regr_not_min_zero)
-    regr_no_intercept = ProbWeightRegression(fit_intercept=False)
-    test_fn(ProbWeightRegression.__name__ + '_no_intercept', regr_no_intercept)
 
 
 def test_shape_trained_model(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
-    mod_intercept = ProbWeightRegression(fit_intercept=True)
-    assert mod_intercept.fit(X, y).coefs_.shape == (X.shape[1] + 1, )
-    np.testing.assert_approx_equal(mod_intercept.fit(X, y).coefs_.sum(), 1.0, significant=4)
-
-    mod_no_intercept = ProbWeightRegression(fit_intercept=False)
+    mod_no_intercept = ProbWeightRegression()
     assert mod_no_intercept.fit(X, y).coefs_.shape == (X.shape[1], )
     np.testing.assert_approx_equal(mod_no_intercept.fit(X, y).coefs_.sum(), 1.0, significant=4)
