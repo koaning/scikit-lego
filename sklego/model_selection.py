@@ -23,7 +23,7 @@ class TimeGapSplit:
     Each validation fold doesn't overlap. The entire 'window' moves by 1 valid_duration until there is not enough data.
     The number of folds is automatically defined that way.
 
-    :param pandas.Series date_serie: Serie with the date, that should have all the indices of X used in split()
+    :param pandas.Series date_serie: Series with the date, that should have all the indices of X used in split()
     :param datetime.timedelta train_duration: historical training data.
     :param datetime.timedelta valid_duration: retraining period.
     :param datetime.timedelta gap_duration: forward looking window of the target.
@@ -105,8 +105,8 @@ class TimeGapSplit:
         summary = []
         X_index_df = self.join_date_and_x(X)
 
-        def get_split_info(X, indicies, j, part, summary):
-            dates = X_index_df.iloc[indicies]['__date__']
+        def get_split_info(X, indices, j, part, summary):
+            dates = X_index_df.iloc[indices]['__date__']
             mindate = dates.min()
             maxdate = dates.max()
 
@@ -115,7 +115,7 @@ class TimeGapSplit:
                 'End date': maxdate,
                 'Period': pd.to_datetime(maxdate, format='%Y%m%d') - pd.to_datetime(mindate, format='%Y%m%d'),
                 'Unique days': len(dates.unique()),
-                'nbr samples': len(indicies),
+                'nbr samples': len(indices),
             }, name=(j, part))
             summary.append(s)
             return summary
