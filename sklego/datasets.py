@@ -26,7 +26,7 @@ def load_chicken(return_X_y=False, give_pandas=False):
     >>> load_chicken(give_pandas=True).columns
     Index(['weight', 'time', 'chick', 'diet'], dtype='object')
 
-    The datasets can be found in the folowing sources:
+    The datasets can be found in the following sources:
 
     - Crowder, M. and Hand, D. (1990), Analysis of Repeated Measures, Chapman and Hall (example 5.3)
     - Hand, D. and Crowder, M. (1996), Practical Longitudinal Data Analysis, Chapman and Hall (table A.2)
@@ -63,7 +63,7 @@ def load_abalone(return_X_y=False, give_pandas=False):
            'viscera_weight', 'shell_weight', 'rings'],
           dtype='object')
 
-    The dataset was copied from Kaggle and can originally be found in: can be found in the folowing sources:
+    The dataset was copied from Kaggle and can originally be found in: can be found in the following sources:
 
     - Warwick J Nash, Tracy L Sellers, Simon R Talbot, Andrew J Cawthorn and Wes B Ford (1994)
     "The Population Biology of Abalone (_Haliotis_ species) in Tasmania."

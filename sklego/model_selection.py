@@ -69,7 +69,7 @@ class TimeGapSplit:
         X_index_df = X_index_df.sort_values('__date__', ascending=True)
 
         if len(X) != len(X_index_df):
-            raise AssertionError("X and X_index_df are not the same lenght, "
+            raise AssertionError("X and X_index_df are not the same length, "
                                  "there must be some index missing in 'self.date_serie'")
 
         date_min = X_index_df['__date__'].min()
