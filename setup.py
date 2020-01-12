@@ -22,7 +22,7 @@ setup(
     author='Vincent D. Warmerdam & Matthijs Brouns',
     url="https://scikit-lego.readthedocs.io/en/latest/",
     packages=find_packages(exclude=['notebooks']),
-    package_data={'sklego': ['data/*.csv']},
+    package_data={'sklego': ['data/*.zip']},
     long_description=read('readme.md'),
     long_description_content_type='text/markdown',
     install_requires=base_packages,
