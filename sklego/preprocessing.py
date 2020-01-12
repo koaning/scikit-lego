@@ -176,7 +176,14 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 
     def __init__(self, columns: list):
         # if the columns parameter is not a list, make it into a list
+<<<<<<< HEAD
         self.columns = as_list(columns)
+=======
+        if not isinstance(columns, list):
+            columns = [columns]
+
+        self.columns = columns
+>>>>>>> 2bcc061e2d257aa2b9809512c5b71857329df0e1
 
     def fit(self, X, y=None):
         """
