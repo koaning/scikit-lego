@@ -71,6 +71,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     :param include: types to be included in the dataframe
     :param exclude: types to be exluded in the dataframe
     """
+
     def __init__(self, include=None, exclude=None):
         self.include = include
         self.exclude = exclude
@@ -100,13 +101,13 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         :param X: pandas dataframe to select dtypes for
         """
         check_is_fitted(self, ['type_columns_', 'X_dtypes_', 'feature_names_'])
+        self._check_X_for_type(X)
         if (self.X_dtypes_ != X.dtypes).any():
             raise ValueError(f'Column dtypes were not equal during fit and transform. Fit types: \n'
                              f'{self.X_dtypes_}\n'
                              f'transform: \n'
                              f'{X.dtypes}')
 
-        self._check_X_for_type(X)
         transformed_df = X.select_dtypes(include=self.include, exclude=self.exclude)
 
         if set(list(transformed_df)) != set(self.type_columns_):
@@ -174,7 +175,8 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, columns: list):
-        self.columns = columns
+        # if the columns parameter is not a list, make it into a list
+        self.columns = as_list(columns)
 
     def fit(self, X, y=None):
         """
@@ -184,10 +186,8 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         :param y: ``pd.Series`` labels for X. unused for column selection
         :returns: ``ColumnSelector`` object.
         """
-        if not isinstance(self.columns, list):
-            self.columns = [self.columns]
-
         self._check_X_for_type(X)
+        self._check_column_length()
         self._check_column_names(X)
         return self
 
@@ -197,12 +197,18 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         :param X: ``pd.DataFrame`` on which we apply the column selection
         :returns: ``pd.DataFrame`` with only the selected columns
         """
+        self._check_X_for_type(X)
         if self.columns:
             return X[self.columns]
         return X
 
     def get_feature_names(self):
         return self.columns
+
+    def _check_column_length(self):
+        """Check if no column is selected"""
+        if len(self.columns) == 0:
+            raise ValueError("Expected columns to be at least of length 1, found length of 0 instead")
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""
@@ -282,6 +288,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
     2  7.000   NaN
     3  8.700  13.8
     """
+
     def __init__(self, quantile_range=(5.0, 95.0), interpolation='linear', discard_infs=False, copy=True):
 
         self._check_quantile_range(quantile_range)
@@ -463,6 +470,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
     :param alpha: parameter to control how much to filter, for alpha=1 we filter out
                   all information while for alpha=0 we don't apply any.
     """
+
     def __init__(self, columns, alpha=1):
         self.columns = columns
         # sklearn does not allow `as_list` immediately because of cloning reasons
@@ -579,10 +587,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
     def __init__(self, columns: list):
         # if the columns parameter is not a list, make it into a list
-        if not isinstance(columns, list):
-            columns = [columns]
-
-        self.columns = columns
+        self.columns = as_list(columns)
 
     def fit(self, X, y=None):
         """
@@ -596,6 +601,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         self._check_X_for_type(X)
         self._check_column_names(X)
         self.feature_names_ = list(X.drop(columns=self.columns).columns)
+        self._check_column_length()
         return self
 
     def transform(self, X):
@@ -604,12 +610,19 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         :param X: ``pd.DataFrame`` on which we apply the column selection
         :returns: ``pd.DataFrame`` with only the selected columns
         """
+        check_is_fitted(self, ['feature_names_'])
+        self._check_X_for_type(X)
         if self.columns:
             return X.drop(columns=self.columns)
         return X
 
     def get_feature_names(self):
         return self.feature_names_
+
+    def _check_column_length(self):
+        """Check if all columns are droped"""
+        if len(self.feature_names_) == 0:
+            raise ValueError(f"Dropping {self.columns} would result in an empty output DataFrame")
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""

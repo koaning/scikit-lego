@@ -35,6 +35,11 @@ def test_drop_one(df):
     assert_frame_equal(result_df, expected_df)
 
 
+def test_drop_all(df):
+    with pytest.raises(ValueError):
+        ColumnDropper(['a', 'b', 'c', 'd', 'e']).fit_transform(df)
+
+
 def test_drop_none(df):
     result_df = ColumnDropper([]).fit_transform(df)
     assert_frame_equal(result_df, df)
