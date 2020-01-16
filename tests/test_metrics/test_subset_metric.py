@@ -98,7 +98,7 @@ def test_subset_score_pipeline(slicing_classification_dataset):
 def test_subset_score_gridsearch(slicing_classification_dataset):
     param_grid = {"dummyclassifier__strategy": ["constant"],
                   "dummyclassifier__constant": [1]}
-    pipeline = make_pipeline(ColumnSelector('x1'), DummyClassifier())
+    pipeline = make_pipeline(DummyClassifier())
     accuracy_x1_0 = subset_score(lambda X, y_true: X['x1'] == 0, accuracy_score)
 
     cv = DisabledCV()
