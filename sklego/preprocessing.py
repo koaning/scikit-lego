@@ -176,7 +176,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 
     def __init__(self, columns: list):
         # if the columns parameter is not a list, make it into a list
-        self.columns = as_list(columns)
+        self.columns = columns
 
     def fit(self, X, y=None):
         """
@@ -186,6 +186,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         :param y: ``pd.Series`` labels for X. unused for column selection
         :returns: ``ColumnSelector`` object.
         """
+        self.columns_ = as_list(self.columns)
         self._check_X_for_type(X)
         self._check_column_length()
         self._check_column_names(X)
@@ -199,20 +200,20 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         """
         self._check_X_for_type(X)
         if self.columns:
-            return X[self.columns]
+            return X[self.columns_]
         return X
 
     def get_feature_names(self):
-        return self.columns
+        return self.columns_
 
     def _check_column_length(self):
         """Check if no column is selected"""
-        if len(self.columns) == 0:
+        if len(self.columns_) == 0:
             raise ValueError("Expected columns to be at least of length 1, found length of 0 instead")
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""
-        non_existent_columns = set(self.columns).difference(X.columns)
+        non_existent_columns = set(self.columns_).difference(X.columns)
         if len(non_existent_columns) > 0:
             raise KeyError(f'{list(non_existent_columns)} column(s) not in DataFrame')
 
@@ -473,12 +474,10 @@ class InformationFilter(BaseEstimator, TransformerMixin):
 
     def __init__(self, columns, alpha=1):
         self.columns = columns
-        # sklearn does not allow `as_list` immediately because of cloning reasons
-        self.cols = as_list(columns)
         self.alpha = alpha
 
     def _check_coltype(self, X):
-        for col in self.cols:
+        for col in as_list(self.columns):
             if isinstance(col, str):
                 if isinstance(X, np.ndarray):
                     raise ValueError(f"column {col} is a string but datatype receive is numpy.")
@@ -507,7 +506,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         """Learn the projection required to make the dataset orthogonal to sensitive columns."""
         self._check_coltype(X)
-        self.col_ids_ = [v if isinstance(v, int) else self._col_idx(X, v) for v in self.cols]
+        self.col_ids_ = [v if isinstance(v, int) else self._col_idx(X, v) for v in as_list(self.columns)]
         X = check_array(X, estimator=self)
         X_fair = X.copy()
         v_vectors = self._make_v_vectors(X, self.col_ids_)
@@ -586,8 +585,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, columns: list):
-        # if the columns parameter is not a list, make it into a list
-        self.columns = as_list(columns)
+        self.columns = columns
 
     def fit(self, X, y=None):
         """
@@ -597,10 +595,10 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         :param y: ``pd.Series`` labels for X. unused for column selection
         :returns: ``ColumnSelector`` object.
         """
-
+        self.columns_ = as_list(self.columns)
         self._check_X_for_type(X)
         self._check_column_names(X)
-        self.feature_names_ = list(X.drop(columns=self.columns).columns)
+        self.feature_names_ = list(X.drop(columns=self.columns_).columns)
         self._check_column_length()
         return self
 
@@ -612,8 +610,8 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, ['feature_names_'])
         self._check_X_for_type(X)
-        if self.columns:
-            return X.drop(columns=self.columns)
+        if self.columns_:
+            return X.drop(columns=self.columns_)
         return X
 
     def get_feature_names(self):
@@ -622,11 +620,11 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     def _check_column_length(self):
         """Check if all columns are droped"""
         if len(self.feature_names_) == 0:
-            raise ValueError(f"Dropping {self.columns} would result in an empty output DataFrame")
+            raise ValueError(f"Dropping {self.columns_} would result in an empty output DataFrame")
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""
-        non_existent_columns = set(self.columns).difference(X.columns)
+        non_existent_columns = set(self.columns_).difference(X.columns)
         if len(non_existent_columns) > 0:
             raise KeyError(f'{list(non_existent_columns)} column(s) not in DataFrame')
 
