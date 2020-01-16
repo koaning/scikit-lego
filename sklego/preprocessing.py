@@ -69,7 +69,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     Select columns in a pandas dataframe based on their dtype
 
     :param include: types to be included in the dataframe
-    :param exclude: types to be exluded in the dataframe
+    :param exclude: types to be excluded in the dataframe
     """
 
     def __init__(self, include=None, exclude=None):
@@ -644,7 +644,7 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     The transformer selects a column and transforms it with a given number of repeating
     (radial) basis functions. Radial basis functions are bell-curve shaped functions
     which take the original data as input. The basis functions are equally spaced over
-    the input range. The key feature of repeating basis funtions is that they are
+    the input range. The key feature of repeating basis functions is that they are
     continuous when moving from the max to the min of the input range. As a result these
     repeating basis functions can capture how close each datapoint is to the center of
     each repeating basis function, even when the input data has a circular nature.
