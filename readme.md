@@ -83,7 +83,8 @@ Here's a list of features that this library currently offers:
 - `sklego.linear_model.DeadZoneRegressor` experimental feature that has a deadzone in the cost function
 - `sklego.linear_model.DemographicParityClassifier` logistic classifier constrained on demographic parity 
 - `sklego.linear_model.EqualOpportunityClassifier` logistic classifier constrained on equal opportunity
-- `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a 1D GMM per column per class
+- `sklego.linear_model.ProbWeightRegression` linear model that treats coefficients as probabilistic weights
+- `sklego.naive_bayes.GaussianMixtureNB` classifies by training a 1D GMM per column per class
 - `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a bayesian 1D GMM per column per class
 - `sklego.mixture.BayesianGMMClassifier` classifies by training a bayesian GMM per class
 - `sklego.mixture.BayesianGMMOutlierDetector` detects outliers based on a trained bayesian GMM
@@ -111,6 +112,7 @@ Here's a list of features that this library currently offers:
 - `sklego.metrics.correlation_score` calculates correlation between model output and feature
 - `sklego.metrics.equal_opportunity_score` calculates equal opportunity metric
 - `sklego.metrics.p_percent_score` proxy for model fairness with regards to sensitive attribute
+- `sklego.metrics.subset_score` calculate a score on a subset of your data (meant for fairness tracking)
 
 ## New Features
 
@@ -118,5 +120,5 @@ We want to be rather open here in what we accept but we do demand three
 things before they become added to the project:
 
 1. any new feature contributes towards a demonstratable real-world usecase
-2. any new feature passes standard unit tests (we have a few for transformers and predictors)
+2. any new feature passes standard unit tests (we use the ones from scikit-learn)
 3. the feature has been discussed in the issue list beforehand
