@@ -1,4 +1,4 @@
-class ProbabilisticClassifierMeta(  type):
+class ProbabilisticClassifierMeta(type):
     def __instancecheck__(self, other):
         return hasattr(other, "predict_proba")
 

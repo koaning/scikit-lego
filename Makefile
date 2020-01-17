@@ -21,6 +21,9 @@ test: doctest
 	rm -rf .coverage*
 	pytest --nbval-lax doc/*.ipynb
 
+precommit:
+	pre-commit run
+
 spelling:
 	codespell sklego/*.py
 
@@ -37,7 +40,7 @@ clean:
 	rm -rf .ipynb_checkpoints
 	rm -rf .coverage*
 
-check: flake test spelling clean
+check: flake precommit test spelling clean
 
 pypi: clean
 	python setup.py sdist
