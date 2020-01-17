@@ -18,7 +18,7 @@ test_packages = [
     "flake8>=3.6.0",
     "nbval>=0.9.1",
     "pytest>=4.0.2",
-    "black",
+    "black>=19.3b0",
     "pytest-cov>=2.6.1",
     "pytest-mock>=1.6.3",
     "pre-commit>=1.18.3",

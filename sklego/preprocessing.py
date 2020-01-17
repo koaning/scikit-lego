@@ -803,4 +803,4 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         )
 
     def _rbf(self, arr):
-        return np.exp(-(arr / self.width_) ** 2)
+        return np.exp(-((arr / self.width_) ** 2))
