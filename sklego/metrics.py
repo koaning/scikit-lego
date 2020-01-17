@@ -17,7 +17,7 @@ def correlation_score(column):
 
     :param column: Name of the column (when X is a dataframe) or the index of the column (when X is a numpy array).
     :return:
-        A function which calculates the negative correlation between estimator.predict(X) and X[colum]
+        A function which calculates the negative correlation between estimator.predict(X) and X[column]
         (in gridsearch, larger is better and we want to typically punish correlation).
     """
 

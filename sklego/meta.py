@@ -82,9 +82,9 @@ class GroupedEstimator(BaseEstimator):
     :param shrinkage: How to perform shrinkage.
                       None: No shrinkage (default)
                       {"constant", "min_n_obs", "relative"} or a callable
-                      * constant: shrinked prediction for a level is weighted average of its prediction and its
+                      * constant: shrunk prediction for a level is weighted average of its prediction and its
                                   parents prediction
-                      * min_n_obs: shrinked prediction is the prediction for the smallest group with at least
+                      * min_n_obs: shrunk prediction is the prediction for the smallest group with at least
                                    n observations in it
                       * relative: each group-level is weight according to its size
                       * function: a function that takes a list of group lengths and returns an array of the
