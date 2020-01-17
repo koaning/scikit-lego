@@ -12,6 +12,7 @@ repos:
     rev: 19.3b0
     hooks:
     -   id: black
+        files: sklego
 -   repo: https://github.com/codespell-project/codespell
     rev: v1.16.0
     hooks:
