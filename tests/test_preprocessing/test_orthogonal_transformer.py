@@ -19,11 +19,9 @@ def sample_df(sample_matrix):
     return pd.DataFrame(sample_matrix)
 
 
-@pytest.mark.parametrize("test_fn", flatten([
-    nonmeta_checks,
-    general_checks,
-    transformer_checks
-]))
+@pytest.mark.parametrize(
+    "test_fn", flatten([nonmeta_checks, general_checks, transformer_checks])
+)
 def test_estimator_checks(test_fn):
     test_fn(OrthogonalTransformer.__name__, OrthogonalTransformer())
 
@@ -38,7 +36,7 @@ def check_is_orthogonal(X, tolerance=10 ** -5):
     diff_with_eye = np.dot(X.T, X) - np.eye(X.shape[1])
 
     if np.max(np.abs(diff_with_eye)) > tolerance:
-        raise AssertionError('X is not orthogonal')
+        raise AssertionError("X is not orthogonal")
 
 
 def check_is_orthonormal(X, tolerance=10 ** -5):
@@ -54,15 +52,15 @@ def check_is_orthonormal(X, tolerance=10 ** -5):
     norms = np.linalg.norm(X, ord=2, axis=0)
 
     if (max(norms) > 1 + tolerance) or (min(norms) < 1 - tolerance):
-        raise AssertionError('X is not orthonormal')
+        raise AssertionError("X is not orthonormal")
 
 
 def test_orthogonal_transformer(sample_matrix):
     ot = OrthogonalTransformer(normalize=False)
     ot.fit(X=sample_matrix)
 
-    assert hasattr(ot, 'inv_R_')
-    assert hasattr(ot, 'normalization_vector_')
+    assert hasattr(ot, "inv_R_")
+    assert hasattr(ot, "normalization_vector_")
     assert ot.inv_R_.shape[0] == sample_matrix.shape[1]
 
     assert all(ot.normalization_vector_ == 1)
@@ -76,8 +74,8 @@ def test_orthonormal_transformer(sample_matrix):
     ot = OrthogonalTransformer(normalize=True)
     ot.fit(X=sample_matrix)
 
-    assert hasattr(ot, 'inv_R_')
-    assert hasattr(ot, 'normalization_vector_')
+    assert hasattr(ot, "inv_R_")
+    assert hasattr(ot, "normalization_vector_")
     assert ot.inv_R_.shape[0] == sample_matrix.shape[1]
     assert ot.normalization_vector_.shape[0] == sample_matrix.shape[1]
 

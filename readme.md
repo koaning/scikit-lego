@@ -5,6 +5,7 @@
 ![](https://img.shields.io/github/license/koaning/scikit-lego)
 ![](https://img.shields.io/pypi/pyversions/scikit-lego)
 ![](https://img.shields.io/github/contributors/koaning/scikit-lego)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # scikit-lego
 
@@ -16,9 +17,9 @@ is to attempt to consolidate these into a package that offers
 code quality/testing. This project is a collaboration between
 multiple companies in the Netherlands. It was initiated by Matthijs
 Brouns and Vincent D. Warmerdam as a tool to teach people how
-to contribute to open source. 
+to contribute to open source.
 
-Note that we're not formally affiliated with the scikit-learn project at all. 
+Note that we're not formally affiliated with the scikit-learn project at all.
 
 The same holds with lego. LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this site.
 
@@ -81,9 +82,10 @@ Here's a list of features that this library currently offers:
 - `sklego.pandas_utils.log_step` a useful decorator to log your pipeline steps
 - `sklego.dummy.RandomRegressor` dummy benchmark that predicts random values
 - `sklego.linear_model.DeadZoneRegressor` experimental feature that has a deadzone in the cost function
-- `sklego.linear_model.DemographicParityClassifier` logistic classifier constrained on demographic parity 
+- `sklego.linear_model.DemographicParityClassifier` logistic classifier constrained on demographic parity
 - `sklego.linear_model.EqualOpportunityClassifier` logistic classifier constrained on equal opportunity
-- `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a 1D GMM per column per class
+- `sklego.linear_model.ProbWeightRegression` linear model that treats coefficients as probabilistic weights
+- `sklego.naive_bayes.GaussianMixtureNB` classifies by training a 1D GMM per column per class
 - `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a bayesian 1D GMM per column per class
 - `sklego.mixture.BayesianGMMClassifier` classifies by training a bayesian GMM per class
 - `sklego.mixture.BayesianGMMOutlierDetector` detects outliers based on a trained bayesian GMM
@@ -100,7 +102,7 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.ColumnDropper` drops a column from pandas
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
 - `sklego.preprocessing.InformationFilter` transformer that can de-correlate features
-- `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independant
+- `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independent
 - `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
 - `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
 - `sklego.preprocessing.RandomAdder` adds randomness in training
@@ -111,6 +113,7 @@ Here's a list of features that this library currently offers:
 - `sklego.metrics.correlation_score` calculates correlation between model output and feature
 - `sklego.metrics.equal_opportunity_score` calculates equal opportunity metric
 - `sklego.metrics.p_percent_score` proxy for model fairness with regards to sensitive attribute
+- `sklego.metrics.subset_score` calculate a score on a subset of your data (meant for fairness tracking)
 
 ## New Features
 
@@ -118,5 +121,7 @@ We want to be rather open here in what we accept but we do demand three
 things before they become added to the project:
 
 1. any new feature contributes towards a demonstratable real-world usecase
-2. any new feature passes standard unit tests (we have a few for transformers and predictors)
+2. any new feature passes standard unit tests (we use the ones from scikit-learn)
 3. the feature has been discussed in the issue list beforehand
+
+We automate all of our testing and use pre-commit hooks to keep the load on travis light.

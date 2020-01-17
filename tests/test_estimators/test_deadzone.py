@@ -19,9 +19,7 @@ def mod(request):
     return DeadZoneRegressor(effect=request.param, n_iter=1000)
 
 
-@pytest.mark.parametrize("test_fn", [
-    check_shape_remains_same_regressor
-])
+@pytest.mark.parametrize("test_fn", [check_shape_remains_same_regressor])
 def test_deadzone(test_fn):
     regr = DeadZoneRegressor(n_iter=10)
     test_fn(DeadZoneRegressor.__name__, regr)

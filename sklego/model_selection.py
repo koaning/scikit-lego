@@ -33,15 +33,19 @@ class TimeGapSplit:
         the training data.
     """
 
-    def __init__(self, date_serie, train_duration, valid_duration, gap_duration=timedelta(0)):
+    def __init__(
+        self, date_serie, train_duration, valid_duration, gap_duration=timedelta(0)
+    ):
         if train_duration <= gap_duration:
-            raise ValueError("gap_duration is longer than train_duration, it should be shorter.")
+            raise ValueError(
+                "gap_duration is longer than train_duration, it should be shorter."
+            )
 
         if not date_serie.index.is_unique:
             raise ValueError("date_serie doesn't have a unique index")
 
         self.date_serie = date_serie.copy()
-        self.date_serie = self.date_serie.rename('__date__')
+        self.date_serie = self.date_serie.rename("__date__")
         self.train_duration = train_duration
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
@@ -52,7 +56,7 @@ class TimeGapSplit:
         and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn
         :param pandas.DataFrame X:
         """
-        X_index_df = pd.DataFrame(range(len(X)), columns=['np_index'], index=X.index)
+        X_index_df = pd.DataFrame(range(len(X)), columns=["np_index"], index=X.index)
         X_index_df = X_index_df.join(self.date_serie)
 
         return X_index_df
@@ -66,14 +70,16 @@ class TimeGapSplit:
         """
 
         X_index_df = self.join_date_and_x(X)
-        X_index_df = X_index_df.sort_values('__date__', ascending=True)
+        X_index_df = X_index_df.sort_values("__date__", ascending=True)
 
         if len(X) != len(X_index_df):
-            raise AssertionError("X and X_index_df are not the same length, "
-                                 "there must be some index missing in 'self.date_serie'")
+            raise AssertionError(
+                "X and X_index_df are not the same length, "
+                "there must be some index missing in 'self.date_serie'"
+            )
 
-        date_min = X_index_df['__date__'].min()
-        date_max = X_index_df['__date__'].max()
+        date_min = X_index_df["__date__"].min()
+        date_max = X_index_df["__date__"].max()
 
         current_date = date_min
         while True:
@@ -81,16 +87,23 @@ class TimeGapSplit:
                 break
 
             X_train_df = X_index_df[
-                (X_index_df['__date__'] >= current_date) &
-                (X_index_df['__date__'] < current_date + self.train_duration - self.gap_duration)]
+                (X_index_df["__date__"] >= current_date)
+                & (
+                    X_index_df["__date__"]
+                    < current_date + self.train_duration - self.gap_duration
+                )
+            ]
             X_valid_df = X_index_df[
-                (X_index_df['__date__'] >= current_date + self.train_duration) &
-                (X_index_df['__date__'] < current_date + self.train_duration + self.valid_duration)]
+                (X_index_df["__date__"] >= current_date + self.train_duration)
+                & (
+                    X_index_df["__date__"]
+                    < current_date + self.train_duration + self.valid_duration
+                )
+            ]
 
             current_date = current_date + self.valid_duration
 
-            yield (X_train_df['np_index'].values,
-                   X_valid_df['np_index'].values)
+            yield (X_train_df["np_index"].values, X_valid_df["np_index"].values)
 
     def get_n_splits(self, X=None, y=None, groups=None):
 
@@ -106,17 +119,21 @@ class TimeGapSplit:
         X_index_df = self.join_date_and_x(X)
 
         def get_split_info(X, indices, j, part, summary):
-            dates = X_index_df.iloc[indices]['__date__']
+            dates = X_index_df.iloc[indices]["__date__"]
             mindate = dates.min()
             maxdate = dates.max()
 
-            s = pd.Series({
-                'Start date': mindate,
-                'End date': maxdate,
-                'Period': pd.to_datetime(maxdate, format='%Y%m%d') - pd.to_datetime(mindate, format='%Y%m%d'),
-                'Unique days': len(dates.unique()),
-                'nbr samples': len(indices),
-            }, name=(j, part))
+            s = pd.Series(
+                {
+                    "Start date": mindate,
+                    "End date": maxdate,
+                    "Period": pd.to_datetime(maxdate, format="%Y%m%d")
+                    - pd.to_datetime(mindate, format="%Y%m%d"),
+                    "Unique days": len(dates.unique()),
+                    "nbr samples": len(indices),
+                },
+                name=(j, part),
+            )
             summary.append(s)
             return summary
 
@@ -140,7 +157,9 @@ class KlusterFoldValidation:
 
     def __init__(self, cluster_method=None):
         if not isinstance(cluster_method, Clusterer):
-            raise ValueError("The KlusterFoldValidation only works on cluster methods with .fit_predict.")
+            raise ValueError(
+                "The KlusterFoldValidation only works on cluster methods with .fit_predict."
+            )
 
         self.cluster_method = cluster_method
         self.n_splits = None

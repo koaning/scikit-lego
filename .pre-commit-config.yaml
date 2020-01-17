@@ -8,8 +8,17 @@ repos:
     -   id: check-docstring-first
     -   id: check-merge-conflict
     -   id: check-added-large-files
+-   repo: https://github.com/psf/black
+    rev: stable
+    hooks:
+    -   id: black
+        files: sklego
 -   repo: https://github.com/codespell-project/codespell
     rev: v1.16.0
     hooks:
     -   id: codespell
         files: sklego/*.py
+    -   id: codespell
+        files: doc
+    -   id: codespell
+        files: readme.md
