@@ -27,6 +27,7 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
 
     :param non_negative: boolean, default=True, setting that forces all weights to be >= 0
     """
+
     def __init__(self, non_negative=True):
         self.non_negative = non_negative
 

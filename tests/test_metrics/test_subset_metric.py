@@ -20,6 +20,7 @@ class DisabledCV:
     where you do not want to actually do crossvalidation. For testing purposes we can use this to
     remove any unpredictability
     """
+
     def __init__(self):
         self.n_splits = 1
 
@@ -32,20 +33,22 @@ class DisabledCV:
 
 @pytest.fixture
 def slicing_classification_dataset():
-    df = pd.DataFrame({
-        'x1': [1, 1, 1, 1, 0, 0, 0, 0],
-        'x2': [2, 2, 3, 3, 4, 4, 5, 5],
-        'y': [0, 1, 1, 1, 0, 0, 0, 1]
-    })
-    return df[['x1', 'x2']], df['y']
+    df = pd.DataFrame(
+        {
+            "x1": [1, 1, 1, 1, 0, 0, 0, 0],
+            "x2": [2, 2, 3, 3, 4, 4, 5, 5],
+            "y": [0, 1, 1, 1, 0, 0, 0, 1],
+        }
+    )
+    return df[["x1", "x2"]], df["y"]
 
 
 def test_subset_score_accuracy_pandas(slicing_classification_dataset):
     X, y = slicing_classification_dataset
     model = DummyClassifier(strategy="constant", constant=1).fit(X, y)
 
-    accuracy_x1_0 = subset_score(lambda X, y_true: X['x1'] == 0, accuracy_score)
-    accuracy_x1_1 = subset_score(lambda X, y_true: X['x1'] == 1, accuracy_score)
+    accuracy_x1_0 = subset_score(lambda X, y_true: X["x1"] == 0, accuracy_score)
+    accuracy_x1_1 = subset_score(lambda X, y_true: X["x1"] == 1, accuracy_score)
     assert accuracy_x1_0(estimator=model, X=X, y_true=y) == 0.25
     assert accuracy_x1_1(estimator=model, X=X, y_true=y) == 0.75
 
@@ -65,7 +68,7 @@ def test_warning_is_logged_empty_slice(slicing_classification_dataset):
     X, y = slicing_classification_dataset
     model = DummyClassifier(strategy="constant", constant=1).fit(X, y)
 
-    accuracy_x1_0 = subset_score(lambda X, y_true: X['x1'] == 2, accuracy_score)
+    accuracy_x1_0 = subset_score(lambda X, y_true: X["x1"] == 2, accuracy_score)
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
@@ -87,22 +90,25 @@ def test_wrong_subset_dimensions_raise_value_error(slicing_classification_datase
 def test_subset_score_pipeline(slicing_classification_dataset):
     X, y = slicing_classification_dataset
     model = make_pipeline(
-        ColumnSelector('x1'),
-        DummyClassifier(strategy="constant", constant=1),
+        ColumnSelector("x1"), DummyClassifier(strategy="constant", constant=1)
     ).fit(X, y)
 
-    accuracy_x1_0 = subset_score(lambda X, y_true: X['x1'] == 0, accuracy_score)
+    accuracy_x1_0 = subset_score(lambda X, y_true: X["x1"] == 0, accuracy_score)
     assert accuracy_x1_0(estimator=model, X=X, y_true=y) == 0.25
 
 
 def test_subset_score_gridsearch(slicing_classification_dataset):
-    param_grid = {"dummyclassifier__strategy": ["constant"],
-                  "dummyclassifier__constant": [1]}
+    param_grid = {
+        "dummyclassifier__strategy": ["constant"],
+        "dummyclassifier__constant": [1],
+    }
     pipeline = make_pipeline(DummyClassifier())
-    accuracy_x1_0 = subset_score(lambda X, y_true: X['x1'] == 0, accuracy_score)
+    accuracy_x1_0 = subset_score(lambda X, y_true: X["x1"] == 0, accuracy_score)
 
     cv = DisabledCV()
-    search = GridSearchCV(estimator=pipeline, param_grid=param_grid, scoring=accuracy_x1_0, cv=cv)
+    search = GridSearchCV(
+        estimator=pipeline, param_grid=param_grid, scoring=accuracy_x1_0, cv=cv
+    )
 
     X, y = slicing_classification_dataset
     search.fit(X, y)

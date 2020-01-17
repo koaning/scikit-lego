@@ -1,6 +1,6 @@
 class ProbabilisticClassifierMeta(type):
     def __instancecheck__(self, other):
-        return hasattr(other, 'predict_proba')
+        return hasattr(other, "predict_proba")
 
 
 class ProbabilisticClassifier(metaclass=ProbabilisticClassifierMeta):
@@ -9,7 +9,7 @@ class ProbabilisticClassifier(metaclass=ProbabilisticClassifierMeta):
 
 class ClustererMeta(type):
     def __instancecheck__(self, other):
-        return hasattr(other, 'fit_predict')
+        return hasattr(other, "fit_predict")
 
 
 class Clusterer(metaclass=ClustererMeta):
