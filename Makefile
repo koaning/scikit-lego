@@ -40,6 +40,9 @@ clean:
 	rm -rf .ipynb_checkpoints
 	rm -rf .coverage*
 
+black:
+	black sklego tests setup.py
+
 check: flake precommit test spelling clean
 
 pypi: clean
