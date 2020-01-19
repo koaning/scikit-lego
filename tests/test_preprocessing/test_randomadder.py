@@ -9,20 +9,25 @@ from sklego.preprocessing import RandomAdder
 from tests.conftest import nonmeta_checks
 
 
-@pytest.mark.parametrize("test_fn", flatten([
-    nonmeta_checks,
-    # Transformer checks
-    check_transformers_unfitted,
-    # General checks
-    estimator_checks.check_fit2d_predict1d,
-    estimator_checks.check_fit2d_1sample,
-    estimator_checks.check_fit2d_1feature,
-    estimator_checks.check_fit1d,
-    estimator_checks.check_get_params_invariance,
-    estimator_checks.check_set_params,
-    estimator_checks.check_dict_unchanged,
-    estimator_checks.check_dont_overwrite_parameters
-]))
+@pytest.mark.parametrize(
+    "test_fn",
+    flatten(
+        [
+            nonmeta_checks,
+            # Transformer checks
+            check_transformers_unfitted,
+            # General checks
+            estimator_checks.check_fit2d_predict1d,
+            estimator_checks.check_fit2d_1sample,
+            estimator_checks.check_fit2d_1feature,
+            estimator_checks.check_fit1d,
+            estimator_checks.check_get_params_invariance,
+            estimator_checks.check_set_params,
+            estimator_checks.check_dict_unchanged,
+            estimator_checks.check_dont_overwrite_parameters,
+        ]
+    ),
+)
 def test_estimator_checks(test_fn):
     # Tests that are skipped:
     # check_methods_subset_invariance: Since we add noise, the method is not invariant on a subset

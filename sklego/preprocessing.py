@@ -23,7 +23,7 @@ class RandomAdder(TrainOnlyTransformerMixin, BaseEstimator):
 
     def transform_train(self, X):
         rs = check_random_state(self.random_state)
-        check_is_fitted(self, ['dim_'])
+        check_is_fitted(self, ["dim_"])
 
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
 
@@ -57,7 +57,7 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
 
         Returns an design array that can be used in sklearn pipelines.
         """
-        check_is_fitted(self, 'design_info_')
+        check_is_fitted(self, "design_info_")
         try:
             return build_design_matrices([self.design_info_], X)[0]
         except PatsyError as e:
@@ -84,7 +84,9 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         """
         self._check_X_for_type(X)
         self.X_dtypes_ = X.dtypes
-        self.feature_names_ = list(X.select_dtypes(include=self.include, exclude=self.exclude).columns)
+        self.feature_names_ = list(
+            X.select_dtypes(include=self.include, exclude=self.exclude).columns
+        )
 
         if len(self.feature_names_) == 0:
             raise ValueError(f'Provided type(s) results in empty dateframe')
@@ -209,13 +211,15 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
     def _check_column_length(self):
         """Check if no column is selected"""
         if len(self.columns_) == 0:
-            raise ValueError("Expected columns to be at least of length 1, found length of 0 instead")
+            raise ValueError(
+                "Expected columns to be at least of length 1, found length of 0 instead"
+            )
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""
         non_existent_columns = set(self.columns_).difference(X.columns)
         if len(non_existent_columns) > 0:
-            raise KeyError(f'{list(non_existent_columns)} column(s) not in DataFrame')
+            raise KeyError(f"{list(non_existent_columns)} column(s) not in DataFrame")
 
     @staticmethod
     def _check_X_for_type(X):
@@ -290,7 +294,13 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
     3  8.700  13.8
     """
 
-    def __init__(self, quantile_range=(5.0, 95.0), interpolation='linear', discard_infs=False, copy=True):
+    def __init__(
+        self,
+        quantile_range=(5.0, 95.0),
+        interpolation="linear",
+        discard_infs=False,
+        copy=True,
+    ):
 
         self._check_quantile_range(quantile_range)
         self._check_interpolation(interpolation)
@@ -315,7 +325,9 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         :raises:
             ``ValueError`` if ``X`` contains non-numeric columns
         """
-        X = check_array(X, copy=True, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
+        X = check_array(
+            X, copy=True, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self
+        )
 
         # If X contains infs, we need to replace them by nans before computing quantiles
         np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
@@ -323,13 +335,18 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         # There should be no column containing only nan cells at this point. If that's not the case,
         # it means that the user asked ColumnCapper to fit some column containing only nan or inf cells.
         nans_mask = np.isnan(X)
-        invalid_columns_mask = nans_mask.sum(axis=0) == X.shape[0]  # Contains as many nans as rows
+        invalid_columns_mask = (
+            nans_mask.sum(axis=0) == X.shape[0]
+        )  # Contains as many nans as rows
         if invalid_columns_mask.any():
-            raise ValueError("ColumnCapper cannot fit columns containing only inf/nan values")
+            raise ValueError(
+                "ColumnCapper cannot fit columns containing only inf/nan values"
+            )
 
-        q = [quantile_limit/100 for quantile_limit in self.quantile_range]
-        self.quantiles_ = np.nanquantile(a=X, q=q, axis=0, overwrite_input=True,
-                                         interpolation=self.interpolation)
+        q = [quantile_limit / 100 for quantile_limit in self.quantile_range]
+        self.quantiles_ = np.nanquantile(
+            a=X, q=q, axis=0, overwrite_input=True, interpolation=self.interpolation
+        )
 
         # Saving the number of columns to ensure coherence between fit and transform inputs
         self.n_columns_ = X.shape[1]
@@ -350,11 +367,19 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             ``ValueError`` if the number of columns from ``X`` differs from the
             number of columns when fitting
         """
-        check_is_fitted(self, 'quantiles_')
-        X = check_array(X, copy=self.copy, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
+        check_is_fitted(self, "quantiles_")
+        X = check_array(
+            X,
+            copy=self.copy,
+            force_all_finite=False,
+            dtype=FLOAT_DTYPES,
+            estimator=self,
+        )
 
         if X.shape[1] != self.n_columns_:
-            raise ValueError("X must have the same number of columns in fit and transform")
+            raise ValueError(
+                "X must have the same number of columns in fit and transform"
+            )
 
         if self.discard_infs:
             np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
@@ -370,10 +395,14 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         """
         Checks for the validity of quantile_range.
         """
-        if not isinstance(quantile_range, tuple) and not isinstance(quantile_range, list):
+        if not isinstance(quantile_range, tuple) and not isinstance(
+            quantile_range, list
+        ):
             raise TypeError("quantile_range must be a tuple or a list")
         if len(quantile_range) != 2:
-            raise ValueError("quantile_range must contain 2 elements: min_quantile and max_quantile")
+            raise ValueError(
+                "quantile_range must contain 2 elements: min_quantile and max_quantile"
+            )
 
         min_quantile, max_quantile = quantile_range
 
@@ -391,9 +420,13 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         """
         Checks for the validity of interpolation
         """
-        allowed_interpolations = ('linear', 'lower', 'higher', 'midpoint', 'nearest')
+        allowed_interpolations = ("linear", "lower", "higher", "midpoint", "nearest")
         if interpolation not in allowed_interpolations:
-            raise ValueError("Available interpolation methods: {}".format(', '.join(allowed_interpolations)))
+            raise ValueError(
+                "Available interpolation methods: {}".format(
+                    ", ".join(allowed_interpolations)
+                )
+            )
 
 
 class OrthogonalTransformer(BaseEstimator, TransformerMixin):
@@ -423,16 +456,16 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
         if self.normalize:
             self.normalization_vector_ = np.linalg.norm(Q, ord=2, axis=0)
         else:
-            self.normalization_vector_ = np.ones((X.shape[1], ))
+            self.normalization_vector_ = np.ones((X.shape[1],))
 
         return self
 
     def transform(self, X):
         """Transforms X using the fitted inverse of R. Normalizes the result if required"""
         if self.normalize:
-            check_is_fitted(self, ['inv_R_', 'normalization_vector_'])
+            check_is_fitted(self, ["inv_R_", "normalization_vector_"])
         else:
-            check_is_fitted(self, ['inv_R_'])
+            check_is_fitted(self, ["inv_R_"])
 
         X = check_array(X, estimator=self)
 
@@ -440,7 +473,7 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
 
 
 def scalar_projection(vec, unto):
-    return vec.dot(unto)/unto.dot(unto)
+    return vec.dot(unto) / unto.dot(unto)
 
 
 def vector_projection(vec, unto):
@@ -480,18 +513,24 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         for col in as_list(self.columns):
             if isinstance(col, str):
                 if isinstance(X, np.ndarray):
-                    raise ValueError(f"column {col} is a string but datatype receive is numpy.")
+                    raise ValueError(
+                        f"column {col} is a string but datatype receive is numpy."
+                    )
                 if isinstance(X, pd.DataFrame):
                     if col not in X.columns:
                         raise ValueError(f"column {col} is not in {X.columns}")
             if isinstance(col, int):
                 if col not in range(np.atleast_2d(np.array(X)).shape[1]):
-                    raise ValueError(f"column {col} is out of bounds for input shape {X.shape}")
+                    raise ValueError(
+                        f"column {col} is out of bounds for input shape {X.shape}"
+                    )
 
     def _col_idx(self, X, name):
         if isinstance(name, str):
             if isinstance(X, np.ndarray):
-                raise ValueError("You cannot have a column of type string on a numpy input matrix.")
+                raise ValueError(
+                    "You cannot have a column of type string on a numpy input matrix."
+                )
             return {name: i for i, name in enumerate(X.columns)}[name]
         return name
 
@@ -506,7 +545,10 @@ class InformationFilter(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         """Learn the projection required to make the dataset orthogonal to sensitive columns."""
         self._check_coltype(X)
-        self.col_ids_ = [v if isinstance(v, int) else self._col_idx(X, v) for v in as_list(self.columns)]
+        self.col_ids_ = [
+            v if isinstance(v, int) else self._col_idx(X, v)
+            for v in as_list(self.columns)
+        ]
         X = check_array(X, estimator=self)
         X_fair = X.copy()
         v_vectors = self._make_v_vectors(X, self.col_ids_)
@@ -521,14 +563,16 @@ class InformationFilter(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """Transforms X by applying the information filter."""
-        check_is_fitted(self, ['projection_', 'col_ids_'])
+        check_is_fitted(self, ["projection_", "col_ids_"])
         self._check_coltype(X)
         X = check_array(X, estimator=self)
         # apply the projection and remove the column we won't need
         X_fair = X @ self.projection_
         X_removed = np.delete(X_fair, self.col_ids_, axis=1)
         X_orig = np.delete(X, self.col_ids_, axis=1)
-        return self.alpha * np.atleast_2d(X_removed) + (1 - self.alpha) * np.atleast_2d(X_orig)
+        return self.alpha * np.atleast_2d(X_removed) + (1 - self.alpha) * np.atleast_2d(
+            X_orig
+        )
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
@@ -608,7 +652,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         :param X: ``pd.DataFrame`` on which we apply the column selection
         :returns: ``pd.DataFrame`` with only the selected columns
         """
-        check_is_fitted(self, ['feature_names_'])
+        check_is_fitted(self, ["feature_names_"])
         self._check_X_for_type(X)
         if self.columns_:
             return X.drop(columns=self.columns_)
@@ -620,13 +664,15 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     def _check_column_length(self):
         """Check if all columns are droped"""
         if len(self.feature_names_) == 0:
-            raise ValueError(f"Dropping {self.columns_} would result in an empty output DataFrame")
+            raise ValueError(
+                f"Dropping {self.columns_} would result in an empty output DataFrame"
+            )
 
     def _check_column_names(self, X):
         """Check if one or more of the columns provided doesn't exist in the input DataFrame"""
         non_existent_columns = set(self.columns_).difference(X.columns)
         if len(non_existent_columns) > 0:
-            raise KeyError(f'{list(non_existent_columns)} column(s) not in DataFrame')
+            raise KeyError(f"{list(non_existent_columns)} column(s) not in DataFrame")
 
     @staticmethod
     def _check_X_for_type(X):
@@ -668,9 +714,7 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         the week this is (1,7). If input_range=None it is inferred from the training data.
     """
 
-    def __init__(
-        self, column=0, remainder="drop", n_periods=12, input_range=None
-    ):
+    def __init__(self, column=0, remainder="drop", n_periods=12, input_range=None):
         self.column = column
         self.remainder = remainder
         self.n_periods = n_periods
@@ -755,4 +799,4 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         )
 
     def _rbf(self, arr):
-        return np.exp(-(arr / self.width_) ** 2)
+        return np.exp(-((arr / self.width_) ** 2))

@@ -26,11 +26,11 @@ class DummyCluster(BaseEstimator):
         return self.predict(X)
 
 
-@pytest.mark.parametrize("cluster_method", [KMeans(),
-                                            MiniBatchKMeans(),
-                                            DummyCluster(),
-                                            k_means_pipeline,
-                                            ], ids=id_func)
+@pytest.mark.parametrize(
+    "cluster_method",
+    [KMeans(), MiniBatchKMeans(), DummyCluster(), k_means_pipeline],
+    ids=id_func,
+)
 def test_splits_not_fitted(cluster_method, random_xy_dataset_regr):
     cluster_method = clone(cluster_method)
     X, y = random_xy_dataset_regr
@@ -40,11 +40,11 @@ def test_splits_not_fitted(cluster_method, random_xy_dataset_regr):
         assert len(test_index) > 0
 
 
-@pytest.mark.parametrize("cluster_method", [KMeans(),
-                                            MiniBatchKMeans(),
-                                            DummyCluster(),
-                                            k_means_pipeline,
-                                            ], ids=id_func)
+@pytest.mark.parametrize(
+    "cluster_method",
+    [KMeans(), MiniBatchKMeans(), DummyCluster(), k_means_pipeline],
+    ids=id_func,
+)
 def test_splits_fitted(cluster_method, random_xy_dataset_regr):
     cluster_method = clone(cluster_method)
     X, y = random_xy_dataset_regr

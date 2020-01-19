@@ -175,16 +175,20 @@ def subset_score(subset_picker: Callable, score: Callable, **kwargs):
     :param kwargs: Additional keyword arguments to pass to score
     :return: a function that calculates the passed score for the subset
     """
+
     def sliced_metric(estimator, X, y_true=None):
         mask = subset_picker(X, y_true)
         if isinstance(mask, np.ndarray):
             if len(mask.shape) > 1:
-                raise ValueError("`subset_picker` should return 1-dimensional numpy array or Pandas" +
-                                 " series, returned {} instead".format(len(mask.shape)))
+                raise ValueError(
+                    "`subset_picker` should return 1-dimensional numpy array or Pandas"
+                    + " series, returned {} instead".format(len(mask.shape))
+                )
         if np.sum(mask) == 0:
             warnings.warn(f"No samples in subset, returning NaN", RuntimeWarning)
             return np.nan
         X = X[mask]
         y_pred = estimator.predict(X)
         return score(y_true[mask], y_pred, **kwargs)
+
     return sliced_metric
