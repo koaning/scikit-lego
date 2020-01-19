@@ -89,7 +89,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         )
 
         if len(self.feature_names_) == 0:
-            raise ValueError(f'Provided type(s) results in empty dateframe')
+            raise ValueError(f"Provided type(s) results in empty dateframe")
 
         return self
 
@@ -101,16 +101,18 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         Transforms pandas dataframe by (de)selecting columns based on their dtype
         :param X: pandas dataframe to select dtypes for
         """
-        check_is_fitted(self, ['X_dtypes_', 'feature_names_'])
+        check_is_fitted(self, ["X_dtypes_", "feature_names_"])
 
         try:
             if (self.X_dtypes_ != X.dtypes).any():
-                raise ValueError(f'Column dtypes were not equal during fit and transform. Fit types: \n'
-                                 f'{self.X_dtypes_}\n'
-                                 f'transform: \n'
-                                 f'{X.dtypes}')
+                raise ValueError(
+                    f"Column dtypes were not equal during fit and transform. Fit types: \n"
+                    f"{self.X_dtypes_}\n"
+                    f"transform: \n"
+                    f"{X.dtypes}"
+                )
         except ValueError as e:
-            raise ValueError(f'Columns were not equal during fit and transform') from e
+            raise ValueError(f"Columns were not equal during fit and transform") from e
 
         self._check_X_for_type(X)
         transformed_df = X.select_dtypes(include=self.include, exclude=self.exclude)
