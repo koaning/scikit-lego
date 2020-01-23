@@ -20,7 +20,10 @@ Before You Make a New Feature
 When Writing a New Feature
 --------------------------
 
-When writing a new feauture there's some more details with regard to
+Note that our project uses pre commit hooks. We check both for spelling as well
+as styleguides.
+
+When writing a new feature there's some more details with regard to
 how scikit learn likes to have it's parts implemented. We will display the a
 sample implementation of the `ColumnSelector` below. Please review all comments marked as Important.
 
@@ -36,7 +39,7 @@ sample implementation of the `ColumnSelector` below. Please review all comments 
         Select columns in a pandas dataframe based on their dtype
 
         :param include: types to be included in the dataframe
-        :param exclude: types to be exluded in the dataframe
+        :param exclude: types to be excluded in the dataframe
         """
         def __init__(self, include=None, exclude=None):
             # Important: You can't use `*args` or `**kwargs` in the `__init__` method. `scikit-learn` uses the

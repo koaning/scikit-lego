@@ -9,6 +9,63 @@ from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_
 from sklego.common import TrainOnlyTransformerMixin, as_list
 
 
+def _mk_average(xs, ys, intervals, span=1, method="average"):
+    """
+    Creates smoothed averages of `ys` at the intervals given by `intervals`.
+    :param xs: all the datapoints of a feature (represents the x-axis)
+    :param ys: all the datapoints what we'd like to predict (represents the y-axis)
+    :param intervals: the intervals at which we'd like to get a good average value
+    :param span: if the method is `average` then this is the span around the interval
+    that is used to determine the average `y`-value, if the method is `normal` the span
+    becomes the value of sigma that is used for weighted averaging
+    :param method: the method that is used for smoothing, can be either `average` or `normal`.
+    :return:
+        An array as long as `intervals` that represents the average `y`-values at those intervals.
+    """
+    if method == "average":
+        distances = 1 / (0.01 + np.abs(xs - intervals))
+        predicate = (xs < (intervals + span)) | (xs < (intervals - span))
+    elif method == "normal":
+        distances = np.exp(-((xs - intervals) ** 2) / span)
+        predicate = xs == xs
+    else:
+        raise ValueError("method needs to be either `average` or `normal`")
+    subset = ys[predicate]
+    dist_subset = distances[predicate]
+    return np.average(subset, weights=dist_subset)
+
+
+class FeatureSmoother(TransformerMixin, BaseEstimator):
+    """
+    The feature smoother smoothes features in `X` with regards to`y`.
+    We take each column in X seperately and smooth it towards `y`.
+    Note that this allows us to make certain features strictly monotonic.
+    """
+
+    def __init__(self, chunks, span, method):
+        self.span = span
+        self.method = method
+        self.n_chunks = chunks
+
+    def _check_X_in(self, X):
+        if X.shape[1] > 1:
+            raise ValueError(f"X.shape[1] needs to be 1, got {X.shape[1]}")
+
+    def fit(self, X, y):
+        self._check_X_in(X)
+        X = X.reshape(-1)
+        self.quantiles_ = np.quantile(X, q=np.linspace(0, 1, self.n_chunks))
+        self.heights_ = [
+            _mk_average(X, y, q, span=self.span, method=self.method)
+            for q in self.quantiles_
+        ]
+        return self
+
+    def transform(self, X):
+        check_is_fitted(self, ["quantiles_", "heights_"])
+        return np.interp(X.reshape(-1), self.quantiles_, self.heights_)
+
+
 class RandomAdder(TrainOnlyTransformerMixin, BaseEstimator):
     def __init__(self, noise=1, random_state=None):
         self.noise = noise
