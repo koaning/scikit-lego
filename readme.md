@@ -9,7 +9,7 @@
 
 # scikit-lego
 
-![](images/logo.png)
+<a href="https://scikit-lego.readthedocs.io/en/latest/"><img src="images/logo.png" width="35%" height="35%" align="right" /></a>
 
 We love scikit learn but very often we find ourselves writing
 custom transformers, metrics and models. The goal of this project
