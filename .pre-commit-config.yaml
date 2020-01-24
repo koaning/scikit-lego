@@ -22,3 +22,8 @@ repos:
         files: doc
     -   id: codespell
         files: readme.md
+-   repo: https://github.com/kynan/nbstripout
+    rev: master
+    hooks:
+    -   id: nbstripout
+        files: docs/*.ipynb
