@@ -70,6 +70,7 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         self.quantiles_ = np.zeros((X.shape[1], self.n_chunks))
         # heights indicate what heights these intervals will have
         self.heights_ = np.zeros((X.shape[1], self.n_chunks))
+        self.num_cols_ = X.shape[1]
 
         for col in range(X.shape[1]):
             self.quantiles_[col, :] = np.quantile(
@@ -85,14 +86,14 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         """
         Transform each column such that it is bends smoothly towards y.
         """
-        check_is_fitted(self, ["quantiles_", "heights_"])
+        check_is_fitted(self, ["quantiles_", "heights_", "num_cols_"])
         X = check_array(X, estimator=self)
-        print(f"i just got a shape={X.shape}")
+        if X.shape[1] != self.num_cols_:
+            raise ValueError(
+                f"fitted on {self.num_cols_} features but received {X.shape[1]}"
+            )
         transformed = np.zeros(X.shape)
         for col in range(transformed.shape[1]):
-            print(
-                f"X={X.shape} transformed={transformed.shape}, col={col}, q={self.quantiles_.shape} h=q={self.heights_.shape}"
-            )
             transformed[:, col] = np.interp(
                 X[:, col], self.quantiles_[col, :], self.heights_[col, :]
             )
