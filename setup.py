@@ -18,6 +18,7 @@ docs_packages = [
     "sphinx_rtd_theme>=0.4.3",
     "nbsphinx>=0.4.2",
     "jupyter-client>=5.2.4",
+    "ipykernel==5.1.0",
 ]
 test_packages = [
     "flake8>=3.6.0",
