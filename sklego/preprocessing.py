@@ -64,9 +64,6 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         # these two matrices will have shape (columns, quantiles)
         # quantiles indicate where the interval split occurs
         X, y = check_X_y(X, y, estimator=self)
-        print(
-            f"x-shape {X.shape} creating {np.zeros((X.shape[1], self.n_chunks)).shape}"
-        )
         self.quantiles_ = np.zeros((X.shape[1], self.n_chunks))
         # heights indicate what heights these intervals will have
         self.heights_ = np.zeros((X.shape[1], self.n_chunks))
