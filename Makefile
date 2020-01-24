@@ -40,6 +40,9 @@ clean:
 	rm -rf .ipynb_checkpoints
 	rm -rf .coverage*
 
+notebooks:
+	nbstripout doc/*.ipynb
+
 black:
 	black sklego tests setup.py
 
