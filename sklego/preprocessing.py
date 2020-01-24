@@ -39,7 +39,7 @@ def _mk_average(xs, ys, intervals, span=1, method="average"):
 class IntervalEncoder(TransformerMixin, BaseEstimator):
     """
     The interval encoder bends features in `X` with regards to`y`.
-    We take each column in X seperately and smooth it towards `y` using
+    We take each column in X separately and smooth it towards `y` using
     the strategy that is defined in `method`.
     Note that this allows us to make certain features strictly monotonic
     in your machine learning model if you follow this with an appropriate
@@ -747,7 +747,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         return self.feature_names_
 
     def _check_column_length(self):
-        """Check if all columns are droped"""
+        """Check if all columns are dropped"""
         if len(self.feature_names_) == 0:
             raise ValueError(
                 f"Dropping {self.columns_} would result in an empty output DataFrame"
