@@ -11,7 +11,7 @@ from sklego.common import TrainOnlyTransformerMixin, as_list
 
 def _mk_average(xs, ys, intervals, span=1, method="average"):
     """
-    XAFDADSFASDAFdfasdf
+    asdafa
     Creates smoothed averages of `ys` at the intervals given by `intervals`.
     :param xs: all the datapoints of a feature (represents the x-axis)
     :param ys: all the datapoints what we'd like to predict (represents the y-axis)
