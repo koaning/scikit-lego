@@ -27,11 +27,14 @@ precommit:
 spelling:
 	codespell sklego/*.py
 
-docs:
+docs: notebooks
 	rm -rf doc/.ipynb_checkpoints
 	sphinx-build doc docs
 
-clean:
+notebooks:
+	nbstripout doc/*.ipynb
+
+clean: notebooks
 	rm -rf .pytest_cache
 	rm -rf build
 	rm -rf dist
@@ -39,9 +42,6 @@ clean:
 	rm -rf scikit_lego.egg-info
 	rm -rf .ipynb_checkpoints
 	rm -rf .coverage*
-
-notebooks:
-	nbstripout doc/*.ipynb
 
 black:
 	black sklego tests setup.py
