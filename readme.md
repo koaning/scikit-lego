@@ -9,7 +9,7 @@
 
 # scikit-lego
 
-![](images/logo.png)
+<a href="https://scikit-lego.readthedocs.io/en/latest/"><img src="images/logo.png" width="35%" height="35%" align="right" /></a>
 
 We love scikit learn but very often we find ourselves writing
 custom transformers, metrics and models. The goal of this project
@@ -21,7 +21,7 @@ to contribute to open source.
 
 Note that we're not formally affiliated with the scikit-learn project at all.
 
-The same holds with lego. LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this site.
+The same holds with lego. LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this project.
 
 ## Installation
 
@@ -49,6 +49,9 @@ python setup.py develop
 The documentation can be found [here](https://scikit-lego.readthedocs.io/).
 
 ## Usage
+
+We offer custom metrics, models and transformers. You can import them just like you would 
+in scikit-learn. 
 
 ```python
 # the scikit learn stuff we love
