@@ -63,6 +63,10 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         """Fits the estimator"""
         # these two matrices will have shape (columns, quantiles)
         # quantiles indicate where the interval split occurs
+        X, y = check_X_y(X, y, estimator=self)
+        print(
+            f"x-shape {X.shape} creating {np.zeros((X.shape[1], self.n_chunks)).shape}"
+        )
         self.quantiles_ = np.zeros((X.shape[1], self.n_chunks))
         # heights indicate what heights these intervals will have
         self.heights_ = np.zeros((X.shape[1], self.n_chunks))
@@ -82,8 +86,13 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         Transform each column such that it is bends smoothly towards y.
         """
         check_is_fitted(self, ["quantiles_", "heights_"])
-        transformed = X.copy()
+        X = check_array(X, estimator=self)
+        print(f"i just got a shape={X.shape}")
+        transformed = np.zeros(X.shape)
         for col in range(transformed.shape[1]):
+            print(
+                f"X={X.shape} transformed={transformed.shape}, col={col}, q={self.quantiles_.shape} h=q={self.heights_.shape}"
+            )
             transformed[:, col] = np.interp(
                 X[:, col], self.quantiles_[col, :], self.heights_[col, :]
             )
