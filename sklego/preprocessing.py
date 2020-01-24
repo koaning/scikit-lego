@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 from patsy import dmatrix, build_design_matrices, PatsyError
-from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.utils import check_array, check_X_y
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
 
 from sklego.common import TrainOnlyTransformerMixin, as_list
@@ -11,6 +11,7 @@ from sklego.common import TrainOnlyTransformerMixin, as_list
 
 def _mk_average(xs, ys, intervals, span=1, method="average"):
     """
+    XAFDADSFASDAFdfasdf
     Creates smoothed averages of `ys` at the intervals given by `intervals`.
     :param xs: all the datapoints of a feature (represents the x-axis)
     :param ys: all the datapoints what we'd like to predict (represents the y-axis)
@@ -35,35 +36,58 @@ def _mk_average(xs, ys, intervals, span=1, method="average"):
     return np.average(subset, weights=dist_subset)
 
 
-class FeatureSmoother(TransformerMixin, BaseEstimator):
+class IntervalEncoder(TransformerMixin, BaseEstimator):
     """
-    The feature smoother smoothes features in `X` with regards to`y`.
-    We take each column in X seperately and smooth it towards `y`.
-    Note that this allows us to make certain features strictly monotonic.
+    The interval encoder bends features in `X` with regards to`y`.
+    We take each column in X seperately and smooth it towards `y` using
+    the strategy that is defined in `method`.
+    Note that this allows us to make certain features strictly monotonic
+    in your machine learning model if you follow this with an appropriate
+    model.
+    :param n_chunks: the number of cuts that makes the interval
+    :param method: the interpolation method used
+    :param span: a hyperparameter for the interpolation method, if the
+    method is `normal` it resembles the width of the radial basis
+    function used to weigh the points
     """
 
-    def __init__(self, chunks, span, method):
+    def __init__(self, n_chunks=10, span=1, method="normal"):
+        allowed_methods = ["average", "normal"]
+        if method not in allowed_methods:
+            raise ValueError(f"`method` must be in {allowed_methods}, got `{method}`")
         self.span = span
         self.method = method
-        self.n_chunks = chunks
-
-    def _check_X_in(self, X):
-        if X.shape[1] > 1:
-            raise ValueError(f"X.shape[1] needs to be 1, got {X.shape[1]}")
+        self.n_chunks = n_chunks
 
     def fit(self, X, y):
-        self._check_X_in(X)
-        X = X.reshape(-1)
-        self.quantiles_ = np.quantile(X, q=np.linspace(0, 1, self.n_chunks))
-        self.heights_ = [
-            _mk_average(X, y, q, span=self.span, method=self.method)
-            for q in self.quantiles_
-        ]
+        """Fits the estimator"""
+        # these two matrices will have shape (columns, quantiles)
+        # quantiles indicate where the interval split occurs
+        self.quantiles_ = np.zeros((X.shape[1], self.n_chunks))
+        # heights indicate what heights these intervals will have
+        self.heights_ = np.zeros((X.shape[1], self.n_chunks))
+
+        for col in range(X.shape[1]):
+            self.quantiles_[col, :] = np.quantile(
+                X[:, col], q=np.linspace(0, 1, self.n_chunks)
+            )
+            for idx, q in enumerate(self.quantiles_[col, :]):
+                self.heights_[col, idx] = _mk_average(
+                    X[:, col], y, q, span=self.span, method=self.method
+                )
         return self
 
     def transform(self, X):
+        """
+        Transform each column such that it is bends smoothly towards y.
+        """
         check_is_fitted(self, ["quantiles_", "heights_"])
-        return np.interp(X.reshape(-1), self.quantiles_, self.heights_)
+        transformed = X.copy()
+        for col in range(transformed.shape[1]):
+            transformed[:, col] = np.interp(
+                X[:, col], self.quantiles_[col, :], self.heights_[col, :]
+            )
+        return transformed
 
 
 class RandomAdder(TrainOnlyTransformerMixin, BaseEstimator):
