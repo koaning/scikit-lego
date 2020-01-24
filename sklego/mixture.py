@@ -44,7 +44,7 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         self.precisions_init = precisions_init
         self.random_state = random_state
         self.warm_start = warm_start
-        self.verbose = verbose,
+        self.verbose = verbose
         self.verbose_interval = verbose_interval
 
     def fit(self, X: np.array, y: np.array) -> "GMMClassifier":
