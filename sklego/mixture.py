@@ -25,7 +25,7 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         random_state=None,
         warm_start=False,
         verbose=0,
-        verbose_interval=10
+        verbose_interval=10,
     ):
         """
         The GMMClassifier trains a Gaussian Mixture Model for each class in y on a dataset X. Once
@@ -77,7 +77,7 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
                 random_state=self.random_state,
                 warm_start=self.warm_start,
                 verbose=self.verbose,
-                verbose_interval=self.verbose_interval
+                verbose_interval=self.verbose_interval,
             )
             self.gmms_[c] = mixture.fit(subset_x, subset_y)
         return self
@@ -226,7 +226,7 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         random_state=None,
         warm_start=False,
         verbose=0,
-        verbose_interval=10
+        verbose_interval=10,
     ):
         self.threshold = threshold
         self.method = method
@@ -290,7 +290,7 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
             random_state=self.random_state,
             warm_start=self.warm_start,
             verbose=self.verbose,
-            verbose_interval=self.verbose_interval
+            verbose_interval=self.verbose_interval,
         )
         self.gmm_.fit(X)
         score_samples = self.gmm_.score_samples(X)
