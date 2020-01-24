@@ -13,7 +13,7 @@ base_packages = [
     "cvxpy>=1.0.24",
     "Deprecated>=1.2.6",
 ]
-docs_packages = ["sphinx>=1.8.5", "sphinx_rtd_theme>=0.4.3", "nbsphinx>=0.4.2"]
+docs_packages = ["sphinx>=1.8.5", "sphinx_rtd_theme>=0.4.3", "nbsphinx>=0.4.2", "jupyter-client>=5.2.4"]
 test_packages = [
     "flake8>=3.6.0",
     "nbval>=0.9.1",
