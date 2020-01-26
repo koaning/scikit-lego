@@ -19,9 +19,9 @@ repos:
     -   id: codespell
         files: sklego/*.py
         entry: codespell --ignore-words spelling.txt
-    -   id: codespell
-        files: doc
-        entry: codespell --ignore-words spelling.txt
+    # -   id: codespell
+    #     files: doc
+    #     entry: codespell --ignore-words spelling.txt
     -   id: codespell
         files: readme.md
         entry: codespell --ignore-words spelling.txt
