@@ -1,5 +1,5 @@
 import pytest
-
+import numpy as np
 from sklearn.utils import estimator_checks
 
 from sklego.common import flatten
@@ -33,8 +33,10 @@ from tests.conftest import transformer_checks, general_checks
 def test_estimator_checks(test_fn):
     test_fn(IntervalEncoder.__name__, IntervalEncoder(n_chunks=2))
 
-
-def test_shape_remains_same(random_xy_dataset_regr):
+@pytest.mark.parametrize("chunks", [2, 5, 10])
+def test_obvious_cases(random_xy_dataset_regr, chunks):
     X, y = random_xy_dataset_regr
-    x_transform = IntervalEncoder(n_chunks=2).fit(X, y).transform(X)
+    y = np.ones(y.shape)
+    x_transform = IntervalEncoder(n_chunks=chunks).fit(X, y).transform(X)
     assert x_transform.shape == X.shape
+    assert np.all(np.isclose(x_transform, 1.0))
