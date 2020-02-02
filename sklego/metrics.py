@@ -107,7 +107,7 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
 
     Usage:
     `equal_opportunity_score('gender')(clf, X, y)`
-    
+
     Source:
     - M. Hardt, E. Price and N. Srebro (2016), Equality of Opportunity in Supervised Learning
 
