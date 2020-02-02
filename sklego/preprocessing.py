@@ -11,7 +11,6 @@ from sklego.common import TrainOnlyTransformerMixin, as_list
 
 def _mk_average(xs, ys, intervals, span=1, method="average"):
     """
-    asdafa
     Creates smoothed averages of `ys` at the intervals given by `intervals`.
     :param xs: all the datapoints of a feature (represents the x-axis)
     :param ys: all the datapoints what we'd like to predict (represents the y-axis)
@@ -52,15 +51,16 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
     """
 
     def __init__(self, n_chunks=10, span=1, method="normal"):
-        allowed_methods = ["average", "normal"]
-        if method not in allowed_methods:
-            raise ValueError(f"`method` must be in {allowed_methods}, got `{method}`")
         self.span = span
         self.method = method
         self.n_chunks = n_chunks
 
     def fit(self, X, y):
         """Fits the estimator"""
+        allowed_methods = ["average", "normal"]
+        if self.method not in allowed_methods:
+            raise ValueError(f"`method` must be in {allowed_methods}, got `{method}`")
+
         # these two matrices will have shape (columns, quantiles)
         # quantiles indicate where the interval split occurs
         X, y = check_X_y(X, y, estimator=self)
