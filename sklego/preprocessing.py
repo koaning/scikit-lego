@@ -44,7 +44,7 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
     in your machine learning model if you follow this with an appropriate
     model.
     :param n_chunks: the number of cuts that makes the interval
-    :param method: the interpolation method used
+    :param method: the interpolation method used, must be in ["normal", "average"], default: "normal"
     :param span: a hyperparameter for the interpolation method, if the
     method is `normal` it resembles the width of the radial basis
     function used to weigh the points
@@ -59,7 +59,19 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         """Fits the estimator"""
         allowed_methods = ["average", "normal"]
         if self.method not in allowed_methods:
-            raise ValueError(f"`method` must be in {allowed_methods}, got `{method}`")
+            raise ValueError(
+                f"`method` must be in {allowed_methods}, got `{self.method}`"
+            )
+        if self.n_chunks <= 0:
+            raise ValueError(f"`n_chunks` must be >= 1, received {self.n_chunks}")
+        if self.span > 1.0:
+            raise ValueError(
+                f"Error, we expect 0 <= span <= 1, received span={self.span}"
+            )
+        if self.span < 0.0:
+            raise ValueError(
+                f"Error, we expect 0 <= span <= 1, received span={self.span}"
+            )
 
         # these two matrices will have shape (columns, quantiles)
         # quantiles indicate where the interval split occurs

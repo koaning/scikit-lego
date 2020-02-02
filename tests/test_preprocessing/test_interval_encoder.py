@@ -41,3 +41,18 @@ def test_obvious_cases(random_xy_dataset_regr, chunks):
     x_transform = IntervalEncoder(n_chunks=chunks).fit(X, y).transform(X)
     assert x_transform.shape == X.shape
     assert np.all(np.isclose(x_transform, 1.0))
+
+
+def test_throw_valuerror_given_nonsense():
+    X = np.ones((10, 2))
+    y = np.ones(10)
+    with pytest.raises(ValueError):
+        x_transform = IntervalEncoder(n_chunks=0).fit(X, y)
+    with pytest.raises(ValueError):
+        x_transform = IntervalEncoder(n_chunks=-1).fit(X, y)
+    with pytest.raises(ValueError):
+        x_transform = IntervalEncoder(span=-0.1).fit(X, y)
+    with pytest.raises(ValueError):
+        x_transform = IntervalEncoder(span=2.0).fit(X, y)
+    with pytest.raises(ValueError):
+        x_transform = IntervalEncoder(method="dinosaurhead").fit(X, y)
