@@ -34,7 +34,7 @@ def test_estimator_checks(test_fn):
     test_fn(IntervalEncoder.__name__, IntervalEncoder(n_chunks=2))
 
 
-@pytest.mark.parametrize("chunks", [2, 5, 10])
+@pytest.mark.parametrize("chunks", [1, 2, 5, 10])
 def test_obvious_cases(random_xy_dataset_regr, chunks):
     X, y = random_xy_dataset_regr
     y = np.ones(y.shape)
