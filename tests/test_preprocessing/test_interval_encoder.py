@@ -47,12 +47,12 @@ def test_throw_valuerror_given_nonsense():
     X = np.ones((10, 2))
     y = np.ones(10)
     with pytest.raises(ValueError):
-        x_transform = IntervalEncoder(n_chunks=0).fit(X, y)
+        IntervalEncoder(n_chunks=0).fit(X, y)
     with pytest.raises(ValueError):
-        x_transform = IntervalEncoder(n_chunks=-1).fit(X, y)
+        IntervalEncoder(n_chunks=-1).fit(X, y)
     with pytest.raises(ValueError):
-        x_transform = IntervalEncoder(span=-0.1).fit(X, y)
+        IntervalEncoder(span=-0.1).fit(X, y)
     with pytest.raises(ValueError):
-        x_transform = IntervalEncoder(span=2.0).fit(X, y)
+        IntervalEncoder(span=2.0).fit(X, y)
     with pytest.raises(ValueError):
-        x_transform = IntervalEncoder(method="dinosaurhead").fit(X, y)
+        IntervalEncoder(method="dinosaurhead").fit(X, y)
