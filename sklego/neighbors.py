@@ -22,7 +22,7 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
     ):
         """
         Bayesian Classifier that uses Kernel Density Estimations to generate the joint distribution
-        
+
         All parameters of the model are an exact copy of the parameters in scikit-learn.
         """
         # TODO (2/6/2020) add awesome docstring
