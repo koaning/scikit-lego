@@ -7,87 +7,95 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
 
 
-# noinspection PyPep8Naming,PyAttributeOutsideInit
 class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
-    """
-    Bayesian Classifier that uses Kernel Density Estimations to generate the joint distribution
-    Parameters:
-        - bandwidth: float
-        - kernel: for scikit learn KernelDensity
-    """
-    def __init__(self, bandwidth=0.2, kernel='gaussian'):
-        # TODO (2/6/2020) add all other sklearn kwargs
+    def __init__(
+        self,
+        bandwidth=0.2,
+        kernel="gaussian",
+        algorithm="auto",
+        metric="euclidean",
+        atol=0,
+        rtol=0,
+        breath_first=True,
+        leaf_size=40,
+        metric_params=None,
+    ):
+        """
+        Bayesian Classifier that uses Kernel Density Estimations to generate the joint distribution
+        
+        All parameters of the model are an exact copy of the parameters in scikit-learn.
+        """
+        # TODO (2/6/2020) add awesome docstring
         self.bandwidth = bandwidth
         self.kernel = kernel
+        self.algorithm = algorithm
+        self.metric = metric
+        self.atol = atol
+        self.rtol = rtol
+        self.breath_first = breath_first
+        self.leaf_size = leaf_size
+        self.metric_params = metric_params
 
     def fit(self, X: np.ndarray, y: np.ndarray):
-        # Checks
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        X = np.expand_dims(X, 1) if X.ndim == 1 else X  # type: np.ndarray
 
-        # Training
         self.classes_ = unique_labels(y)
         self.models_, self.priors_logp_ = {}, {}
         for target_label in self.classes_:
-            selector = y == target_label
-            x_subset, y_subset = X[selector], y[selector]
+            x_subset = X[y == target_label]
 
-            # Joint distribution
+            # Computing joint distribution
             self.models_[target_label] = KernelDensity(
                 bandwidth=self.bandwidth,
                 kernel=self.kernel,
+                algorithm=self.algorithm,
+                metric=self.metric,
+                atol=self.atol,
+                rtol=self.rtol,
+                breadth_first=self.breath_first,
+                leaf_size=self.leaf_size,
+                metric_params=self.metric_params,
             ).fit(x_subset)
 
-            # Target class prior
+            # Computing target class prior
             self.priors_logp_[target_label] = np.log(len(x_subset) / len(X))
 
         return self
 
     def predict_proba(self, X):
-        # Checks
-        self._check_is_fitted()
+        check_is_fitted(self)
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
 
-        # Inference
         log_prior = np.array(
             [self.priors_logp_[target_label] for target_label in self.classes_]
         )
         log_likelihood = np.array(
-            [self.models_[target_label].score_samples(X) for target_label in self.classes_]
+            [
+                self.models_[target_label].score_samples(X)
+                for target_label in self.classes_
+            ]
         ).T
 
         log_likelihood_and_prior = np.exp(log_likelihood + log_prior)
-        posterior = log_likelihood_and_prior / log_likelihood_and_prior.sum(axis=1, keepdims=True)
+        evidence = log_likelihood_and_prior.sum(axis=1, keepdims=True)
+        posterior = log_likelihood_and_prior / evidence
         return posterior
 
     def predict(self, X):
-        # Checks
-        self._check_is_fitted()
+        check_is_fitted(self)
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
 
-        # Inference
         return self.classes_[np.argmax(self.predict_proba(X), 1)]
 
-    def _check_is_fitted(self):
-        check_is_fitted(self, ['classes_', 'models_', 'priors_logp_'])
 
+if __name__ == "__main__":
+    import pandas as pd
 
-if __name__ == '__main__':
-    from sklearn.datasets import fetch_species_distributions
-
-    payload = dict(fetch_species_distributions())
-
-    # Create training data
-    is_bradypus_label = np.array([int(row[0].decode('ascii').startswith('brady')) for row in payload['train']])
-    long_lats = np.vstack((payload['train']['dd long'], payload['train']['dd lat'])).T
-
-    species_names = ['Microryzomys Minutus', 'Bradypus Variegatus']
-
-    is_bradypus_label_test = np.array([int(row[0].decode('ascii').startswith('brady')) for row in payload['test']])
-    long_lats_test = np.vstack((payload['test']['dd long'], payload['test']['dd lat'])).T
+    species_names = ["Microryzomys Minutus", "Bradypus Variegatus"]
+    df = pd.read_csv("data/species.csv")
 
     # Modeling both species distributions
-    spp_model = BayesianKernelDensityClassifier().fit(long_lats, is_bradypus_label)
+    spp_model = BayesianKernelDensityClassifier()
+    spp_model.fit(df[["long", "lat"]], df["is_bradypus"])
 
-    print(f'Training Error: {spp_model.score(long_lats, is_bradypus_label):2%}')
-    print(f'Testing Error : {spp_model.score(long_lats_test, is_bradypus_label_test):.2%}')
+    print(f"Accuracy : {spp_model.score(df[['long', 'lat']], df['is_bradypus']):2%}")
