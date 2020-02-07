@@ -9,16 +9,16 @@ from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_
 from sklego.common import TrainOnlyTransformerMixin, as_list
 
 
-def _mk_average(xs, ys, intervals, span=1, method="average"):
+def _mk_average(xs, ys, intervals, method="average", span=1):
     """
     Creates smoothed averages of `ys` at the intervals given by `intervals`.
     :param xs: all the datapoints of a feature (represents the x-axis)
     :param ys: all the datapoints what we'd like to predict (represents the y-axis)
     :param intervals: the intervals at which we'd like to get a good average value
+    :param method: the method that is used for smoothing, can be either `average` or `normal`.
     :param span: if the method is `average` then this is the span around the interval
     that is used to determine the average `y`-value, if the method is `normal` the span
     becomes the value of sigma that is used for weighted averaging
-    :param method: the method that is used for smoothing, can be either `average` or `normal`.
     :return:
         An array as long as `intervals` that represents the average `y`-values at those intervals.
     """
