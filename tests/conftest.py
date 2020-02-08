@@ -88,6 +88,17 @@ def random_xy_dataset_regr(request):
 
 
 @pytest.fixture(
+    scope="module", params=[_ for _ in it.product([10, 100], [1, 2, 3], np_types)]
+)
+def random_xy_dataset_regr_small(request):
+    n, k, np_type = request.param
+    np.random.seed(42)
+    X = np.random.normal(0, 2, (n, k)).astype(np_type)
+    y = np.random.normal(0, 2, (n,))
+    return X, y
+
+
+@pytest.fixture(
     scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
 )
 def random_xy_dataset_clf(request):
