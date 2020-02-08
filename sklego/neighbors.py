@@ -1,6 +1,8 @@
-import numpy as np
+from multiprocessing import cpu_count
 
+import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.externals.joblib import Parallel, delayed
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_X_y
 from sklearn.utils.multiclass import unique_labels
@@ -85,14 +87,12 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
         log_prior = np.array(
             [self.priors_logp_[target_label] for target_label in self.classes_]
         )
-        
-        # TODO (2/8/2020) parallelize this step
-        log_likelihood = np.array(
-            [
-                self.models_[target_label].score_samples(X)
-                for target_label in self.classes_
-            ]
-        ).T
+
+        log_likelihood = Parallel(n_jobs=min(cpu_count(), len(self.classes_)))(
+            delayed(self.models_[target_label].score_samples)(X)
+            for target_label in self.classes_
+        )
+        log_likelihood = np.array(log_likelihood).T
 
         log_likelihood_and_prior = np.exp(log_likelihood + log_prior)
         evidence = log_likelihood_and_prior.sum(axis=1, keepdims=True)
