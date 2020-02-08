@@ -37,4 +37,6 @@ def test_trivial_classification():
     y = np.concatenate([np.zeros(100), np.ones(100)])
 
     model = BayesianKernelDensityClassifier().fit(x, y)
-    assert (model.predict(x) == y).all(), 'Problem is linearly separable. Accuracy should be 100%'
+    assert (
+        model.predict(x) == y
+    ).all(), "Problem is linearly separable. Accuracy should be 100%"
