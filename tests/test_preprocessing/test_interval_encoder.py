@@ -54,7 +54,7 @@ def test_obvious_cases_two(random_xy_dataset_regr_small, method):
 
 def generate_dataset(start, n=600):
     np.random.seed(42)
-    xs = np.arange(start, start + n)/100/np.pi
+    xs = np.arange(start, start + n) / 100 / np.pi
     y = np.sin(xs) + np.random.normal(0, 0.1, n)
     return xs.reshape(-1, 1), y
 
