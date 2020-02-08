@@ -108,7 +108,9 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         self.num_cols_ = X.shape[1]
 
         average_func = (
-            _mk_average if method in ["average", "normal"] else _mk_monotonic_average
+            _mk_average
+            if self.method in ["average", "normal"]
+            else _mk_monotonic_average
         )
 
         for col in range(X.shape[1]):
