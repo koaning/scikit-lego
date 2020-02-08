@@ -25,7 +25,6 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
 
         All parameters of the model are an exact copy of the parameters in scikit-learn.
         """
-        # TODO (2/6/2020) add awesome docstring
         self.bandwidth = bandwidth
         self.kernel = kernel
         self.algorithm = algorithm
@@ -37,6 +36,13 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
         self.metric_params = metric_params
 
     def fit(self, X: np.ndarray, y: np.ndarray):
+        """
+        Fit the model using X, y as training data.
+
+        :param X: array-like, shape=(n_features, n_samples)
+        :param y: array-like, shape=(n_samples)
+        :return: Returns an instance of self
+        """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
 
         self.classes_ = unique_labels(y)
@@ -63,12 +69,24 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
         return self
 
     def predict_proba(self, X):
+        """
+        Probability estimates.
+
+        The returned estimates for all classes are in the same order found in the `.classes_` attribute.
+
+        :param X: array-like of shape (n_samples, n_features)
+        :return: array-like of shape (n_samples, n_classes)
+            Returns the probability of the sample for each class in the model,
+            where classes are ordered as they are in self.classes_.
+        """
         check_is_fitted(self)
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
 
         log_prior = np.array(
             [self.priors_logp_[target_label] for target_label in self.classes_]
         )
+        
+        # TODO (2/8/2020) parallelize this step
         log_likelihood = np.array(
             [
                 self.models_[target_label].score_samples(X)
@@ -82,6 +100,12 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
         return posterior
 
     def predict(self, X):
+        """
+        Predict class labels for samples in X.
+
+        :param X: array_like, shape (n_samples, n_features)
+        :return: array, shape (n_samples)
+        """
         check_is_fitted(self)
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
 
