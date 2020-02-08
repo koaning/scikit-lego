@@ -1,12 +1,7 @@
 import numpy as np
-import pandas as pd
-from patsy import dmatrix, build_design_matrices, PatsyError
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.compose import ColumnTransformer
-from sklearn.utils import check_array, check_X_y
-from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
-
-from sklego.common import TrainOnlyTransformerMixin, as_list
+from sklearn.utils import check_array
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 
 
 class ColumnCapper(TransformerMixin, BaseEstimator):
