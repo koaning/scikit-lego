@@ -45,17 +45,20 @@ def _mk_average(xs, ys, intervals, method="average", span=1, **kwargs):
     :return:
         An array as long as `intervals` that represents the average `y`-values at those intervals.
     """
-    if method == "average":
-        distances = 1 / (0.01 + np.abs(xs - intervals))
-        predicate = (xs < (intervals + span)) | (xs < (intervals - span))
-    elif method == "normal":
-        distances = np.exp(-((xs - intervals) ** 2) / span)
-        predicate = xs == xs
-    else:
-        raise ValueError("method needs to be either `average` or `normal`")
-    subset = ys[predicate]
-    dist_subset = distances[predicate]
-    return np.average(subset, weights=dist_subset)
+    results = np.zeros(intervals.shape)
+    for idx, interval in enumerate(intervals):
+        if method == "average":
+            distances = 1 / (0.01 + np.abs(xs - interval))
+            predicate = (xs < (interval + span)) | (xs < (interval - span))
+        elif method == "normal":
+            distances = np.exp(-((xs - interval) ** 2) / span)
+            predicate = xs == xs
+        else:
+            raise ValueError("method needs to be either `average` or `normal`")
+        subset = ys[predicate]
+        dist_subset = distances[predicate]
+        results[idx] = np.average(subset, weights=dist_subset)
+    return results
 
 
 class IntervalEncoder(TransformerMixin, BaseEstimator):
@@ -105,19 +108,20 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         self.num_cols_ = X.shape[1]
 
         average_func = (
-            _mk_average
-            if self.method in ["average", "normal"]
-            else _mk_monotonic_average
+            _mk_average if method in ["average", "normal"] else _mk_monotonic_average
         )
 
         for col in range(X.shape[1]):
             self.quantiles_[col, :] = np.quantile(
                 X[:, col], q=np.linspace(0, 1, self.n_chunks)
             )
-            for idx, q in enumerate(self.quantiles_[col, :]):
-                self.heights_[col, idx] = average_func(
-                    X[:, col], y, q, span=self.span, method=self.method
-                )
+            self.heights_[col, :] = average_func(
+                X[:, col],
+                y,
+                self.quantiles_[col, :],
+                span=self.span,
+                method=self.method,
+            )
         return self
 
     def transform(self, X):
