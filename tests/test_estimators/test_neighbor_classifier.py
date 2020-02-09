@@ -41,10 +41,10 @@ def test_trivial_classification():
 
 
 def test_n_jobs_param():
-    default_param = BayesianKernelDensityClassifier()
-    none_specified = BayesianKernelDensityClassifier(n_jobs=None)
+    BayesianKernelDensityClassifier()  # Default params
+    BayesianKernelDensityClassifier(n_jobs=None)  # None specified
 
     with pytest.raises(ValueError):
-        no_floats = BayesianKernelDensityClassifier(n_jobs=1.23)
-        no_negatives = BayesianKernelDensityClassifier(n_jobs=-1)
-        no_zero = BayesianKernelDensityClassifier(n_jobs=0)
+        BayesianKernelDensityClassifier(n_jobs=1.23)  # No floats
+        BayesianKernelDensityClassifier(n_jobs=-1)  # No negatives
+        BayesianKernelDensityClassifier(n_jobs=0)  # No Zero
