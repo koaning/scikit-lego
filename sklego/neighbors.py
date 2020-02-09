@@ -120,16 +120,3 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
 
         return self.classes_[np.argmax(self.predict_proba(X), 1)]
-
-
-if __name__ == "__main__":
-    import pandas as pd
-
-    species_names = ["Microryzomys Minutus", "Bradypus Variegatus"]
-    df = pd.read_csv("data/species.csv")
-
-    # Modeling both species distributions
-    spp_model = BayesianKernelDensityClassifier()
-    spp_model.fit(df[["long", "lat"]], df["is_bradypus"])
-
-    print(f"Accuracy : {spp_model.score(df[['long', 'lat']], df['is_bradypus']):2%}")
