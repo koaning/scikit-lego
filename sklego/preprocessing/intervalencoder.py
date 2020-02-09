@@ -70,10 +70,12 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
     in your machine learning model if you follow this with an appropriate
     model.
     :param n_chunks: the number of cuts that makes the interval
-    :param method: the interpolation method used, must be in ["normal", "average"], default: "normal"
+    :param method: the interpolation method used, must be in
+    ["average", "normal", "increasing", "decreasing"], default: "normal"
     :param span: a hyperparameter for the interpolation method, if the
     method is `normal` it resembles the width of the radial basis
-    function used to weigh the points
+    function used to weigh the points. It is ignored if if the method is
+    "increasing" or "decreasing".
     """
 
     def __init__(self, n_chunks=10, span=1, method="normal"):
