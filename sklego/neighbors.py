@@ -40,7 +40,9 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
 
         if n_jobs is not None:
             if (not isinstance(n_jobs, int)) or n_jobs <= 0:
-                raise ValueError(f'`n_jobs` most be an integer > than 0 not {n_jobs}: {type(n_jobs)}')
+                raise ValueError(
+                    f"`n_jobs` most be an integer > than 0 not {n_jobs}: {type(n_jobs)}"
+                )
         self.n_jobs = n_jobs
 
     def fit(self, X: np.ndarray, y: np.ndarray):
