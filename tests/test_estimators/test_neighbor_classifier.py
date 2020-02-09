@@ -37,6 +37,14 @@ def test_trivial_classification():
     y = np.concatenate([np.zeros(100), np.ones(100)])
 
     model = BayesianKernelDensityClassifier().fit(x, y)
-    assert (
-        model.predict(x) == y
-    ).all(), "Problem is linearly separable. Accuracy should be 100%"
+    assert (model.predict(x) == y).all()
+
+
+def test_n_jobs_param():
+    default_param = BayesianKernelDensityClassifier()
+    none_specified = BayesianKernelDensityClassifier(n_jobs=None)
+
+    with pytest.raises(ValueError):
+        no_floats = BayesianKernelDensityClassifier(n_jobs=1.23)
+        no_negatives = BayesianKernelDensityClassifier(n_jobs=-1)
+        no_zero = BayesianKernelDensityClassifier(n_jobs=0)

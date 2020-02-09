@@ -21,6 +21,7 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
         breath_first=True,
         leaf_size=40,
         metric_params=None,
+        n_jobs=None,
     ):
         """
         Bayesian Classifier that uses Kernel Density Estimations to generate the joint distribution
@@ -36,6 +37,11 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
         self.breath_first = breath_first
         self.leaf_size = leaf_size
         self.metric_params = metric_params
+
+        if n_jobs is not None:
+            if (not isinstance(n_jobs, int)) or n_jobs <= 0:
+                raise ValueError(f'`n_jobs` most be an integer > than 0 not {n_jobs}: {type(n_jobs)}')
+        self.n_jobs = n_jobs
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         """
@@ -88,7 +94,9 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
             [self.priors_logp_[target_label] for target_label in self.classes_]
         )
 
-        log_likelihood = Parallel(n_jobs=min(cpu_count(), len(self.classes_)))(
+        n_jobs = min(cpu_count(), len(self.classes_))
+        n_jobs = n_jobs if self.n_jobs is None else min(self.n_jobs, n_jobs)
+        log_likelihood = Parallel(n_jobs=n_jobs)(
             delayed(self.models_[target_label].score_samples)(X)
             for target_label in self.classes_
         )
