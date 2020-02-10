@@ -41,10 +41,17 @@ def test_trivial_classification():
 
 
 def test_n_jobs_param():
+    # Dummy data
+    x = np.concatenate(
+        [np.random.normal(-10, 1, (100, 2)), np.random.normal(10, 1, (100, 2))]
+    )
+    y = np.concatenate([np.zeros(100), np.ones(100)])
+
     BayesianKernelDensityClassifier()  # Default params
-    BayesianKernelDensityClassifier(n_jobs=None)  # None specified
+    BayesianKernelDensityClassifier(n_jobs=None).fit(x, y)  # None specified
+    BayesianKernelDensityClassifier(n_jobs=2).fit(x, y)  # 2 Jobs
 
     with pytest.raises(ValueError):
         BayesianKernelDensityClassifier(n_jobs=1.23)  # No floats
-        BayesianKernelDensityClassifier(n_jobs=-1)  # No negatives
-        BayesianKernelDensityClassifier(n_jobs=0)  # No Zero
+        BayesianKernelDensityClassifier(n_jobs=1.23).fit(x, y)  # No floats
+        BayesianKernelDensityClassifier(n_jobs=0).fit(x, y)  # No Zero
