@@ -96,11 +96,12 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
             [self.priors_logp_[target_label] for target_label in self.classes_]
         )
 
-        if self.n_jobs is None:
+        n_jobs = self.n_jobs
+        if n_jobs is None:
             n_jobs = 1
-        elif self.n_jobs == -1:
+        elif n_jobs == -1:
             n_jobs = min(cpu_count(), len(self.classes_))
-        else:
+        elif not isinstance(n_jobs, int):
             # This shouldn't ever run because of the check in the __init__()
             raise ValueError(f"`n_jobs` must either be None or an integer")
         log_likelihood = Parallel(n_jobs=n_jobs)(

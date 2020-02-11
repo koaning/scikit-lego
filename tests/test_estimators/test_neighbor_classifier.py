@@ -8,6 +8,16 @@ from sklego.testing import check_shape_remains_same_classifier
 from tests.conftest import nonmeta_checks, general_checks, estimator_checks
 
 
+@pytest.fixture()
+def simple_dataset():
+    # Two linearly separable mvn should have a 100% prediction accuracy
+    x = np.concatenate(
+        [np.random.normal(-10, 1, (100, 2)), np.random.normal(10, 1, (100, 2))]
+    )
+    y = np.concatenate([np.zeros(100), np.ones(100)])
+    return x, y
+
+
 @pytest.mark.parametrize(
     "test_fn",
     flatten(
@@ -29,29 +39,20 @@ def test_estimator_checks(test_fn):
     test_fn(BayesianKernelDensityClassifier.__name__, BayesianKernelDensityClassifier())
 
 
-def test_trivial_classification():
-    # Two linearly separable mvn should have a 100% prediction accuracy
-    x = np.concatenate(
-        [np.random.normal(-10, 1, (100, 2)), np.random.normal(10, 1, (100, 2))]
-    )
-    y = np.concatenate([np.zeros(100), np.ones(100)])
-
+def test_trivial_classification(simple_dataset):
+    x, y = simple_dataset
     model = BayesianKernelDensityClassifier().fit(x, y)
     assert (model.predict(x) == y).all()
 
 
-def test_n_jobs_param():
-    # Dummy data
-    x = np.concatenate(
-        [np.random.normal(-10, 1, (100, 2)), np.random.normal(10, 1, (100, 2))]
-    )
-    y = np.concatenate([np.zeros(100), np.ones(100)])
+@pytest.mark.parametrize("n_jobs", [None, -1, 2, 1])
+def test_n_jobs_passes(simple_dataset, n_jobs):
+    x, y = simple_dataset
+    BayesianKernelDensityClassifier(n_jobs=n_jobs).fit(x, y).score(x, y)
 
-    BayesianKernelDensityClassifier()  # Default params
-    BayesianKernelDensityClassifier(n_jobs=None).fit(x, y)  # None specified
-    BayesianKernelDensityClassifier(n_jobs=2).fit(x, y)  # 2 Jobs
 
+@pytest.mark.parametrize("n_jobs", [0, 1.23])
+def test_n_jobs_params_fails(simple_dataset, n_jobs):
+    x, y = simple_dataset
     with pytest.raises(ValueError):
-        BayesianKernelDensityClassifier(n_jobs=1.23)  # No floats
-        BayesianKernelDensityClassifier(n_jobs=1.23).fit(x, y)  # No floats
-        BayesianKernelDensityClassifier(n_jobs=0).fit(x, y)  # No Zero
+        BayesianKernelDensityClassifier(n_jobs=n_jobs).fit(x, y).score(x, y)
