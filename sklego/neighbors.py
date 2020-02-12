@@ -1,8 +1,5 @@
-from multiprocessing import cpu_count
-
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.externals.joblib import Parallel, delayed
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_X_y
 from sklearn.utils.multiclass import unique_labels
@@ -21,7 +18,6 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
         breath_first=True,
         leaf_size=40,
         metric_params=None,
-        n_jobs=None,
     ):
         """
         Bayesian Classifier that uses Kernel Density Estimations to generate the joint distribution
@@ -37,13 +33,6 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
         self.breath_first = breath_first
         self.leaf_size = leaf_size
         self.metric_params = metric_params
-
-        if n_jobs is not None:
-            if not isinstance(n_jobs, int):
-                raise ValueError(
-                    f"`n_jobs` most be an integer or None {n_jobs}: {type(n_jobs)}"
-                )
-        self.n_jobs = n_jobs
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         """
@@ -96,19 +85,12 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
             [self.priors_logp_[target_label] for target_label in self.classes_]
         )
 
-        n_jobs = self.n_jobs
-        if n_jobs is None:
-            n_jobs = 1
-        elif n_jobs == -1:
-            n_jobs = min(cpu_count(), len(self.classes_))
-        elif not isinstance(n_jobs, int):
-            # This shouldn't ever run because of the check in the __init__()
-            raise ValueError(f"`n_jobs` must either be None or an integer")
-        log_likelihood = Parallel(n_jobs=n_jobs)(
-            delayed(self.models_[target_label].score_samples)(X)
-            for target_label in self.classes_
-        )
-        log_likelihood = np.array(log_likelihood).T
+        log_likelihood = np.array(
+            [
+                self.models_[target_label].score_samples(X)
+                for target_label in self.classes_
+            ]
+        ).T
 
         log_likelihood_and_prior = np.exp(log_likelihood + log_prior)
         evidence = log_likelihood_and_prior.sum(axis=1, keepdims=True)

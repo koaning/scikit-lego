@@ -43,16 +43,3 @@ def test_trivial_classification(simple_dataset):
     x, y = simple_dataset
     model = BayesianKernelDensityClassifier().fit(x, y)
     assert (model.predict(x) == y).all()
-
-
-@pytest.mark.parametrize("n_jobs", [None, -1, 2, 1])
-def test_n_jobs_passes(simple_dataset, n_jobs):
-    x, y = simple_dataset
-    BayesianKernelDensityClassifier(n_jobs=n_jobs).fit(x, y).score(x, y)
-
-
-@pytest.mark.parametrize("n_jobs", [0, 1.23])
-def test_n_jobs_params_fails(simple_dataset, n_jobs):
-    x, y = simple_dataset
-    with pytest.raises(ValueError):
-        BayesianKernelDensityClassifier(n_jobs=n_jobs).fit(x, y).score(x, y)
