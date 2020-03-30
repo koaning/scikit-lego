@@ -7,6 +7,16 @@
 ![](https://img.shields.io/github/contributors/koaning/scikit-lego)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+# Hall of Fame
+[![](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/images/0)](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/links/0)
+[![](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/images/1)](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/links/1)
+[![](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/images/2)](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/links/2)
+[![](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/images/3)](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/links/3)
+[![](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/images/4)](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/links/4)
+[![](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/images/5)](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/links/5)
+[![](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/images/6)](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/links/6)
+[![](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/images/7)](https://sourcerer.io/fame/Pverheijen/koaning/scikit-lego/links/7)
+
 # scikit-lego
 
 <a href="https://scikit-lego.readthedocs.io/en/latest/"><img src="images/logo.png" width="35%" height="35%" align="right" /></a>
