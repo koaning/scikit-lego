@@ -12,7 +12,9 @@ from sklearn.multiclass import (
 from sklearn.pipeline import FeatureUnion
 from sklearn.svm import LinearSVC
 
-from sklego.pipeline import DebugPipeline
+from sklearn.preprocessing import StandardScaler
+
+from sklego.pipeline import make_debug_pipeline
 
 
 IRIS = datasets.load_iris()
@@ -55,30 +57,22 @@ def custom_log_callback(output, execution_time, **kwargs):
 
 @pytest.fixture
 def steps():
-    return [
-        ("add_1", Adder(value=1)),
-        ("add_10", Adder(value=10)),
-        ("add_100", Adder(value=100)),
-        ("add_1000", Adder(value=1000)),
-    ]
+    return (
+        Adder(value=1),
+        Adder(value=10),
+        Adder(value=100),
+        Adder(value=1000)
+    )
 
-
-@pytest.mark.filterwarnings("ignore: The default of the `iid`")  # 0.22
-@pytest.mark.filterwarnings("ignore: You should specify a value")  # 0.22
-@pytest.mark.parametrize(
-    "cls", [OneVsRestClassifier, OneVsOneClassifier, OutputCodeClassifier]
-)
-def test_classifier_gridsearch(cls):
-    pipe = DebugPipeline([("ovrc", cls(LinearSVC(random_state=0, tol=0.1)))])
-    Cs = [0.1, 0.5, 0.8]
-    cv = GridSearchCV(pipe, param_grid={"ovrc__estimator__C": Cs})
-    cv.fit(IRIS.data, IRIS.target)
-    best_C = cv.best_estimator_.get_params()["ovrc__estimator__C"]
-    assert best_C in Cs
-
+@pytest.fixture
+def repeated_steps():
+    return (
+        StandardScaler(),
+        StandardScaler()
+    )
 
 def test_no_logs_when_log_callback_is_None(caplog, steps):
-    pipe = DebugPipeline(steps, log_callback=None)
+    pipe = make_debug_pipeline(*steps, log_callback=None)
     caplog.clear()
     with caplog.at_level(logging.INFO):
         pipe.fit(IRIS.data, IRIS.target)
@@ -86,7 +80,7 @@ def test_no_logs_when_log_callback_is_None(caplog, steps):
 
 
 def test_output_shape_in_logs_when_log_callback_is_default(caplog, steps):
-    pipe = DebugPipeline(steps, log_callback="default")
+    pipe = make_debug_pipeline(*steps, log_callback="default")
     caplog.clear()
     with caplog.at_level(logging.INFO):
         pipe.fit(IRIS.data, IRIS.target)
@@ -99,7 +93,7 @@ def test_output_shape_in_logs_when_log_callback_is_default(caplog, steps):
 
 
 def test_time_in_logs_when_log_callback_is_default(caplog, steps):
-    pipe = DebugPipeline(steps, log_callback="default")
+    pipe = make_debug_pipeline(*steps, log_callback="default")
     caplog.clear()
     with caplog.at_level(logging.INFO):
         pipe.fit(IRIS.data, IRIS.target)
@@ -111,7 +105,7 @@ def test_time_in_logs_when_log_callback_is_default(caplog, steps):
 
 
 def test_step_name_in_logs_when_log_callback_is_default(caplog, steps):
-    pipe = DebugPipeline(steps, log_callback="default")
+    pipe = make_debug_pipeline(*steps, log_callback="default")
     caplog.clear()
     with caplog.at_level(logging.INFO):
         pipe.fit(IRIS.data, IRIS.target)
@@ -124,7 +118,7 @@ def test_step_name_in_logs_when_log_callback_is_default(caplog, steps):
 
 
 def test_nbytes_in_logs_when_log_callback_is_custom(caplog, steps):
-    pipe = DebugPipeline(steps, log_callback=custom_log_callback)
+    pipe = make_debug_pipeline(*steps, log_callback=custom_log_callback)
     caplog.clear()
     with caplog.at_level(logging.INFO):
         pipe.fit(IRIS.data, IRIS.target)
@@ -136,8 +130,8 @@ def test_nbytes_in_logs_when_log_callback_is_custom(caplog, steps):
 
 
 def test_feature_union(caplog, steps):
-    pipe_w_default_log_callback = DebugPipeline(steps, log_callback="default")
-    pipe_w_custom_log_callback = DebugPipeline(steps, log_callback=custom_log_callback)
+    pipe_w_default_log_callback = make_debug_pipeline(*steps, log_callback="default")
+    pipe_w_custom_log_callback = make_debug_pipeline(*steps, log_callback=custom_log_callback)
 
     pipe_union = FeatureUnion(
         [
@@ -156,3 +150,7 @@ def test_feature_union(caplog, steps):
             assert (
                 caplog.text.count(str(step)) == 2
             ), f"{step} should be once in {caplog.text}"
+
+def test_different_name_for_repeated_step(repeated_steps):
+    ss_twice_pipeline = make_debug_pipeline(*repeated_steps)
+    assert ss_twice_pipeline.steps[0][0] != ss_twice_pipeline.steps[1][0]
