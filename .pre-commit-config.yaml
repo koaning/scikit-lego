@@ -13,15 +13,3 @@ repos:
     hooks:
     -   id: black
         files: sklego
--   repo: https://github.com/codespell-project/codespell
-    rev: v1.16.0
-    hooks:
-    -   id: codespell
-        files: sklego/*.py
-        entry: codespell --ignore-words spelling.txt
-    # -   id: codespell
-    #     files: doc
-    #     entry: codespell --ignore-words spelling.txt
-    -   id: codespell
-        files: readme.md
-        entry: codespell --ignore-words spelling.txt
