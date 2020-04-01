@@ -25,7 +25,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e "."
+        pip install -e ".[dev]"
     - name: Lint with flake8
       run: |
         pip install flake8
