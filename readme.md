@@ -78,6 +78,7 @@ mod = Pipeline([
 Here's a list of features that this library currently offers:
 
 - `sklego.datasets.load_abalone` loads in the abalone dataset
+- `sklego.datasets.load_arrests` loads in a dataset with fairness concerns
 - `sklego.datasets.load_chicken` loads in the joyful chickweight dataset
 - `sklego.datasets.load_heroes` loads a heroes of the storm dataset
 - `sklego.datasets.make_simpleseries` make a simulated timeseries
