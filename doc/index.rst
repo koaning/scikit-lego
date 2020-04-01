@@ -81,5 +81,6 @@ Usage
    preprocessing.ipynb
    debug_pipeline.ipynb
    pandas_pipeline.ipynb
+   contributors
 
    api/modules
