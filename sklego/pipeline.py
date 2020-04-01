@@ -6,8 +6,11 @@ Pipelines, variances to the :class:`sklearn.pipeline.Pipeline` object.
 import logging
 import time
 
+from collections import defaultdict
+
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_memory
+from sklearn.pipeline import _name_estimators
 
 
 def default_log_callback(output, execution_time, **kwargs):
@@ -301,3 +304,54 @@ class DebugPipeline(Pipeline):
         self._log_callback = func
         if self._log_callback == "default":
             self._log_callback = default_log_callback
+
+
+def make_debug_pipeline(*steps, **kwargs):
+    """Construct a DebugPipeline from the given estimators.
+    This is a shorthand for the DebugPipeline constructor; it does not require, and
+    does not permit, naming the estimators. Instead, their names will be set
+    to the lowercase of their types automatically.
+    Parameters
+    ----------
+    *steps : list of estimators.
+    memory : None, str or object with the joblib.Memory interface, optional
+        Used to cache the fitted transformers of the pipeline. By default,
+        no caching is performed. If a string is given, it is the path to
+        the caching directory. Enabling caching triggers a clone of
+        the transformers before fitting. Therefore, the transformer
+        instance given to the pipeline cannot be inspected
+        directly. Use the attribute ``named_steps`` or ``steps`` to
+        inspect estimators within the pipeline. Caching the
+        transformers is advantageous when fitting is time consuming.
+    verbose : boolean, default=False
+        If True, the time elapsed while fitting each step will be printed as it
+        is completed.
+    log_callback: string, default=None.
+        The callback function that logs information in between each
+        intermediate step. Defaults to None. If set to `'default'`,
+        :func:`default_log_callback` is used.
+
+        See :func:`default_log_callback` for an example.
+
+    See Also
+    --------
+    sklego.pipeline.DebugPipeline : Class for creating a pipeline of
+        transforms with a final estimator.
+    Examples
+    --------
+    >>> from sklearn.naive_bayes import GaussianNB
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> make_debug_pipeline(StandardScaler(), GaussianNB(priors=None))
+    DebugPipeline(steps=[('standardscaler', StandardScaler()),
+                    ('gaussiannb', GaussianNB())])
+    Returns
+    -------
+    p : DebugPipeline
+    """
+    memory = kwargs.pop('memory', None)
+    verbose = kwargs.pop('verbose', False)
+    log_callback = kwargs.pop('log_callback', None)
+    if kwargs:
+        raise TypeError('Unknown keyword arguments: "{}"'
+                        .format(list(kwargs.keys())[0]))
+    return DebugPipeline(_name_estimators(steps), memory=memory, verbose=verbose, log_callback=log_callback)
