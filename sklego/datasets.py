@@ -77,8 +77,6 @@ def load_chicken(return_X_y=False, give_pandas=False):
     df = pd.read_csv(filepath)
     if give_pandas:
         return df
-    if give_pandas:
-        return df
     X, y = df[["time", "diet", "chick"]].values, df["weight"].values
     if return_X_y:
         return X, y
