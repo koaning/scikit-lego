@@ -9,6 +9,7 @@ __all__ = [
     "OrthogonalTransformer",
     "RepeatingBasisFunction",
     "ColumnCapper",
+    "IdentityTransformer"
 ]
 
 from .intervalencoder import IntervalEncoder
@@ -18,3 +19,4 @@ from .pandastransformers import ColumnSelector, PandasTypeSelector, ColumnDroppe
 from .projections import InformationFilter, OrthogonalTransformer
 from .repeatingbasis import RepeatingBasisFunction
 from .columncapper import ColumnCapper
+from .identitytransformer import IdentityTransformer
