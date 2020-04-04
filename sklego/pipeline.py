@@ -6,8 +6,6 @@ Pipelines, variances to the :class:`sklearn.pipeline.Pipeline` object.
 import logging
 import time
 
-from collections import defaultdict
-
 from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import check_memory
 from sklearn.pipeline import _name_estimators

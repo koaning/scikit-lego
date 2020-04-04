@@ -1,8 +1,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import FunctionTransformer
 
 from sklearn.utils import check_array
-from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+from sklearn.utils.validation import check_is_fitted
 
 
 def _identity(X):

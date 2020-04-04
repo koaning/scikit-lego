@@ -1,6 +1,6 @@
+import numpy as np
 import pytest
 from sklearn.utils import estimator_checks
-from sklearn.preprocessing import FunctionTransformer
 
 from sklego.common import flatten
 from sklego.preprocessing import IdentityTransformer
@@ -33,8 +33,9 @@ from tests.conftest import transformer_checks, general_checks
 )
 def test_estimator_checks(test_fn):
     test_fn(IdentityTransformer.__name__, IdentityTransformer())
-    test_fn(FunctionTransformer.__name__, FunctionTransformer(func=identity))
 
 
-def identity(X):
-    return X
+def test_same_values(random_xy_dataset_regr):
+    X, y = random_xy_dataset_regr
+    X_new = IdentityTransformer().fit_transform(X)
+    assert np.isclose(X, X_new).all()
