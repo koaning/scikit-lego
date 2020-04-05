@@ -106,6 +106,7 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.ColumnDropper` drops a column from pandas
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
 - `sklego.preprocessing.InformationFilter` transformer that can de-correlate features
+- `sklego.preprocessing.IdentityTransformer` returns the same data, useful in making concatenating pipelines
 - `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independent
 - `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
 - `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
@@ -114,6 +115,7 @@ Here's a list of features that this library currently offers:
 - `sklego.model_selection.KlusterFoldValidation` experimental feature that does K folds based on clustering
 - `sklego.model_selection.TimeGapSplit` timeseries Kfold with a gap between train/test
 - `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier
+- `sklego.pipeline.make_debug_pipeline` shorthand function to create a debugable pipeline 
 - `sklego.metrics.correlation_score` calculates correlation between model output and feature
 - `sklego.metrics.equal_opportunity_score` calculates equal opportunity metric
 - `sklego.metrics.p_percent_score` proxy for model fairness with regards to sensitive attribute
