@@ -91,7 +91,7 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         X = check_array(X, estimator=self, ensure_2d=True)
         check_is_fitted(self, ["bases_", "width_"])
         # This transformer only accepts one feature as input
-        if len(X.shape) == 1:
+        if X.shape[1] != 1:
             raise ValueError(f"X should have exactly one column, it has: {X.shape[1]}")
 
         # MinMax Scale to 0-1
