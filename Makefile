@@ -10,6 +10,7 @@ install:
 
 develop:
 	pip install -e ".[dev]"
+	pre-commit install
 	python setup.py develop
 
 doctest:
@@ -20,7 +21,11 @@ test: doctest
 	rm -rf .coverage*
 	pytest --nbval-lax doc/*.ipynb
 
-check: flake test
+precommit:
+	pre-commit run
+
+spelling:
+	codespell sklego/*.py
 
 docs:
 	rm -rf doc/.ipynb_checkpoints
@@ -35,7 +40,12 @@ clean:
 	rm -rf .ipynb_checkpoints
 	rm -rf .coverage*
 
-dist: clean
+black:
+	black sklego tests setup.py
+
+check: flake precommit test spelling clean
+
+pypi: clean
 	python setup.py sdist
 	python setup.py bdist_wheel --universal
 	twine upload dist/*

@@ -36,11 +36,14 @@ def log_step(func=None, *, level=logging.INFO):
         result = func(*args, **kwargs)
         time_taken = str(dt.datetime.now() - tic)
         func_args = inspect.signature(func).bind(*args, **kwargs).arguments
-        func_args_str = ''.join(', {} = {!r}'.format(*item) for item in list(func_args.items())[1:])
-        logger.log(level,
-                   f"[{func.__name__}(df{func_args_str})] "
-                   f"n_obs={result.shape[0]} n_col={result.shape[1]} time={time_taken}"
-                   )
+        func_args_str = "".join(
+            ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
+        )
+        logger.log(
+            level,
+            f"[{func.__name__}(df{func_args_str})] "
+            f"n_obs={result.shape[0]} n_col={result.shape[1]} time={time_taken}",
+        )
 
         return result
 
@@ -131,26 +134,22 @@ def _add_lagged_numpy_columns(X, cols, lags, drop_na):
     if not all([col < X.shape[1] for col in cols]):
         raise KeyError("The column does not exist")
 
-    combos = (
-        shift(X[:, col], -lag, cval=np.NaN)
-        for col in cols
-        for lag in lags
-    )
+    combos = (shift(X[:, col], -lag, cval=np.NaN) for col in cols for lag in lags)
 
     # In integer-based ndarrays, NaN values are represented as
     # -9223372036854775808, so we convert back and forth from
     # original to float and back to original dtype
     original_type = X.dtype
     X = np.asarray(X, dtype=float)
-    ans = np.column_stack((X, *combos))
+    answer = np.column_stack((X, *combos))
 
     # Remove rows that contain NA values when drop_na is truthy
     if drop_na:
-        ans = ans[~np.isnan(ans).any(axis=1)]
+        answer = answer[~np.isnan(answer).any(axis=1)]
 
     # Change dtype back to its original
-    ans = np.asarray(ans, dtype=original_type)
-    return ans
+    answer = np.asarray(answer, dtype=original_type)
+    return answer
 
 
 def _add_lagged_pandas_columns(df, cols, lags, drop_na):
@@ -171,15 +170,13 @@ def _add_lagged_pandas_columns(df, cols, lags, drop_na):
         raise KeyError("The column does not exist")
 
     combos = (
-        df[col].shift(-lag).rename(col + str(lag))
-        for col in cols
-        for lag in lags
+        df[col].shift(-lag).rename(col + str(lag)) for col in cols for lag in lags
     )
 
-    ans = pd.concat([df, *combos], axis=1)
+    answer = pd.concat([df, *combos], axis=1)
 
     # Remove rows that contain NA values when drop_na is truthy
     if drop_na:
-        ans = ans.dropna()
+        answer = answer.dropna()
 
-    return ans
+    return answer

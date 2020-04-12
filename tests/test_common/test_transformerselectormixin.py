@@ -11,7 +11,6 @@ from tests.conftest import np_types, n_vals, k_vals
 
 
 class TrainOnlyTrainOnlyTransformer(TrainOnlyTransformerMixin, BaseEstimator):
-
     def fit(self, X, y):
         super().fit(X, y)
 
@@ -67,7 +66,10 @@ def test_pipeline_trainonlytransformer(random_xy_dataset_regr):
 
 def test_bare_trainonlytransformer_pandas(random_xy_dataset_regr):
     """Tests whether the trainonlytransformer will only transform train when used directly"""
-    X, y = pd.DataFrame(random_xy_dataset_regr[0]), pd.DataFrame(random_xy_dataset_regr[1])
+    X, y = (
+        pd.DataFrame(random_xy_dataset_regr[0]),
+        pd.DataFrame(random_xy_dataset_regr[1]),
+    )
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
     trf = TrainOnlyTrainOnlyTransformer()
@@ -82,7 +84,10 @@ def test_bare_trainonlytransformer_pandas(random_xy_dataset_regr):
 
 def test_pipeline_trainonlytransformer_pandas(random_xy_dataset_regr):
     """Tests whether the trainonlytransformer will only transform train when used in a pipeline"""
-    X, y = pd.DataFrame(random_xy_dataset_regr[0]), pd.DataFrame(random_xy_dataset_regr[1])
+    X, y = (
+        pd.DataFrame(random_xy_dataset_regr[0]),
+        pd.DataFrame(random_xy_dataset_regr[1]),
+    )
     X_train, X_test, y_train, y_test = train_test_split(X, y)
 
     trf = make_pipeline(TrainOnlyTrainOnlyTransformer())

@@ -48,7 +48,9 @@ Outlier Detection
 -----------------
 
 Below is some example code of how you might use a GMM
-from sklego to do outlier detection.
+from sklego to do outlier detection. Note that the GMM
+outlier detection generates prediction values that are
+either -1 (outlier) or +1 (normal).
 
 .. testcode:: python
 

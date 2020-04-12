@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 from sklearn.utils import estimator_checks
 
-n_vals = (10, 100, 10000)
-k_vals = (1, 2, 25)
+n_vals = (10, 100, 5000)
+k_vals = (1, 2, 5)
 np_types = (np.int32, np.float32, np.float64)
 
 transformer_checks = (
@@ -76,7 +76,9 @@ outlier_checks = (
 )
 
 
-@pytest.fixture(scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)])
+@pytest.fixture(
+    scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
+)
 def random_xy_dataset_regr(request):
     n, k, np_type = request.param
     np.random.seed(42)
@@ -85,7 +87,20 @@ def random_xy_dataset_regr(request):
     return X, y
 
 
-@pytest.fixture(scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)])
+@pytest.fixture(
+    scope="module", params=[_ for _ in it.product([10, 100], [1, 2, 3], np_types)]
+)
+def random_xy_dataset_regr_small(request):
+    n, k, np_type = request.param
+    np.random.seed(42)
+    X = np.random.normal(0, 2, (n, k)).astype(np_type)
+    y = np.random.normal(0, 2, (n,))
+    return X, y
+
+
+@pytest.fixture(
+    scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
+)
 def random_xy_dataset_clf(request):
     n, k, np_type = request.param
     np.random.seed(42)
@@ -94,33 +109,40 @@ def random_xy_dataset_clf(request):
     return X, y
 
 
-@pytest.fixture(scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)])
+@pytest.fixture(
+    scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
+)
 def random_xy_dataset_multiclf(request):
     n, k, np_type = request.param
     np.random.seed(42)
     X = np.random.normal(0, 2, (n, k)).astype(np_type)
     y = pd.cut(np.random.normal(0, 2, (n,)), 3).codes
-
     return X, y
 
 
 @pytest.fixture
 def sensitive_classification_dataset():
-    df = pd.DataFrame({"x1": [1, 0, 1, 0, 1, 0, 1, 1],
-                       "x2": [0, 0, 0, 0, 0, 1, 1, 1],
-                       "y": [1, 1, 1, 0, 1, 0, 0, 0]})
+    df = pd.DataFrame(
+        {
+            "x1": [1, 0, 1, 0, 1, 0, 1, 1],
+            "x2": [0, 0, 0, 0, 0, 1, 1, 1],
+            "y": [1, 1, 1, 0, 1, 0, 0, 0],
+        }
+    )
 
-    return df[['x1', 'x2']], df['y']
+    return df[["x1", "x2"]], df["y"]
 
 
 @pytest.fixture
 def sensitive_multiclass_classification_dataset():
-    df = pd.DataFrame({
-        'x1': [1, 0, 1, 0, 1, 0, 1, 1, -2, -2, -2, -2],
-        'x2': [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1],
-        'y': [1, 1, 1, 0, 1, 0, 0, 0, 2, 2, 0, 0],
-    })
-    return df[['x1', 'x2']], df['y']
+    df = pd.DataFrame(
+        {
+            "x1": [1, 0, 1, 0, 1, 0, 1, 1, -2, -2, -2, -2],
+            "x2": [0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1],
+            "y": [1, 1, 1, 0, 1, 0, 0, 0, 2, 2, 0, 0],
+        }
+    )
+    return df[["x1", "x2"]], df["y"]
 
 
 def id_func(param):

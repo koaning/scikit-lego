@@ -15,6 +15,18 @@ code quality/testing. This project is a collaboration between
 multiple companies in the Netherlands. Note that we're not formally
 affiliated with the scikit-learn project at all.
 
+Disclaimer
+**********
+
+LEGO® is a trademark of the LEGO Group of companies which does not
+sponsor, authorize or endorse this project. Also note this package,
+albeit designing to be used on top of scikit-learn, is not associated with
+that project in any formal manner.
+
+The goal of the package is to allow you to joyfully build with
+new building blocks that are scikit-learn compatible.
+
+
 Installation
 ************
 
@@ -69,5 +81,6 @@ Usage
    preprocessing.ipynb
    debug_pipeline.ipynb
    pandas_pipeline.ipynb
+   contributors
 
    api/modules

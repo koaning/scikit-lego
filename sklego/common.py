@@ -39,10 +39,11 @@ class TrainOnlyTransformerMixin(TransformerMixin):
     """
 
     _HASHERS = {
-        pd.DataFrame: lambda X: hashlib.sha256(pd.util.hash_pandas_object(X, index=True).values).hexdigest(),
+        pd.DataFrame: lambda X: hashlib.sha256(
+            pd.util.hash_pandas_object(X, index=True).values
+        ).hexdigest(),
         np.ndarray: lambda X: hash(X.data.tobytes()),
         np.memmap: lambda X: hash(X.data.tobytes()),
-
     }
 
     def fit(self, X, y=None):
@@ -61,8 +62,10 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         try:
             hasher = TrainOnlyTransformerMixin._HASHERS[type(X)]
         except KeyError:
-            raise ValueError(f'Unknown datatype {type(X)}, '
-                             f'TransformerSelector only supports {TrainOnlyTransformerMixin.HASHERS.keys()}')
+            raise ValueError(
+                f"Unknown datatype {type(X)}, "
+                f"TransformerSelector only supports {TrainOnlyTransformerMixin.HASHERS.keys()}"
+            )
         else:
             return hasher(X)
 
@@ -73,11 +76,13 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         It will dispatch to `self.transform_train` if X is the same as X passed to `fit`, otherwise, it will dispatch
         to `self.trainsform_test`
         """
-        check_is_fitted(self, ['X_hash_', 'dim_'])
+        check_is_fitted(self, ["X_hash_", "dim_"])
         check_array(X, estimator=self)
 
         if X.shape[1] != self.dim_:
-            raise ValueError(f'Unexpected input dimension {X.shape[1]}, expected {self.dim_}')
+            raise ValueError(
+                f"Unexpected input dimension {X.shape[1]}, expected {self.dim_}"
+            )
 
         if self._hash(X) == self.X_hash_:
             return self.transform_train(X)
@@ -85,7 +90,9 @@ class TrainOnlyTransformerMixin(TransformerMixin):
             return self.transform_test(X)
 
     def transform_train(self, X, y=None):
-        raise NotImplementedError('Subclasses of TrainOnlyMixin should implement `transform_train`')
+        raise NotImplementedError(
+            "Subclasses of TrainOnlyMixin should implement `transform_train`"
+        )
 
     def transform_test(self, X, y=None):
         return X
@@ -106,12 +113,12 @@ def as_list(val):
     >>> as_list(['test1', 'test2'])
     ['test1', 'test2']
     """
-    treat_single_value = (str)
+    treat_single_value = str
 
     if isinstance(val, treat_single_value):
         return [val]
 
-    if hasattr(val, '__iter__'):
+    if hasattr(val, "__iter__"):
         return list(val)
 
     return [val]
@@ -128,7 +135,9 @@ def flatten(nested_iterable):
     ['test1', 'test2']
     """
     for el in nested_iterable:
-        if isinstance(el, collections.abc.Iterable) and not isinstance(el, (str, bytes)):
+        if isinstance(el, collections.abc.Iterable) and not isinstance(
+            el, (str, bytes)
+        ):
             yield from flatten(el)
         else:
             yield el
@@ -156,4 +165,4 @@ def expanding_list(list_to_extent, return_type=list):
     if len(listed) <= 1:
         return [listed]
 
-    return [return_type(listed[:n+1]) for n in range(len(listed))]
+    return [return_type(listed[: n + 1]) for n in range(len(listed))]

@@ -11,11 +11,30 @@ from sklego.preprocessing import PatsyTransformer
 
 @pytest.fixture()
 def df():
-    return pd.DataFrame({"a": [1, 2, 3, 4, 5, 6],
-                         "b": np.log([10, 9, 8, 7, 6, 5]),
-                         "c": ["a", "b", "a", "b", "c", "c"],
-                         "d": ["b", "a", "a", "b", "a", "b"],
-                         "e": [0, 1, 0, 1, 0, 1]})
+    return pd.DataFrame(
+        {
+            "a": [1, 2, 3, 4, 5, 6],
+            "b": np.log([10, 9, 8, 7, 6, 5]),
+            "c": ["a", "b", "a", "b", "c", "c"],
+            "d": ["b", "a", "a", "b", "a", "b"],
+            "e": [0, 1, 0, 1, 0, 1],
+        }
+    )
+
+
+def test_return_type_dmatrix(df):
+    X, y = df[["a", "b", "c", "d"]], df[["e"]]
+    tf = PatsyTransformer("a + b - 1", return_type="matrix")
+    # test for DesignMatrix this way as per https://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignMatrix
+    df_fit_transformed = tf.fit(X, y).transform(X)
+    assert hasattr(df_fit_transformed, "design_info")
+
+
+def test_return_type_dataframe(df):
+    X, y = df[["a", "b", "c", "d"]], df[["e"]]
+    tf = PatsyTransformer("a + b - 1", return_type="dataframe")
+    df_fit_transformed = tf.fit(X, y).transform(X)
+    assert isinstance(df_fit_transformed, pd.DataFrame)
 
 
 def test_basic_usage(df):
@@ -66,11 +85,13 @@ def test_mult_usage(df):
 
 def test_design_matrix_in_pipeline(df):
     X, y = df[["a", "b", "c", "d"]], df[["e"]].values.ravel()
-    pipe = Pipeline([
-        ("design", PatsyTransformer("a + np.log(a) + b - 1")),
-        ("scale", StandardScaler()),
-        ("model", LogisticRegression(solver='lbfgs')),
-    ])
+    pipe = Pipeline(
+        [
+            ("design", PatsyTransformer("a + np.log(a) + b - 1")),
+            ("scale", StandardScaler()),
+            ("model", LogisticRegression(solver="lbfgs")),
+        ]
+    )
     assert pipe.fit(X, y).predict(X).shape == (6,)
 
 
@@ -95,11 +116,13 @@ def test_design_matrix_error(df):
     df_test = df[4:]
     X_test = df_test[["a", "b", "c", "d"]]
 
-    pipe = Pipeline([
-        ("design", PatsyTransformer("a + np.log(a) + b + c + d - 1")),
-        ("scale", StandardScaler()),
-        ("model", LogisticRegression(solver='lbfgs')),
-    ])
+    pipe = Pipeline(
+        [
+            ("design", PatsyTransformer("a + np.log(a) + b + c + d - 1")),
+            ("scale", StandardScaler()),
+            ("model", LogisticRegression(solver="lbfgs")),
+        ]
+    )
 
     pipe.fit(X_train, y_train)
     with pytest.raises(RuntimeError):
