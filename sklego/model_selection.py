@@ -10,18 +10,23 @@ from sklego.base import Clusterer
 class TimeGapSplit:
     """
     Provides train/test indices to split time series data samples.
-
     This cross-validation object is a variation of TimeSeriesSplit with the following differences:
-
     - The splits are made based on datetime duration, instead of number of rows.
-    - The user specifies the training and the validation durations
-    - The user can specify a 'gap' duration that is omitted from the end part of the training split
-
+    - The user specifies the validation durations and either training_duration or n_splits
+    - The user can specify a 'gap' duration that is added
+      after the training split and before the validation split
     The 3 duration parameters can be used to really replicate how the model
     is going to be used in production in batch learning.
-
     Each validation fold doesn't overlap. The entire 'window' moves by 1 valid_duration until there is not enough data.
-    The number of folds is automatically defined that way.
+    If this would lead to more splits then specified with n_splits, the 'window' moves by
+    the validation_duration times the fraction of possible splits and requested splits
+     -- n_possible_splits = (total_length-train_duration-gap_duration)//valid_duration
+     -- time_shift = valid_duratiopn n_possible_splits/n_slits
+    so the CV spans the whole dataset.
+    If train_duration is not passed but n_split,
+    the training duration is increased to
+     -- train_duration = total_length-(self.gap_duration + self.valid_duration * self.n_splits)
+     such that the shifting the entire window by one validation duration spans the whole training set
 
     :param pandas.Series date_serie: Series with the date, that should have all the indices of X used in split()
     :param datetime.timedelta train_duration: historical training data.
@@ -34,9 +39,16 @@ class TimeGapSplit:
     """
 
     def __init__(
-        self, date_serie, train_duration, valid_duration, gap_duration=timedelta(0)
+        self, date_serie, valid_duration, train_duration=None, gap_duration=timedelta(0), n_splits=None
     ):
-        if train_duration <= gap_duration:
+        if ((train_duration is None)
+                and (n_splits is None)):
+            raise ValueError(
+                "Either train_duration or n_splits have to be defined"
+            )
+
+        if ((train_duration is not None)
+                and (train_duration <= gap_duration)):
             raise ValueError(
                 "gap_duration is longer than train_duration, it should be shorter."
             )
@@ -49,6 +61,8 @@ class TimeGapSplit:
         self.train_duration = train_duration
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
+        self.n_splits = n_splits
+        self.maximise_training_set = False
 
     def join_date_and_x(self, X):
         """
@@ -56,7 +70,8 @@ class TimeGapSplit:
         and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn
         :param pandas.DataFrame X:
         """
-        X_index_df = pd.DataFrame(range(len(X)), columns=["np_index"], index=X.index)
+        X_index_df = pd.DataFrame(range(len(X)), columns=[
+                                  "np_index"], index=X.index)
         X_index_df = X_index_df.join(self.date_serie)
 
         return X_index_df
@@ -80,29 +95,61 @@ class TimeGapSplit:
 
         date_min = X_index_df["__date__"].min()
         date_max = X_index_df["__date__"].max()
+        date_length = X_index_df["__date__"].max() - \
+            X_index_df["__date__"].min()
+
+        if ((self.train_duration is None)
+                and (self.n_splits is not None)):
+            self.train_duration = date_length - \
+                (self.gap_duration + self.valid_duration * self.n_splits)
+
+        if ((self.train_duration is not None)
+                and (self.train_duration <= self.gap_duration)):
+            raise ValueError(
+                "gap_duration is longer than train_duration, it should be shorter."
+            )
+
+        n_split_max = (date_length - self.train_duration -
+                       self.gap_duration) // self.valid_duration
+        if self.n_splits:
+            if n_split_max < self.n_splits:
+                raise ValueError(
+                    ("Number of folds requested = {1} are greater"
+                     " than maximum  ={0} possible without"
+                     " overlapping validation sets.").format(n_split_max, self.n_splits))
 
         current_date = date_min
+        start_date = date_min
+        # if the n_splits is smaller than what would usually be done for train val and gap duration,
+        # the next fold is slightly slighly further in time than just valid_duration
+        if self.n_splits is not None:
+            time_shift = self.valid_duration * n_split_max // self.n_splits
+        else:
+            time_shift = self.valid_duration
+
         while True:
             if current_date + self.train_duration + self.valid_duration > date_max:
                 break
 
             X_train_df = X_index_df[
-                (X_index_df["__date__"] >= current_date)
+                (X_index_df["__date__"] >= start_date)
                 & (
                     X_index_df["__date__"]
-                    < current_date + self.train_duration - self.gap_duration
+                    < current_date + self.train_duration
                 )
             ]
             X_valid_df = X_index_df[
-                (X_index_df["__date__"] >= current_date + self.train_duration)
+                (X_index_df["__date__"] >= current_date +
+                 self.train_duration + self.gap_duration)
                 & (
                     X_index_df["__date__"]
-                    < current_date + self.train_duration + self.valid_duration
+                    < current_date + self.train_duration + self.valid_duration + self.gap_duration
                 )
             ]
 
-            current_date = current_date + self.valid_duration
-
+            current_date = current_date + time_shift
+            if not self.maximise_training_set:
+                start_date = current_date
             yield (X_train_df["np_index"].values, X_valid_df["np_index"].values)
 
     def get_n_splits(self, X=None, y=None, groups=None):
