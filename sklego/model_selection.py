@@ -23,7 +23,7 @@ class TimeGapSplit:
      -- n_possible_splits = (total_length-train_duration-gap_duration)//valid_duration
      -- time_shift = valid_duratiopn n_possible_splits/n_slits
     so the CV spans the whole dataset.
-    If train_duration is not passed but n_split,
+    If train_duration is not passed but n_split is,
     the training duration is increased to
      -- train_duration = total_length-(self.gap_duration + self.valid_duration * self.n_splits)
      such that the shifting the entire window by one validation duration spans the whole training set
