@@ -15,8 +15,8 @@ We love scikit learn but very often we find ourselves writing
 custom transformers, metrics and models. The goal of this project
 is to attempt to consolidate these into a package that offers
 code quality/testing. This project is a collaboration between
-multiple companies in the Netherlands. It was initiated by Matthijs
-Brouns and Vincent D. Warmerdam as a tool to teach people how
+multiple companies in the Netherlands. It was initiated by [Matthijs Brouns](https://www.mbrouns.com/)
+and [Vincent D. Warmerdam](koaning.io) as a tool to teach people how
 to contribute to open source.
 
 Note that we're not formally affiliated with the scikit-learn project at all.
