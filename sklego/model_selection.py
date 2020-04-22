@@ -36,10 +36,20 @@ class TimeGapSplit:
         This period is dropped at the end of your training folds due to lack of recent data.
         In production you would have not been able to create the target for that period, and you would have drop it from
         the training data.
+    :param int n_splits: number of splits
+    :param string window:
+         'rolling' window has fixed size and is shifted entirely
+         'expanding' left side of window is fixed, right border increases each fold
+
     """
 
     def __init__(
-        self, date_serie, valid_duration, train_duration=None, gap_duration=timedelta(0), n_splits=None
+        self, date_serie,
+        valid_duration,
+        train_duration=None,
+        gap_duration=timedelta(0),
+        n_splits=None,
+        window='rolling'
     ):
         if ((train_duration is None)
                 and (n_splits is None)):
@@ -62,9 +72,9 @@ class TimeGapSplit:
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
         self.n_splits = n_splits
-        self.maximise_training_set = False
+        self.window = window
 
-    def join_date_and_x(self, X):
+    def _join_date_and_x(self, X):
         """
         Make a DataFrame indexed by the pandas index (the same as date_series) with date column joined with that index
         and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn
@@ -84,7 +94,7 @@ class TimeGapSplit:
         :param groups: Always ignored, exists for compatibility
         """
 
-        X_index_df = self.join_date_and_x(X)
+        X_index_df = self._join_date_and_x(X)
         X_index_df = X_index_df.sort_values("__date__", ascending=True)
 
         if len(X) != len(X_index_df):
@@ -110,7 +120,7 @@ class TimeGapSplit:
             )
 
         n_split_max = (date_length - self.train_duration -
-                       self.gap_duration) // self.valid_duration
+                       self.gap_duration) / self.valid_duration
         if self.n_splits:
             if n_split_max < self.n_splits:
                 raise ValueError(
@@ -123,12 +133,12 @@ class TimeGapSplit:
         # if the n_splits is smaller than what would usually be done for train val and gap duration,
         # the next fold is slightly slighly further in time than just valid_duration
         if self.n_splits is not None:
-            time_shift = self.valid_duration * n_split_max // self.n_splits
+            time_shift = self.valid_duration * n_split_max / self.n_splits
         else:
             time_shift = self.valid_duration
 
         while True:
-            if current_date + self.train_duration + self.valid_duration > date_max:
+            if current_date + self.train_duration + time_shift + self.gap_duration > date_max:
                 break
 
             X_train_df = X_index_df[
@@ -148,7 +158,7 @@ class TimeGapSplit:
             ]
 
             current_date = current_date + time_shift
-            if not self.maximise_training_set:
+            if self.window == 'rolling':
                 start_date = current_date
             yield (X_train_df["np_index"].values, X_valid_df["np_index"].values)
 
@@ -163,7 +173,7 @@ class TimeGapSplit:
         :returns: ``pd.DataFrame`` summary of all folds
         """
         summary = []
-        X_index_df = self.join_date_and_x(X)
+        X_index_df = self._join_date_and_x(X)
 
         def get_split_info(X, indices, j, part, summary):
             dates = X_index_df.iloc[indices]["__date__"]
