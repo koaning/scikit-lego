@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.validation import (
     check_is_fitted,
+    check_X_y
 )
 
 
@@ -20,7 +21,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
             ["OutlierMixin" in p.__name__ for p in type(self.model).__bases__]
         )
 
-    def fit(self, X, y=None):
+    def fit(self, X, y):
         """
         Fit the data after adapting the same weight.
 
@@ -28,9 +29,11 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
+        X, y = check_X_y(X, y, estimator=self)
         if not self._is_outlier_model():
             raise ValueError("Passed model does not detect outliers!")
         self.estimator_ = self.model.fit(X, y)
+        self.classes_ = np.array([0, 1])
         return self
 
     def predict(self, X):
@@ -40,7 +43,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
-        check_is_fitted(self, ['estimator_'])
+        check_is_fitted(self, ['estimator_', 'classes_'])
         preds = self.estimator_.predict(X)
         result = np.zeros(preds.shape)
         result[preds == -1] = 1
