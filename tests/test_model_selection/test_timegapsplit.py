@@ -71,7 +71,6 @@ def test_timegapsplit_using_splits():
     assert len(list(cv.split(X_train, y_train))) == 3
 
 
-@pytest.mark.xfail(raises=ValueError, strict=True)
 def test_timegapsplit_too_many_splits():
     cv = TimeGapSplit(
         date_serie=df["date"],
@@ -80,19 +79,19 @@ def test_timegapsplit_too_many_splits():
         gap_duration=timedelta(days=1),
         n_splits=7
     )
-    list(cv.split(X_train, y_train))
+    with pytest.raises(ValueError):
+        list(cv.split(X_train, y_train))
 
 
-@pytest.mark.xfail(raises=ValueError, strict=True)
 def test_timegapsplit_train_or_nsplit():
-    cv = TimeGapSplit(
-        date_serie=df["date"],
-        train_duration=None,
-        valid_duration=timedelta(days=3),
-        gap_duration=timedelta(days=5),
-        n_splits=None
-    )
-    cv.split(X_train, y_train)
+    with pytest.raises(ValueError):
+        cv = TimeGapSplit(
+            date_serie=df["date"],
+            train_duration=None,
+            valid_duration=timedelta(days=3),
+            gap_duration=timedelta(days=5),
+            n_splits=None
+        )
 
 
 def test_timegapsplit_without_train_duration():
