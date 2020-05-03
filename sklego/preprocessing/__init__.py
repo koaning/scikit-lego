@@ -1,7 +1,7 @@
 __all__ = [
     "IntervalEncoder",
     "RandomAdder",
-    "Patsytransformer",
+    "PatsyTransformer",
     "ColumnSelector",
     "PandasTypeSelector",
     "ColumnDropper",
