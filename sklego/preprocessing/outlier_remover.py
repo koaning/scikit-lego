@@ -7,11 +7,6 @@ from sklearn.utils.validation import (
 
 from sklego.common import TrainOnlyTransformerMixin
 
-@deprecated(
-    version="0.4.1",
-    reason="Please use `sklego.preprocessing.OutlierRemovers` instead. "
-    "This object will be removed from the meta submodule in version 0.6.0.",
-)
 class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
     """
     Removes outliers (train-time only) using the supplied removal model.
