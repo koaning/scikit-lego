@@ -2,6 +2,7 @@
 [![Documentation Status](https://readthedocs.org/projects/scikit-lego/badge/?version=latest)](https://scikit-lego.readthedocs.io/en/latest/?badge=latest)
 [![Downloads](https://pepy.tech/badge/scikit-lego/month)](https://pepy.tech/project/scikit-lego/month)
 [![Version](https://img.shields.io/pypi/v/scikit-lego)](https://pypi.org/project/scikit-lego/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-lego.svg)](https://anaconda.org/conda-forge/scikit-lego)
 ![](https://img.shields.io/github/license/koaning/scikit-lego)
 ![](https://img.shields.io/pypi/pyversions/scikit-lego)
 ![](https://img.shields.io/github/contributors/koaning/scikit-lego)
