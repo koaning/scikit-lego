@@ -14,12 +14,14 @@
 We love scikit learn but very often we find ourselves writing
 custom transformers, metrics and models. The goal of this project
 is to attempt to consolidate these into a package that offers
-code quality/testing. This project is a collaboration between
-multiple companies in the Netherlands. It was initiated by [Matthijs Brouns](https://www.mbrouns.com/)
+code quality/testing. This project started as a collaboration between
+multiple companies in the Netherlands but has since received contributions
+from around the globe. It was initiated by [Matthijs Brouns](https://www.mbrouns.com/)
 and [Vincent D. Warmerdam](https://koaning.io) as a tool to teach people how
 to contribute to open source.
 
-Note that we're not formally affiliated with the scikit-learn project at all.
+Note that we're not formally affiliated with the scikit-learn project at all, 
+but we aim to strictly adhere to their standards. 
 
 The same holds with lego. LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this project.
 
