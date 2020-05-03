@@ -6,6 +6,8 @@ from sklearn.utils.validation import (
 )
 
 from sklego.common import TrainOnlyTransformerMixin
+from deprecated import deprecated
+
 
 @deprecated(
     version="0.4.1",
