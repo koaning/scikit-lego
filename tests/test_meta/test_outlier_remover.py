@@ -40,7 +40,7 @@ def test_no_outliers(mocker):
     mock_outlier_detector = mocker.Mock()
     mock_outlier_detector.fit.return_value = None
     mock_outlier_detector.predict.return_value = np.array([1, 1])
-    mocker.patch("sklego.meta.clone").return_value = mock_outlier_detector
+    mocker.patch("sklego.meta.outlier_remover.clone").return_value = mock_outlier_detector
 
     outlier_remover = OutlierRemover(outlier_detector=mock_outlier_detector, refit=True)
     outlier_remover.fit(X=np.array([[1, 1], [2, 2]]))
@@ -51,7 +51,7 @@ def test_remove_outlier(mocker):
     mock_outlier_detector = mocker.Mock()
     mock_outlier_detector.fit.return_value = None
     mock_outlier_detector.predict.return_value = np.array([-1])
-    mocker.patch("sklego.meta.clone").return_value = mock_outlier_detector
+    mocker.patch("sklego.meta.outlier_remover.clone").return_value = mock_outlier_detector
 
     outlier_remover = OutlierRemover(outlier_detector=mock_outlier_detector, refit=True)
     outlier_remover.fit(X=np.array([[5, 5]]))
@@ -62,7 +62,7 @@ def test_do_not_refit(mocker):
     mock_outlier_detector = mocker.Mock()
     mock_outlier_detector.fit.return_value = None
     mock_outlier_detector.predict.return_value = np.array([-1])
-    mocker.patch("sklego.meta.clone").return_value = mock_outlier_detector
+    mocker.patch("sklego.meta.outlier_remover.clone").return_value = mock_outlier_detector
 
     outlier_remover = OutlierRemover(
         outlier_detector=mock_outlier_detector, refit=False

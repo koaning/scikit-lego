@@ -22,6 +22,21 @@ def df():
     )
 
 
+def test_return_type_dmatrix(df):
+    X, y = df[["a", "b", "c", "d"]], df[["e"]]
+    tf = PatsyTransformer("a + b - 1", return_type="matrix")
+    # test for DesignMatrix this way as per https://patsy.readthedocs.io/en/latest/API-reference.html#patsy.DesignMatrix
+    df_fit_transformed = tf.fit(X, y).transform(X)
+    assert hasattr(df_fit_transformed, "design_info")
+
+
+def test_return_type_dataframe(df):
+    X, y = df[["a", "b", "c", "d"]], df[["e"]]
+    tf = PatsyTransformer("a + b - 1", return_type="dataframe")
+    df_fit_transformed = tf.fit(X, y).transform(X)
+    assert isinstance(df_fit_transformed, pd.DataFrame)
+
+
 def test_basic_usage(df):
     X, y = df[["a", "b", "c", "d"]], df[["e"]]
     tf = PatsyTransformer("a + b")

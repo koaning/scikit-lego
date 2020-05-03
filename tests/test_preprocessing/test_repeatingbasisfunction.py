@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from sklego.preprocessing import RepeatingBasisFunction
+from sklego.preprocessing.repeatingbasis import _RepeatingBasisFunction
 
 
 @pytest.fixture()
@@ -42,3 +43,10 @@ def test_dataframe_equals_array(df):
     df_transformed = tf.fit(X, y).transform(X)
     array_transformed = tf.fit(X.values, y).transform(X.values)
     np.testing.assert_array_equal(df_transformed, array_transformed)
+
+
+def test_when_rbf_helper_receives_more_than_one_col_raises_value_error(df):
+    X, y = df[["a", "b", "c", "d"]], df[["e"]]
+    rbf_helper_tf = _RepeatingBasisFunction()
+    with pytest.raises(ValueError):
+        rbf_helper_tf.fit(X, y)

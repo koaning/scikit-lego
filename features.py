@@ -36,4 +36,5 @@ if __name__ == "__main__":
     print_classes(preprocessing)
     print_classes(model_selection)
     print_classes(pipeline)
+    print_functions(pipeline)
     print_functions(metrics)

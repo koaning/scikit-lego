@@ -14,12 +14,14 @@
 We love scikit learn but very often we find ourselves writing
 custom transformers, metrics and models. The goal of this project
 is to attempt to consolidate these into a package that offers
-code quality/testing. This project is a collaboration between
-multiple companies in the Netherlands. It was initiated by Matthijs
-Brouns and Vincent D. Warmerdam as a tool to teach people how
+code quality/testing. This project started as a collaboration between
+multiple companies in the Netherlands but has since received contributions
+from around the globe. It was initiated by [Matthijs Brouns](https://www.mbrouns.com/)
+and [Vincent D. Warmerdam](https://koaning.io) as a tool to teach people how
 to contribute to open source.
 
-Note that we're not formally affiliated with the scikit-learn project at all.
+Note that we're not formally affiliated with the scikit-learn project at all, 
+but we aim to strictly adhere to their standards. 
 
 The same holds with lego. LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this project.
 
@@ -78,6 +80,7 @@ mod = Pipeline([
 Here's a list of features that this library currently offers:
 
 - `sklego.datasets.load_abalone` loads in the abalone dataset
+- `sklego.datasets.load_arrests` loads in a dataset with fairness concerns
 - `sklego.datasets.load_chicken` loads in the joyful chickweight dataset
 - `sklego.datasets.load_heroes` loads a heroes of the storm dataset
 - `sklego.datasets.make_simpleseries` make a simulated timeseries
@@ -105,6 +108,7 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.ColumnDropper` drops a column from pandas
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
 - `sklego.preprocessing.InformationFilter` transformer that can de-correlate features
+- `sklego.preprocessing.IdentityTransformer` returns the same data, useful in making concatenating pipelines
 - `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independent
 - `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
 - `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
@@ -113,6 +117,7 @@ Here's a list of features that this library currently offers:
 - `sklego.model_selection.KlusterFoldValidation` experimental feature that does K folds based on clustering
 - `sklego.model_selection.TimeGapSplit` timeseries Kfold with a gap between train/test
 - `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier
+- `sklego.pipeline.make_debug_pipeline` shorthand function to create a debugable pipeline 
 - `sklego.metrics.correlation_score` calculates correlation between model output and feature
 - `sklego.metrics.equal_opportunity_score` calculates equal opportunity metric
 - `sklego.metrics.p_percent_score` proxy for model fairness with regards to sensitive attribute
