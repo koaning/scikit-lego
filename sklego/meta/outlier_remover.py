@@ -10,7 +10,7 @@ from deprecated import deprecated
 
 
 @deprecated(
-    version="0.4.1",
+    version="0.4.2",
     reason="Please use `sklego.preprocessing.OutlierRemovers` instead. "
     "This object will be removed from the meta submodule in version 0.6.0.",
 )
