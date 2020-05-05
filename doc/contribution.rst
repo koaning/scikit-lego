@@ -20,7 +20,7 @@ Before You Make a New Feature
 When Writing a New Feature
 --------------------------
 
-When writing a new feauture there's some more details with regard to
+When writing a new feature there's some more details with regard to
 how scikit learn likes to have it's parts implemented. We will display the a
 sample implementation of the `ColumnSelector` below. Please review all comments marked as Important.
 
