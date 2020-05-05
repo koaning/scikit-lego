@@ -131,7 +131,7 @@ class TimeGapSplit:
         current_date = date_min
         start_date = date_min
         # if the n_splits is smaller than what would usually be done for train val and gap duration,
-        # the next fold is slightly slighly further in time than just valid_duration
+        # the next fold is slightly further in time than just valid_duration
         if self.n_splits is not None:
             time_shift = self.valid_duration * n_split_max / self.n_splits
         else:
