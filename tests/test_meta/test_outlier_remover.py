@@ -6,7 +6,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils import estimator_checks
 
 from sklego.common import flatten
-from sklego.preprocessing import OutlierRemover
+from sklego.meta import OutlierRemover
 from sklego.mixture import GMMOutlierDetector
 
 
