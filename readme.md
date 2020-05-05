@@ -133,4 +133,4 @@ things before they become added to the project:
 2. any new feature passes standard unit tests (we use the ones from scikit-learn)
 3. the feature has been discussed in the issue list beforehand
 
-We automate all of our testing and use pre-commit hooks to keep the load on travis light.
+We automate all of our testing and use pre-commit hooks to keep the code working. 
