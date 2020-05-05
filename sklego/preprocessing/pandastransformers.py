@@ -92,7 +92,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         return self.feature_names_
 
     def _check_column_length(self):
-        """Check if all columns are droped"""
+        """Check if all columns are dropped"""
         if len(self.feature_names_) == 0:
             raise ValueError(
                 f"Dropping {self.columns_} would result in an empty output DataFrame"
