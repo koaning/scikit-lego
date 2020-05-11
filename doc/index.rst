@@ -82,5 +82,6 @@ Usage
    debug_pipeline.ipynb
    pandas_pipeline.ipynb
    contributors
+   rstudio.md
 
    api/modules
