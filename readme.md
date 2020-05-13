@@ -2,6 +2,7 @@
 [![Documentation Status](https://readthedocs.org/projects/scikit-lego/badge/?version=latest)](https://scikit-lego.readthedocs.io/en/latest/?badge=latest)
 [![Downloads](https://pepy.tech/badge/scikit-lego/month)](https://pepy.tech/project/scikit-lego/month)
 [![Version](https://img.shields.io/pypi/v/scikit-lego)](https://pypi.org/project/scikit-lego/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-lego.svg)](https://anaconda.org/conda-forge/scikit-lego)
 ![](https://img.shields.io/github/license/koaning/scikit-lego)
 ![](https://img.shields.io/pypi/pyversions/scikit-lego)
 ![](https://img.shields.io/github/contributors/koaning/scikit-lego)
@@ -101,7 +102,6 @@ Here's a list of features that this library currently offers:
 - `sklego.meta.DecayEstimator` adds decay to the sample_weight that the model accepts
 - `sklego.meta.EstimatorTransformer` adds a model output as a feature
 - `sklego.meta.GroupedEstimator` can split the data into runs and run a model on each
-- `sklego.meta.OutlierRemover` experimental method to remove outliers during training
 - `sklego.meta.SubjectiveClassifier` experimental feature to add a prior to your classifier
 - `sklego.meta.Thresholder` meta model that allows you to gridsearch over the threshold
 - `sklego.preprocessing.ColumnCapper` limits extreme values of the model features
@@ -114,6 +114,7 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
 - `sklego.preprocessing.RandomAdder` adds randomness in training
 - `sklego.preprocessing.RepeatingBasisFunction` repeating feature engineering, useful for timeseries
+- `sklego.preprocessing.OutlierRemover` experimental method to remove outliers during training
 - `sklego.model_selection.KlusterFoldValidation` experimental feature that does K folds based on clustering
 - `sklego.model_selection.TimeGapSplit` timeseries Kfold with a gap between train/test
 - `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier
@@ -132,4 +133,4 @@ things before they become added to the project:
 2. any new feature passes standard unit tests (we use the ones from scikit-learn)
 3. the feature has been discussed in the issue list beforehand
 
-We automate all of our testing and use pre-commit hooks to keep the load on travis light.
+We automate all of our testing and use pre-commit hooks to keep the code working. 
