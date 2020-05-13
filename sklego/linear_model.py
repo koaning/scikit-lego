@@ -295,8 +295,25 @@ class FairClassifier(DemographicParityClassifier):
 
 
 class _DemographicParityClassifer(_FairClassifier):
-    def __init__(self, covariance_threshold, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        covariance_threshold,
+        sensitive_cols=None,
+        C=1.0,
+        penalty="l1",
+        fit_intercept=True,
+        max_iter=100,
+        train_sensitive_cols=False,
+    ):
+        super().__init__(
+            sensitive_cols=sensitive_cols,
+            C=C,
+            penalty=penalty,
+            fit_intercept=fit_intercept,
+            max_iter=max_iter,
+            train_sensitive_cols=train_sensitive_cols,
+        )
+
         self.covariance_threshold = covariance_threshold
 
     def constraints(self, y_hat, y_true, sensitive, n_obs):
@@ -305,13 +322,6 @@ class _DemographicParityClassifer(_FairClassifier):
             return [cp.abs(dec_boundary_cov) <= self.covariance_threshold]
         else:
             return []
-
-    @classmethod
-    def _get_param_names(cls):
-        return sorted(
-            super(_DemographicParityClassifer, cls)._get_param_names()
-            + _FairClassifier._get_param_names()
-        )
 
 
 class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
@@ -364,8 +374,25 @@ class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
 
 
 class _EqualOpportunityClassifier(_FairClassifier):
-    def __init__(self, covariance_threshold, positive_target, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        covariance_threshold,
+        positive_target,
+        sensitive_cols=None,
+        C=1.0,
+        penalty="l1",
+        fit_intercept=True,
+        max_iter=100,
+        train_sensitive_cols=False,
+    ):
+        super().__init__(
+            sensitive_cols=sensitive_cols,
+            C=C,
+            penalty=penalty,
+            fit_intercept=fit_intercept,
+            max_iter=max_iter,
+            train_sensitive_cols=train_sensitive_cols,
+        )
         self.positive_target = positive_target
         self.covariance_threshold = covariance_threshold
 
@@ -383,10 +410,3 @@ class _EqualOpportunityClassifier(_FairClassifier):
             return [cp.abs(dec_boundary_cov) <= self.covariance_threshold]
         else:
             return []
-
-    @classmethod
-    def _get_param_names(cls):
-        return sorted(
-            super(_EqualOpportunityClassifier, cls)._get_param_names()
-            + _FairClassifier._get_param_names()
-        )
