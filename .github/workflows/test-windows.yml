@@ -36,4 +36,5 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest
+        pytest -n auto tests
+        # 75.38s
