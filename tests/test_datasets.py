@@ -1,5 +1,5 @@
 import pytest
-from sklego.datasets import load_chicken, load_abalone, make_simpleseries
+from sklego.datasets import load_chicken, load_abalone, make_simpleseries, load_hearts
 
 
 def test_chickweight1():
@@ -41,3 +41,7 @@ def test_simpleseries_constant_season():
     assert agg.loc[lambda d: d["month"] == 1].var().month == pytest.approx(
         0.0, abs=0.01
     )
+
+def test_load_hearts():
+    df = load_hearts(give_pandas=True)
+    assert df.shape == (303, 14)

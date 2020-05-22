@@ -1,7 +1,19 @@
 API Reference
-======
+=============
 
 .. toctree::
    :maxdepth: 4
 
-   API Reference
+   base
+   common
+   datasets
+   dummy
+   linear_model
+   meta
+   metrics
+   mixture
+   model_selection
+   naive_bayes
+   pandas_utils
+   pipeline
+   preprocessing
