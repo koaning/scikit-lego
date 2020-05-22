@@ -1,5 +1,6 @@
-import numpy as np
 import pytest
+import numpy as np
+from sklearn.linear_model import LinearRegression
 
 from sklego.common import flatten
 from sklego.mixture import GMMOutlierDetector
@@ -48,3 +49,12 @@ def test_obvious_usecase_quantile(dataset):
     assert clf_quantile.predict([[10, 10]]) == np.array([1])
     assert clf_quantile.predict([[0, 0]]) == np.array([0])
     assert isinstance(clf_quantile.score(X, y), float)
+
+
+def test_raises_error(dataset):
+    mod_quantile = LinearRegression()
+    clf_quantile = OutlierClassifier(mod_quantile)
+    X = dataset
+    y = (dataset.max(axis=1) > 3).astype(np.int)
+    with pytest.raises(ValueError):
+        clf_quantile.fit(X, y)

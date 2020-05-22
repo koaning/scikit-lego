@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
+from sklego.base import OutlierModel
 from sklearn.utils.validation import (
     check_is_fitted,
     check_X_y
@@ -17,9 +18,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
         self.model = model
 
     def _is_outlier_model(self):
-        return any(
-            ["OutlierMixin" in p.__name__ for p in type(self.model).__bases__]
-        )
+        return isinstance(self.model, OutlierModel)
 
     def fit(self, X, y):
         """
