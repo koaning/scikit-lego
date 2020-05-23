@@ -44,7 +44,10 @@ We'll also show two different prediction outcomes depending on the hyperparamete
 ![](_static/lowess-pred-2.gif)
 
 You may be tempted now to think that a lower sigma always has a better fit, but you
-need to be careful here. The data might have gaps. 
+need to be careful here. The data might have gaps and larger sigma values will be
+able to properly regularize.
+
+![](_static/lowess-two-predictions.gif)
 
 Note that this regression also works in higher dimensions but the main downside of 
 this approach is that it is really slow when making predictions. 
