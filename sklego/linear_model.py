@@ -21,6 +21,9 @@ from sklearn.utils.validation import (
 class LowessRegression(BaseEstimator, RegressorMixin):
     """
     Does LowessRegression. Note that this *can* get expensive to predict.
+
+    :param sigma: float, how wide we will smooth the data
+    :param span: float, what percentage of the data is to be used. Defaults to using all data.
     """
 
     def __init__(self, sigma=1, span=None):

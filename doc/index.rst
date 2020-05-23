@@ -73,6 +73,7 @@ Usage
 
    install
    contribution
+   linear-models.md
    mixture-methods
    naive-bayes
    meta.ipynb
