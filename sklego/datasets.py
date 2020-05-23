@@ -302,49 +302,41 @@ def fetch_creditcard(*, cache=True, data_home=None, as_frame=False, return_X_y=F
         Calibrating Probability with Undersampling for Unbalanced Classification.
         In Symposium on Computational Intelligence and Data Mining (CIDM), IEEE, 2015
 
-
-    Parameters
-    ----------
-    version : integer or 'active', default='active'
+    :param version: integer or 'active', default='active'
         Version of the dataset. Can only be provided if also ``name`` is given.
         If 'active' the oldest version that's still active is used. Since
         there may be more than one active version of a dataset, and those
         versions may fundamentally be different from one another, setting an
         exact version is highly recommended.
-    cache : boolean, default=True
+    :param cache: boolean, default=True
         Whether to cache downloaded datasets using joblib.
-    data_home : optional, default: None
+    :param data_home: optional, default: None
         Specify another download and cache folder for the datasets. By default
         all scikit-learn data is stored in '~/scikit_learn_data' subfolders.
-    as_frame : boolean, default=False
+    :param as_frame: boolean, default=False
         If True, the data is a pandas DataFrame including columns with
         appropriate dtypes (numeric, string or categorical). The target is
         a pandas DataFrame or Series depending on the number of target_columns.
         The Bunch will contain a ``frame`` attribute with the target and the
         data. If ``return_X_y`` is True, then ``(data, target)`` will be pandas
         DataFrames or Series as describe above.
-    return_X_y : boolean, default=False.
+    :param return_X_y: : boolean, default=False.
         If True, returns ``(data.data, data.target)`` instead of a Bunch
         object.
-    warn : boolean, default=False.
-        If True, it raises an extra warning to make users aware of the unfairness
-        aspect of this dataset.
 
     Returns
     -------
-    dataset : :class:`~sklearn.utils.Bunch`
+    :return:
         Dictionary-like object, with the following attributes.
-        data : ndarray, shape (506, 14)
-            Each row corresponding to the 8 feature values in order.
-            If ``as_frame`` is True, ``data`` is a pandas object.
-        target : numpy array of shape (20640,)
-            Each value corresponds to the average
-            house value in units of 100,000.
-            If ``as_frame`` is True, ``target`` is a pandas object.
-        feature_names : list of length 8
+
+         * data
+            ndarray, shape (284807, 29) if ``as_frame`` is True, ``data`` is a pandas object.
+         * target
+            ndarray, shape (284807, ) if ``as_frame`` is True, ``target`` is a pandas object.
+         * feature_names
             Array of ordered feature names used in the dataset.
-        DESCR : string
-            Description of the California housing dataset.
+         * DESCR
+            Description of the creditcard dataset. Best to use print.
 
     Notes
     -----
