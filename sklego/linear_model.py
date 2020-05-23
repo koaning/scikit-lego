@@ -41,9 +41,9 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         if self.span is not None:
             if not 0 <= self.span <= 1:
-                raise ValueError(f"we must have 0 <= span <= 1, got: {self.span}")
+                raise ValueError(f"Param `span` must be 0 <= span <= 1, got: {self.span}")
         if self.sigma < 0:
-            raise ValueError(f"sigma must be >= 0, got: {self.sigma}")
+            raise ValueError(f"Param `sigma` must be >= 0, got: {self.sigma}")
         self.X_ = X
         self.y_ = y
         return self
