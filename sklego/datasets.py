@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 from pkg_resources import resource_filename
 
+from sklearn.datasets import fetch_openml
+
 
 def load_arrests(return_X_y=False, give_pandas=False):
     """
@@ -275,3 +277,84 @@ def load_hearts(return_X_y=False, give_pandas=False):
     if return_X_y:
         return X, y
     return {"data": X, "target": y}
+
+
+def fetch_creditcard(*, cache=True, data_home=None, as_frame=False, return_X_y=False):
+    """
+    Load the creditcard dataset. Download it if necessary.
+
+    Note that internally this is using `fetch_openml` from scikit-learn, which is experimental.
+
+    ==============   ==============
+    Samples total            284807
+    Dimensionality               29
+    Features                   real
+    Target                 int 0, 1
+    ==============   ==============
+
+    The datasets contains transactions made by credit cards in September 2013 by european
+    cardholders. This dataset present transactions that occurred in two days, where we have
+    492 frauds out of 284,807 transactions. The dataset is highly unbalanced, the positive
+    class (frauds) account for 0.172% of all transactions.
+
+    Please cite:
+        Andrea Dal Pozzolo, Olivier Caelen, Reid A. Johnson and Gianluca Bontempi.
+        Calibrating Probability with Undersampling for Unbalanced Classification.
+        In Symposium on Computational Intelligence and Data Mining (CIDM), IEEE, 2015
+
+
+    Parameters
+    ----------
+    version : integer or 'active', default='active'
+        Version of the dataset. Can only be provided if also ``name`` is given.
+        If 'active' the oldest version that's still active is used. Since
+        there may be more than one active version of a dataset, and those
+        versions may fundamentally be different from one another, setting an
+        exact version is highly recommended.
+    cache : boolean, default=True
+        Whether to cache downloaded datasets using joblib.
+    data_home : optional, default: None
+        Specify another download and cache folder for the datasets. By default
+        all scikit-learn data is stored in '~/scikit_learn_data' subfolders.
+    as_frame : boolean, default=False
+        If True, the data is a pandas DataFrame including columns with
+        appropriate dtypes (numeric, string or categorical). The target is
+        a pandas DataFrame or Series depending on the number of target_columns.
+        The Bunch will contain a ``frame`` attribute with the target and the
+        data. If ``return_X_y`` is True, then ``(data, target)`` will be pandas
+        DataFrames or Series as describe above.
+    return_X_y : boolean, default=False.
+        If True, returns ``(data.data, data.target)`` instead of a Bunch
+        object.
+    warn : boolean, default=False.
+        If True, it raises an extra warning to make users aware of the unfairness
+        aspect of this dataset.
+
+    Returns
+    -------
+    dataset : :class:`~sklearn.utils.Bunch`
+        Dictionary-like object, with the following attributes.
+        data : ndarray, shape (506, 14)
+            Each row corresponding to the 8 feature values in order.
+            If ``as_frame`` is True, ``data`` is a pandas object.
+        target : numpy array of shape (20640,)
+            Each value corresponds to the average
+            house value in units of 100,000.
+            If ``as_frame`` is True, ``target`` is a pandas object.
+        feature_names : list of length 8
+            Array of ordered feature names used in the dataset.
+        DESCR : string
+            Description of the California housing dataset.
+
+    Notes
+    -----
+    This dataset consists of 284807 samples and 29 features.
+    """
+    return fetch_openml(
+        data_id=1597,
+        data_home=data_home,
+        version="1",
+        cache=cache,
+        as_frame=as_frame,
+        return_X_y=return_X_y,
+    )
