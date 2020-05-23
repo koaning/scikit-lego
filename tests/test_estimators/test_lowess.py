@@ -1,8 +1,6 @@
 import numpy as np
 import pytest
 
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
 from sklego.common import flatten
 from sklego.linear_model import LowessRegression
 from tests.conftest import nonmeta_checks, regressor_checks, general_checks
