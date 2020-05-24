@@ -14,10 +14,10 @@ develop:
 	python setup.py develop
 
 doctest:
-	python -m doctest -v sklego/*.py
+	pytest --doctest-modules sklego
 
 test: doctest
-	pytest --disable-warnings --cov=sklego
+	pytest -n auto --disable-warnings --cov=sklego
 	rm -rf .coverage*
 	pytest --nbval-lax doc/*.ipynb
 
