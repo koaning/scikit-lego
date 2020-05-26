@@ -213,3 +213,65 @@ def make_simpleseries(
             return pd.DataFrame({"yt": result, "date": stamps})
         return pd.DataFrame({"yt": result})
     return result
+
+
+def load_hearts(return_X_y=False, give_pandas=False):
+    """
+    Loads the Cleveland Heart Diseases dataset. The goal is to predict the presence of a heart disease (target values 1, 2, 3, and 4).
+    The data originates from research to heart diseases by four institutions and originally contains 76 attributes.
+    Yet, all published experiments refer to using a subset of 13 features and one target.
+    This implementation loads the Cleveland dataset of the research which is the only set used by ML researchers to this date.
+
+    :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
+    :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
+
+    :Example:
+    >>> X, y = load_hearts(return_X_y=True)
+    >>> X.shape
+    (303, 13)
+    >>> y.shape
+    (303,)
+    >>> df = load_hearts(give_pandas=True)
+    >>> df.columns
+    Index(['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach',
+           'exang', 'oldpeak', 'slope', 'ca', 'thal', 'target'],
+          dtype='object')
+
+    The dataset can originally be found here:
+    https://archive.ics.uci.edu/ml/datasets/Heart+Disease
+
+    The responsible institutions for the entire database are:
+
+    1. Hungarian Institute of Cardiology. Budapest: Andras Janosi, M.D.
+    2. University Hospital, Zurich, Switzerland: William Steinbrunn, M.D.
+    3. University Hospital, Basel, Switzerland: Matthias Pfisterer, M.D.
+    4. V.A. Medical Center, Long Beach and Cleveland Clinic Foundation: Robert Detrano, M.D., Ph.D.
+
+    The documentation of the dataset can be viewed here:
+    https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/heart-disease.names
+    """
+    filepath = resource_filename("sklego", os.path.join("data", "hearts.zip"))
+    df = pd.read_csv(filepath)
+    if give_pandas:
+        return df
+    X = df[
+        [
+            "age",
+            "sex",
+            "cp",
+            "trestbps",
+            "chol",
+            "fbs",
+            "restecg",
+            "thalach",
+            "exang",
+            "oldpeak",
+            "slope",
+            "ca",
+            "thal",
+        ]
+    ].values
+    y = df["target"].values
+    if return_X_y:
+        return X, y
+    return {"data": X, "target": y}
