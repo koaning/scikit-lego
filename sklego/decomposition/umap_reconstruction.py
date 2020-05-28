@@ -1,49 +1,63 @@
 import numpy as np
-from sklearn.decomposition import PCA
+import umap
+from sklearn.base import BaseEstimator, OutlierMixin
+from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
 
 
-class PCAOutlierDetection:
+class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
     def __init__(
         self,
-        n_components=None,
+        n_components=2,
         threshold=None,
         variant="relative",
-        whiten=False,
-        svd_solver="auto",
-        tol=0.0,
-        iterated_power="auto",
-        random_state=None,
+        n_neighbors=15,
+        min_dist=0.1,
+        metric="euclidean",
+        random_state=None
     ):
         self.n_components = n_components
         self.threshold = threshold
-        self.whiten = whiten
         self.variant = variant
-        self.svd_solver = svd_solver
-        self.tol = tol
-        self.iterated_power = iterated_power
+        self.n_neighbors = n_neighbors
+        self.min_dist = min_dist
+        self.metric = metric
         self.random_state = random_state
 
     def fit(self, X, y=None):
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        if self.n_components < 2:
+            raise ValueError("Number of components must be at least two.")
         if not self.threshold:
             raise ValueError(f"The `threshold` value cannot be `None`.")
 
-        self.pca_ = PCA(
+        self.umap_ = umap.UMAP(
             n_components=self.n_components,
-            whiten=self.whiten,
-            svd_solver=self.svd_solver,
-            tol=self.tol,
-            iterated_power=self.iterated_power,
+            n_neighbors=self.n_neighbors,
+            min_dist=self.min_dist,
+            metric=self.metric,
             random_state=self.random_state,
         )
-        self.pca_.fit(X, y)
+        self.umap_.fit(X, y)
+        self.offset_ = -self.threshold
         return self
 
     def difference(self, X):
-        reduced = self.pca_.transform(X)
-        diff = np.sum(np.abs(self.pca_.inverse_transform(reduced) - X), axis=1)
-        if self.variant == 'relative':
+        check_is_fitted(self, ["umap_", "offset_"])
+        reduced = self.umap_.transform(X)
+        diff = np.sum(np.abs(self.umap_.inverse_transform(reduced) - X), axis=1)
+        if self.variant == "relative":
             diff = diff / X.sum(axis=1)
         return diff
 
+    def decision_function(self, X):
+        return self.threshold - self.difference(X)
+
+    def score_samples(self, X):
+        return -self.difference(X)
+
     def predict(self, X):
-        return self.difference(X) > self.threshold
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        check_is_fitted(self, ["umap_", "offset_"])
+        result = np.ones(X.shape[0])
+        result[self.difference(X) > self.threshold] = -1
+        return result.astype(np.int)

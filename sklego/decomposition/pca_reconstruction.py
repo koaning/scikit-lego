@@ -40,17 +40,13 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         )
         self.pca_.fit(X, y)
         self.offset_ = -self.threshold
-        # decision = estimator.decision_function(X)
-        # scores   = estimator.score_samples(X)
-        # y_dec    = scores - estimator.offset_
-        # assert_allclose(y_dec, decision)
         return self
 
     def difference(self, X):
-        check_is_fitted(self, ["pca_"])
+        check_is_fitted(self, ["pca_", "offset_"])
         reduced = self.pca_.transform(X)
         diff = np.sum(np.abs(self.pca_.inverse_transform(reduced) - X), axis=1)
-        if self.variant == 'relative':
+        if self.variant == "relative":
             diff = diff / X.sum(axis=1)
         return diff
 
@@ -58,7 +54,7 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         return self.threshold - self.difference(X)
 
     def score_samples(self, X):
-        return - self.difference(X)
+        return -self.difference(X)
 
     def predict(self, X):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)

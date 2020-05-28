@@ -1,1 +1,2 @@
 from .pca_reconstruction import PCAOutlierDetection
+from .umap_reconstruction import UMAPOutlierDetection
