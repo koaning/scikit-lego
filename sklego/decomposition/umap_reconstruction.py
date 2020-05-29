@@ -49,12 +49,6 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
             diff = diff / X.sum(axis=1)
         return diff
 
-    def decision_function(self, X):
-        return self.threshold - self.difference(X)
-
-    def score_samples(self, X):
-        return -self.difference(X)
-
     def predict(self, X):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["umap_", "offset_"])
