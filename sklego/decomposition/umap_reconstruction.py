@@ -5,6 +5,9 @@ from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
 
 
 class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
+    """
+    Does outlier detection based on the reconstruction error from UMAP.
+    """
     def __init__(
         self,
         n_components=2,
@@ -24,6 +27,13 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         self.random_state = random_state
 
     def fit(self, X, y=None):
+        """
+        Fit the model using X as training data.
+
+        :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :param y: ignored but kept in for pipeline support
+        :return: Returns an instance of self.
+        """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if self.n_components < 2:
             raise ValueError("Number of components must be at least two.")
@@ -42,11 +52,20 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         return self
 
     def transform(self, X):
+        """
+        Uses the underlying UMAP method to transform the data.
+        """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["umap_", "offset_"])
         return self.umap_.transform(X)
 
     def difference(self, X):
+        """
+        Shows the calculated difference between original and reconstructed data. Row by row.
+
+        :param X: array-like, shape=(n_columns, n_samples, ) training data.
+        :return: array, shape=(n_samples,) the difference
+        """
         check_is_fitted(self, ["umap_", "offset_"])
         reduced = self.umap_.transform(X)
         diff = np.sum(np.abs(self.umap_.inverse_transform(reduced) - X), axis=1)
@@ -55,6 +74,12 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         return diff
 
     def predict(self, X):
+        """
+        Predict if a point is an outlier.
+
+        :param X: array-like, shape=(n_columns, n_samples, ) training data.
+        :return: array, shape=(n_samples,) the predicted data. 1 for inliers, -1 for outliers.
+        """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["umap_", "offset_"])
         result = np.ones(X.shape[0])

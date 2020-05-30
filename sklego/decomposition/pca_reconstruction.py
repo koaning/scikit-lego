@@ -5,6 +5,9 @@ from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
 
 
 class PCAOutlierDetection(BaseEstimator, OutlierMixin):
+    """
+    Does outlier detection based on the reconstruction error from PCA.
+    """
     def __init__(
         self,
         n_components=None,
@@ -26,6 +29,13 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         self.random_state = random_state
 
     def fit(self, X, y=None):
+        """
+        Fit the model using X as training data.
+
+        :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :param y: ignored but kept in for pipeline support
+        :return: Returns an instance of self.
+        """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if not self.threshold:
             raise ValueError(f"The `threshold` value cannot be `None`.")
@@ -43,11 +53,20 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         return self
 
     def transform(self, X):
+        """
+        Uses the underlying PCA method to transform the data.
+        """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["pca_", "offset_"])
         return self.pca_.transform(X)
 
     def difference(self, X):
+        """
+        Shows the calculated difference between original and reconstructed data. Row by row.
+
+        :param X: array-like, shape=(n_columns, n_samples, ) training data.
+        :return: array, shape=(n_samples,) the difference
+        """
         check_is_fitted(self, ["pca_", "offset_"])
         reduced = self.pca_.transform(X)
         diff = np.sum(np.abs(self.pca_.inverse_transform(reduced) - X), axis=1)
@@ -62,6 +81,12 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         return -self.difference(X)
 
     def predict(self, X):
+        """
+        Predict if a point is an outlier.
+
+        :param X: array-like, shape=(n_columns, n_samples, ) training data.
+        :return: array, shape=(n_samples,) the predicted data. 1 for inliers, -1 for outliers.
+        """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["pca_", "offset_"])
         result = np.ones(X.shape[0])
