@@ -42,6 +42,11 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         self.offset_ = -self.threshold
         return self
 
+    def transform(self, X):
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        check_is_fitted(self, ["pca_", "offset_"])
+        return self.pca_.transform(X)
+
     def difference(self, X):
         check_is_fitted(self, ["pca_", "offset_"])
         reduced = self.pca_.transform(X)

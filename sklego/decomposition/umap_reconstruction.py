@@ -41,6 +41,11 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         self.offset_ = -self.threshold
         return self
 
+    def transform(self, X):
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        check_is_fitted(self, ["umap_", "offset_"])
+        return self.umap_.transform(X)
+
     def difference(self, X):
         check_is_fitted(self, ["umap_", "offset_"])
         reduced = self.umap_.transform(X)
