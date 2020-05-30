@@ -55,6 +55,6 @@ def dataset():
 
 
 def test_obvious_usecase(dataset):
-    mod = UMAPOutlierDetection(n_components=2, threshold=2.5, random_state=42, variant='absolute').fit(dataset)
+    mod = UMAPOutlierDetection(n_components=2, threshold=7.5, random_state=42, variant='absolute').fit(dataset)
     assert mod.predict([[10] * 10]) == np.array([-1])
     assert mod.predict([[0.01] * 10]) == np.array([1])
