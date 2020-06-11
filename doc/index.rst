@@ -73,10 +73,12 @@ Usage
 
    install
    contribution
+   linear-models.ipynb
    mixture-methods
    naive-bayes
    meta.ipynb
    fairness.ipynb
+   outliers.ipynb
    timegapsplit.ipynb
    preprocessing.ipynb
    debug_pipeline.ipynb
