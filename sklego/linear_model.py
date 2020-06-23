@@ -18,6 +18,60 @@ from sklearn.utils.validation import (
 )
 
 
+class LowessRegression(BaseEstimator, RegressorMixin):
+    """
+    Does LowessRegression. Note that this *can* get expensive to predict.
+
+    :param sigma: float, how wide we will smooth the data
+    :param span: float, what percentage of the data is to be used. Defaults to using all data.
+    """
+
+    def __init__(self, sigma=1, span=None):
+        self.sigma = sigma
+        self.span = span
+
+    def fit(self, X, y):
+        """
+        Fit the model using X, y as training data.
+
+        :param X: array-like, shape=(n_columns, n_samples, ) training data.
+        :param y: array-like, shape=(n_samples, ) training data.
+        :return: Returns an instance of self.
+        """
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        if self.span is not None:
+            if not 0 <= self.span <= 1:
+                raise ValueError(f"Param `span` must be 0 <= span <= 1, got: {self.span}")
+        if self.sigma < 0:
+            raise ValueError(f"Param `sigma` must be >= 0, got: {self.sigma}")
+        self.X_ = X
+        self.y_ = y
+        return self
+
+    def _calc_wts(self, x_i):
+        distances = np.array(
+            [np.linalg.norm(self.X_[i, :] - x_i) for i in range(self.X_.shape[0])]
+        )
+        weights = np.exp(-(distances ** 2) / self.sigma)
+        if self.span:
+            weights = weights * (distances <= np.quantile(distances, q=self.span))
+        return weights
+
+    def predict(self, X):
+        """
+        Fit the model using X, y as training data.
+
+        :param X: array-like, shape=(n_columns, n_samples, ) training data.
+        :return: Returns an array of predictions shape=(n_samples,)
+        """
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        check_is_fitted(self, ["X_", "y_"])
+        results = np.zeros(X.shape[0])
+        for idx in range(X.shape[0]):
+            results[idx] = np.average(self.y_, weights=self._calc_wts(x_i=X[idx, :]))
+        return results
+
+
 class ProbWeightRegression(BaseEstimator, RegressorMixin):
     """
     This regressor assumes that all input signals in `X` need to be reweighted
