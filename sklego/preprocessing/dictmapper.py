@@ -8,14 +8,10 @@ from functools import partial
 class DictMapper(TransformerMixin, BaseEstimator):
     """
     Map the values of values of columns according to the input dictionary,
-    fall back to default if the key is not present in the dictionary.
+    fall back to the default if the key is not present in the dictionary.
 
     :param mapper: The dictionary containing the mapping of the values
     :param default: The value to fall back to if the value is not in the mapper
-
-    Args:
-        TransformerMixin ([type]): [description]
-        BaseEstimator ([type]): [description]
     """
 
     def __init__(self, mapper, default):
