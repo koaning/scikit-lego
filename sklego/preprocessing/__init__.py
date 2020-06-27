@@ -10,7 +10,8 @@ __all__ = [
     "RepeatingBasisFunction",
     "ColumnCapper",
     "IdentityTransformer",
-    "OutlierRemover" "DictMapper",
+    "OutlierRemover",
+    "DictMapper",
 ]
 
 from .intervalencoder import IntervalEncoder
