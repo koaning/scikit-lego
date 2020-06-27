@@ -46,6 +46,7 @@ def mapper():
     "input_array,expected_array",
     [
         (["foo", "bar", "baz"], [1, 2, 3]),
+        (["foo", "bar", "bar"], [1, 2, 2]),
         (["foo", "bar", "monty"], [1, 2, -1]),
         (["foo", "bar", np.nan], [1, 2, -1]),
         ([["foo", "bar", "baz"], ["foo", "bar", "baz"]], [[1, 2, 3], [1, 2, 3]]),
