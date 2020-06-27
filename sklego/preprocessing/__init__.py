@@ -10,7 +10,7 @@ __all__ = [
     "RepeatingBasisFunction",
     "ColumnCapper",
     "IdentityTransformer",
-    "OutlierRemover"
+    "OutlierRemover" "DictMapper",
 ]
 
 from .intervalencoder import IntervalEncoder
@@ -22,3 +22,4 @@ from .repeatingbasis import RepeatingBasisFunction
 from .columncapper import ColumnCapper
 from .identitytransformer import IdentityTransformer
 from .outlier_remover import OutlierRemover
+from .dictmapper import DictMapper
