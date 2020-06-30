@@ -6,7 +6,7 @@ name: Cron Test Dependencies
 # events but only for the master branch
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "0 0 * * *"
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
