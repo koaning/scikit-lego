@@ -16,7 +16,8 @@ def load_penguins(return_X_y=False, as_frame=False, **kwargs):
     of the dataset is to predict which species of penguin a penguin belongs to.
 
     This data originally appeared as a R package and R users can find this data
-    in the palmerpenguins package (https://github.com/allisonhorst/palmerpenguins).
+    in the palmerpenguins package https://github.com/allisonhorst/palmerpenguins.
+    You can also go to the repository for some lovely images that explain the dataset.
 
     To cite this dataset in publications use:
 
