@@ -174,9 +174,9 @@ class DebugPipeline(Pipeline):
     >>> pipe = DebugPipeline(steps, log_callback='default')
     >>>
     >>> _ = pipe.fit(X, y=y)
-    [default_log_callback:34] - [Adder(value=1)] shape=(3, 5) time=0s
-    [default_log_callback:34] - [Adder(value=10)] shape=(3, 5) time=0s
-    [default_log_callback:34] - [Adder(value=100)] shape=(3, 5) time=0s
+    [default_log_callback:35] - [Adder(value=1)] shape=(3, 5) time=0s
+    [default_log_callback:35] - [Adder(value=10)] shape=(3, 5) time=0s
+    [default_log_callback:35] - [Adder(value=100)] shape=(3, 5) time=0s
     >>> print(pipe.transform(X))
     [[1111. 1111. 1111. 1111. 1111.]
      [1111. 1111. 1111. 1111. 1111.]
@@ -187,9 +187,9 @@ class DebugPipeline(Pipeline):
     >>> pipe.log_callback = 'default'
     >>>
     >>> _ = pipe.fit(X, y=y)
-    [default_log_callback:34] - [Adder(value=1)] shape=(3, 5) time=0s
-    [default_log_callback:34] - [Adder(value=10)] shape=(3, 5) time=0s
-    [default_log_callback:34] - [Adder(value=100)] shape=(3, 5) time=0s
+    [default_log_callback:35] - [Adder(value=1)] shape=(3, 5) time=0s
+    [default_log_callback:35] - [Adder(value=10)] shape=(3, 5) time=0s
+    [default_log_callback:35] - [Adder(value=100)] shape=(3, 5) time=0s
     >>> print(pipe.transform(X))
     [[1111. 1111. 1111. 1111. 1111.]
      [1111. 1111. 1111. 1111. 1111.]
@@ -252,13 +252,13 @@ class DebugPipeline(Pipeline):
     ... ], log_callback='default')
     >>>
     >>> _ = pipe_union.fit(X, y=y)   # doctest:+ELLIPSIS
-    [default_log_callback:34] - [Adder(value=1)] shape=(3, 5) time=0s
-    [default_log_callback:34] - [Adder(value=10)] shape=(3, 5) time=0s
-    [default_log_callback:34] - [Adder(value=100)] shape=(3, 5) time=0s
+    [default_log_callback:35] - [Adder(value=1)] shape=(3, 5) time=0s
+    [default_log_callback:35] - [Adder(value=10)] shape=(3, 5) time=0s
+    [default_log_callback:35] - [Adder(value=100)] shape=(3, 5) time=0s
     [log_callback:20] - [Adder(value=1)] shape=(3, 5) nbytes=120 time=0s
     [log_callback:20] - [Adder(value=10)] shape=(3, 5) nbytes=120 time=0s
     [log_callback:20] - [Adder(value=100)] shape=(3, 5) nbytes=120 time=0s
-    [default_log_callback:34] - [FeatureUnion(...)] shape=(3, 10) time=0s
+    [default_log_callback:35] - [FeatureUnion(...)] shape=(3, 10) time=0s
     >>> print(pipe_union.transform(X))
     [[11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111.]
      [11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111. 11111.]
@@ -341,7 +341,8 @@ def make_debug_pipeline(*steps, **kwargs):
     >>> from sklearn.preprocessing import StandardScaler
     >>> make_debug_pipeline(StandardScaler(), GaussianNB(priors=None))
     DebugPipeline(steps=[('standardscaler', StandardScaler()),
-                    ('gaussiannb', GaussianNB())])
+                         ('gaussiannb', GaussianNB())])
+
     Returns
     -------
     p : DebugPipeline
