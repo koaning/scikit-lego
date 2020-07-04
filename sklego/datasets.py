@@ -345,7 +345,6 @@ def fetch_creditcard(*, cache=True, data_home=None, as_frame=False, return_X_y=F
     return fetch_openml(
         data_id=1597,
         data_home=data_home,
-        version="1",
         cache=cache,
         as_frame=as_frame,
         return_X_y=return_X_y,
