@@ -7,6 +7,62 @@ from pkg_resources import resource_filename
 from sklearn.datasets import fetch_openml
 
 
+def load_penguins(return_X_y=False, as_frame=False, **kwargs):
+    """
+    Loads the penguins dataset, which is a lovely alternative for the iris dataset.
+
+    Data were collected and made available by Dr. Kristen Gorman and the Palmer Station,
+    Antarctica LTER, a member of the Long Term Ecological Research Network. The goal
+    of the dataset is to predict which species of penguin a penguin belongs to.
+
+    This data originally appeared as a R package and R users can find this data
+    in the palmerpenguins package (https://github.com/allisonhorst/palmerpenguins).
+
+    To cite this dataset in publications use:
+
+    Gorman KB, Williams TD, Fraser WR (2014) Ecological Sexual Dimorphism
+    and Environmental Variability within a Community of Antarctic
+    Penguins (Genus Pygoscelis). PLoS ONE 9(3): e90081.
+    https://doi.org/10.1371/journal.pone.0090081
+
+    :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
+    :param as_frame: give the pandas dataframe instead of X, y matrices (default=False)
+    :param give_pandas: Deprecated since version 0.5.0. Please use as_frame instead.
+
+    :Example:
+    >>> from sklego.datasets import load_penguins
+    >>> X, y = load_penguins(return_X_y=True)
+    >>> X.shape
+    (5226, 7)
+    >>> y.shape
+    (5226,)
+    >>> load_penguins(as_frame=True).columns
+    Index(["species", "island", "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g", "sex"],
+          dtype='object')
+
+
+    """
+    if "give_pandas" in kwargs:
+        warnings.warn(
+            "give_pandas is deprecated since version 0.5.0 and will be removed in version 0.7.0. "
+            "Please use as_frame instead.",
+            FutureWarning,
+        )
+        as_frame = kwargs["give_pandas"]
+
+    filepath = resource_filename("sklego", os.path.join("data", "penguins.zip"))
+    df = pd.read_csv(filepath)
+    if as_frame:
+        return df
+    X, y = (
+        df[["island", "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g", "sex"]].values,
+        df["species"].values,
+    )
+    if return_X_y:
+        return X, y
+    return {"data": X, "target": y}
+
+
 def load_arrests(return_X_y=False, as_frame=False, **kwargs):
     """
     Loads the arrests dataset which can serve as a benchmark for fairness. It is data on
