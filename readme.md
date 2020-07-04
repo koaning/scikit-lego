@@ -84,6 +84,7 @@ Here's a list of features that this library currently offers:
 - `sklego.datasets.load_arrests` loads in a dataset with fairness concerns
 - `sklego.datasets.load_chicken` loads in the joyful chickweight dataset
 - `sklego.datasets.load_heroes` loads a heroes of the storm dataset
+- `sklego.datasets.load_hearts` loads a dataset about hearts
 - `sklego.datasets.make_simpleseries` make a simulated timeseries
 - `sklego.pandas_utils.add_lags` adds lag values in a pandas dataframe
 - `sklego.pandas_utils.log_step` a useful decorator to log your pipeline steps
@@ -92,6 +93,7 @@ Here's a list of features that this library currently offers:
 - `sklego.linear_model.DemographicParityClassifier` logistic classifier constrained on demographic parity
 - `sklego.linear_model.EqualOpportunityClassifier` logistic classifier constrained on equal opportunity
 - `sklego.linear_model.ProbWeightRegression` linear model that treats coefficients as probabilistic weights
+- `sklego.linear_model.LowessRegression` locally weighted linear regression
 - `sklego.naive_bayes.GaussianMixtureNB` classifies by training a 1D GMM per column per class
 - `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a bayesian 1D GMM per column per class
 - `sklego.mixture.BayesianGMMClassifier` classifies by training a bayesian GMM per class
@@ -101,6 +103,7 @@ Here's a list of features that this library currently offers:
 - `sklego.meta.ConfusionBalancer` experimental feature that allows you to balance the confusion matrix
 - `sklego.meta.DecayEstimator` adds decay to the sample_weight that the model accepts
 - `sklego.meta.EstimatorTransformer` adds a model output as a feature
+- `sklego.meta.OutlierClassifier` turns outlier models into classifiers for gridsearch
 - `sklego.meta.GroupedEstimator` can split the data into runs and run a model on each
 - `sklego.meta.SubjectiveClassifier` experimental feature to add a prior to your classifier
 - `sklego.meta.Thresholder` meta model that allows you to gridsearch over the threshold

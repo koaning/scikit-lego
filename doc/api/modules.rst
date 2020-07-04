@@ -7,6 +7,7 @@ API Reference
    base
    common
    datasets
+   decomposition
    dummy
    linear_model
    meta
