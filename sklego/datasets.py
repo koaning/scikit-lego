@@ -33,13 +33,13 @@ def load_penguins(return_X_y=False, as_frame=False, **kwargs):
     >>> from sklego.datasets import load_penguins
     >>> X, y = load_penguins(return_X_y=True)
     >>> X.shape
-    (5226, 7)
+    (344, 6)
     >>> y.shape
-    (5226,)
+    (344,)
     >>> load_penguins(as_frame=True).columns
-    Index(["species", "island", "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g", "sex"],
-          dtype='object')
-
+    Index(['species', 'island', 'bill_length_mm', 'bill_depth_mm',
+       'flipper_length_mm', 'body_mass_g', 'sex'],
+      dtype='object')
 
     """
     if "give_pandas" in kwargs:
