@@ -44,21 +44,21 @@ def test_estimator_checks(test_fn):
 
 
 def test_chickweight_df1_keys():
-    df = load_chicken(give_pandas=True)
+    df = load_chicken(as_frame=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
 
 
 def test_chickweight_df2_keys():
-    df = load_chicken(give_pandas=True)
+    df = load_chicken(as_frame=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups="chick")
     mod.fit(df[["time", "chick"]], df["weight"])
     assert set(mod.estimators_.keys()) == set(range(1, 50 + 1))
 
 
 def test_chickweight_can_do_fallback():
-    df = load_chicken(give_pandas=True)
+    df = load_chicken(as_frame=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
@@ -68,7 +68,7 @@ def test_chickweight_can_do_fallback():
 
 
 def test_fallback_can_raise_error():
-    df = load_chicken(give_pandas=True)
+    df = load_chicken(as_frame=True)
     mod = GroupedEstimator(
         estimator=LinearRegression(),
         groups="diet",
@@ -83,7 +83,7 @@ def test_fallback_can_raise_error():
 
 
 def test_chickweight_raise_error_cols_missing1():
-    df = load_chicken(give_pandas=True)
+    df = load_chicken(as_frame=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
     with pytest.raises(ValueError) as e:
@@ -92,7 +92,7 @@ def test_chickweight_raise_error_cols_missing1():
 
 
 def test_chickweight_raise_error_cols_missing2():
-    df = load_chicken(give_pandas=True)
+    df = load_chicken(as_frame=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
     with pytest.raises(ValueError) as e:
@@ -101,7 +101,7 @@ def test_chickweight_raise_error_cols_missing2():
 
 
 def test_chickweight_np_keys():
-    df = load_chicken(give_pandas=True)
+    df = load_chicken(as_frame=True)
     mod = GroupedEstimator(estimator=LinearRegression(), groups=[1, 2])
     mod.fit(df[["time", "chick", "diet"]].values, df["weight"].values)
     # there should still only be 50 groups on this dataset
@@ -110,7 +110,7 @@ def test_chickweight_np_keys():
 
 def test_chickweigt_string_groups():
 
-    df = load_chicken(give_pandas=True)
+    df = load_chicken(as_frame=True)
     df["diet"] = ["omgomgomg" + s for s in df["diet"].astype(str)]
 
     X = df[["time", "diet"]]
@@ -523,7 +523,7 @@ def test_predict_missing_value_column(shrinkage_data):
 
 def test_bad_shrinkage_value_error():
     with pytest.raises(ValueError) as e:
-        df = load_chicken(give_pandas=True)
+        df = load_chicken(as_frame=True)
         mod = GroupedEstimator(
             estimator=LinearRegression(), groups="diet", shrinkage="dinosaurhead"
         )
