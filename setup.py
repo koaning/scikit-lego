@@ -12,6 +12,7 @@ base_packages = [
     "autograd>=1.2",
     "cvxpy>=1.0.24",
     "Deprecated>=1.2.6",
+    "umap-learn>=0.4.3"
 ]
 docs_packages = [
     "sphinx>=1.8.5",
