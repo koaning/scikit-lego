@@ -1,4 +1,5 @@
 import os
+import warnings
 import numpy as np
 import pandas as pd
 from pkg_resources import resource_filename
@@ -6,7 +7,7 @@ from pkg_resources import resource_filename
 from sklearn.datasets import fetch_openml
 
 
-def load_arrests(return_X_y=False, give_pandas=False):
+def load_arrests(return_X_y=False, as_frame=False, **kwargs):
     """
     Loads the arrests dataset which can serve as a benchmark for fairness. It is data on
     the police treatment of individuals arrested in Toronto for simple possession of small
@@ -14,7 +15,8 @@ def load_arrests(return_X_y=False, give_pandas=False):
     with a summons while maintaining a degree of fairness.
 
     :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
-    :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
+    :param as_frame: give the pandas dataframe instead of X, y matrices (default=False)
+    :param give_pandas: Deprecated since version 0.5.0. Please use as_frame instead.
 
     :Example:
     >>> from sklego.datasets import load_arrests
@@ -23,7 +25,7 @@ def load_arrests(return_X_y=False, give_pandas=False):
     (5226, 7)
     >>> y.shape
     (5226,)
-    >>> load_arrests(give_pandas=True).columns
+    >>> load_arrests(as_frame=True).columns
     Index(['released', 'colour', 'year', 'age', 'sex', 'employed', 'citizen',
            'checks'],
           dtype='object')
@@ -35,9 +37,17 @@ def load_arrests(return_X_y=False, give_pandas=False):
     The documentation page of the dataset from the package can be viewed here:
     http://vincentarelbundock.github.io/Rdatasets/doc/carData/Arrests.html
     """
+    if "give_pandas" in kwargs:
+        warnings.warn(
+            "give_pandas is deprecated since version 0.5.0 and will be removed in version 0.7.0. "
+            "Please use as_frame instead.",
+            FutureWarning,
+        )
+        as_frame = kwargs["give_pandas"]
+
     filepath = resource_filename("sklego", os.path.join("data", "arrests.zip"))
     df = pd.read_csv(filepath)
-    if give_pandas:
+    if as_frame:
         return df
     X, y = (
         df[["colour", "year", "age", "sex", "employed", "citizen", "checks"]].values,
@@ -48,7 +58,7 @@ def load_arrests(return_X_y=False, give_pandas=False):
     return {"data": X, "target": y}
 
 
-def load_chicken(return_X_y=False, give_pandas=False):
+def load_chicken(return_X_y=False, as_frame=False, **kwargs):
     """
     Loads the chicken dataset. The chicken data has 578 rows and 4 columns
     from an experiment on the effect of diet on early growth of chicks.
@@ -57,7 +67,8 @@ def load_chicken(return_X_y=False, give_pandas=False):
     There were four groups on chicks on different protein diets.
 
     :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
-    :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
+    :param as_frame: give the pandas dataframe instead of X, y matrices (default=False)
+    :param give_pandas: Deprecated since version 0.5.0. Please use as_frame instead.
 
     :Example:
 
@@ -67,7 +78,7 @@ def load_chicken(return_X_y=False, give_pandas=False):
     (578, 3)
     >>> y.shape
     (578,)
-    >>> load_chicken(give_pandas=True).columns
+    >>> load_chicken(as_frame=True).columns
     Index(['weight', 'time', 'chick', 'diet'], dtype='object')
 
     The datasets can be found in the following sources:
@@ -75,9 +86,17 @@ def load_chicken(return_X_y=False, give_pandas=False):
     - Crowder, M. and Hand, D. (1990), Analysis of Repeated Measures, Chapman and Hall (example 5.3)
     - Hand, D. and Crowder, M. (1996), Practical Longitudinal Data Analysis, Chapman and Hall (table A.2)
     """
+    if "give_pandas" in kwargs:
+        warnings.warn(
+            "give_pandas is deprecated since version 0.5.0 and will be removed in version 0.7.0. "
+            "Please use as_frame instead.",
+            FutureWarning,
+        )
+        as_frame = kwargs["give_pandas"]
+
     filepath = resource_filename("sklego", os.path.join("data", "chickweight.zip"))
     df = pd.read_csv(filepath)
-    if give_pandas:
+    if as_frame:
         return df
     X, y = df[["time", "diet", "chick"]].values, df["weight"].values
     if return_X_y:
@@ -85,12 +104,13 @@ def load_chicken(return_X_y=False, give_pandas=False):
     return {"data": X, "target": y}
 
 
-def load_abalone(return_X_y=False, give_pandas=False):
+def load_abalone(return_X_y=False, as_frame=False, **kwargs):
     """
     Loads the abalone dataset where the goal is to predict the gender of the creature.
 
     :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
-    :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
+    :param as_frame: give the pandas dataframe instead of X, y matrices (default=False)
+    :param give_pandas: Deprecated since version 0.5.0. Please use as_frame instead.
 
     :Example:
 
@@ -100,7 +120,7 @@ def load_abalone(return_X_y=False, give_pandas=False):
     (4177, 8)
     >>> y.shape
     (4177,)
-    >>> load_abalone(give_pandas=True).columns
+    >>> load_abalone(as_frame=True).columns
     Index(['sex', 'length', 'diameter', 'height', 'whole_weight', 'shucked_weight',
            'viscera_weight', 'shell_weight', 'rings'],
           dtype='object')
@@ -111,9 +131,17 @@ def load_abalone(return_X_y=False, give_pandas=False):
     "The Population Biology of Abalone (_Haliotis_ species) in Tasmania."
     Sea Fisheries Division, Technical Report No. 48 (ISSN 1034-3288)
     """
+    if "give_pandas" in kwargs:
+        warnings.warn(
+            "give_pandas is deprecated since version 0.5.0 and will be removed in version 0.7.0. "
+            "Please use as_frame instead.",
+            FutureWarning,
+        )
+        as_frame = kwargs["give_pandas"]
+
     filepath = resource_filename("sklego", os.path.join("data", "abalone.zip"))
     df = pd.read_csv(filepath)
-    if give_pandas:
+    if as_frame:
         return df
     X = df[
         [
@@ -133,13 +161,14 @@ def load_abalone(return_X_y=False, give_pandas=False):
     return {"data": X, "target": y}
 
 
-def load_heroes(return_X_y=False, give_pandas=False):
+def load_heroes(return_X_y=False, as_frame=False, **kwargs):
     """
     A dataset from a video game: "heroes of the storm". The goal of the dataset
     is to predict the attack type. Note that the pandas dataset returns more information.
     This is because we wanted to keep the X simple in the return_X_y case.
     :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
-    :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
+    :param as_frame: give the pandas dataframe instead of X, y matrices (default=False)
+    :param give_pandas: Deprecated since version 0.5.0. Please use as_frame instead.
 
     :Example:
     >>> X, y = load_heroes(return_X_y=True)
@@ -147,13 +176,21 @@ def load_heroes(return_X_y=False, give_pandas=False):
     (84, 2)
     >>> y.shape
     (84,)
-    >>> df = load_heroes(give_pandas=True)
+    >>> df = load_heroes(as_frame=True)
     >>> df.columns
     Index(['name', 'attack_type', 'role', 'health', 'attack', 'attack_spd'], dtype='object')
     """
+    if "give_pandas" in kwargs:
+        warnings.warn(
+            "give_pandas is deprecated since version 0.5.0 and will be removed in version 0.7.0. "
+            "Please use as_frame instead.",
+            FutureWarning,
+        )
+        as_frame = kwargs["give_pandas"]
+
     filepath = resource_filename("sklego", os.path.join("data", "heroes.zip"))
     df = pd.read_csv(filepath)
-    if give_pandas:
+    if as_frame:
         return df
     X = df[["health", "attack"]].values
     y = df["attack_type"].values
@@ -167,10 +204,11 @@ def make_simpleseries(
     trend=0.001,
     season_trend=0.001,
     noise=0.5,
-    give_pandas=False,
+    as_frame=False,
     seed=None,
     stack_noise=False,
     start_date=None,
+    **kwargs
 ):
     """
     Generate a very simple timeseries dataset to play with. The generator
@@ -180,10 +218,11 @@ def make_simpleseries(
     :param trend: The long term trend in the dataset.
     :param season_trend: The long term trend in the seasonality.
     :param noise: The noise that is applied to the dataset.
-    :param give_pandas: Return a pandas dataframe instead of a numpy array.
+    :param as_frame: Return a pandas dataframe instead of a numpy array.
     :param seed: The seed value for the randomness.
     :param stack_noise: Set the noise to be stacked by a cumulative sum.
-    :param start_date: Also add a start date (only works if `give_pandas`=True).
+    :param start_date: Also add a start date (only works if `as_frame`=True).
+    :param give_pandas: Deprecated since version 0.5.0. Please use as_frame instead.
     :return: numpy array unless dataframe is specified
 
     :Example:
@@ -192,12 +231,20 @@ def make_simpleseries(
     >>> make_simpleseries(seed=42)
     array([-0.34078806, -0.61828731, -0.18458236, ..., -0.27547402,
            -0.38237413,  0.13489355])
-    >>> make_simpleseries(give_pandas=True, start_date="2018-01-01", seed=42).head(3)
+    >>> make_simpleseries(as_frame=True, start_date="2018-01-01", seed=42).head(3)
              yt       date
     0 -0.340788 2018-01-01
     1 -0.618287 2018-01-02
     2 -0.184582 2018-01-03
     """
+    if "give_pandas" in kwargs:
+        warnings.warn(
+            "give_pandas is deprecated since version 0.5.0 and will be removed in version 0.7.0. "
+            "Please use as_frame instead.",
+            FutureWarning,
+        )
+        as_frame = kwargs["give_pandas"]
+
     if seed:
         np.random.seed(seed)
     time = np.arange(0, n_samples)
@@ -209,7 +256,7 @@ def make_simpleseries(
         time / 365 * 4 * np.pi + 1
     )
     result = seasonality + season_trend * seasonality * time + trend * time + noise
-    if give_pandas:
+    if as_frame:
         if start_date:
             stamps = pd.date_range(start_date, periods=n_samples)
             return pd.DataFrame({"yt": result, "date": stamps})
@@ -217,7 +264,7 @@ def make_simpleseries(
     return result
 
 
-def load_hearts(return_X_y=False, give_pandas=False):
+def load_hearts(return_X_y=False, as_frame=False, **kwargs):
     """
     Loads the Cleveland Heart Diseases dataset. The goal is to predict the presence of a heart disease (target values 1, 2, 3, and 4).
     The data originates from research to heart diseases by four institutions and originally contains 76 attributes.
@@ -225,7 +272,8 @@ def load_hearts(return_X_y=False, give_pandas=False):
     This implementation loads the Cleveland dataset of the research which is the only set used by ML researchers to this date.
 
     :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
-    :param give_pandas: give the pandas dataframe instead of X, y matrices (default=False)
+    :param as_frame: give the pandas dataframe instead of X, y matrices (default=False)
+    :param give_pandas: Deprecated since version 0.5.0. Please use as_frame instead.
 
     :Example:
     >>> X, y = load_hearts(return_X_y=True)
@@ -233,7 +281,7 @@ def load_hearts(return_X_y=False, give_pandas=False):
     (303, 13)
     >>> y.shape
     (303,)
-    >>> df = load_hearts(give_pandas=True)
+    >>> df = load_hearts(as_frame=True)
     >>> df.columns
     Index(['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach',
            'exang', 'oldpeak', 'slope', 'ca', 'thal', 'target'],
@@ -252,9 +300,17 @@ def load_hearts(return_X_y=False, give_pandas=False):
     The documentation of the dataset can be viewed here:
     https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/heart-disease.names
     """
+    if "give_pandas" in kwargs:
+        warnings.warn(
+            "give_pandas is deprecated since version 0.5.0 and will be removed in version 0.7.0. "
+            "Please use as_frame instead.",
+            FutureWarning,
+        )
+        as_frame = kwargs["give_pandas"]
+
     filepath = resource_filename("sklego", os.path.join("data", "hearts.zip"))
     df = pd.read_csv(filepath)
-    if give_pandas:
+    if as_frame:
         return df
     X = df[
         [
