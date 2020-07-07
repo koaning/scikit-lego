@@ -19,6 +19,20 @@ class DictMapper(TransformerMixin, BaseEstimator):
         self.default = default
 
     def fit(self, X, y=None):
+        """
+        Checks the input dataframe and records the shape of it
+
+        :type X: pandas.DataFrame or numpy.ndarray
+        :param X: The column(s) from which the mapping will be applied
+
+        :param y: Ignored.
+
+        :rtype: sklego.preprocessing.DictMapper
+        :returns: The fitted object.
+
+        :raises:
+            ``ValueError`` if ``X`` contains non-numeric columns
+        """
         X = check_array(
             X,
             copy=True,
@@ -31,6 +45,19 @@ class DictMapper(TransformerMixin, BaseEstimator):
         return self
 
     def transform(self, X):
+        """
+        Performs the mapping on the column(s) of ``X``.
+
+        :type X: pandas.DataFrame or numpy.ndarray
+        :param X: The column(s) for which the mapping will be applied.
+
+        :rtype: numpy.ndarray
+        :returns: ``X`` values with the mapping applied
+
+        :raises:
+            ``ValueError`` if the number of columns from ``X`` differs from the
+            number of columns when fitting
+        """
         check_is_fitted(self, ["dim_"])
         X = check_array(
             X,
