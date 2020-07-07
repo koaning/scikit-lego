@@ -16,8 +16,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
-        os: [macos-10.15, ubuntu-latest]
+        python-version: [3.6, 3.7]
+        os: [macos-10.15, ubuntu-latest, windows-latest]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -32,3 +32,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install scikit-lego
         pip freeze
+    - name: Test with pytest
+      run: |
+        pip install -e ".[test]"
+        pip install pytest
+        pytest
