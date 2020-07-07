@@ -9,7 +9,7 @@ def test_chickweight1():
 
 
 def test_chickweight2():
-    df = load_chicken(give_pandas=True)
+    df = load_chicken(as_frame=True)
     assert df.shape == (578, 4)
 
 
@@ -20,7 +20,7 @@ def test_abalone1():
 
 
 def test_abalone2():
-    df = load_abalone(give_pandas=True)
+    df = load_abalone(as_frame=True)
     assert df.shape == (4177, 9)
 
 
@@ -28,7 +28,7 @@ def test_simpleseries_constant_season():
     df = (
         make_simpleseries(
             n_samples=365 * 2,
-            give_pandas=True,
+            as_frame=True,
             start_date="2018-01-01",
             trend=0,
             noise=0,
@@ -43,5 +43,5 @@ def test_simpleseries_constant_season():
     )
 
 def test_load_hearts():
-    df = load_hearts(give_pandas=True)
+    df = load_hearts(as_frame=True)
     assert df.shape == (303, 14)
