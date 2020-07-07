@@ -29,9 +29,6 @@ class DictMapper(TransformerMixin, BaseEstimator):
 
         :rtype: sklego.preprocessing.DictMapper
         :returns: The fitted object.
-
-        :raises:
-            ``ValueError`` if ``X`` contains non-numeric columns
         """
         X = check_array(
             X,
