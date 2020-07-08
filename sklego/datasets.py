@@ -7,6 +7,111 @@ from pkg_resources import resource_filename
 from sklearn.datasets import fetch_openml
 
 
+def load_penguins(return_X_y=False, as_frame=False, **kwargs):
+    """
+    Loads the penguins dataset, which is a lovely alternative for the iris dataset. We've
+    added this dataset for educational use.
+
+    Data were collected and made available by Dr. Kristen Gorman and the Palmer Station,
+    Antarctica LTER, a member of the Long Term Ecological Research Network. The goal
+    of the dataset is to predict which species of penguin a penguin belongs to.
+
+    This data originally appeared as a R package and R users can find this data
+    in the palmerpenguins package https://github.com/allisonhorst/palmerpenguins.
+    You can also go to the repository for some lovely images that explain the dataset.
+
+    To cite this dataset in publications use:
+
+    Gorman KB, Williams TD, Fraser WR (2014) Ecological Sexual Dimorphism
+    and Environmental Variability within a Community of Antarctic
+    Penguins (Genus Pygoscelis). PLoS ONE 9(3): e90081.
+    https://doi.org/10.1371/journal.pone.0090081
+
+    :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
+    :param as_frame: give the pandas dataframe instead of X, y matrices (default=False)
+    :param give_pandas: Deprecated since version 0.5.0. Please use as_frame instead.
+
+    :Example:
+    >>> from sklego.datasets import load_penguins
+    >>> X, y = load_penguins(return_X_y=True)
+    >>> X.shape
+    (344, 6)
+    >>> y.shape
+    (344,)
+    >>> load_penguins(as_frame=True).columns
+    Index(['species', 'island', 'bill_length_mm', 'bill_depth_mm',
+       'flipper_length_mm', 'body_mass_g', 'sex'],
+      dtype='object')
+
+    Additional data use information
+    ###############################
+
+    Anyone interested in publishing the data should contact
+    `Dr. Kristen Gorman <https://www.uaf.edu/cfos/people/faculty/detail/kristen-gorman.php>`_
+    about analysis and working together on any final products.
+
+    From Gorman et al. (2014):
+
+    > “Data reported here are publicly available within the PAL-LTER data
+    > system (datasets \#219, 220, and 221):
+    > `<http://oceaninformatics.ucsd.edu/datazoo/data/pallter/datasets>`_.
+    > Individuals interested in using these data are therefore expected to
+    > follow the US LTER Network’s Data Access Policy, Requirements and Use
+    > Agreement: `<https://lternet.edu/data-access-policy/>`_.”
+
+    **Please cite data using the following:**
+
+    **Adélie penguins:**
+
+      - Palmer Station Antarctica LTER and K. Gorman, 2020. Structural size
+        measurements and isotopic signatures of foraging among adult male
+        and female Adélie penguins (*Pygoscelis adeliae*) nesting along the
+        Palmer Archipelago near Palmer Station, 2007-2009 ver 5.
+        Environmental Data Initiative.
+        `<https://doi.org/10.6073/pasta/98b16d7d563f265cb52372c8ca99e60f>`_
+        (Accessed 2020-06-08).
+
+    **Gentoo penguins:**
+
+      - Palmer Station Antarctica LTER and K. Gorman, 2020. Structural size
+        measurements and isotopic signatures of foraging among adult male
+        and female Gentoo penguin (*Pygoscelis papua*) nesting along the
+        Palmer Archipelago near Palmer Station, 2007-2009 ver 5.
+        Environmental Data Initiative.
+        `<https://doi.org/10.6073/pasta/7fca67fb28d56ee2ffa3d9370ebda689>`_
+        (Accessed 2020-06-08).
+
+    **Chinstrap penguins:**
+
+      - Palmer Station Antarctica LTER and K. Gorman, 2020. Structural size
+        measurements and isotopic signatures of foraging among adult male
+        and female Chinstrap penguin (*Pygoscelis antarcticus*) nesting
+        along the Palmer Archipelago near Palmer Station, 2007-2009 ver 6.
+        Environmental Data Initiative.
+        `<https://doi.org/10.6073/pasta/c14dfcfada8ea13a17536e73eb6fbe9e>`_
+        (Accessed 2020-06-08).
+    """
+    if "give_pandas" in kwargs:
+        warnings.warn(
+            "give_pandas is deprecated since version 0.5.0 and will be removed in version 0.7.0. "
+            "Please use as_frame instead.",
+            FutureWarning,
+        )
+        as_frame = kwargs["give_pandas"]
+
+    filepath = resource_filename("sklego", os.path.join("data", "penguins.zip"))
+    df = pd.read_csv(filepath)
+    if as_frame:
+        return df
+    X, y = (
+        df[["island", "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g", "sex"]].values,
+        df["species"].values,
+    )
+    if return_X_y:
+        return X, y
+    return {"data": X, "target": y}
+
+
 def load_arrests(return_X_y=False, as_frame=False, **kwargs):
     """
     Loads the arrests dataset which can serve as a benchmark for fairness. It is data on
