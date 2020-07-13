@@ -73,6 +73,7 @@ Usage
 
    install
    contribution
+   datasets.ipynb
    linear-models.ipynb
    mixture-methods
    naive-bayes
