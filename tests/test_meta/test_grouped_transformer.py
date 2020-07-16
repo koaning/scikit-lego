@@ -105,7 +105,7 @@ def test_multiple_grouping_columns(random_xy_dataset_clf):
     assert (df_with_groups.groupby(["A", "B"]).max() == scaling_range[1]).all(None)
 
 
-def test_missing_groups_transform(random_xy_dataset_clf):
+def test_missing_groups_transform_global(random_xy_dataset_clf):
     X, y = random_xy_dataset_clf
     X, y = check_X_y(X, y)
 
@@ -130,3 +130,27 @@ def test_missing_groups_transform(random_xy_dataset_clf):
     # Top row should all be equal to the small value of the range, bottom the other
     assert (transformed == scaling_range[0]).all(axis=1)[0]
     assert (transformed == scaling_range[1]).all(axis=1)[1]
+
+
+def test_missing_groups_transform_noglobal(random_xy_dataset_clf):
+    X, y = random_xy_dataset_clf
+    X, y = check_X_y(X, y)
+
+    # Make sure all groups are present
+    groups = np.repeat([0, 1], repeats=(X.shape[0] + 1) // 2)[:X.shape[0], np.newaxis]
+    X_with_groups = np.concatenate([groups, X], axis=1)
+
+    # Some weird interval to make sure we test the right values
+    scaling_range = (13, 42)
+
+    trf = MinMaxScaler(scaling_range)
+    transformer = GroupedTransformer(clone(trf), groups=0, use_global_model=False)
+    transformer.fit(X_with_groups, y)
+
+    # Array with 2 rows, first column a new group. Remaining top are out of range so should be the range
+    X_test = np.concatenate([
+        np.array([[3], [3]]), np.stack([X.min(axis=0) - 1, X.max(axis=0) + 1], axis=0)
+    ], axis=1)
+
+    with pytest.raises(ValueError):
+        transformer.transform(X_test)
