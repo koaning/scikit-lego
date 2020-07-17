@@ -10,10 +10,10 @@ base_packages = [
     "pandas>=0.23.4",
     "patsy>=0.5.1",
     "autograd>=1.2",
-    "cvxpy>=1.0.24",
     "Deprecated>=1.2.6",
     "umap-learn>=0.4.3"
 ]
+cvxpy = ["cvxpy>=1.0.24"]
 docs_packages = [
     "sphinx>=1.8.5",
     "sphinx_rtd_theme>=0.4.3",
@@ -54,7 +54,7 @@ setup(
     long_description=read("readme.md"),
     long_description_content_type="text/markdown",
     install_requires=base_packages,
-    extras_require={"docs": docs_packages, "dev": dev_packages, "test": test_packages},
+    extras_require={"cvxpy": cvxpy, "docs": docs_packages, "dev": dev_packages, "test": test_packages},
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
