@@ -1,51 +1,87 @@
-
-import pytest
+import itertools as it
 import numpy as np
 import pandas as pd
-from sklearn import clone
+import pytest
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.utils import check_X_y
 
 from sklego.common import flatten
 from sklego.meta import GroupedTransformer
-from tests.conftest import transformer_checks, nonmeta_checks, general_checks
-
-
-@pytest.fixture
-def tests_to_skip():
-    return [
-        # Nonsense checks because we always need at least two columns (group and value)
-        "check_fit2d_1feature",
-        "check_fit2d_predict1d",
-    ]
+from tests.conftest import transformer_checks, nonmeta_checks, general_checks, select_tests
+from tests.conftest import n_vals, k_vals, np_types
 
 
 @pytest.mark.parametrize(
-    "test_fn", flatten([transformer_checks, nonmeta_checks, general_checks])
+    "test_fn",
+    select_tests(
+        flatten([transformer_checks, nonmeta_checks, general_checks]),
+        exclude=[
+            # Nonsense checks because we always need at least two columns (group and value)
+            "check_fit2d_1feature",
+            "check_fit2d_predict1d",
+        ]
+    )
 )
-def test_estimator_checks(test_fn, tests_to_skip):
-    if test_fn.__name__ not in tests_to_skip:
-        trf = GroupedTransformer(StandardScaler())
-        test_fn(GroupedTransformer.__name__, trf)
+def test_estimator_checks(test_fn):
+    trf = GroupedTransformer(StandardScaler())
+    test_fn(GroupedTransformer.__name__, trf)
 
 
-def test_values(random_xy_dataset_clf):
-    X, y = random_xy_dataset_clf
+@pytest.fixture(
+    scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
+)
+def dataset_with_single_grouping(request):
+    n, k, np_type = request.param
+    np.random.seed(42)
+    X = np.random.normal(0, 2, (n, k)).astype(np_type)
+    y = np.random.normal(0, 2, (n,))
+
     X, y = check_X_y(X, y)
 
     # Make sure all groups are present
     groups = np.repeat([0, 1], repeats=(X.shape[0] + 1) // 2)[:X.shape[0], np.newaxis]
     X_with_groups = np.concatenate([groups, X], axis=1)
+    grouper = 0  # First column
 
+    return X, y, groups, X_with_groups, grouper
+
+
+@pytest.fixture(
+    scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
+)
+def dataset_with_multiple_grouping(request):
+    n, k, np_type = request.param
+    np.random.seed(42)
+    X = np.random.normal(0, 2, (n, k)).astype(np_type)
+    y = np.random.normal(0, 2, (n,))
+
+    X, y = check_X_y(X, y)
+    # Make sure all groups are present
+    groups = np.tile(
+        # 4x2 array, repeated until it fits
+        np.array([[0, 0], [0, 1], [1, 0], [1, 1]]),
+        reps=((X.shape[0] + 3) // 4, 1)
+    )[:X.shape[0], :]
+    X_with_groups = np.concatenate([groups, X], axis=1)
+
+    grouper = (0, 1)
+
+    return X, y, groups, X_with_groups, grouper
+
+
+@pytest.fixture(scope="module")
+def scaling_range():
     # Some weird interval to make sure we test the right values
-    scaling_range = (13, 42)
+    return (13, 42)
+
+
+def test_all_groups_scaled(dataset_with_single_grouping, scaling_range):
+    X, y, groups, X_with_groups, grouper = dataset_with_single_grouping
 
     trf = MinMaxScaler(scaling_range)
-    transformer = GroupedTransformer(clone(trf), groups=0)
+    transformer = GroupedTransformer(trf, groups=grouper)
     transformed = transformer.fit(X_with_groups, y).transform(X_with_groups)
-
-    assert transformed.shape == X.shape
 
     df_with_groups = pd.concat([pd.Series(groups.flatten(), name="G"), pd.DataFrame(transformed)], axis=1)
 
@@ -53,19 +89,11 @@ def test_values(random_xy_dataset_clf):
     assert np.allclose(df_with_groups.groupby("G").max(), scaling_range[1])
 
 
-def test_group_correlation_standardscaler(random_xy_dataset_clf):
-    X, y = random_xy_dataset_clf
-    X, y = check_X_y(X, y)
-
-    # Make sure all groups are present
-    groups = np.repeat([0, 1], repeats=(X.shape[0] + 1) // 2)[:X.shape[0], np.newaxis]
-    X_with_groups = np.concatenate([groups, X], axis=1)
-
-    # Some weird interval to make sure we test the right values
-    scaling_range = (13, 42)
+def test_group_correlation_minmaxscaler(dataset_with_single_grouping, scaling_range):
+    X, y, groups, X_with_groups, grouper = dataset_with_single_grouping
 
     trf = MinMaxScaler(scaling_range)
-    transformer = GroupedTransformer(clone(trf), groups=0)
+    transformer = GroupedTransformer(trf, groups=grouper)
     transformed = transformer.fit(X_with_groups, y).transform(X_with_groups)
 
     # For each column, check that all grouped correlations are 1 (because MinMaxScaler scales linear)
@@ -104,38 +132,23 @@ def test_get_params():
     }
 
 
-def test_non_transformer(random_xy_dataset_clf):
-    X, y = random_xy_dataset_clf
-    X, y = check_X_y(X, y)
+def test_non_transformer(dataset_with_single_grouping):
+    X, y, _, _, grouper = dataset_with_single_grouping
 
     # This is not a transformer
     trf = LinearRegression()
-    transformer = GroupedTransformer(trf)
+    transformer = GroupedTransformer(trf, groups=grouper)
 
     with pytest.raises(ValueError):
         transformer.fit(X, y)
 
 
-def test_multiple_grouping_columns(random_xy_dataset_clf):
-    X, y = random_xy_dataset_clf
-    X, y = check_X_y(X, y)
-
-    # Make sure all groups are present
-    groups = np.tile(
-        # 4x2 array, repeated until it fits
-        np.array([[0, 0], [0, 1], [1, 0], [1, 1]]),
-        reps=((X.shape[0] + 3) // 4, 1)
-    )[:X.shape[0], :]
-    X_with_groups = np.concatenate([groups, X], axis=1)
-
-    # Some weird interval to make sure we test the right values
-    scaling_range = (13, 42)
+def test_multiple_grouping_columns(dataset_with_multiple_grouping, scaling_range):
+    X, y, groups, X_with_groups, grouper = dataset_with_multiple_grouping
 
     trf = MinMaxScaler(scaling_range)
-    transformer = GroupedTransformer(clone(trf), groups=(0, 1))
+    transformer = GroupedTransformer(trf, groups=grouper)
     transformed = transformer.fit(X_with_groups, y).transform(X_with_groups)
-
-    assert transformed.shape == X.shape
 
     df_with_groups = pd.concat([
         pd.DataFrame(groups, columns=["A", "B"]),
@@ -152,19 +165,11 @@ def test_multiple_grouping_columns(random_xy_dataset_clf):
     ) and np.any(np.isclose(maxes, scaling_range[1]))
 
 
-def test_missing_groups_transform_global(random_xy_dataset_clf):
-    X, y = random_xy_dataset_clf
-    X, y = check_X_y(X, y)
-
-    # Make sure all groups are present
-    groups = np.repeat([0, 1], repeats=(X.shape[0] + 1) // 2)[:X.shape[0], np.newaxis]
-    X_with_groups = np.concatenate([groups, X], axis=1)
-
-    # Some weird interval to make sure we test the right values
-    scaling_range = (13, 42)
+def test_missing_groups_transform_global(dataset_with_single_grouping, scaling_range):
+    X, y, groups, X_with_groups, grouper = dataset_with_single_grouping
 
     trf = MinMaxScaler(scaling_range)
-    transformer = GroupedTransformer(clone(trf), groups=0)
+    transformer = GroupedTransformer(trf, groups=grouper)
     transformer.fit(X_with_groups, y)
 
     # Array with 2 rows, first column a new group. Remaining top are out of range so should be the range
@@ -179,19 +184,11 @@ def test_missing_groups_transform_global(random_xy_dataset_clf):
     assert np.allclose(transformed[1, :], scaling_range[1])
 
 
-def test_missing_groups_transform_noglobal(random_xy_dataset_clf):
-    X, y = random_xy_dataset_clf
-    X, y = check_X_y(X, y)
-
-    # Make sure all groups are present
-    groups = np.repeat([0, 1], repeats=(X.shape[0] + 1) // 2)[:X.shape[0], np.newaxis]
-    X_with_groups = np.concatenate([groups, X], axis=1)
-
-    # Some weird interval to make sure we test the right values
-    scaling_range = (13, 42)
+def test_missing_groups_transform_noglobal(dataset_with_single_grouping, scaling_range):
+    X, y, groups, X_with_groups, grouper = dataset_with_single_grouping
 
     trf = MinMaxScaler(scaling_range)
-    transformer = GroupedTransformer(clone(trf), groups=0, use_global_model=False)
+    transformer = GroupedTransformer(trf, groups=grouper, use_global_model=False)
     transformer.fit(X_with_groups, y)
 
     # Array with 2 rows, first column a new group. Remaining top are out of range so should be the range
