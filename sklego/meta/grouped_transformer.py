@@ -53,6 +53,12 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         # The grouping part we always want as a DataFrame with range index
         return pd.DataFrame(X_group).reset_index(drop=True)
 
+    def __fit_single_group(self, group, X, y=None):
+        try:
+            return clone(self.transformer).fit(X, y)
+        except Exception as e:
+            raise type(e)(f"Exception for group {group}: {e}")
+
     def __fit_grouped_transformer(
         self, X_group: pd.DataFrame, X_value: np.array, y=None
     ):
@@ -63,12 +69,12 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         if y:
             grouped_transformers = {
                 # Fit a clone of the transformer to each group
-                group: clone(self.transformer).fit(X_value[indices, :], y[indices])
+                group: self.__fit_single_group(group, X_value[indices, :], y[indices])
                 for group, indices in group_indices.items()
             }
         else:
             grouped_transformers = {
-                group: clone(self.transformer).fit(X_value[indices, :])
+                group: self.__fit_single_group(group, X_value[indices, :])
                 for group, indices in group_indices.items()
             }
 
