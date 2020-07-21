@@ -20,6 +20,7 @@ from tests.conftest import n_vals, k_vals, np_types
             # Nonsense checks because we always need at least two columns (group and value)
             "check_fit2d_1feature",
             "check_fit2d_predict1d",
+            "check_transformer_data_not_an_array",
         ]
     )
 )
@@ -232,3 +233,16 @@ def test_exception_in_group(multiple_obs_fitter):
         transformer.fit(X)
 
         assert "group 2" in str(e)
+
+
+def test_array_with_strings():
+    X = np.array([
+        ("group0", 2),
+        ("group0", 0),
+        ("group1", 1),
+        ("group1", 3),
+    ], dtype='object')
+
+    trf = MinMaxScaler()
+    transformer = GroupedTransformer(trf, groups=0, use_global_model=False)
+    transformer.fit_transform(X)

@@ -18,6 +18,8 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
                              is not found during `.transform()`
     """
 
+    _check_kwargs = {"accept_large_sparse": False}
+
     def __init__(self, transformer, groups=0, use_global_model=True):
         self.transformer = transformer
         self.groups = groups
@@ -25,33 +27,36 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
 
     def __check_value_columns(self, X):
         """Do basic checks on the value columns"""
-        if isinstance(X, pd.DataFrame):
-            X_value = check_array(X.drop(columns=self.groups))
-        else:
-            # If not a df, we impose standard checks also on grouping columns
-            X = check_array(X)
-            X_value = np.delete(X, as_list(self.groups), axis=1)
+        try:
+            if isinstance(X, pd.DataFrame):
+                X_value = X.drop(columns=self.groups).values
+            else:
+                X_value = np.delete(X, as_list(self.groups), axis=1)
+        except Exception:
+            # Check if we can leverage check_array for standard exceptions
+            check_array(X, **self._check_kwargs)
+            raise ValueError(f"Could not drop groups {self.groups} from columns of X")
 
-        return X_value
+        return check_array(X_value, **self._check_kwargs)
 
     def __check_grouping_columns(self, X):
         """Do basic checks on grouping columns"""
-        missings = False
-
         if isinstance(X, pd.DataFrame):
             X_group = X.loc[:, as_list(self.groups)]
-            if X_group.isnull().sum().sum() > 0:
-                missings = True
         else:
-            X_group = check_array(X)[:, as_list(self.groups)]
-            if np.isnan(X_group).sum(axis=None) > 0:
-                missings = True
+            X_group = pd.DataFrame(X[:, as_list(self.groups)])
 
-        if missings:
+        # Do regular checks on numeric columns
+        X_group_num = X_group.select_dtypes(include="number")
+        if X_group_num.shape[1]:
+            check_array(X_group.select_dtypes(include="number"), **self._check_kwargs)
+
+        # Only check missingness in object columns
+        if X_group.select_dtypes(exclude="number").isnull().any(axis=None):
             raise ValueError("X has NaN values")
 
         # The grouping part we always want as a DataFrame with range index
-        return pd.DataFrame(X_group).reset_index(drop=True)
+        return X_group.reset_index(drop=True)
 
     def __fit_single_group(self, group, X, y=None):
         try:
@@ -64,7 +69,11 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
     ):
         """Fit a transformer to each group"""
         # Make the groups based on the groups dataframe, use the indices on the values array
-        group_indices = X_group.groupby(X_group.columns.tolist()).indices
+        try:
+            group_indices = X_group.groupby(X_group.columns.tolist()).indices
+        except TypeError:
+            # This one is needed because of line #918 of sklearn/utils/estimator_checks
+            raise TypeError("argument must be a string, date or number")
 
         if y:
             grouped_transformers = {
