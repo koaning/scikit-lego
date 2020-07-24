@@ -13,7 +13,8 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
     and transforms remaining columns using the transformers corresponding to the groups.
 
     :param transformer: the transformer to be applied per group
-    :param groups: the column(s) of the matrix/dataframe to select as a grouping parameter set
+    :param groups: the column(s) of the matrix/dataframe to select as a grouping parameter set. If None,
+                   the transformer will be applied to the entire input without grouping
     :param use_global_model: Whether or not to fall back to a general transformation in case a group
                              is not found during `.transform()`
     """
@@ -72,14 +73,17 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         """
         self.__check_transformer()
 
-        X_group, X_value = split_groups_and_values(X, self.groups, **self._check_kwargs)
-
         self.fallback_ = None
+
+        if self.groups is None:
+            self.transformers_ = clone(self.transformer).fit(X, y)
+            return self
+
+        X_group, X_value = split_groups_and_values(X, self.groups, **self._check_kwargs)
+        self.transformers_ = self.__fit_grouped_transformer(X_group, X_value)
 
         if self.use_global_model:
             self.fallback_ = clone(self.transformer).fit(X_value)
-
-        self.transformers_ = self.__fit_grouped_transformer(X_group, X_value)
 
         return self
 
@@ -127,6 +131,9 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         :param X: Array-like with columns corresponding to the ones in .fit()
         """
         check_is_fitted(self, ["fallback_", "transformers_"])
+
+        if self.groups is None:
+            return self.transformers_.transform(X)
 
         X_group, X_value = split_groups_and_values(X, self.groups, **self._check_kwargs)
 

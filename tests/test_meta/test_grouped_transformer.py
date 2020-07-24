@@ -305,3 +305,12 @@ def test_grouping_column_not_in_df(penguins_df):
     # This should raise ValueError
     with pytest.raises(ValueError):
         meta.fit_transform(penguins_df)
+
+
+def test_no_grouping(penguins_df):
+    penguins_numeric = penguins_df[["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]]
+
+    meta = GroupedTransformer(StandardScaler(), groups=None)
+    nonmeta = StandardScaler()
+
+    assert (meta.fit_transform(penguins_numeric) == nonmeta.fit_transform(penguins_numeric)).all()
