@@ -43,7 +43,10 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
             # This one is needed because of line #918 of sklearn/utils/estimator_checks
             raise TypeError("argument must be a string, date or number")
 
-        if y:
+        if y is not None:
+            if isinstance(y, pd.Series):
+                y.index = X_group.index
+
             grouped_transformers = {
                 # Fit a clone of the transformer to each group
                 group: self.__fit_single_group(group, X_value[indices, :], y[indices])
@@ -80,7 +83,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
             return self
 
         X_group, X_value = split_groups_and_values(X, self.groups, **self._check_kwargs)
-        self.transformers_ = self.__fit_grouped_transformer(X_group, X_value)
+        self.transformers_ = self.__fit_grouped_transformer(X_group, X_value, y)
 
         if self.use_global_model:
             self.fallback_ = clone(self.transformer).fit(X_value)

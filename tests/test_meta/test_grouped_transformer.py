@@ -314,3 +314,13 @@ def test_no_grouping(penguins_df):
     nonmeta = StandardScaler()
 
     assert (meta.fit_transform(penguins_numeric) == nonmeta.fit_transform(penguins_numeric)).all()
+
+
+def test_with_y(penguins_df):
+    X = penguins_df.drop(columns=["sex"])
+    y = penguins_df["sex"]
+
+    meta = GroupedTransformer(StandardScaler(), groups="island")
+
+    # This should work fine
+    meta.fit_transform(X, y)
