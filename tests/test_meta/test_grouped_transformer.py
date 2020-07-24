@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.utils import check_X_y
 
 from sklego.common import flatten
+from sklego.datasets import load_penguins
 from sklego.meta import GroupedTransformer
 from tests.conftest import transformer_checks, nonmeta_checks, general_checks, select_tests
 from tests.conftest import n_vals, k_vals, np_types
@@ -25,7 +26,7 @@ from tests.conftest import n_vals, k_vals, np_types
     )
 )
 def test_estimator_checks(test_fn):
-    trf = GroupedTransformer(StandardScaler())
+    trf = GroupedTransformer(StandardScaler(), groups=0)
     test_fn(GroupedTransformer.__name__, trf)
 
 
@@ -113,7 +114,7 @@ def test_group_correlation_minmaxscaler(dataset_with_single_grouping, scaling_ra
 
 def test_set_params():
     trf = StandardScaler(with_std=False)
-    transformer = GroupedTransformer(trf)
+    transformer = GroupedTransformer(trf, groups=0)
 
     transformer.set_params(transformer__with_std=True)
     assert trf.with_std
@@ -121,7 +122,7 @@ def test_set_params():
 
 def test_get_params():
     trf = StandardScaler(with_std=False)
-    transformer = GroupedTransformer(trf)
+    transformer = GroupedTransformer(trf, groups=0)
 
     assert transformer.get_params() == {
         "transformer__with_mean": True,
@@ -246,3 +247,30 @@ def test_array_with_strings():
     trf = MinMaxScaler()
     transformer = GroupedTransformer(trf, groups=0, use_global_model=False)
     transformer.fit_transform(X)
+
+
+@pytest.fixture(scope="module")
+def penguins():
+    df = load_penguins(as_frame=True).dropna()
+    X = df.drop(columns='species').values
+
+    return X
+
+
+def test_array_with_multiple_string_cols(penguins):
+    X = penguins
+
+    meta = GroupedTransformer(StandardScaler(), groups=[0, -1])
+
+    # This should work fine
+    meta.fit_transform(X)
+
+
+def test_grouping_column_not_in_array(penguins):
+    X = penguins
+
+    meta = GroupedTransformer(StandardScaler(), groups=[0, 5])
+
+    # This should raise ValueError
+    with pytest.raises(ValueError):
+        meta.fit_transform(X[:, :3])
