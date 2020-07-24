@@ -23,10 +23,6 @@ def split_groups_and_values(
             X_value = np.delete(X, as_list(groups), axis=1)
     except (KeyError, IndexError):
         raise ValueError(f"Could not drop groups {groups} from columns of X")
-    except Exception:
-        # Check if we can leverage check_array for standard exceptions, otherwise raise
-        check_array(X, **kwargs)
-        raise
 
     X_group = check_grouping_columns(X_group, **kwargs)
     X_value = check_value_columns(X_value, **kwargs)

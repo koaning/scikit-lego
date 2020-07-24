@@ -250,11 +250,34 @@ def test_array_with_strings():
 
 
 @pytest.fixture(scope="module")
-def penguins():
+def penguins_df():
     df = load_penguins(as_frame=True).dropna()
-    X = df.drop(columns='species').values
+    X = df.drop(columns='species')
 
     return X
+
+
+@pytest.fixture(scope="module")
+def penguins(penguins_df):
+    return penguins_df.values
+
+
+def test_df(penguins_df):
+    meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
+
+    # This should work fine
+    meta.fit_transform(penguins_df)
+
+
+def test_df_missing_group(penguins_df):
+    meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
+
+    # Otherwise the fixture is changed
+    X = penguins_df.copy()
+    X.loc[0, "island"] = None
+
+    with pytest.raises(ValueError):
+        meta.fit_transform(X)
 
 
 def test_array_with_multiple_string_cols(penguins):
@@ -274,3 +297,11 @@ def test_grouping_column_not_in_array(penguins):
     # This should raise ValueError
     with pytest.raises(ValueError):
         meta.fit_transform(X[:, :3])
+
+
+def test_grouping_column_not_in_df(penguins_df):
+    meta = GroupedTransformer(StandardScaler(), groups=["island", "unexisting_column"])
+
+    # This should raise ValueError
+    with pytest.raises(ValueError):
+        meta.fit_transform(penguins_df)
