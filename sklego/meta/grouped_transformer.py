@@ -1,10 +1,10 @@
 import numpy as np
 import pandas as pd
+
 from sklearn.base import BaseEstimator, TransformerMixin, clone
-from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from sklego.common import as_list
+from ._grouped_utils import split_groups_and_values
 
 
 class GroupedTransformer(BaseEstimator, TransformerMixin):
@@ -20,43 +20,10 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
 
     _check_kwargs = {"accept_large_sparse": False}
 
-    def __init__(self, transformer, groups=0, use_global_model=True):
+    def __init__(self, transformer, groups, use_global_model=True):
         self.transformer = transformer
         self.groups = groups
         self.use_global_model = use_global_model
-
-    def __check_value_columns(self, X):
-        """Do basic checks on the value columns"""
-        try:
-            if isinstance(X, pd.DataFrame):
-                X_value = X.drop(columns=self.groups).values
-            else:
-                X_value = np.delete(X, as_list(self.groups), axis=1)
-        except Exception:
-            # Check if we can leverage check_array for standard exceptions
-            check_array(X, **self._check_kwargs)
-            raise ValueError(f"Could not drop groups {self.groups} from columns of X")
-
-        return check_array(X_value, **self._check_kwargs)
-
-    def __check_grouping_columns(self, X):
-        """Do basic checks on grouping columns"""
-        if isinstance(X, pd.DataFrame):
-            X_group = X.loc[:, as_list(self.groups)]
-        else:
-            X_group = pd.DataFrame(X[:, as_list(self.groups)])
-
-        # Do regular checks on numeric columns
-        X_group_num = X_group.select_dtypes(include="number")
-        if X_group_num.shape[1]:
-            check_array(X_group.select_dtypes(include="number"), **self._check_kwargs)
-
-        # Only check missingness in object columns
-        if X_group.select_dtypes(exclude="number").isnull().any(axis=None):
-            raise ValueError("X has NaN values")
-
-        # The grouping part we always want as a DataFrame with range index
-        return X_group.reset_index(drop=True)
 
     def __fit_single_group(self, group, X, y=None):
         try:
@@ -105,8 +72,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         """
         self.__check_transformer()
 
-        X_value = self.__check_value_columns(X)
-        X_group = self.__check_grouping_columns(X)
+        X_group, X_value = split_groups_and_values(X, self.groups, **self._check_kwargs)
 
         self.fallback_ = None
 
@@ -162,7 +128,6 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, ["fallback_", "transformers_"])
 
-        X_value = self.__check_value_columns(X)
-        X_group = self.__check_grouping_columns(X)
+        X_group, X_value = split_groups_and_values(X, self.groups, **self._check_kwargs)
 
         return self.__transform_groups(X_group, X_value)
