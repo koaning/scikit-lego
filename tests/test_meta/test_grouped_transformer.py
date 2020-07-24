@@ -78,6 +78,37 @@ def scaling_range():
     return (13, 42)
 
 
+@pytest.fixture()
+def multiple_obs_fitter():
+    from sklearn.base import BaseEstimator, TransformerMixin
+
+    class MultipleObsFitter(BaseEstimator, TransformerMixin):
+        """A transformer that needs more than 1 value to fit"""
+        def fit(self, X, y=None):
+            if len(X) <= 1:
+                raise ValueError("Need more than 1 value to fit")
+
+            return self
+
+        def transform(X):
+            return X
+
+    return MultipleObsFitter()
+
+
+@pytest.fixture(scope="module")
+def penguins_df():
+    df = load_penguins(as_frame=True).dropna()
+    X = df.drop(columns='species')
+
+    return X
+
+
+@pytest.fixture(scope="module")
+def penguins(penguins_df):
+    return penguins_df.values
+
+
 def test_all_groups_scaled(dataset_with_single_grouping, scaling_range):
     X, y, groups, X_with_groups, grouper = dataset_with_single_grouping
 
@@ -202,24 +233,6 @@ def test_missing_groups_transform_noglobal(dataset_with_single_grouping, scaling
         transformer.transform(X_test)
 
 
-@pytest.fixture()
-def multiple_obs_fitter():
-    from sklearn.base import BaseEstimator, TransformerMixin
-
-    class MultipleObsFitter(BaseEstimator, TransformerMixin):
-        """A transformer that needs more than 1 value to fit"""
-        def fit(self, X, y=None):
-            if len(X) <= 1:
-                raise ValueError("Need more than 1 value to fit")
-
-            return self
-
-        def transform(X):
-            return X
-
-    return MultipleObsFitter()
-
-
 def test_exception_in_group(multiple_obs_fitter):
     X = np.array([
         [1, 2],
@@ -247,19 +260,6 @@ def test_array_with_strings():
     trf = MinMaxScaler()
     transformer = GroupedTransformer(trf, groups=0, use_global_model=False)
     transformer.fit_transform(X)
-
-
-@pytest.fixture(scope="module")
-def penguins_df():
-    df = load_penguins(as_frame=True).dropna()
-    X = df.drop(columns='species')
-
-    return X
-
-
-@pytest.fixture(scope="module")
-def penguins(penguins_df):
-    return penguins_df.values
 
 
 def test_df(penguins_df):
