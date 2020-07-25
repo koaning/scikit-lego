@@ -85,6 +85,8 @@ Here's a list of features that this library currently offers:
 - `sklego.datasets.load_chicken` loads in the joyful chickweight dataset
 - `sklego.datasets.load_heroes` loads a heroes of the storm dataset
 - `sklego.datasets.load_hearts` loads a dataset about hearts
+- `sklego.datasets.load_penguins` loads a lovely dataset about penguins
+- `sklego.datasets.fetch_creditcard` fetch a fraud dataset from openml
 - `sklego.datasets.make_simpleseries` make a simulated timeseries
 - `sklego.pandas_utils.add_lags` adds lag values in a pandas dataframe
 - `sklego.pandas_utils.log_step` a useful decorator to log your pipeline steps
@@ -95,7 +97,7 @@ Here's a list of features that this library currently offers:
 - `sklego.linear_model.ProbWeightRegression` linear model that treats coefficients as probabilistic weights
 - `sklego.linear_model.LowessRegression` locally weighted linear regression
 - `sklego.naive_bayes.GaussianMixtureNB` classifies by training a 1D GMM per column per class
-- `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a bayesian 1D GMM per column per class
+- `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a bayesian 1D GMM per class
 - `sklego.mixture.BayesianGMMClassifier` classifies by training a bayesian GMM per class
 - `sklego.mixture.BayesianGMMOutlierDetector` detects outliers based on a trained bayesian GMM
 - `sklego.mixture.GMMClassifier` classifies by training a GMM per class
@@ -117,6 +119,7 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
 - `sklego.preprocessing.RandomAdder` adds randomness in training
 - `sklego.preprocessing.RepeatingBasisFunction` repeating feature engineering, useful for timeseries
+- `sklego.preprocessing.DictMapper` assign numeric values on categorical columns
 - `sklego.preprocessing.OutlierRemover` experimental method to remove outliers during training
 - `sklego.model_selection.KlusterFoldValidation` experimental feature that does K folds based on clustering
 - `sklego.model_selection.TimeGapSplit` timeseries Kfold with a gap between train/test
