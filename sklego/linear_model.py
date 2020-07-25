@@ -335,7 +335,7 @@ class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
             multi_class
         ]
         return multiclass_meta(
-            _DemographicParityClassifer(*args, **kwargs), n_jobs=n_jobs
+            _DemographicParityClassifier(*args, **kwargs), n_jobs=n_jobs
         )
 
 
@@ -348,7 +348,7 @@ class FairClassifier(DemographicParityClassifier):
         super().__init__(*args, **kwargs)
 
 
-class _DemographicParityClassifer(_FairClassifier):
+class _DemographicParityClassifier(_FairClassifier):
     def __init__(
         self,
         covariance_threshold,
