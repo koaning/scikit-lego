@@ -265,8 +265,10 @@ def test_array_with_strings():
 def test_df(penguins_df):
     meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
 
-    # This should work fine
-    meta.fit_transform(penguins_df)
+    transformed = meta.fit_transform(penguins_df)
+
+    # 2 columns for grouping not in the result
+    assert transformed.shape == (penguins_df.shape[0], penguins_df.shape[1] - 2)
 
 
 def test_df_missing_group(penguins_df):
@@ -285,8 +287,10 @@ def test_array_with_multiple_string_cols(penguins):
 
     meta = GroupedTransformer(StandardScaler(), groups=[0, -1])
 
-    # This should work fine
-    meta.fit_transform(X)
+    transformed = meta.fit_transform(X)
+
+    # 2 columns for grouping not in the result
+    assert transformed.shape == (X.shape[0], X.shape[1] - 2)
 
 
 def test_grouping_column_not_in_array(penguins):
@@ -323,4 +327,7 @@ def test_with_y(penguins_df):
     meta = GroupedTransformer(StandardScaler(), groups="island")
 
     # This should work fine
-    meta.fit_transform(X, y)
+    transformed = meta.fit_transform(X, y)
+
+    # 1 column for grouping not in the result
+    assert transformed.shape == (X.shape[0], X.shape[1] - 1)

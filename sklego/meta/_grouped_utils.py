@@ -9,10 +9,10 @@ from sklearn.utils.validation import _ensure_no_complex_data
 from sklego.common import as_list
 
 
-def split_groups_and_values(
+def _split_groups_and_values(
     X, groups, name="", **kwargs
 ) -> Tuple[pd.DataFrame, np.ndarray]:
-    general_checks(X, name=name)
+    _data_format_checks(X, name=name)
 
     try:
         if isinstance(X, pd.DataFrame):
@@ -24,13 +24,13 @@ def split_groups_and_values(
     except (KeyError, IndexError):
         raise ValueError(f"Could not drop groups {groups} from columns of X")
 
-    X_group = check_grouping_columns(X_group, **kwargs)
-    X_value = check_value_columns(X_value, **kwargs)
+    X_group = _check_grouping_columns(X_group, **kwargs)
+    X_value = check_array(X_value, **kwargs)
 
     return X_group, X_value
 
 
-def general_checks(X, name):
+def _data_format_checks(X, name):
     _ensure_no_complex_data(X)
 
     if issparse(X):  # sklearn.validation._ensure_sparse_format to complicated
@@ -42,12 +42,7 @@ def general_checks(X, name):
         )
 
 
-def check_value_columns(X_value, **kwargs) -> np.ndarray:
-    """Do basic checks on the value columns"""
-    return check_array(X_value, **kwargs)
-
-
-def check_grouping_columns(X_group, **kwargs) -> pd.DataFrame:
+def _check_grouping_columns(X_group, **kwargs) -> pd.DataFrame:
     """Do basic checks on grouping columns"""
     # Do regular checks on numeric columns
     X_group_num = X_group.select_dtypes(include="number")

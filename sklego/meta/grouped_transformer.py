@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
-from ._grouped_utils import split_groups_and_values
+from ._grouped_utils import _split_groups_and_values
 
 
 class GroupedTransformer(BaseEstimator, TransformerMixin):
@@ -82,7 +82,9 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
             self.transformers_ = clone(self.transformer).fit(X, y)
             return self
 
-        X_group, X_value = split_groups_and_values(X, self.groups, **self._check_kwargs)
+        X_group, X_value = _split_groups_and_values(
+            X, self.groups, **self._check_kwargs
+        )
         self.transformers_ = self.__fit_grouped_transformer(X_group, X_value, y)
 
         if self.use_global_model:
@@ -138,6 +140,8 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         if self.groups is None:
             return self.transformers_.transform(X)
 
-        X_group, X_value = split_groups_and_values(X, self.groups, **self._check_kwargs)
+        X_group, X_value = _split_groups_and_values(
+            X, self.groups, **self._check_kwargs
+        )
 
         return self.__transform_groups(X_group, X_value)
