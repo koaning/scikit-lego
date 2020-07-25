@@ -97,7 +97,7 @@ Here's a list of features that this library currently offers:
 - `sklego.linear_model.ProbWeightRegression` linear model that treats coefficients as probabilistic weights
 - `sklego.linear_model.LowessRegression` locally weighted linear regression
 - `sklego.naive_bayes.GaussianMixtureNB` classifies by training a 1D GMM per column per class
-- `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a bayesian 1D GMM per column per class
+- `sklego.naive_bayes.BayesianGaussianMixtureNB` classifies by training a bayesian 1D GMM per class
 - `sklego.mixture.BayesianGMMClassifier` classifies by training a bayesian GMM per class
 - `sklego.mixture.BayesianGMMOutlierDetector` detects outliers based on a trained bayesian GMM
 - `sklego.mixture.GMMClassifier` classifies by training a GMM per class
