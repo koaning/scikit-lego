@@ -1,3 +1,4 @@
+from deprecated import deprecated
 import numpy as np
 import pandas as pd
 from sklearn import clone
@@ -12,6 +13,11 @@ from sklego.common import as_list, expanding_list
 from ._grouped_utils import relative_shrinkage, constant_shrinkage, min_n_obs_shrinkage
 
 
+@deprecated(
+    version="0.5.2",
+    reason="Please use `sklego.meta.GroupedPredictor` instead. "
+    "This object will be removed from the meta submodule in version 0.7.0.",
+)
 class GroupedEstimator(BaseEstimator):
     """
     Construct an estimator per data group. Splits data by values of a
