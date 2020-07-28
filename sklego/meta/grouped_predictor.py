@@ -4,12 +4,12 @@ from sklearn import clone
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import (
     check_is_fitted,
-    check_X_y,
     check_array,
 )
 
 from sklego.common import as_list, expanding_list
 from ._grouped_utils import relative_shrinkage, constant_shrinkage, min_n_obs_shrinkage
+from ._grouped_utils import _split_groups_and_values
 
 
 class GroupedPredictor(BaseEstimator):
@@ -19,7 +19,6 @@ class GroupedPredictor(BaseEstimator):
 
     :param estimator: the model/pipeline to be applied per group
     :param groups: the column(s) of the matrix/dataframe to select as a grouping parameter set
-    :param value_columns: Columns to use in the prediction. If None (default), use all non-grouping columns
     :param shrinkage: How to perform shrinkage.
                       None: No shrinkage (default)
                       {"constant", "min_n_obs", "relative"} or a callable
@@ -36,23 +35,35 @@ class GroupedPredictor(BaseEstimator):
     :param **shrinkage_kwargs: keyword arguments to the shrinkage function
     """
 
+    # Number of features in value df can be 0, e.g. for dummy models
+    _check_kwargs = {"ensure_min_features": 0, "accept_large_sparse": False}
+    _global_col_name = "a-column-that-is-constant-for-all-data"
+    _global_col_value = "global"
+
     def __init__(
         self,
         estimator,
         groups,
-        value_columns=None,
         shrinkage=None,
         use_global_model=True,
         **shrinkage_kwargs,
     ):
         self.estimator = estimator
         self.groups = groups
-        self.value_columns = value_columns
         self.shrinkage = shrinkage
         self.use_global_model = use_global_model
         self.shrinkage_kwargs = shrinkage_kwargs
 
     def __set_shrinkage_function(self):
+        if (
+            self.shrinkage
+            and len(as_list(self.groups)) == 1
+            and not self.use_global_model
+        ):
+            raise ValueError(
+                "Cannot do shrinkage with a single group if use_global_model is False"
+            )
+
         if isinstance(self.shrinkage, str):
             # Predefined shrinkage functions
             shrink_options = {
@@ -96,84 +107,14 @@ class GroupedPredictor(BaseEstimator):
                     f"shrinkage_function({group_lengths}).shape should be {expected_shape}"
                 )
 
-    @staticmethod
-    def __check_cols_exist(X, cols):
-        """Check whether the specified grouping columns are in X"""
-        if X.shape[1] == 0:
-            raise ValueError(
-                f"0 feature(s) (shape=({X.shape[0]}, 0)) while a minimum of 1 is required."
-            )
-
-        # X has been converted to a DataFrame
-        x_cols = set(X.columns)
-        diff = set(as_list(cols)) - x_cols
-
-        if len(diff) > 0:
-            raise ValueError(f"{diff} not in columns of X {x_cols}")
-
-    @staticmethod
-    def __check_missing_and_inf(X):
-        """Check that all elements of X are non-missing and finite, needed because check_array cannot handle strings"""
-        if np.any(pd.isnull(X)):
-            raise ValueError("X has NaN values")
-        try:
-            if np.any(np.isinf(X)):
-                raise ValueError("X has infinite values")
-        except TypeError:
-            # if X cannot be converted to numeric, checking infinites does not make sense
-            pass
-
-    def __validate(self, X, y=None):
-        """Validate the input, used in both fit and predict"""
-        if (
-            self.shrinkage
-            and len(as_list(self.groups)) == 1
-            and not self.use_global_model
-        ):
-            raise ValueError(
-                "Cannot do shrinkage with a single group if use_global_model is False"
-            )
-
-        self.__check_cols_exist(X, self.value_colnames_)
-        self.__check_cols_exist(X, self.group_colnames_)
-
-        # Split the model data from the grouping columns, this part is checked `regularly`
-        X_data = X.loc[:, self.value_colnames_]
-
-        # y can be None because __validate used in predict, X can have no columns if the estimator only uses y
-        if X_data.shape[1] > 0 and y is not None:
-            check_X_y(X_data, y, multi_output=True)
-        elif y is not None:
-            check_array(y, ensure_2d=False)
-        elif X_data.shape[1] > 0:
-            check_array(X_data)
-
-        self.__check_missing_and_inf(X)
-
-    def __fit_grouped_estimator(self, X, y, value_columns, group_columns):
-        # Reset indices such that they are the same in X and y
-        X, y = X.reset_index(drop=True), y.reset_index(drop=True)
-
-        group_indices = X.groupby(group_columns).indices
-
-        grouped_estimations = {
-            group: clone(self.estimator).fit(
-                X.loc[indices, value_columns], y.loc[indices]
-            )
-            for group, indices in group_indices.items()
-        }
-
-        return grouped_estimations
-
-    def __get_shrinkage_factor(self, X):
+    def __get_shrinkage_factor(self, X_group):
         """Get for all complete groups an array of shrinkages"""
-        counts = X.groupby(self.group_colnames_).size()
+        group_colnames = X_group.columns.to_list()
+        counts = X_group.groupby(group_colnames).size()
 
         # Groups that are split on all
         most_granular_groups = [
-            grp
-            for grp in self.groups_
-            if len(as_list(grp)) == len(self.group_colnames_)
+            grp for grp in self.groups_ if len(as_list(grp)) == len(group_colnames)
         ]
 
         # For each hierarchy level in each most granular group, get the number of observations
@@ -198,34 +139,69 @@ class GroupedPredictor(BaseEstimator):
 
         return shrinkage_factors
 
-    def __prepare_input_data(self, X, y=None):
-        if isinstance(X, np.ndarray):
-            X = pd.DataFrame(X, columns=[str(_) for _ in range(X.shape[1])])
+    def __fit_single_group(self, group, X, y=None):
+        try:
+            return clone(self.estimator).fit(X, y)
+        except Exception as e:
+            raise type(e)(f"Exception for group {group}: {e}")
 
-        if self.shrinkage is not None and self.use_global_model:
-            global_col = "a-column-that-is-constant-for-all-data"
-            X = X.assign(**{global_col: "global"})
-            self.groups = [global_col] + as_list(self.groups)
+    def __fit_grouped_estimator(self, X_group, X_value, y=None, columns=None):
+        # Reset indices such that they are the same in X and y
+        if not columns:
+            columns = X_group.columns.tolist()
+
+        # Make the groups based on the groups dataframe, use the indices on the values array
+        try:
+            group_indices = X_group.groupby(columns).indices
+        except TypeError:
+            # This one is needed because of line #918 of sklearn/utils/estimator_checks
+            raise TypeError("argument must be a string, date or number")
 
         if y is not None:
-            if isinstance(y, np.ndarray):
-                pred_col = (
-                    "the-column-that-i-want-to-predict-but-dont-have-the-name-for"
-                )
-                cols = (
-                    pred_col
-                    if y.ndim == 1
-                    else ["_".join([pred_col, i]) for i in range(y.shape[1])]
-                )
-                y = (
-                    pd.Series(y, name=cols)
-                    if y.ndim == 1
-                    else pd.DataFrame(y, columns=cols)
-                )
+            if isinstance(y, pd.Series):
+                y.index = X_group.index
 
-            return X, y
+            grouped_estimators = {
+                # Fit a clone of the transformer to each group
+                group: self.__fit_single_group(group, X_value[indices, :], y[indices])
+                for group, indices in group_indices.items()
+            }
+        else:
+            grouped_estimators = {
+                group: self.__fit_single_group(group, X_value[indices, :])
+                for group, indices in group_indices.items()
+            }
 
-        return X
+        return grouped_estimators
+
+    def __fit_shrinkage_groups(self, X_group, X_value, y):
+        estimators = {}
+
+        for grouping_colnames in self.group_colnames_hierarchical_:
+            estimators.update(
+                self.__fit_grouped_estimator(
+                    X_group, X_value, y, columns=grouping_colnames
+                )
+            )
+
+        return estimators
+
+    def __add_shrinkage_column(self, X_group):
+        """Add global group as first column if needed for shrinkage"""
+
+        if self.shrinkage is not None and self.use_global_model:
+            return pd.concat(
+                [
+                    pd.Series(
+                        [self._global_col_value] * len(X_group),
+                        name=self._global_col_name,
+                    ),
+                    X_group,
+                ],
+                axis=1,
+            )
+
+        return X_group
 
     def fit(self, X, y=None):
         """
@@ -235,93 +211,52 @@ class GroupedPredictor(BaseEstimator):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
-        X, y = self.__prepare_input_data(X, y)
+
+        X_group, X_value = _split_groups_and_values(
+            X, self.groups, min_value_cols=0, **self._check_kwargs
+        )
+
+        X_group = self.__add_shrinkage_column(X_group)
+
+        if y is not None:
+            y = check_array(y, ensure_2d=False)
 
         if self.shrinkage is not None:
             self.__set_shrinkage_function()
 
-        self.group_colnames_ = [str(_) for _ in as_list(self.groups)]
-
-        if self.value_columns is not None:
-            self.value_colnames_ = [str(_) for _ in as_list(self.value_columns)]
-        else:
-            self.value_colnames_ = [
-                _ for _ in X.columns if _ not in self.group_colnames_
-            ]
-        self.__validate(X, y)
-
         # List of all hierarchical subsets of columns
-        self.group_colnames_hierarchical_ = expanding_list(self.group_colnames_, list)
+        self.group_colnames_hierarchical_ = expanding_list(X_group.columns, list)
 
         self.fallback_ = None
 
         if self.shrinkage is None and self.use_global_model:
-            subset_x = X[self.value_colnames_]
-            self.fallback_ = clone(self.estimator).fit(subset_x, y)
+            self.fallback_ = clone(self.estimator).fit(X_value, y)
 
         if self.shrinkage is not None:
-            self.estimators_ = {}
-
-            for level_colnames in self.group_colnames_hierarchical_:
-                self.estimators_.update(
-                    self.__fit_grouped_estimator(
-                        X, y, self.value_colnames_, level_colnames
-                    )
-                )
+            self.estimators_ = self.__fit_shrinkage_groups(X_group, X_value, y)
         else:
-            self.estimators_ = self.__fit_grouped_estimator(
-                X, y, self.value_colnames_, self.group_colnames_
-            )
+            self.estimators_ = self.__fit_grouped_estimator(X_group, X_value, y)
 
         self.groups_ = as_list(self.estimators_.keys())
 
         if self.shrinkage is not None:
-            self.shrinkage_factors_ = self.__get_shrinkage_factor(X)
+            self.shrinkage_factors_ = self.__get_shrinkage_factor(X_group)
 
         return self
 
-    def __predict_group(self, X, group_colnames):
-        """Make predictions for all groups"""
-        try:
-            return (
-                X.groupby(group_colnames, as_index=False)
-                .apply(
-                    lambda d: pd.DataFrame(
-                        self.estimators_.get(d.name, self.fallback_).predict(
-                            d[self.value_colnames_]
-                        ),
-                        index=d.index,
-                    )
-                )
-                .values.squeeze()
-            )
-        except AttributeError:
-            # Handle new groups
-            culprits = set(X[self.group_colnames_].agg(func=tuple, axis=1)) - set(
-                self.estimators_.keys()
-            )
-
-            if self.shrinkage is not None and self.use_global_model:
-                # Remove the global group from the culprits because the user did not specify
-                culprits = {culprit[1:] for culprit in culprits}
-
-            raise ValueError(
-                f"found a group(s) {culprits} in `.predict` that was not in `.fit`"
-            )
-
-    def __predict_shrinkage_groups(self, X):
+    def __predict_shrinkage_groups(self, X_group, X_value):
         """Make predictions for all shrinkage groups"""
         # DataFrame with predictions for each hierarchy level, per row. Missing groups errors are thrown here.
         hierarchical_predictions = pd.concat(
             [
-                pd.Series(self.__predict_group(X, level_columns))
+                pd.Series(self.__predict_groups(X_group, X_value, level_columns))
                 for level_columns in self.group_colnames_hierarchical_
             ],
             axis=1,
         )
 
         # This is a Series with values the tuples of hierarchical grouping
-        prediction_groups = X[self.group_colnames_].agg(func=tuple, axis=1)
+        prediction_groups = X_group.agg(func=tuple, axis=1)
 
         # This is a Series of arrays
         shrinkage_factors = prediction_groups.map(self.shrinkage_factors_)
@@ -331,6 +266,48 @@ class GroupedPredictor(BaseEstimator):
 
         return (hierarchical_predictions * shrinkage_factors).sum(axis=1)
 
+    def __predict_single_group(self, group, X):
+        """Predict a single group by getting its estimator from the fitted dict"""
+        # Keep track of the original index such that we can sort in __predict_groups
+        index = X.index
+        try:
+            group_predictor = self.estimators_[group]
+        except KeyError:
+            if self.fallback_:
+                group_predictor = self.fallback_
+            else:
+                raise ValueError(
+                    f"Found new group {group} during predict with use_global_model = False"
+                )
+
+        return pd.DataFrame(group_predictor.predict(X)).set_index(index)
+
+    def __predict_groups(
+        self, X_group: pd.DataFrame, X_value: np.array, group_cols=None
+    ):
+        """Predict for all groups"""
+        # Reset indices such that they are the same in X_group (reset in __check_grouping_columns),
+        # this way we can track the order of the result
+        X_value = pd.DataFrame(X_value).reset_index(drop=True)
+
+        if group_cols is None:
+            group_cols = X_group.columns.tolist()
+
+        # Make the groups based on the groups dataframe, use the indices on the values array
+        group_indices = X_group.groupby(group_cols).indices
+
+        return (
+            pd.concat(
+                [
+                    self.__predict_single_group(group, X_value.loc[indices, :])
+                    for group, indices in group_indices.items()
+                ],
+                axis=0,
+            )
+            .sort_index()
+            .values.squeeze()
+        )
+
     def predict(self, X):
         """
         Predict on new data.
@@ -338,21 +315,18 @@ class GroupedPredictor(BaseEstimator):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
-        X = self.__prepare_input_data(X)
-        self.__validate(X)
+
+        X_group, X_value = _split_groups_and_values(
+            X, self.groups, min_value_cols=0, **self._check_kwargs
+        )
+
+        X_group = self.__add_shrinkage_column(X_group)
 
         check_is_fitted(
-            self,
-            [
-                "estimators_",
-                "groups_",
-                "group_colnames_",
-                "value_colnames_",
-                "fallback_",
-            ],
+            self, ["estimators_", "groups_", "fallback_",],
         )
 
         if self.shrinkage is None:
-            return self.__predict_group(X, group_colnames=self.group_colnames_)
+            return self.__predict_groups(X_group, X_value)
         else:
-            return self.__predict_shrinkage_groups(X)
+            return self.__predict_shrinkage_groups(X_group, X_value)

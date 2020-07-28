@@ -21,17 +21,17 @@ from tests.conftest import nonmeta_checks, general_checks, select_tests
             "check_fit2d_predict1d",
             "check_fit2d_1feature",
             "check_transformer_data_not_an_array",
-        ]
-    )
+        ],
+    ),
 )
 def test_estimator_checks(test_fn):
     clf = GroupedPredictor(
-        estimator=LinearRegression(), groups=[0], use_global_model=True
+        estimator=LinearRegression(), groups=0, use_global_model=True
     )
     test_fn(GroupedPredictor.__name__ + "_fallback", clf)
 
     clf = GroupedPredictor(
-        estimator=LinearRegression(), groups=[0], use_global_model=False
+        estimator=LinearRegression(), groups=0, use_global_model=False
     )
     test_fn(GroupedPredictor.__name__ + "_nofallback", clf)
 
@@ -75,7 +75,7 @@ def test_fallback_can_raise_error():
         assert "found a group" in str(e)
 
 
-def test_chickweight_raise_error_cols_missing1():
+def test_chickweight_raise_error_group_col_missing():
     df = load_chicken(as_frame=True)
     mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
@@ -84,13 +84,15 @@ def test_chickweight_raise_error_cols_missing1():
         assert "not in columns" in str(e)
 
 
-def test_chickweight_raise_error_cols_missing2():
+def test_chickweight_raise_error_value_col_missing():
     df = load_chicken(as_frame=True)
     mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
-    with pytest.raises(ValueError) as e:
-        mod.predict(df[["diet", "chick"]])
-        assert "not in columns" in str(e)
+
+    with pytest.raises(ValueError):
+        # Former test not valid anymore because we don't check for value columns
+        # mod.predict(df[["diet", "chick"]])
+        mod.predict(df[["diet"]])
 
 
 def test_chickweight_np_keys():
@@ -368,17 +370,18 @@ def test_global_model_shrinkage(shrinkage_data):
     shrink_est_with_global = GroupedPredictor(
         DummyRegressor(),
         ["Country", "City"],
-        value_columns=[],
         shrinkage="min_n_obs",
         use_global_model=True,
         min_n_obs=2,
     )
 
     shrink_est_without_global.fit(X, y)
-    shrink_est_with_global.fit(X, y)
+    # Drop planet because otherwise it is seen as a value column
+    shrink_est_with_global.fit(X.drop(columns="Planet"), y)
 
     pd.testing.assert_series_equal(
-        shrink_est_with_global.predict(X), shrink_est_without_global.predict(X)
+        shrink_est_with_global.predict(X.drop(columns="Planet")),
+        shrink_est_without_global.predict(X),
     )
 
 
@@ -390,7 +393,6 @@ def test_shrinkage_single_group(shrinkage_data):
     shrink_est = GroupedPredictor(
         DummyRegressor(),
         "Country",
-        value_columns=[],
         shrinkage="constant",
         use_global_model=True,
         alpha=0.1,
@@ -398,7 +400,8 @@ def test_shrinkage_single_group(shrinkage_data):
 
     shrinkage_factors = np.array([0.1, 0.9])
 
-    shrink_est.fit(X, y)
+    # Drop planet and city because otherwise they are seen as value columns
+    shrink_est.fit(X[["Country"]], y)
 
     expected_prediction = [
         np.array([means["Earth"], means["NL"]]) @ shrinkage_factors,
@@ -407,7 +410,7 @@ def test_shrinkage_single_group(shrinkage_data):
         np.array([means["Earth"], means["BE"]]) @ shrinkage_factors,
     ]
 
-    assert expected_prediction == shrink_est.predict(X).tolist()
+    assert expected_prediction == shrink_est.predict(X[["Country"]]).tolist()
 
 
 def test_shrinkage_single_group_no_global(shrinkage_data):
@@ -419,7 +422,6 @@ def test_shrinkage_single_group_no_global(shrinkage_data):
         shrink_est = GroupedPredictor(
             DummyRegressor(),
             "Country",
-            value_columns=[],
             shrinkage="constant",
             use_global_model=False,
             alpha=0.1,

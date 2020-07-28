@@ -45,9 +45,10 @@ def min_n_obs_shrinkage(group_sizes: list, min_n_obs) -> np.ndarray:
 
 
 def _split_groups_and_values(
-    X, groups, name="", **kwargs
+    X, groups, name="", min_value_cols=1, **kwargs
 ) -> Tuple[pd.DataFrame, np.ndarray]:
     _data_format_checks(X, name=name)
+    _shape_check(X, min_value_cols)
 
     try:
         if isinstance(X, pd.DataFrame):
@@ -72,10 +73,18 @@ def _data_format_checks(X, name):
     if issparse(X):  # sklearn.validation._ensure_sparse_format to complicated
         raise ValueError(f"The estimator {name} does not work on sparse matrices")
 
-    if X.ndim == 1 or X.shape[1] < 2:
-        raise ValueError(
-            f"0 feature(s) (shape={X.shape}) while a minimum of 2 is required."
-        )
+
+def _shape_check(X, min_value_cols):
+    if min_value_cols > 1:
+        if X.ndim == 1 or X.shape[1] < 2:
+            raise ValueError(
+                f"0 feature(s) (shape={X.shape}) while a minimum of {min_value_cols} is required."
+            )
+    else:
+        if X.ndim == 2 and X.shape[1] < 1:
+            raise ValueError(
+                f"0 feature(s) (shape={X.shape}) while a minimum of {min_value_cols} is required."
+            )
 
 
 def _check_grouping_columns(X_group, **kwargs) -> pd.DataFrame:
