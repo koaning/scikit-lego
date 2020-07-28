@@ -50,6 +50,48 @@ def log_step(func=None, *, level=logging.INFO):
     return wrapper
 
 
+def log_names(func=None, *, level=logging.INFO):
+    """
+    Decorates a function that transforms a pandas dataframe to add automated logging statements
+
+    :Example:
+    >>> @log_names
+    ... def remove_outliers(df, min_obs=5):
+    ...     pass
+
+    >>> @log_names(level=logging.INFO)
+    ... def remove_outliers(df, min_obs=5):
+    ...     pass
+
+    """
+    if func is None:
+        return partial(log_step, level=level)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        logger = logging.getLogger(sys.modules[func.__module__].__name__)
+
+        tic = dt.datetime.now()
+        result = func(*args, **kwargs)
+        time_taken = str(dt.datetime.now() - tic)
+        func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+        func_args_str = "".join(
+            ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
+        )
+        names_str = ", ".join(
+            "{}".format(name) for name in result.columns
+        )
+        logger.log(
+            level,
+            f"[{func.__name__}(df{func_args_str})] "
+            f"columns=({names_str}) time={time_taken}",
+        )
+
+        return result
+
+    return wrapper
+
+
 def add_lags(X, cols, lags, drop_na=True):
     """
     Appends lag column(s).
