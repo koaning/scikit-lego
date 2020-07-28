@@ -3,6 +3,7 @@ __all__ = [
     "DecayEstimator",
     "EstimatorTransformer",
     "GroupedEstimator",
+    "GroupedPredictor",
     "GroupedTransformer",
     "OutlierRemover",
     "SubjectiveClassifier",
@@ -14,6 +15,7 @@ from .confusion_balancer import ConfusionBalancer
 from .decay_estimator import DecayEstimator
 from .estimator_transformer import EstimatorTransformer
 from .grouped_estimator import GroupedEstimator
+from .grouped_predictor import GroupedPredictor
 from .grouped_transformer import GroupedTransformer
 from .outlier_remover import OutlierRemover
 from .subjective_classifier import SubjectiveClassifier
