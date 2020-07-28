@@ -9,41 +9,7 @@ from sklearn.utils.validation import (
 )
 
 from sklego.common import as_list, expanding_list
-
-
-def constant_shrinkage(group_sizes: list, alpha: float) -> np.ndarray:
-    r"""
-    The augmented prediction for each level is the weighted average between its prediction and the augmented
-    prediction for its parent.
-
-    Let $\hat{y}_i$ be the prediction at level $i$, with $i=0$ being the root, than the augmented prediction
-    $\hat{y}_i^* = \alpha \hat{y}_i + (1 - \alpha) \hat{y}_{i-1}^*$, with $\hat{y}_0^* = \hat{y}_0$.
-    """
-    return np.array(
-        [alpha ** (len(group_sizes) - 1)]
-        + [
-            alpha ** (len(group_sizes) - 1 - i) * (1 - alpha)
-            for i in range(1, len(group_sizes) - 1)
-        ]
-        + [(1 - alpha)]
-    )
-
-
-def relative_shrinkage(group_sizes: list) -> np.ndarray:
-    """Weigh each group according to it's size"""
-    return np.array(group_sizes)
-
-
-def min_n_obs_shrinkage(group_sizes: list, min_n_obs) -> np.ndarray:
-    """Use only the smallest group with a certain amount of observations"""
-    if min_n_obs > max(group_sizes):
-        raise ValueError(
-            f"There is no group with size greater than or equal to {min_n_obs}"
-        )
-
-    res = np.zeros(len(group_sizes))
-    res[np.argmin(np.array(group_sizes) >= min_n_obs) - 1] = 1
-    return res
+from ._grouped_utils import relative_shrinkage, constant_shrinkage, min_n_obs_shrinkage
 
 
 class GroupedEstimator(BaseEstimator):
@@ -107,7 +73,7 @@ class GroupedEstimator(BaseEstimator):
             self.shrinkage_function_ = self.shrinkage
         else:
             raise ValueError(
-                f"Invalid shrinkage specified. Should be either None (no shrinkage), str or callable."
+                "Invalid shrinkage specified. Should be either None (no shrinkage), str or callable."
             )
 
     def __check_shrinkage_func(self):
