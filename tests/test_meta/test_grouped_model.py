@@ -6,7 +6,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.dummy import DummyRegressor
 
 from sklego.common import flatten
-from sklego.meta import GroupedEstimator
+from sklego.meta import GroupedPredictor
 from sklego.datasets import load_chicken
 
 
@@ -32,34 +32,34 @@ from sklego.datasets import load_chicken
     ),
 )
 def test_estimator_checks(test_fn):
-    clf = GroupedEstimator(
+    clf = GroupedPredictor(
         estimator=LinearRegression(), groups=[0], use_global_model=True
     )
-    test_fn(GroupedEstimator.__name__ + "_fallback", clf)
+    test_fn(GroupedPredictor.__name__ + "_fallback", clf)
 
-    clf = GroupedEstimator(
+    clf = GroupedPredictor(
         estimator=LinearRegression(), groups=[0], use_global_model=False
     )
-    test_fn(GroupedEstimator.__name__ + "_nofallback", clf)
+    test_fn(GroupedPredictor.__name__ + "_nofallback", clf)
 
 
 def test_chickweight_df1_keys():
     df = load_chicken(as_frame=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
+    mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
 
 
 def test_chickweight_df2_keys():
     df = load_chicken(as_frame=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="chick")
+    mod = GroupedPredictor(estimator=LinearRegression(), groups="chick")
     mod.fit(df[["time", "chick"]], df["weight"])
     assert set(mod.estimators_.keys()) == set(range(1, 50 + 1))
 
 
 def test_chickweight_can_do_fallback():
     df = load_chicken(as_frame=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
+    mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
@@ -69,7 +69,7 @@ def test_chickweight_can_do_fallback():
 
 def test_fallback_can_raise_error():
     df = load_chicken(as_frame=True)
-    mod = GroupedEstimator(
+    mod = GroupedPredictor(
         estimator=LinearRegression(),
         groups="diet",
         use_global_model=False,
@@ -84,7 +84,7 @@ def test_fallback_can_raise_error():
 
 def test_chickweight_raise_error_cols_missing1():
     df = load_chicken(as_frame=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
+    mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
     with pytest.raises(ValueError) as e:
         mod.predict(df[["time", "chick"]])
@@ -93,7 +93,7 @@ def test_chickweight_raise_error_cols_missing1():
 
 def test_chickweight_raise_error_cols_missing2():
     df = load_chicken(as_frame=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups="diet")
+    mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
     with pytest.raises(ValueError) as e:
         mod.predict(df[["diet", "chick"]])
@@ -102,7 +102,7 @@ def test_chickweight_raise_error_cols_missing2():
 
 def test_chickweight_np_keys():
     df = load_chicken(as_frame=True)
-    mod = GroupedEstimator(estimator=LinearRegression(), groups=[1, 2])
+    mod = GroupedPredictor(estimator=LinearRegression(), groups=[1, 2])
     mod.fit(df[["time", "chick", "diet"]].values, df["weight"].values)
     # there should still only be 50 groups on this dataset
     assert len(mod.estimators_.keys()) == 50
@@ -119,8 +119,8 @@ def test_chickweigt_string_groups():
     y = df["weight"]
 
     # This should NOT raise errors
-    GroupedEstimator(LinearRegression(), groups=["diet"]).fit(X, y).predict(X)
-    GroupedEstimator(LinearRegression(), groups=1).fit(X_np, y).predict(X_np)
+    GroupedPredictor(LinearRegression(), groups=["diet"]).fit(X, y).predict(X)
+    GroupedPredictor(LinearRegression(), groups=1).fit(X_np, y).predict(X_np)
 
 
 @pytest.fixture
@@ -152,7 +152,7 @@ def test_constant_shrinkage(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    shrink_est = GroupedEstimator(
+    shrink_est = GroupedPredictor(
         DummyRegressor(),
         ["Planet", "Country", "City"],
         shrinkage="constant",
@@ -179,7 +179,7 @@ def test_relative_shrinkage(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    shrink_est = GroupedEstimator(
+    shrink_est = GroupedPredictor(
         DummyRegressor(),
         ["Planet", "Country", "City"],
         shrinkage="relative",
@@ -205,7 +205,7 @@ def test_min_n_obs_shrinkage(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    shrink_est = GroupedEstimator(
+    shrink_est = GroupedPredictor(
         DummyRegressor(),
         ["Planet", "Country", "City"],
         shrinkage="min_n_obs",
@@ -227,7 +227,7 @@ def test_min_n_obs_shrinkage_too_little_obs(shrinkage_data):
 
     too_big_n_obs = X.shape[0] + 1
 
-    shrink_est = GroupedEstimator(
+    shrink_est = GroupedPredictor(
         DummyRegressor(),
         ["Planet", "Country", "City"],
         shrinkage="min_n_obs",
@@ -253,7 +253,7 @@ def test_custom_shrinkage(shrinkage_data):
         n = len(group_sizes)
         return np.repeat(1 / n, n)
 
-    shrink_est = GroupedEstimator(
+    shrink_est = GroupedPredictor(
         DummyRegressor(),
         ["Planet", "Country", "City"],
         shrinkage=shrinkage_func,
@@ -283,7 +283,7 @@ def test_custom_shrinkage_wrong_return_type(shrinkage_data):
         return group_sizes
 
     with pytest.raises(ValueError) as e:
-        shrink_est = GroupedEstimator(
+        shrink_est = GroupedPredictor(
             DummyRegressor(),
             ["Planet", "Country", "City"],
             shrinkage=shrinkage_func,
@@ -305,7 +305,7 @@ def test_custom_shrinkage_wrong_length(shrinkage_data):
         return np.repeat(1 / n, n + 1)
 
     with pytest.raises(ValueError) as e:
-        shrink_est = GroupedEstimator(
+        shrink_est = GroupedPredictor(
             DummyRegressor(),
             ["Planet", "Country", "City"],
             shrinkage=shrinkage_func,
@@ -326,7 +326,7 @@ def test_custom_shrinkage_raises_error(shrinkage_data):
         raise KeyError("This function is bad and you should feel bad")
 
     with pytest.raises(ValueError) as e:
-        shrink_est = GroupedEstimator(
+        shrink_est = GroupedPredictor(
             DummyRegressor(),
             ["Planet", "Country", "City"],
             shrinkage=shrinkage_func,
@@ -347,7 +347,7 @@ def test_invalid_shrinkage(shrinkage_data, wrong_func):
     X, y = df.drop(columns="Target"), df["Target"]
 
     with pytest.raises(ValueError) as e:
-        shrink_est = GroupedEstimator(
+        shrink_est = GroupedPredictor(
             DummyRegressor(),
             ["Planet", "Country", "City"],
             shrinkage=wrong_func,
@@ -364,7 +364,7 @@ def test_global_model_shrinkage(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    shrink_est_without_global = GroupedEstimator(
+    shrink_est_without_global = GroupedPredictor(
         DummyRegressor(),
         ["Planet", "Country", "City"],
         shrinkage="min_n_obs",
@@ -372,7 +372,7 @@ def test_global_model_shrinkage(shrinkage_data):
         min_n_obs=2,
     )
 
-    shrink_est_with_global = GroupedEstimator(
+    shrink_est_with_global = GroupedPredictor(
         DummyRegressor(),
         ["Country", "City"],
         value_columns=[],
@@ -394,7 +394,7 @@ def test_shrinkage_single_group(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    shrink_est = GroupedEstimator(
+    shrink_est = GroupedPredictor(
         DummyRegressor(),
         "Country",
         value_columns=[],
@@ -423,7 +423,7 @@ def test_shrinkage_single_group_no_global(shrinkage_data):
     X, y = df.drop(columns="Target"), df["Target"]
 
     with pytest.raises(ValueError) as e:
-        shrink_est = GroupedEstimator(
+        shrink_est = GroupedPredictor(
             DummyRegressor(),
             "Country",
             value_columns=[],
@@ -447,7 +447,7 @@ def test_unexisting_shrinkage_func(shrinkage_data):
     with pytest.raises(ValueError) as e:
         unexisting_func = "some_highly_unlikely_function_name"
 
-        shrink_est = GroupedEstimator(
+        shrink_est = GroupedPredictor(
             estimator=DummyRegressor(),
             groups=["Planet", "Country"],
             shrinkage=unexisting_func,
@@ -463,7 +463,7 @@ def test_unseen_groups_shrinkage(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    shrink_est = GroupedEstimator(
+    shrink_est = GroupedPredictor(
         DummyRegressor(), ["Planet", "Country", "City"], shrinkage="constant", alpha=0.1
     )
 
@@ -483,7 +483,7 @@ def test_predict_missing_group_column(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    shrink_est = GroupedEstimator(
+    shrink_est = GroupedPredictor(
         DummyRegressor(),
         ["Planet", "Country", "City"],
         shrinkage="constant",
@@ -506,7 +506,7 @@ def test_predict_missing_value_column(shrinkage_data):
     X, y = df.drop(columns="Target"), df["Target"]
     X = X.assign(**{value_column: np.random.normal(size=X.shape[0])})
 
-    shrink_est = GroupedEstimator(
+    shrink_est = GroupedPredictor(
         LinearRegression(),
         ["Planet", "Country", "City"],
         shrinkage="constant",
@@ -524,7 +524,7 @@ def test_predict_missing_value_column(shrinkage_data):
 def test_bad_shrinkage_value_error():
     with pytest.raises(ValueError) as e:
         df = load_chicken(as_frame=True)
-        mod = GroupedEstimator(
+        mod = GroupedPredictor(
             estimator=LinearRegression(), groups="diet", shrinkage="dinosaurhead"
         )
         mod.fit(df[["time", "diet"]], df["weight"])
