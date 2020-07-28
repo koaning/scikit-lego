@@ -1,7 +1,6 @@
 import pytest
 import pandas as pd
 import numpy as np
-from sklearn.utils import estimator_checks
 from sklearn.linear_model import LinearRegression
 from sklearn.dummy import DummyRegressor
 
@@ -9,27 +8,21 @@ from sklego.common import flatten
 from sklego.meta import GroupedPredictor
 from sklego.datasets import load_chicken
 
+from tests.conftest import nonmeta_checks, general_checks, select_tests
+
 
 @pytest.mark.parametrize(
     "test_fn",
-    flatten(
-        [
-            estimator_checks.check_fit_score_takes_y,
-            estimator_checks.check_sample_weights_invariance,
-            estimator_checks.check_estimators_empty_data_messages,
-            estimator_checks.check_estimators_nan_inf,
-            estimator_checks.check_estimators_overwrite_params,
-            estimator_checks.check_estimators_pickle,
-            estimator_checks.check_fit2d_1sample,
-            # estimator_checks.check_fit1d not tested because in 1d we cannot have both groups and data
-            estimator_checks.check_dont_overwrite_parameters,
-            estimator_checks.check_sample_weights_invariance,
-            estimator_checks.check_get_params_invariance,
-            estimator_checks.check_sample_weights_list,
-            estimator_checks.check_sample_weights_pandas_series,
-            estimator_checks.check_set_params,
+    select_tests(
+        flatten([nonmeta_checks, general_checks]),
+        exclude=[
+            # Nonsense checks because we always need at least two columns (group and value)
+            "check_fit1d",
+            "check_fit2d_predict1d",
+            "check_fit2d_1feature",
+            "check_transformer_data_not_an_array",
         ]
-    ),
+    )
 )
 def test_estimator_checks(test_fn):
     clf = GroupedPredictor(
