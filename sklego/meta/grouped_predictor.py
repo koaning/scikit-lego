@@ -178,6 +178,7 @@ class GroupedPredictor(BaseEstimator):
         estimators = {}
 
         for grouping_colnames in self.group_colnames_hierarchical_:
+            # Fit a grouped estimator to each (sub)group hierarchically
             estimators.update(
                 self.__fit_grouped_estimator(
                     X_group, X_value, y, columns=grouping_colnames
@@ -316,15 +317,13 @@ class GroupedPredictor(BaseEstimator):
         :return: array, shape=(n_samples,) the predicted data
         """
 
+        check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
+
         X_group, X_value = _split_groups_and_values(
             X, self.groups, min_value_cols=0, **self._check_kwargs
         )
 
         X_group = self.__add_shrinkage_column(X_group)
-
-        check_is_fitted(
-            self, ["estimators_", "groups_", "fallback_",],
-        )
 
         if self.shrinkage is None:
             return self.__predict_groups(X_group, X_value)
