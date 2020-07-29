@@ -5,6 +5,9 @@ import logging
 
 from sklego.pandas_utils import (
     log_step,
+    log_shape,
+    log_names,
+    log_dtypes,
     add_lags,
     _add_lagged_pandas_columns,
     _add_lagged_numpy_columns,
@@ -60,14 +63,14 @@ def test_add_lagged_numpy_columns(test_X):
         _add_lagged_numpy_columns(test_X, ["test"], 1, True)
 
 
-def test_logging(caplog, test_df):
+def test_logging_shape(caplog, test_df):
     caplog.clear()
 
-    @log_step
+    @log_step(extra_log_func=log_shape)
     def do_something(df):
         return df.drop(0)
 
-    @log_step
+    @log_step(extra_log_func=log_shape)
     def do_nothing(df, *args, **kwargs):
         return df
 
@@ -78,3 +81,5 @@ def test_logging(caplog, test_df):
         "[do_nothing(df, kwargs = {'a': '1'})] n_obs=3 n_col=2 "
     )
     assert caplog.messages[2].startswith("[do_something(df)] n_obs=2 n_col=2 ")
+
+

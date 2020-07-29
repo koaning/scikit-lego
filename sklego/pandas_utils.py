@@ -20,7 +20,7 @@ def log_names(df):
         "{}".format(name) for name in df.columns
     )
 
-    return names_str
+    return f"columns=[{names_str}]"
 
 
 def log_dtypes(df):
@@ -29,7 +29,7 @@ def log_dtypes(df):
         "({}, {})".format(name, dtype) for name, dtype in types_dict.items()
     )
 
-    return dtypes_str
+    return f"types=[{dtypes_str}]"
 
 
 def log_step(func=None, *, extra_log_func=log_shape, level=logging.INFO):
