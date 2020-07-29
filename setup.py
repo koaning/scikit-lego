@@ -23,7 +23,7 @@ docs_packages = [
 test_packages = [
     "flake8>=3.6.0",
     "nbval>=0.9.1",
-    "pytest>=4.0.2",
+    "pytest==5.4.1",
     "pytest-xdist>=1.32.0",
     "black>=19.3b0",
     "pytest-cov>=2.6.1",
