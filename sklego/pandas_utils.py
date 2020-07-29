@@ -32,44 +32,46 @@ def log_dtypes(df):
     return f"types=[{dtypes_str}]"
 
 
-def log_step(func=None, *, extra_log_func=log_shape, level=logging.INFO):
+def log_step_factory(extra_log_func=None, level=logging.INFO):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
 
     :Example:
-    >>> @log_step
-    ... def remove_outliers(df, min_obs=5):
-    ...     pass
-
-    >>> @log_step(level=logging.INFO)
+    >>> @log_step_factory(extra_log_func=log_shape)
     ... def remove_outliers(df, min_obs=5):
     ...     pass
 
     """
-    if func is None:
-        return partial(log_step, level=level)
 
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        logger = logging.getLogger(sys.modules[func.__module__].__name__)
+    def log_step(func=None):
 
-        tic = dt.datetime.now()
-        result = func(*args, **kwargs)
-        time_taken = str(dt.datetime.now() - tic)
-        func_args = inspect.signature(func).bind(*args, **kwargs).arguments
-        func_args_str = "".join(
-            ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
-        )
-        extra_string = extra_log_func(result) if extra_log_func else ""
-        logger.log(
-            level,
-            f"[{func.__name__}(df{func_args_str})] "
-            f"{extra_string} time={time_taken}",
-        )
+        if func is None:
+            return partial(log_step, level=level)
 
-        return result
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            logger = logging.getLogger(sys.modules[func.__module__].__name__)
 
-    return wrapper
+            tic = dt.datetime.now()
+            result = func(*args, **kwargs)
+            time_taken = str(dt.datetime.now() - tic)
+            func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+            func_args_str = "".join(
+                ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
+            )
+            extra_string = extra_log_func(result) if extra_log_func else ""
+            print(extra_string, extra_log_func)
+            logger.log(
+                level,
+                f"[{func.__name__}(df{func_args_str})] "
+                f"{extra_string} time={time_taken}",
+            )
+
+            return result
+
+        return wrapper
+
+    return log_step
 
 
 def add_lags(X, cols, lags, drop_na=True):
@@ -156,7 +158,8 @@ def _add_lagged_numpy_columns(X, cols, lags, drop_na):
     if not all([col < X.shape[1] for col in cols]):
         raise KeyError("The column does not exist")
 
-    combos = (shift(X[:, col], -lag, cval=np.NaN) for col in cols for lag in lags)
+    combos = (shift(X[:, col], -lag, cval=np.NaN) for col in cols for lag in
+              lags)
 
     # In integer-based ndarrays, NaN values are represented as
     # -9223372036854775808, so we convert back and forth from
@@ -192,7 +195,8 @@ def _add_lagged_pandas_columns(df, cols, lags, drop_na):
         raise KeyError("The column does not exist")
 
     combos = (
-        df[col].shift(-lag).rename(col + str(lag)) for col in cols for lag in lags
+        df[col].shift(-lag).rename(col + str(lag)) for col in cols for lag in
+    lags
     )
 
     answer = pd.concat([df, *combos], axis=1)
