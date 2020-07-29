@@ -26,7 +26,7 @@ def log_names(df):
 def log_dtypes(df):
     types_dict = dict(df.dtypes.items())
     dtypes_str = ", ".join(
-        "({}, {})".format(name, type) for name, type in types_dict.items()
+        "({}, {})".format(name, dtype) for name, dtype in types_dict.items()
     )
 
     return dtypes_str
