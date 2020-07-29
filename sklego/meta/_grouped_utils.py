@@ -20,7 +20,8 @@ def _split_groups_and_values(
             X_value = X.drop(columns=groups).values
         else:
             X_group = pd.DataFrame(X[:, as_list(groups)])
-            X_value = np.delete(X, as_list(groups), axis=1)
+            pos_indexes = range(X.shape[1])
+            X_value = np.delete(X, [pos_indexes[g] for g in as_list(groups)], axis=1)
     except (KeyError, IndexError):
         raise ValueError(f"Could not drop groups {groups} from columns of X")
 
