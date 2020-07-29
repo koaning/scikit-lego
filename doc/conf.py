@@ -14,6 +14,7 @@
 #
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+from sklego import __version__
 
 
 # -- Project information -----------------------------------------------------
@@ -25,7 +26,7 @@ author = 'Vincent, Matthijs and ManyOthers[tm]'
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '0.3.0'
+release = __version__
 
 # -- General configuration ---------------------------------------------------
 
