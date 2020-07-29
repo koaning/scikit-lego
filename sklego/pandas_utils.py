@@ -158,8 +158,7 @@ def _add_lagged_numpy_columns(X, cols, lags, drop_na):
     if not all([col < X.shape[1] for col in cols]):
         raise KeyError("The column does not exist")
 
-    combos = (shift(X[:, col], -lag, cval=np.NaN) for col in cols for lag in
-              lags)
+    combos = (shift(X[:, col], -lag, cval=np.NaN) for col in cols for lag in lags)
 
     # In integer-based ndarrays, NaN values are represented as
     # -9223372036854775808, so we convert back and forth from
@@ -195,8 +194,7 @@ def _add_lagged_pandas_columns(df, cols, lags, drop_na):
         raise KeyError("The column does not exist")
 
     combos = (
-        df[col].shift(-lag).rename(col + str(lag)) for col in cols for lag in
-    lags
+        df[col].shift(-lag).rename(col + str(lag)) for col in cols for lag in lags
     )
 
     answer = pd.concat([df, *combos], axis=1)
