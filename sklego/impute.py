@@ -5,28 +5,10 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
 
 
-def mask_array(array: np.ndarray, p: float = 0.1):
-    """Randomly make a fraction of entries go missing
-
-    Args:
-        array (np.ndarray): Input array
-        p (float, optional): Fraction of missings. Defaults to 0.1.
-    """
-    array = array.copy()
-    mask_indices = np.random.choice([True, False], size=array.shape, p=(p, 1 - p))
-    array[mask_indices] = np.nan
-    return array
-
-
-def get_X(n=100, k=5, p=0.1):
-    """Get some test data for SVDImputed"""
-    np.random.seed(42)
-    return mask_array(np.random.normal(0, 1, (n, k)), p=p)
-
-
 class SVDImputer(BaseEstimator, TransformerMixin):
-    def __init__(self, k_rank=1):
+    def __init__(self, k_rank=1, use_train=True):
         self.k_rank = k_rank
+        self.use_train = use_train
 
     def __validate(self, X):
         X = check_array(X, force_all_finite=False)
@@ -40,17 +22,18 @@ class SVDImputer(BaseEstimator, TransformerMixin):
                 f"k_rank equal to number of columns of X ({self.k_rank}), result is same as mean impute"
             )
 
+        return X
+
     @staticmethod
     def _fill_missings(X):
         X = X.copy()
         # Missing indices
-        inds = np.where(np.isnan(X))
+        missing_idx = np.where(np.isnan(X))
 
-        # TODO: Mean? Or maybe median?
         means = np.nanmean(X, axis=0)
 
-        X[inds] = np.take(means, inds[1])
-        return inds, X
+        X[missing_idx] = np.take(means, missing_idx[1])
+        return missing_idx, X
 
     def _get_kth_approximation(self, X):
         k_rank = self.k_rank
@@ -62,19 +45,43 @@ class SVDImputer(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
         # X has shape (n, p)
-        self.__validate(X)
+        X = self.__validate(X)
 
-        inds, X = self._fill_missings(X)
-
-        while True:
-            prev_missings = X[inds]
-            X = self._get_kth_approximation(X)
-
-            if np.allclose(prev_missings, X[inds]):
-                break
+        # Store X_ since we want to use it in transform
+        self.X_ = X if self.use_train else None
 
         return self
 
+    def _transform(self, X):
+        """Actual implementation of the imputation"""
+        missing_idx, X = self._fill_missings(X)
+
+        X_transformed = X.copy()
+
+        while True:
+            prev_missings = X[missing_idx]
+            X = self._get_kth_approximation(X)
+
+            if np.allclose(prev_missings, X[missing_idx]):
+                break
+
+        X_transformed[missing_idx] = X[missing_idx]
+
+        return X_transformed
+
     def transform(self, X):
-        # TODO: Implement transform
-        return X
+        X = self.__validate(X)
+
+        transform_data_length = len(X)
+
+        if self.use_train:
+            X = np.concatenate([self.X_, X], axis=0)
+
+        X_transformed = self._transform(X)
+
+        return X_transformed[-transform_data_length:, :]
+
+    def fit_transform(self, X, y=None):
+        X = self.__validate(X)
+
+        return self._transform(X)
