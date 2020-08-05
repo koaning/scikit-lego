@@ -2,6 +2,7 @@ import itertools as it
 
 import numpy as np
 import pytest
+from sklearn.decomposition import TruncatedSVD
 
 from sklego.common import flatten
 from sklego.impute import SVDImputer
@@ -19,10 +20,6 @@ from tests.conftest import nonmeta_checks, general_checks, transformer_checks, s
             "check_estimators_nan_inf",
             # Transforming subsets is by design different than designing all at once
             "check_methods_subset_invariance",
-            # Nonsense checks because we always need at least two columns (group and value)
-            # "check_fit1d",
-            # "check_fit2d_1feature",
-            # "check_transformer_data_not_an_array",
         ],
     ),
 )
@@ -44,12 +41,12 @@ def random_x_with_missings(request):
 
 
 @pytest.fixture(
-    scope="module", params=[_ for _ in it.product(n_vals, (1, ), (0.01, 0.05, 0.1))]
+    scope="module", params=[_ for _ in it.product((10, 100, 5000), (1, -1, 2), (0.01, 0.05, 0.1))]
 )
 def random_x_collinear(request):
     n, factor, p = request.param
     np.random.seed(42)
-    X1 = np.random.normal(0, 2, n)
+    X1 = np.random.normal(0, 2, size=n)
     X2 = factor * X1
 
     mask_indices = np.random.choice([True, False], size=X2.shape, p=(p, 1 - p))
@@ -74,6 +71,21 @@ def test_get_kth_approximation_value(random_xy_dataset_regr):
         assert np.allclose(svdi._get_kth_approximation(X), X, atol=1.e-5)
     else:
         assert np.allclose(svdi._get_kth_approximation(X), X, rtol=1.e-4)
+
+
+def test_get_kth_approximation_compare_sklearn(random_x_with_missings):
+    X = random_x_with_missings
+    svdi = SVDImputer(X.shape[1])
+
+    _, X = svdi._fill_missings(X)
+
+    for k_rank in range(1, X.shape[1]):
+        svdi = SVDImputer(k_rank)
+        tsvd = TruncatedSVD(k_rank)
+        assert np.allclose(
+            svdi._get_kth_approximation(X),
+            tsvd.inverse_transform(tsvd.fit_transform(X))
+        )
 
 
 def test_nonmissings_unchanged(random_x_with_missings):
