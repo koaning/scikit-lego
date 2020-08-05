@@ -6,9 +6,10 @@ from sklearn.utils import check_array
 
 
 class SVDImputer(BaseEstimator, TransformerMixin):
-    def __init__(self, k_rank=1, use_train=True):
+    def __init__(self, k_rank=1, use_train=True, replace_row=False):
         self.k_rank = k_rank
         self.use_train = use_train
+        self.replace_row = replace_row
 
     def __validate(self, X):
         X = check_array(X, force_all_finite=False)
@@ -28,11 +29,11 @@ class SVDImputer(BaseEstimator, TransformerMixin):
     def _fill_missings(X):
         X = X.copy()
         # Missing indices
-        missing_idx = np.where(np.isnan(X))
+        missing_idx = np.isnan(X)
 
         means = np.nanmean(X, axis=0)
 
-        X[missing_idx] = np.take(means, missing_idx[1])
+        X[np.where(missing_idx)] = np.take(means, np.where(missing_idx)[1])
         return missing_idx, X
 
     def _get_kth_approximation(self, X):
@@ -65,7 +66,11 @@ class SVDImputer(BaseEstimator, TransformerMixin):
             if np.allclose(prev_missings, X[missing_idx]):
                 break
 
-        X_transformed[missing_idx] = X[missing_idx]
+        if self.replace_row:
+            rows = missing_idx.sum(axis=1) > 0
+            X_transformed[rows, :] = X[rows, :]
+        else:
+            X_transformed[missing_idx] = X[missing_idx]
 
         return X_transformed
 
