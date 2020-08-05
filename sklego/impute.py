@@ -2,14 +2,16 @@ import warnings
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_array
 
 
 class SVDImputer(BaseEstimator, TransformerMixin):
-    def __init__(self, k_rank=1, use_train=True, replace_row=False):
+    def __init__(self, k_rank=1, use_train=True, replace_row=False, normalize=True):
         self.k_rank = k_rank
         self.use_train = use_train
         self.replace_row = replace_row
+        self.normalize = normalize
 
     def __validate(self, X):
         X = check_array(X, force_all_finite=False)
@@ -59,11 +61,15 @@ class SVDImputer(BaseEstimator, TransformerMixin):
 
         X_transformed = X.copy()
 
+        scaler = StandardScaler(with_mean=~self.normalize, with_std=~self.normalize)
+        X = scaler.fit_transform(X)
+
         while True:
             prev_missings = X[missing_idx]
             X = self._get_kth_approximation(X)
 
             if np.allclose(prev_missings, X[missing_idx]):
+                X = scaler.inverse_transform(X)
                 break
 
         if self.replace_row:
