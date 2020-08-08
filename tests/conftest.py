@@ -76,6 +76,13 @@ outlier_checks = (
 )
 
 
+def select_tests(include, exclude=[]):
+    """Return an iterable of include with all tests whose name is not in exclude"""
+    for test in include:
+        if test.__name__ not in exclude:
+            yield test
+
+
 @pytest.fixture(
     scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
 )
