@@ -1,12 +1,13 @@
 import numpy as np
 from sklearn.base import BaseEstimator, OutlierMixin
+from sklearn.neighbors._base import UnsupervisedMixin
 from sklearn.utils.validation import (
     check_is_fitted,
     check_array
 )
 
 
-class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
+class RegressionOutlierDetector(BaseEstimator, OutlierMixin, UnsupervisedMixin):
     """
     Morphs a regression model into one that can detect outliers. We will try
     to predict `column` in X.
@@ -55,7 +56,7 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         Fit the data after adapting the same weight.
 
         :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :param y: array-like, shape=(n_samples,) training data.
+        :param y: array-like, shape=(n_samples,) ignored
         :return: Returns an instance of self.
         """
         X = check_array(X, estimator=self)
@@ -66,13 +67,15 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         self.sd_ = np.std(self.estimator_.predict(X) - y)
         return self
 
-    def predict(self, X):
+    def fit_predict(self, X, y=None):
         """
         Predict new data.
 
         :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :param y: array-like, shape=(n_samples,) ignored
         :return: array, shape=(n_samples,) the predicted data
         """
+        self.fit(X)
         check_is_fitted(self, ['estimator_', 'sd_'])
         X, y = self.to_x_y(X)
         preds = self.estimator_.predict(X)

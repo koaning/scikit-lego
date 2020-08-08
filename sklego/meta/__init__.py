@@ -6,6 +6,7 @@ __all__ = [
     'OutlierRemover',
     'SubjectiveClassifier',
     'Thresholder',
+    'RegressionOutlierDetector'
 ]
 
 from .confusion_balancer import ConfusionBalancer
@@ -15,3 +16,4 @@ from .grouped_estimator import GroupedEstimator
 from .outlier_remover import OutlierRemover
 from .subjective_classifier import SubjectiveClassifier
 from .thresholder import Thresholder
+from .regression_outlier_detector import RegressionOutlierDetector
