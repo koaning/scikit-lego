@@ -106,7 +106,8 @@ Here's a list of features that this library currently offers:
 - `sklego.meta.DecayEstimator` adds decay to the sample_weight that the model accepts
 - `sklego.meta.EstimatorTransformer` adds a model output as a feature
 - `sklego.meta.OutlierClassifier` turns outlier models into classifiers for gridsearch
-- `sklego.meta.GroupedEstimator` can split the data into runs and run a model on each
+- `sklego.meta.GroupedPredictor` can split the data into runs and run a model on each
+- `sklego.meta.GroupedTransformer` can split the data into runs and run a transformer on each
 - `sklego.meta.SubjectiveClassifier` experimental feature to add a prior to your classifier
 - `sklego.meta.Thresholder` meta model that allows you to gridsearch over the threshold
 - `sklego.preprocessing.ColumnCapper` limits extreme values of the model features
