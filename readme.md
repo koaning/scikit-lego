@@ -110,6 +110,7 @@ Here's a list of features that this library currently offers:
 - `sklego.meta.GroupedTransformer` can split the data into runs and run a transformer on each
 - `sklego.meta.SubjectiveClassifier` experimental feature to add a prior to your classifier
 - `sklego.meta.Thresholder` meta model that allows you to gridsearch over the threshold
+- `sklego.meta.RegressionOutlierDetector` meta model that finds outliers by adding a threshold to regression
 - `sklego.preprocessing.ColumnCapper` limits extreme values of the model features
 - `sklego.preprocessing.ColumnDropper` drops a column from pandas
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
