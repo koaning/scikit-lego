@@ -1,7 +1,7 @@
 __all__ = [
     "IntervalEncoder",
     "RandomAdder",
-    "Patsytransformer",
+    "PatsyTransformer",
     "ColumnSelector",
     "PandasTypeSelector",
     "ColumnDropper",
@@ -9,7 +9,9 @@ __all__ = [
     "OrthogonalTransformer",
     "RepeatingBasisFunction",
     "ColumnCapper",
-    "IdentityTransformer"
+    "IdentityTransformer",
+    "OutlierRemover",
+    "DictMapper",
 ]
 
 from .intervalencoder import IntervalEncoder
@@ -20,3 +22,5 @@ from .projections import InformationFilter, OrthogonalTransformer
 from .repeatingbasis import RepeatingBasisFunction
 from .columncapper import ColumnCapper
 from .identitytransformer import IdentityTransformer
+from .outlier_remover import OutlierRemover
+from .dictmapper import DictMapper
