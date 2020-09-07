@@ -1,5 +1,4 @@
 [![Build status](https://github.com/koaning/scikit-lego/workflows/Unit%20Tests/badge.svg)](https://github.com/{github_id}/{repository}/workflows/{workflow_name}/badge.svg)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/00078a7f-f806-45ae-9a4e-44248f9eba28/deploy-status)](https://app.netlify.com/sites/scikit-lego/deploys)
 [![Downloads](https://pepy.tech/badge/scikit-lego/month)](https://pepy.tech/project/scikit-lego/month)
 [![Version](https://img.shields.io/pypi/v/scikit-lego)](https://pypi.org/project/scikit-lego/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-lego.svg)](https://anaconda.org/conda-forge/scikit-lego)
