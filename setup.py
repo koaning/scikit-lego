@@ -27,6 +27,7 @@ test_packages = [
     "nbval>=0.9.1",
     "pytest==5.4.1",
     "pytest-xdist>=1.32.0",
+    "execnet==1.6.1",  # https://github.com/pytest-dev/pytest-xdist/issues/460
     "black>=19.3b0",
     "pytest-cov>=2.6.1",
     "pytest-mock>=1.6.3",
