@@ -31,7 +31,7 @@ The same holds with lego. LEGO® is a trademark of the LEGO Group of companies w
 Install `scikit-lego` via pip with
 
 ```bash
-pip install scikit-lego
+python -m pip install scikit-lego
 ```
 
 Via [conda](https://conda.io/projects/conda/en/latest/) with
@@ -43,7 +43,7 @@ conda install -c conda-forge scikit-lego
 Alternatively, to edit and contribute you can fork/clone and run:
 
 ```bash
-pip install -e ".[dev]"
+python -m pip install -e ".[dev]"
 python setup.py develop
 ```
 
