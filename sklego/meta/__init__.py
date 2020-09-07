@@ -8,6 +8,7 @@ __all__ = [
     "OutlierRemover",
     "SubjectiveClassifier",
     "Thresholder",
+    "RegressionOutlierDetector",
     "OutlierClassifier",
 ]
 
@@ -20,4 +21,5 @@ from .grouped_transformer import GroupedTransformer
 from .outlier_remover import OutlierRemover
 from .subjective_classifier import SubjectiveClassifier
 from .thresholder import Thresholder
+from .regression_outlier_detector import RegressionOutlierDetector
 from .outlier_classifier import OutlierClassifier
