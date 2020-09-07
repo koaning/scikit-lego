@@ -22,17 +22,16 @@ docs_packages = [
     "nbsphinx>=0.4.2",
     "recommonmark==0.6.0",
 ]
-test_packages = [
+test_packages = all_extras + [  # we need extras packages for their tests
     "flake8>=3.6.0",
     "nbval>=0.9.1",
     "pytest==5.4.1",
     "pytest-xdist>=1.32.0",
-    "execnet==1.6.1",  # https://github.com/pytest-dev/pytest-xdist/issues/460
     "black>=19.3b0",
     "pytest-cov>=2.6.1",
     "pytest-mock>=1.6.3",
     "pre-commit>=1.18.3",
-] + all_extras  # we need extras packages for their tests
+]
 util_packages = [
     "matplotlib>=3.0.2",
     "plotnine>=0.5.1",
