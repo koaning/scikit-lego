@@ -86,5 +86,6 @@ Usage
    pandas_pipeline.ipynb
    contributors
    rstudio.md
+   this.md
 
    api/modules
