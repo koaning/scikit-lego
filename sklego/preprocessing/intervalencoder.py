@@ -1,5 +1,11 @@
+try:
+    import cvxpy as cp
+except ImportError:
+    from sklego.notinstalled import NotInstalledPackage
+
+    cp = NotInstalledPackage("cvxpy")
+
 import numpy as np
-import cvxpy as cp
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import check_is_fitted
