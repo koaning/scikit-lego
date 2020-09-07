@@ -14,6 +14,8 @@ base_packages = [
     "umap-learn>=0.4.3"
 ]
 cvxpy = ["cvxpy>=1.0.24"]
+all_extras = cvxpy
+
 docs_packages = [
     "sphinx>=1.8.5",
     "sphinx_rtd_theme>=0.4.3",
@@ -29,7 +31,7 @@ test_packages = [
     "pytest-cov>=2.6.1",
     "pytest-mock>=1.6.3",
     "pre-commit>=1.18.3",
-]
+] + all_extras  # we need extras packages for their tests
 util_packages = [
     "matplotlib>=3.0.2",
     "plotnine>=0.5.1",
@@ -54,7 +56,7 @@ setup(
     long_description=read("readme.md"),
     long_description_content_type="text/markdown",
     install_requires=base_packages,
-    extras_require={"cvxpy": cvxpy, "docs": docs_packages, "dev": dev_packages, "test": test_packages},
+    extras_require={"cvxpy": cvxpy, "all": all_extras, "docs": docs_packages, "dev": dev_packages, "test": test_packages},
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
