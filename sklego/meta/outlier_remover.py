@@ -20,7 +20,6 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
 
     :param outlier_detector: must implement `fit` and `predict` methods
     :param refit: If True, fits the estimator during pipeline.fit().
-
     """
 
     def __init__(self, outlier_detector, refit=True):
