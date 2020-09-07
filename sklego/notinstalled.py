@@ -26,7 +26,9 @@ class NotInstalledPackage:
             (
                 f"Install extra requirement {package_name} using "
                 + f"`python -m pip install scikit-lego[{extra_name}]` or "
-                + "`python -m pip install scikit-lego[all]`"
+                + "`python -m pip install scikit-lego[all]`. "
+                + "For more information, check the 'Dependency installs' section of the installation docs at "
+                + "https://scikit-lego.readthedocs.io/en/latest/install.html"
             )
             if extra_name
             else ""
