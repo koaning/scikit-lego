@@ -10,21 +10,23 @@ base_packages = [
     "pandas>=0.23.4",
     "patsy>=0.5.1",
     "autograd>=1.2",
-    "cvxpy>=1.0.24",
     "Deprecated>=1.2.6",
     "umap-learn>=0.4.3"
 ]
+cvxpy_packages = ["cvxpy>=1.0.24"]
+all_packages = cvxpy_packages
+
 docs_packages = [
-    "sphinx>=1.8.5",
+    "sphinx==1.8.5",
     "sphinx_rtd_theme>=0.4.3",
     "nbsphinx>=0.4.2",
     "recommonmark==0.6.0",
 ]
-test_packages = [
+test_packages = all_packages + [  # we need extras packages for their tests
     "flake8>=3.6.0",
     "nbval>=0.9.1",
     "pytest==5.4.1",
-    "pytest-xdist>=1.32.0",
+    "pytest-xdist==1.34.0",
     "black>=19.3b0",
     "pytest-cov>=2.6.1",
     "pytest-mock>=1.6.3",
@@ -54,7 +56,14 @@ setup(
     long_description=read("readme.md"),
     long_description_content_type="text/markdown",
     install_requires=base_packages,
-    extras_require={"docs": docs_packages, "dev": dev_packages, "test": test_packages},
+    extras_require={
+        "base": base_packages,
+        "cvxpy": cvxpy_packages,
+        "all": all_packages,
+        "docs": docs_packages,
+        "dev": dev_packages,
+        "test": test_packages,
+    },
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
