@@ -1,5 +1,4 @@
 [![Build status](https://github.com/koaning/scikit-lego/workflows/Unit%20Tests/badge.svg)](https://github.com/{github_id}/{repository}/workflows/{workflow_name}/badge.svg)
-[![Documentation Status](https://readthedocs.org/projects/scikit-lego/badge/?version=latest)](https://scikit-lego.readthedocs.io/en/latest/?badge=latest)
 [![Downloads](https://pepy.tech/badge/scikit-lego/month)](https://pepy.tech/project/scikit-lego/month)
 [![Version](https://img.shields.io/pypi/v/scikit-lego)](https://pypi.org/project/scikit-lego/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-lego.svg)](https://anaconda.org/conda-forge/scikit-lego)
@@ -31,7 +30,7 @@ The same holds with lego. LEGO® is a trademark of the LEGO Group of companies w
 Install `scikit-lego` via pip with
 
 ```bash
-pip install scikit-lego
+python -m pip install scikit-lego
 ```
 
 Via [conda](https://conda.io/projects/conda/en/latest/) with
@@ -43,7 +42,7 @@ conda install -c conda-forge scikit-lego
 Alternatively, to edit and contribute you can fork/clone and run:
 
 ```bash
-pip install -e ".[dev]"
+python -m pip install -e ".[dev]"
 python setup.py develop
 ```
 
@@ -110,11 +109,12 @@ Here's a list of features that this library currently offers:
 - `sklego.meta.GroupedTransformer` can split the data into runs and run a transformer on each
 - `sklego.meta.SubjectiveClassifier` experimental feature to add a prior to your classifier
 - `sklego.meta.Thresholder` meta model that allows you to gridsearch over the threshold
+- `sklego.meta.RegressionOutlierDetector` meta model that finds outliers by adding a threshold to regression
 - `sklego.preprocessing.ColumnCapper` limits extreme values of the model features
 - `sklego.preprocessing.ColumnDropper` drops a column from pandas
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
 - `sklego.preprocessing.InformationFilter` transformer that can de-correlate features
-- `sklego.preprocessing.IdentityTransformer` returns the same data, useful in making concatenating pipelines
+- `sklego.preprocessing.IdentityTransformer` returns the same data, allows for concatenating pipelines
 - `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independent
 - `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
 - `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
