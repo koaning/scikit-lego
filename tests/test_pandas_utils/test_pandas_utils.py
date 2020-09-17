@@ -5,6 +5,7 @@ import logging
 
 from sklego.pandas_utils import (
     log_step,
+    log_step_extra,
     add_lags,
     _add_lagged_pandas_columns,
     _add_lagged_numpy_columns,
@@ -210,3 +211,59 @@ def test_log_custom_logger(caplog, test_df):
     test_df.pipe(do_nothing)
 
     assert logger_name in caplog.text
+
+
+def test_log_extra(caplog):
+    caplog.clear()
+
+    n_cats = 3
+    n_dogs = 2
+
+    test_df = pd.DataFrame({
+        "id": range(n_cats + n_dogs),
+        "animals": ["dog"] * n_dogs + ["cat"] * n_cats,
+    })
+
+    def cat_counter(df):
+        return f"cats={(df['animals']=='cat').sum()}"
+
+    @log_step_extra(log_func=cat_counter)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    @log_step_extra(log_func=cat_counter)
+    def double_df(df, *args, **kwargs):
+        return pd.concat([df, df], axis=0)
+
+    test_df.pipe(do_nothing).pipe(double_df)
+
+    assert f"cats={n_cats}" in caplog.messages[0]
+    assert f"cats={2*n_cats}" in caplog.messages[1]
+
+
+def test_log_extra_kwargs(caplog):
+    caplog.clear()
+
+    n_cats = 3
+    n_dogs = 2
+
+    test_df = pd.DataFrame({
+        "id": range(n_cats + n_dogs),
+        "animals": ["dog"] * n_dogs + ["cat"] * n_cats,
+    })
+
+    def animal_counter(df, animal="cat"):
+        return f"{animal}s={(df['animals']==animal).sum()}"
+
+    @log_step_extra(log_func=animal_counter, animal="dog")
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    @log_step_extra(log_func=animal_counter, animal="dog")
+    def double_df(df, *args, **kwargs):
+        return pd.concat([df, df], axis=0)
+
+    test_df.pipe(do_nothing).pipe(double_df)
+
+    assert f"dogs={n_dogs}" in caplog.messages[0]
+    assert f"dogs={2*n_dogs}" in caplog.messages[1]
