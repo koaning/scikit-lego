@@ -33,6 +33,15 @@ def log_step(
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
 
+    :param func: callable, function to log, defaults to None
+    :param time_taken: bool, log the time it took to run a function, defaults to True
+    :param shape: bool, log the shape of the output result, defaults to True
+    :param shape_delta: bool, log the difference in shape of input and output, defaults to False
+    :param names: bool, log the names of the columns of the result, defaults to False
+    :param dtypes: bool, log the dtypes of the results, defaults to False
+    :param level: int, log level, defaults to logging.INFO
+    :returns: the result of the function
+
     :Example:
     >>> @log_step
     ... def remove_outliers(df, min_obs=5):
@@ -43,6 +52,7 @@ def log_step(
     ...     pass
 
     """
+
     if func is None:
         return partial(
             log_step,
