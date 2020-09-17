@@ -4,10 +4,7 @@ import numpy as np
 import logging
 
 from sklego.pandas_utils import (
-    log_step_factory,
-    log_shape,
-    log_names,
-    log_dtypes,
+    log_step,
     add_lags,
     _add_lagged_pandas_columns,
     _add_lagged_numpy_columns,
@@ -63,56 +60,21 @@ def test_add_lagged_numpy_columns(test_X):
         _add_lagged_numpy_columns(test_X, ["test"], 1, True)
 
 
-def get_pipeline_logs(caplog, test_df, extra_log_func):
+def test_logging(caplog, test_df):
     caplog.clear()
 
-    @log_step_factory(extra_log_func=extra_log_func)
+    @log_step
     def do_something(df):
         return df.drop(0)
 
-    @log_step_factory(extra_log_func=extra_log_func)
+    @log_step
     def do_nothing(df, *args, **kwargs):
         return df
 
     (test_df.pipe(do_nothing).pipe(do_nothing, a="1").pipe(do_something))
-
-    return caplog
-
-
-def test_logging_shape(caplog, test_df):
-
-    caplog = get_pipeline_logs(caplog, test_df, extra_log_func=log_shape)
 
     assert caplog.messages[0].startswith("[do_nothing(df)] n_obs=3 n_col=2 ")
     assert caplog.messages[1].startswith(
         "[do_nothing(df, kwargs = {'a': '1'})] n_obs=3 n_col=2 "
     )
     assert caplog.messages[2].startswith("[do_something(df)] n_obs=2 n_col=2 ")
-
-
-def test_logging_names(caplog, test_df):
-
-    caplog = get_pipeline_logs(caplog, test_df, log_names)
-
-    assert caplog.messages[0].startswith("[do_nothing(df)] columns=[X1, X2] ")
-    assert caplog.messages[1].startswith(
-        "[do_nothing(df, kwargs = {'a': '1'})] columns=[X1, X2] "
-    )
-    assert caplog.messages[2].startswith("[do_something(df)] columns=[X1, X2] ")
-
-
-def test_logging_dtypes(caplog, test_df):
-
-    caplog = get_pipeline_logs(caplog, test_df, log_dtypes)
-
-    assert caplog.messages[0].startswith(
-        "[do_nothing(df)] types=[(X1, int64), (X2, object)]"
-    )
-    assert caplog.messages[1].startswith(
-        "[do_nothing(df, kwargs = {'a': '1'})] types=[(X1, int64), (X2, object)]"
-    )
-    assert caplog.messages[2].startswith(
-        "[do_something(df)] types=[(X1, int64), (X2, object)]"
-    )
-
-

@@ -11,67 +11,43 @@ from sklego.common import as_list
 from scipy.ndimage.interpolation import shift
 
 
-def log_shape(df):
-    return f"n_obs={df.shape[0]} n_col={df.shape[1]}"
-
-
-def log_names(df):
-    names_str = ", ".join(
-        "{}".format(name) for name in df.columns
-    )
-
-    return f"columns=[{names_str}]"
-
-
-def log_dtypes(df):
-    types_dict = dict(df.dtypes.items())
-    dtypes_str = ", ".join(
-        "({}, {})".format(name, dtype) for name, dtype in types_dict.items()
-    )
-
-    return f"types=[{dtypes_str}]"
-
-
-def log_step_factory(extra_log_func=None, level=logging.INFO):
+def log_step(func=None, *, level=logging.INFO):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
 
     :Example:
-    >>> @log_step_factory(extra_log_func=log_shape)
+    >>> @log_step
+    ... def remove_outliers(df, min_obs=5):
+    ...     pass
+
+    >>> @log_step(level=logging.INFO)
     ... def remove_outliers(df, min_obs=5):
     ...     pass
 
     """
+    if func is None:
+        return partial(log_step, level=level)
 
-    def log_step(func=None):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        logger = logging.getLogger(sys.modules[func.__module__].__name__)
 
-        if func is None:
-            return partial(log_step, level=level)
+        tic = dt.datetime.now()
+        result = func(*args, **kwargs)
+        time_taken = str(dt.datetime.now() - tic)
+        func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+        func_args_str = "".join(
+            ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
+        )
+        logger.log(
+            level,
+            f"[{func.__name__}(df{func_args_str})] "
+            f"n_obs={result.shape[0]} n_col={result.shape[1]} time={time_taken}",
+        )
 
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            logger = logging.getLogger(sys.modules[func.__module__].__name__)
+        return result
 
-            tic = dt.datetime.now()
-            result = func(*args, **kwargs)
-            time_taken = str(dt.datetime.now() - tic)
-            func_args = inspect.signature(func).bind(*args, **kwargs).arguments
-            func_args_str = "".join(
-                ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
-            )
-            extra_string = extra_log_func(result) if extra_log_func else ""
-            print(extra_string, extra_log_func)
-            logger.log(
-                level,
-                f"[{func.__name__}(df{func_args_str})] "
-                f"{extra_string} time={time_taken}",
-            )
-
-            return result
-
-        return wrapper
-
-    return log_step
+    return wrapper
 
 
 def add_lags(X, cols, lags, drop_na=True):
