@@ -21,6 +21,8 @@ def get_shape_delta(old_shape, new_shape):
 
 
 def log_step(
+    func=None,
+    *,
     time_taken=True,
     shape=True,
     shape_delta=False,
@@ -41,52 +43,48 @@ def log_step(
     ...     pass
 
     """
+    if func is None:
+        return partial(
+            log_step,
+            time_taken=time_taken,
+            shape=shape,
+            shape_delta=shape_delta,
+            names=names,
+            dtypes=dtypes,
+            level=level,
+        )
 
-    def _log_step(func=None):
-        if func is None:
-            return partial(
-                log_step,
-                time_taken=time_taken,
-                shape=shape,
-                shape_delta=shape_delta,
-                names=names,
-                dtypes=dtypes,
-                level=level,
-            )
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        logger = logging.getLogger(sys.modules[func.__module__].__name__)
 
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            logger = logging.getLogger(sys.modules[func.__module__].__name__)
+        if shape_delta:
+            old_shape = args[0].shape
+        tic = dt.datetime.now()
 
-            if shape_delta:
-                old_shape = args[0].shape
-            tic = dt.datetime.now()
+        result = func(*args, **kwargs)
 
-            result = func(*args, **kwargs)
+        optional_strings = [
+            f"time={dt.datetime.now() - tic}" if time_taken else None,
+            f"n_obs={result.shape[0]}, n_col={result.shape[1]}" if shape else None,
+            get_shape_delta(old_shape, result.shape) if shape_delta else None,
+            f"names={result.columns.to_list()}" if names else None,
+            f"dtypes={result.dtypes.to_dict()}" if dtypes else None,
+        ]
 
-            optional_strings = [
-                f"time={dt.datetime.now() - tic}" if time_taken else None,
-                f"n_obs={result.shape[0]}, n_col={result.shape[1]}" if shape else None,
-                get_shape_delta(old_shape, result.shape) if shape_delta else None,
-                f"names={result.columns.to_list()}" if names else None,
-                f"dtypes={result.dtypes.to_dict()}" if dtypes else None,
-            ]
+        combined = " ".join([s for s in optional_strings if s])
 
-            combined = " ".join([s for s in optional_strings if s])
+        func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+        func_args_str = "".join(
+            ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
+        )
+        logger.log(
+            level, f"[{func.__name__}(df{func_args_str})] " + combined,
+        )
 
-            func_args = inspect.signature(func).bind(*args, **kwargs).arguments
-            func_args_str = "".join(
-                ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
-            )
-            logger.log(
-                level, f"[{func.__name__}(df{func_args_str})] " + combined,
-            )
+        return result
 
-            return result
-
-        return wrapper
-
-    return _log_step
+    return wrapper
 
 
 def add_lags(X, cols, lags, drop_na=True):
