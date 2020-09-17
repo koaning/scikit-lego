@@ -73,11 +73,9 @@ def test_logging(caplog, test_df):
 
     (test_df.pipe(do_nothing).pipe(do_nothing, a="1").pipe(do_something))
 
-    assert caplog.messages[0].startswith("[do_nothing(df)] n_obs=3 n_col=2 ")
-    assert caplog.messages[1].startswith(
-        "[do_nothing(df, kwargs = {'a': '1'})] n_obs=3 n_col=2 "
-    )
-    assert caplog.messages[2].startswith("[do_something(df)] n_obs=2 n_col=2 ")
+    assert caplog.messages[0].startswith("[do_nothing(df)]")
+    assert caplog.messages[1].startswith("[do_nothing(df, kwargs = {'a': '1'})]")
+    assert caplog.messages[2].startswith("[do_something(df)]")
 
 
 @pytest.mark.parametrize("time_taken", [True, False])
@@ -141,11 +139,11 @@ def test_log_shape_delta(caplog, test_df):
         .pipe(remove_column)
     )
 
-    assert ("n_obs=!" in caplog.messages[0]) and ("n_col=!" in caplog.messages[0])
-    assert ("n_obs=+1" in caplog.messages[1]) and ("n_col==" in caplog.messages[1])
-    assert ("n_obs=-1" in caplog.messages[2]) and ("n_col==" in caplog.messages[2])
-    assert ("n_obs==" in caplog.messages[3]) and ("n_col=+1" in caplog.messages[3])
-    assert ("n_obs==" in caplog.messages[4]) and ("n_col=-1" in caplog.messages[4])
+    assert "delta=(0, 0)" in caplog.messages[0]
+    assert "delta=(+1, 0)" in caplog.messages[1]
+    assert "delta=(-1, 0)" in caplog.messages[2]
+    assert "delta=(0, +1)" in caplog.messages[3]
+    assert "delta=(0, -1)" in caplog.messages[4]
 
 
 @pytest.mark.parametrize("names", [True, False])
