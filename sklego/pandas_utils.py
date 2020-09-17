@@ -29,6 +29,7 @@ def log_step(
     names=False,
     dtypes=False,
     level=logging.INFO,
+    logger=None,
 ):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
@@ -40,6 +41,7 @@ def log_step(
     :param names: bool, log the names of the columns of the result, defaults to False
     :param dtypes: bool, log the dtypes of the results, defaults to False
     :param level: int, log level, defaults to logging.INFO
+    :param logger: logging.Logger, a custom logger, defaults to None
     :returns: the result of the function
 
     :Example:
@@ -47,7 +49,7 @@ def log_step(
     ... def remove_outliers(df, min_obs=5):
     ...     pass
 
-    >>> @log_step(level=logging.INFO)
+    >>> @log_step(level=logging.INFO, shape_delta=True)
     ... def remove_outliers(df, min_obs=5):
     ...     pass
 
@@ -62,12 +64,16 @@ def log_step(
             names=names,
             dtypes=dtypes,
             level=level,
+            logger=logger,
         )
+
+    names = False if dtypes else names
+
+    if not logger:
+        logger = logging.getLogger(sys.modules[func.__module__].__name__)
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        logger = logging.getLogger(sys.modules[func.__module__].__name__)
-
         if shape_delta:
             old_shape = args[0].shape
         tic = dt.datetime.now()

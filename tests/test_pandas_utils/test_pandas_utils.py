@@ -101,8 +101,10 @@ def test_log_shape(shape, caplog, test_df):
 
     test_df.pipe(do_nothing)
 
-    assert (f"n_obs={test_df.shape[0]}" in caplog.messages[0]) == shape
-    assert (f"n_col={test_df.shape[1]}" in caplog.messages[0]) == shape
+    message = caplog.messages[0]
+
+    assert (f"n_obs={test_df.shape[0]}" in message) == shape
+    assert (f"n_col={test_df.shape[1]}" in message) == shape
 
 
 def test_log_shape_delta(caplog, test_df):
@@ -156,10 +158,12 @@ def test_log_names(names, caplog, test_df):
 
     test_df.pipe(do_nothing)
 
-    assert ("names=" in caplog.messages[0]) == names
+    message = caplog.messages[0]
+
+    assert ("names=" in message) == names
 
     if names:
-        assert all(col in caplog.messages[0] for col in test_df.columns)
+        assert all(col in message for col in test_df.columns)
 
 
 @pytest.mark.parametrize("dtypes", [True, False])
@@ -172,7 +176,37 @@ def test_log_dtypes(dtypes, caplog, test_df):
 
     test_df.pipe(do_nothing)
 
-    assert ("dtypes=" in caplog.messages[0]) == dtypes
+    message = caplog.messages[0]
+
+    assert ("dtypes=" in message) == dtypes
 
     if dtypes:
-        assert str(test_df.dtypes.to_dict()) in caplog.messages[0]
+        assert str(test_df.dtypes.to_dict()) in message
+
+
+def test_log_not_names_and_dtypes(caplog, test_df):
+    caplog.clear()
+
+    @log_step(names=True, dtypes=True)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    test_df.pipe(do_nothing)
+
+    assert "names=" not in caplog.messages[0]
+
+
+def test_log_custom_logger(caplog, test_df):
+    caplog.clear()
+
+    logger_name = "my_custom_logger"
+
+    my_logger = logging.getLogger(logger_name)
+
+    @log_step(logger=my_logger)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    test_df.pipe(do_nothing)
+
+    assert logger_name in caplog.text
