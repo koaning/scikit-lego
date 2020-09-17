@@ -78,3 +78,103 @@ def test_logging(caplog, test_df):
         "[do_nothing(df, kwargs = {'a': '1'})] n_obs=3 n_col=2 "
     )
     assert caplog.messages[2].startswith("[do_something(df)] n_obs=2 n_col=2 ")
+
+
+@pytest.mark.parametrize("time_taken", [True, False])
+def test_log_time(time_taken, caplog, test_df):
+    caplog.clear()
+
+    @log_step(time_taken=time_taken)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    test_df.pipe(do_nothing)
+
+    assert ("time=" in caplog.messages[0]) == time_taken
+
+
+@pytest.mark.parametrize("shape", [True, False])
+def test_log_shape(shape, caplog, test_df):
+    caplog.clear()
+
+    @log_step(shape=shape)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    test_df.pipe(do_nothing)
+
+    assert (f"n_obs={test_df.shape[0]}" in caplog.messages[0]) == shape
+    assert (f"n_col={test_df.shape[1]}" in caplog.messages[0]) == shape
+
+
+def test_log_shape_delta(caplog, test_df):
+    caplog.clear()
+
+    @log_step(shape_delta=True)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    @log_step(shape_delta=True)
+    def add_row(df, *args, **kwargs):
+        df = df.copy()
+        df.loc["new_row", :] = df.iloc[0, :]
+        return df
+
+    @log_step(shape_delta=True)
+    def remove_row(df, *args, **kwargs):
+        return df.drop(index="new_row")
+
+    @log_step(shape_delta=True)
+    def add_column(df, *args, **kwargs):
+        return df.assign(new_column=42)
+
+    @log_step(shape_delta=True)
+    def remove_column(df, *args, **kwargs):
+        return df.drop(columns="new_column")
+
+    (
+        test_df
+        .pipe(do_nothing)
+        .pipe(add_row)
+        .pipe(remove_row)
+        .pipe(add_column)
+        .pipe(remove_column)
+    )
+
+    assert ("n_obs=!" in caplog.messages[0]) and ("n_col=!" in caplog.messages[0])
+    assert ("n_obs=+1" in caplog.messages[1]) and ("n_col==" in caplog.messages[1])
+    assert ("n_obs=-1" in caplog.messages[2]) and ("n_col==" in caplog.messages[2])
+    assert ("n_obs==" in caplog.messages[3]) and ("n_col=+1" in caplog.messages[3])
+    assert ("n_obs==" in caplog.messages[4]) and ("n_col=-1" in caplog.messages[4])
+
+
+@pytest.mark.parametrize("names", [True, False])
+def test_log_names(names, caplog, test_df):
+    caplog.clear()
+
+    @log_step(names=names)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    test_df.pipe(do_nothing)
+
+    assert ("names=" in caplog.messages[0]) == names
+
+    if names:
+        assert all(col in caplog.messages[0] for col in test_df.columns)
+
+
+@pytest.mark.parametrize("dtypes", [True, False])
+def test_log_dtypes(dtypes, caplog, test_df):
+    caplog.clear()
+
+    @log_step(dtypes=dtypes)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    test_df.pipe(do_nothing)
+
+    assert ("dtypes=" in caplog.messages[0]) == dtypes
+
+    if dtypes:
+        assert str(test_df.dtypes.to_dict()) in caplog.messages[0]
