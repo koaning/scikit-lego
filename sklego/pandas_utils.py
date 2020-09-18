@@ -11,7 +11,7 @@ from sklego.common import as_list
 from scipy.ndimage.interpolation import shift
 
 
-def get_shape_delta(old_shape, new_shape):
+def _get_shape_delta(old_shape, new_shape):
     diffs = [
         ("+" if new > old else "") + str(new - old)
         for new, old in zip(new_shape, old_shape)
@@ -83,7 +83,7 @@ def log_step(
         optional_strings = [
             f"time={dt.datetime.now() - tic}" if time_taken else None,
             f"n_obs={result.shape[0]}, n_col={result.shape[1]}" if shape else None,
-            get_shape_delta(old_shape, result.shape) if shape_delta else None,
+            _get_shape_delta(old_shape, result.shape) if shape_delta else None,
             f"names={result.columns.to_list()}" if names else None,
             f"dtypes={result.dtypes.to_dict()}" if dtypes else None,
         ]
