@@ -227,11 +227,11 @@ def test_log_extra(caplog):
     def cat_counter(df):
         return f"cats={(df['animals']=='cat').sum()}"
 
-    @log_step_extra(log_func=cat_counter)
+    @log_step_extra(cat_counter)
     def do_nothing(df, *args, **kwargs):
         return df
 
-    @log_step_extra(log_func=cat_counter)
+    @log_step_extra(cat_counter)
     def double_df(df, *args, **kwargs):
         return pd.concat([df, df], axis=0)
 
@@ -255,11 +255,11 @@ def test_log_extra_kwargs(caplog):
     def animal_counter(df, animal="cat"):
         return f"{animal}s={(df['animals']==animal).sum()}"
 
-    @log_step_extra(log_func=animal_counter, animal="dog")
+    @log_step_extra(animal_counter, animal="dog")
     def do_nothing(df, *args, **kwargs):
         return df
 
-    @log_step_extra(log_func=animal_counter, animal="dog")
+    @log_step_extra(animal_counter, animal="dog")
     def double_df(df, *args, **kwargs):
         return pd.concat([df, df], axis=0)
 
@@ -267,3 +267,45 @@ def test_log_extra_kwargs(caplog):
 
     assert f"dogs={n_dogs}" in caplog.messages[0]
     assert f"dogs={2*n_dogs}" in caplog.messages[1]
+
+
+def test_log_extra_multiple(caplog, test_df):
+    caplog.clear()
+
+    @log_step_extra(len, type)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    test_df.pipe(do_nothing)
+
+    message = caplog.messages[0]
+
+    assert str(len(test_df)) in message
+    assert str(type(test_df)) in message
+
+
+def test_log_extra_no_func(caplog, test_df):
+    caplog.clear()
+
+    with pytest.raises(ValueError) as e:
+        @log_step_extra()
+        def do_nothing(df, *args, **kwargs):
+            return df
+
+        test_df.pipe(do_nothing)
+
+        assert "log_function" in str(e)
+
+
+def test_log_extra_not_callable_func(caplog, test_df):
+    caplog.clear()
+
+    with pytest.raises(ValueError) as e:
+        @log_step_extra(1)
+        def do_nothing(df, *args, **kwargs):
+            return df
+
+        test_df.pipe(do_nothing)
+
+        assert "callable" in str(e)
+        assert "int" in str(e)
