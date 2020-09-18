@@ -103,6 +103,62 @@ def log_step(
     return wrapper
 
 
+def log_step_extra(
+    *log_functions, level=logging.INFO, logger=None, **log_func_kwargs,
+):
+    """
+    Decorates a function that transforms a pandas dataframe to add automated logging statements
+
+    :param *log_functions: callable(s), functions that take the output of the decorated function and turn it into a log.
+                                        Note that the output of each log_function is casted to string using `str()`
+    :param level: int, log level, defaults to logging.INFO
+    :param logger: logging.Logger, a custom logger, defaults to None
+    :param **log_func_kwargs: keyword arguments to be passed to log_functions
+    :returns: the result of the function
+
+    :Example:
+    >>> @log_step_extra(lambda d: d["some_column"].value_counts())
+    ... def remove_outliers(df, min_obs=5):
+    ...     pass
+
+    """
+    has_logger = logger is not None
+
+    if not log_functions:
+        raise ValueError("Supply at least one log_function for log_step_extra")
+
+    def _log_step_extra(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            if not has_logger:
+                logger = logging.getLogger(sys.modules[func.__module__].__name__)
+
+            func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+            func_args_str = "".join(
+                ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
+            )
+
+            try:
+                extra_logs = " ".join(
+                    [str(log_f(result, **log_func_kwargs)) for log_f in log_functions]
+                )
+            except TypeError:
+                raise ValueError(
+                    f"All log functions should be callable, got {[type(log_f) for log_f in log_functions]}"
+                )
+
+            logger.log(
+                level, f"[{func.__name__}(df{func_args_str})] " + extra_logs,
+            )
+
+            return result
+
+        return wrapper
+
+    return _log_step_extra
+
+
 def add_lags(X, cols, lags, drop_na=True):
     """
     Appends lag column(s).
