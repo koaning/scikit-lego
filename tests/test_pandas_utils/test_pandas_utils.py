@@ -61,14 +61,33 @@ def test_add_lagged_numpy_columns(test_X):
         _add_lagged_numpy_columns(test_X, ["test"], 1, True)
 
 
-def test_logging(caplog, test_df):
-    caplog.clear()
-
+def test_log_step(capsys, test_df):
     @log_step
     def do_something(df):
         return df.drop(0)
 
     @log_step
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    (test_df.pipe(do_nothing).pipe(do_nothing, a="1").pipe(do_something))
+
+    captured = capsys.readouterr()
+    print_statements = captured.out.split("\n")
+
+    assert print_statements[0].startswith("[do_nothing(df)]")
+    assert print_statements[1].startswith("[do_nothing(df, kwargs = {'a': '1'})]")
+    assert print_statements[2].startswith("[do_something(df)]")
+
+
+def test_log_step_logger(caplog, test_df):
+    caplog.clear()
+
+    @log_step(print_fn=logging.info)
+    def do_something(df):
+        return df.drop(0)
+
+    @log_step(print_fn=logging.info)
     def do_nothing(df, *args, **kwargs):
         return df
 
@@ -80,8 +99,7 @@ def test_logging(caplog, test_df):
 
 
 @pytest.mark.parametrize("time_taken", [True, False])
-def test_log_time(time_taken, caplog, test_df):
-    caplog.clear()
+def test_log_time(time_taken, capsys, test_df):
 
     @log_step(time_taken=time_taken)
     def do_nothing(df, *args, **kwargs):
@@ -89,12 +107,14 @@ def test_log_time(time_taken, caplog, test_df):
 
     test_df.pipe(do_nothing)
 
-    assert ("time=" in caplog.messages[0]) == time_taken
+    captured = capsys.readouterr()
+    print_statements = captured.out.split("\n")
+
+    assert ("time=" in print_statements[0]) == time_taken
 
 
 @pytest.mark.parametrize("shape", [True, False])
-def test_log_shape(shape, caplog, test_df):
-    caplog.clear()
+def test_log_shape(shape, capsys, test_df):
 
     @log_step(shape=shape)
     def do_nothing(df, *args, **kwargs):
@@ -102,14 +122,13 @@ def test_log_shape(shape, caplog, test_df):
 
     test_df.pipe(do_nothing)
 
-    message = caplog.messages[0]
+    captured = capsys.readouterr()
 
-    assert (f"n_obs={test_df.shape[0]}" in message) == shape
-    assert (f"n_col={test_df.shape[1]}" in message) == shape
+    assert (f"n_obs={test_df.shape[0]}" in captured.out) == shape
+    assert (f"n_col={test_df.shape[1]}" in captured.out) == shape
 
 
-def test_log_shape_delta(caplog, test_df):
-    caplog.clear()
+def test_log_shape_delta(capsys, test_df):
 
     @log_step(shape_delta=True)
     def do_nothing(df, *args, **kwargs):
@@ -142,16 +161,18 @@ def test_log_shape_delta(caplog, test_df):
         .pipe(remove_column)
     )
 
-    assert "delta=(0, 0)" in caplog.messages[0]
-    assert "delta=(+1, 0)" in caplog.messages[1]
-    assert "delta=(-1, 0)" in caplog.messages[2]
-    assert "delta=(0, +1)" in caplog.messages[3]
-    assert "delta=(0, -1)" in caplog.messages[4]
+    captured = capsys.readouterr()
+    print_statements = captured.out.split("\n")
+
+    assert "delta=(0, 0)" in print_statements[0]
+    assert "delta=(+1, 0)" in print_statements[1]
+    assert "delta=(-1, 0)" in print_statements[2]
+    assert "delta=(0, +1)" in print_statements[3]
+    assert "delta=(0, -1)" in print_statements[4]
 
 
 @pytest.mark.parametrize("names", [True, False])
-def test_log_names(names, caplog, test_df):
-    caplog.clear()
+def test_log_names(names, capsys, test_df):
 
     @log_step(names=names)
     def do_nothing(df, *args, **kwargs):
@@ -159,17 +180,16 @@ def test_log_names(names, caplog, test_df):
 
     test_df.pipe(do_nothing)
 
-    message = caplog.messages[0]
+    captured = capsys.readouterr()
 
-    assert ("names=" in message) == names
+    assert ("names=" in captured.out) == names
 
     if names:
-        assert all(col in message for col in test_df.columns)
+        assert all(col in captured.out for col in test_df.columns)
 
 
 @pytest.mark.parametrize("dtypes", [True, False])
-def test_log_dtypes(dtypes, caplog, test_df):
-    caplog.clear()
+def test_log_dtypes(dtypes, capsys, test_df):
 
     @log_step(dtypes=dtypes)
     def do_nothing(df, *args, **kwargs):
@@ -177,16 +197,15 @@ def test_log_dtypes(dtypes, caplog, test_df):
 
     test_df.pipe(do_nothing)
 
-    message = caplog.messages[0]
+    captured = capsys.readouterr()
 
-    assert ("dtypes=" in message) == dtypes
+    assert ("dtypes=" in captured.out) == dtypes
 
     if dtypes:
-        assert str(test_df.dtypes.to_dict()) in message
+        assert str(test_df.dtypes.to_dict()) in captured.out
 
 
-def test_log_not_names_and_dtypes(caplog, test_df):
-    caplog.clear()
+def test_log_not_names_and_dtypes(capsys, test_df):
 
     @log_step(names=True, dtypes=True)
     def do_nothing(df, *args, **kwargs):
@@ -194,7 +213,9 @@ def test_log_not_names_and_dtypes(caplog, test_df):
 
     test_df.pipe(do_nothing)
 
-    assert "names=" not in caplog.messages[0]
+    captured = capsys.readouterr()
+
+    assert "names=" not in captured.out
 
 
 def test_log_custom_logger(caplog, test_df):
@@ -204,7 +225,7 @@ def test_log_custom_logger(caplog, test_df):
 
     my_logger = logging.getLogger(logger_name)
 
-    @log_step(logger=my_logger)
+    @log_step(print_fn=my_logger.info)
     def do_nothing(df, *args, **kwargs):
         return df
 
@@ -213,8 +234,7 @@ def test_log_custom_logger(caplog, test_df):
     assert logger_name in caplog.text
 
 
-def test_log_extra(caplog):
-    caplog.clear()
+def test_log_extra(capsys):
 
     n_cats = 3
     n_dogs = 2
@@ -237,12 +257,14 @@ def test_log_extra(caplog):
 
     test_df.pipe(do_nothing).pipe(double_df)
 
-    assert f"cats={n_cats}" in caplog.messages[0]
-    assert f"cats={2*n_cats}" in caplog.messages[1]
+    captured = capsys.readouterr()
+    print_statements = captured.out.split("\n")
+
+    assert f"cats={n_cats}" in print_statements[0]
+    assert f"cats={2*n_cats}" in print_statements[1]
 
 
-def test_log_extra_kwargs(caplog):
-    caplog.clear()
+def test_log_extra_kwargs(capsys):
 
     n_cats = 3
     n_dogs = 2
@@ -265,12 +287,14 @@ def test_log_extra_kwargs(caplog):
 
     test_df.pipe(do_nothing).pipe(double_df)
 
-    assert f"dogs={n_dogs}" in caplog.messages[0]
-    assert f"dogs={2*n_dogs}" in caplog.messages[1]
+    captured = capsys.readouterr()
+    print_statements = captured.out.split("\n")
+
+    assert f"dogs={n_dogs}" in print_statements[0]
+    assert f"dogs={2*n_dogs}" in print_statements[1]
 
 
-def test_log_extra_multiple(caplog, test_df):
-    caplog.clear()
+def test_log_extra_multiple(capsys, test_df):
 
     @log_step_extra(len, type)
     def do_nothing(df, *args, **kwargs):
@@ -278,15 +302,13 @@ def test_log_extra_multiple(caplog, test_df):
 
     test_df.pipe(do_nothing)
 
-    message = caplog.messages[0]
+    captured = capsys.readouterr()
 
-    assert str(len(test_df)) in message
-    assert str(type(test_df)) in message
+    assert str(len(test_df)) in captured.out
+    assert str(type(test_df)) in captured.out
 
 
-def test_log_extra_no_func(caplog, test_df):
-    caplog.clear()
-
+def test_log_extra_no_func(test_df):
     with pytest.raises(ValueError) as e:
         @log_step_extra()
         def do_nothing(df, *args, **kwargs):
@@ -297,9 +319,7 @@ def test_log_extra_no_func(caplog, test_df):
         assert "log_function" in str(e)
 
 
-def test_log_extra_not_callable_func(caplog, test_df):
-    caplog.clear()
-
+def test_log_extra_not_callable_func(test_df):
     with pytest.raises(ValueError) as e:
         @log_step_extra(1)
         def do_nothing(df, *args, **kwargs):

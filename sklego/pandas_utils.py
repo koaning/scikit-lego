@@ -1,6 +1,4 @@
 import inspect
-import logging
-import sys
 
 import numpy as np
 import pandas as pd
@@ -28,8 +26,7 @@ def log_step(
     shape_delta=False,
     names=False,
     dtypes=False,
-    level=logging.INFO,
-    logger=None,
+    print_fn=print,
 ):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
@@ -40,8 +37,7 @@ def log_step(
     :param shape_delta: bool, log the difference in shape of input and output, defaults to False
     :param names: bool, log the names of the columns of the result, defaults to False
     :param dtypes: bool, log the dtypes of the results, defaults to False
-    :param level: int, log level, defaults to logging.INFO
-    :param logger: logging.Logger, a custom logger, defaults to None
+    :param print_fn: callable, print function (e.g. print or logger.info), defaults to print
     :returns: the result of the function
 
     :Example:
@@ -49,7 +45,7 @@ def log_step(
     ... def remove_outliers(df, min_obs=5):
     ...     pass
 
-    >>> @log_step(level=logging.INFO, shape_delta=True)
+    >>> @log_step(print_fn=logging.info, shape_delta=True)
     ... def remove_outliers(df, min_obs=5):
     ...     pass
 
@@ -63,14 +59,10 @@ def log_step(
             shape_delta=shape_delta,
             names=names,
             dtypes=dtypes,
-            level=level,
-            logger=logger,
+            print_fn=print_fn,
         )
 
     names = False if dtypes else names
-
-    if not logger:
-        logger = logging.getLogger(sys.modules[func.__module__].__name__)
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -94,9 +86,7 @@ def log_step(
         func_args_str = "".join(
             ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
         )
-        logger.log(
-            level, f"[{func.__name__}(df{func_args_str})] " + combined,
-        )
+        print_fn(f"[{func.__name__}(df{func_args_str})] " + combined,)
 
         return result
 
@@ -104,15 +94,14 @@ def log_step(
 
 
 def log_step_extra(
-    *log_functions, level=logging.INFO, logger=None, **log_func_kwargs,
+    *log_functions, print_fn=print, **log_func_kwargs,
 ):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
 
     :param *log_functions: callable(s), functions that take the output of the decorated function and turn it into a log.
                                         Note that the output of each log_function is casted to string using `str()`
-    :param level: int, log level, defaults to logging.INFO
-    :param logger: logging.Logger, a custom logger, defaults to None
+    :param print_fn: callable, print function (e.g. print or logger.info), defaults to print
     :param **log_func_kwargs: keyword arguments to be passed to log_functions
     :returns: the result of the function
 
@@ -122,8 +111,6 @@ def log_step_extra(
     ...     pass
 
     """
-    has_logger = logger is not None
-
     if not log_functions:
         raise ValueError("Supply at least one log_function for log_step_extra")
 
@@ -131,8 +118,6 @@ def log_step_extra(
         @wraps(func)
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
-            if not has_logger:
-                logger = logging.getLogger(sys.modules[func.__module__].__name__)
 
             func_args = inspect.signature(func).bind(*args, **kwargs).arguments
             func_args_str = "".join(
@@ -148,9 +133,7 @@ def log_step_extra(
                     f"All log functions should be callable, got {[type(log_f) for log_f in log_functions]}"
                 )
 
-            logger.log(
-                level, f"[{func.__name__}(df{func_args_str})] " + extra_logs,
-            )
+            print_fn(f"[{func.__name__}(df{func_args_str})] " + extra_logs,)
 
             return result
 
