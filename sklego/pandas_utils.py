@@ -1,6 +1,4 @@
 import inspect
-import logging
-import sys
 
 import numpy as np
 import pandas as pd
@@ -11,43 +9,137 @@ from sklego.common import as_list
 from scipy.ndimage.interpolation import shift
 
 
-def log_step(func=None, *, level=logging.INFO):
+def _get_shape_delta(old_shape, new_shape):
+    diffs = [
+        ("+" if new > old else "") + str(new - old)
+        for new, old in zip(new_shape, old_shape)
+    ]
+
+    return f"delta=({', '.join(diffs)})"
+
+
+def log_step(
+    func=None,
+    *,
+    time_taken=True,
+    shape=True,
+    shape_delta=False,
+    names=False,
+    dtypes=False,
+    print_fn=print,
+):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
+
+    :param func: callable, function to log, defaults to None
+    :param time_taken: bool, log the time it took to run a function, defaults to True
+    :param shape: bool, log the shape of the output result, defaults to True
+    :param shape_delta: bool, log the difference in shape of input and output, defaults to False
+    :param names: bool, log the names of the columns of the result, defaults to False
+    :param dtypes: bool, log the dtypes of the results, defaults to False
+    :param print_fn: callable, print function (e.g. print or logger.info), defaults to print
+    :returns: the result of the function
 
     :Example:
     >>> @log_step
     ... def remove_outliers(df, min_obs=5):
     ...     pass
 
-    >>> @log_step(level=logging.INFO)
+    >>> @log_step(print_fn=logging.info, shape_delta=True)
     ... def remove_outliers(df, min_obs=5):
     ...     pass
 
     """
+
     if func is None:
-        return partial(log_step, level=level)
+        return partial(
+            log_step,
+            time_taken=time_taken,
+            shape=shape,
+            shape_delta=shape_delta,
+            names=names,
+            dtypes=dtypes,
+            print_fn=print_fn,
+        )
+
+    names = False if dtypes else names
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        logger = logging.getLogger(sys.modules[func.__module__].__name__)
-
+        if shape_delta:
+            old_shape = args[0].shape
         tic = dt.datetime.now()
+
         result = func(*args, **kwargs)
-        time_taken = str(dt.datetime.now() - tic)
+
+        optional_strings = [
+            f"time={dt.datetime.now() - tic}" if time_taken else None,
+            f"n_obs={result.shape[0]}, n_col={result.shape[1]}" if shape else None,
+            _get_shape_delta(old_shape, result.shape) if shape_delta else None,
+            f"names={result.columns.to_list()}" if names else None,
+            f"dtypes={result.dtypes.to_dict()}" if dtypes else None,
+        ]
+
+        combined = " ".join([s for s in optional_strings if s])
+
         func_args = inspect.signature(func).bind(*args, **kwargs).arguments
         func_args_str = "".join(
             ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
         )
-        logger.log(
-            level,
-            f"[{func.__name__}(df{func_args_str})] "
-            f"n_obs={result.shape[0]} n_col={result.shape[1]} time={time_taken}",
-        )
+        print_fn(f"[{func.__name__}(df{func_args_str})] " + combined,)
 
         return result
 
     return wrapper
+
+
+def log_step_extra(
+    *log_functions, print_fn=print, **log_func_kwargs,
+):
+    """
+    Decorates a function that transforms a pandas dataframe to add automated logging statements
+
+    :param *log_functions: callable(s), functions that take the output of the decorated function and turn it into a log.
+                                        Note that the output of each log_function is casted to string using `str()`
+    :param print_fn: callable, print function (e.g. print or logger.info), defaults to print
+    :param **log_func_kwargs: keyword arguments to be passed to log_functions
+    :returns: the result of the function
+
+    :Example:
+    >>> @log_step_extra(lambda d: d["some_column"].value_counts())
+    ... def remove_outliers(df, min_obs=5):
+    ...     pass
+
+    """
+    if not log_functions:
+        raise ValueError("Supply at least one log_function for log_step_extra")
+
+    def _log_step_extra(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+
+            func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+            func_args_str = "".join(
+                ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
+            )
+
+            try:
+                extra_logs = " ".join(
+                    [str(log_f(result, **log_func_kwargs)) for log_f in log_functions]
+                )
+            except TypeError:
+                raise ValueError(
+                    f"All log functions should be callable, got {[type(log_f) for log_f in log_functions]}"
+                )
+
+            print_fn(f"[{func.__name__}(df{func_args_str})] " + extra_logs,)
+
+            return result
+
+        return wrapper
+
+    return _log_step_extra
 
 
 def add_lags(X, cols, lags, drop_na=True):
