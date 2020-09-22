@@ -62,6 +62,8 @@ def test_add_lagged_numpy_columns(test_X):
 
 
 def test_log_step(capsys, test_df):
+    """Base test of log_step without any arguments to the logger"""
+
     @log_step
     def do_something(df):
         return df.drop(0)
@@ -81,6 +83,7 @@ def test_log_step(capsys, test_df):
 
 
 def test_log_step_logger(caplog, test_df):
+    """Base test of log_step with a logger supplied instead of default print"""
     caplog.clear()
 
     @log_step(print_fn=logging.info)
@@ -100,6 +103,7 @@ def test_log_step_logger(caplog, test_df):
 
 @pytest.mark.parametrize("time_taken", [True, False])
 def test_log_time(time_taken, capsys, test_df):
+    """Test logging of time taken can be switched on and off"""
 
     @log_step(time_taken=time_taken)
     def do_nothing(df, *args, **kwargs):
@@ -115,6 +119,7 @@ def test_log_time(time_taken, capsys, test_df):
 
 @pytest.mark.parametrize("shape", [True, False])
 def test_log_shape(shape, capsys, test_df):
+    """Test logging of shape can be switched on and off"""
 
     @log_step(shape=shape)
     def do_nothing(df, *args, **kwargs):
@@ -129,6 +134,7 @@ def test_log_shape(shape, capsys, test_df):
 
 
 def test_log_shape_delta(capsys, test_df):
+    """Test logging of shape delta can be switched on and off"""
 
     @log_step(shape_delta=True)
     def do_nothing(df, *args, **kwargs):
@@ -153,8 +159,7 @@ def test_log_shape_delta(capsys, test_df):
         return df.drop(columns="new_column")
 
     (
-        test_df
-        .pipe(do_nothing)
+        test_df.pipe(do_nothing)
         .pipe(add_row)
         .pipe(remove_row)
         .pipe(add_column)
@@ -173,6 +178,7 @@ def test_log_shape_delta(capsys, test_df):
 
 @pytest.mark.parametrize("names", [True, False])
 def test_log_names(names, capsys, test_df):
+    """Test logging of names can be switched on and off"""
 
     @log_step(names=names)
     def do_nothing(df, *args, **kwargs):
@@ -190,6 +196,7 @@ def test_log_names(names, capsys, test_df):
 
 @pytest.mark.parametrize("dtypes", [True, False])
 def test_log_dtypes(dtypes, capsys, test_df):
+    """Test logging of dtypes can be switched on and off"""
 
     @log_step(dtypes=dtypes)
     def do_nothing(df, *args, **kwargs):
@@ -206,6 +213,10 @@ def test_log_dtypes(dtypes, capsys, test_df):
 
 
 def test_log_not_names_and_dtypes(capsys, test_df):
+    """
+    Test that not both names and types are logged, even if we set both to True
+    We don't want this because dtypes also prints the names
+    """
 
     @log_step(names=True, dtypes=True)
     def do_nothing(df, *args, **kwargs):
@@ -219,6 +230,7 @@ def test_log_not_names_and_dtypes(capsys, test_df):
 
 
 def test_log_custom_logger(caplog, test_df):
+    """Test that we can supply a custom logger to the log_step"""
     caplog.clear()
 
     logger_name = "my_custom_logger"
@@ -235,14 +247,13 @@ def test_log_custom_logger(caplog, test_df):
 
 
 def test_log_extra(capsys):
-
+    """Base test for the log_step_extra function"""
     n_cats = 3
     n_dogs = 2
 
-    test_df = pd.DataFrame({
-        "id": range(n_cats + n_dogs),
-        "animals": ["dog"] * n_dogs + ["cat"] * n_cats,
-    })
+    test_df = pd.DataFrame(
+        {"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats,}
+    )
 
     def cat_counter(df):
         return f"cats={(df['animals']=='cat').sum()}"
@@ -265,14 +276,13 @@ def test_log_extra(capsys):
 
 
 def test_log_extra_kwargs(capsys):
-
+    """Test that we can supply kwargs to user-specified logging functions"""
     n_cats = 3
     n_dogs = 2
 
-    test_df = pd.DataFrame({
-        "id": range(n_cats + n_dogs),
-        "animals": ["dog"] * n_dogs + ["cat"] * n_cats,
-    })
+    test_df = pd.DataFrame(
+        {"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats,}
+    )
 
     def animal_counter(df, animal="cat"):
         return f"{animal}s={(df['animals']==animal).sum()}"
@@ -295,6 +305,7 @@ def test_log_extra_kwargs(capsys):
 
 
 def test_log_extra_multiple(capsys, test_df):
+    """Test that we can add multiple logging functions"""
 
     @log_step_extra(len, type)
     def do_nothing(df, *args, **kwargs):
@@ -309,7 +320,9 @@ def test_log_extra_multiple(capsys, test_df):
 
 
 def test_log_extra_no_func(test_df):
+    """We need at least one logging function"""
     with pytest.raises(ValueError) as e:
+
         @log_step_extra()
         def do_nothing(df, *args, **kwargs):
             return df
@@ -320,7 +333,9 @@ def test_log_extra_no_func(test_df):
 
 
 def test_log_extra_not_callable_func(test_df):
+    """Make sure the logging functions are checked to be callable"""
     with pytest.raises(ValueError) as e:
+
         @log_step_extra(1)
         def do_nothing(df, *args, **kwargs):
             return df
@@ -329,3 +344,20 @@ def test_log_extra_not_callable_func(test_df):
 
         assert "callable" in str(e)
         assert "int" in str(e)
+
+
+def test_log_extra_custom_logger(caplog, test_df):
+    """Test that we can supply a custom logger to the log_step_extra"""
+    caplog.clear()
+
+    logger_name = "my_custom_logger"
+
+    my_logger = logging.getLogger(logger_name)
+
+    @log_step_extra(len, print_fn=my_logger.info)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    test_df.pipe(do_nothing)
+
+    assert logger_name in caplog.text
