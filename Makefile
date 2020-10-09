@@ -31,6 +31,9 @@ docs:
 	rm -rf doc/.ipynb_checkpoints
 	sphinx-build -a -E doc docs
 
+docs-deploy: docs
+	netlify deploy --dir=docs --prod
+
 clean:
 	rm -rf .pytest_cache
 	rm -rf build
