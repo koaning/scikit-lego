@@ -87,5 +87,4 @@ Usage
    contributors
    rstudio.md
    this.md
-
    api/modules
