@@ -119,3 +119,6 @@ dmypy.json
 .idea
 docs/
 .DS_Store
+
+# Local Netlify folder
+.netlify
