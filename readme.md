@@ -48,7 +48,7 @@ python setup.py develop
 
 ## Documentation
 
-The documentation can be found [here](https://scikit-lego.readthedocs.io/).
+The documentation can be found [here](https://scikit-lego.netlify.app).
 
 ## Usage
 
