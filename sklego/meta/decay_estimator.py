@@ -24,7 +24,7 @@ class DecayEstimator(BaseEstimator):
     def __init__(self, model, decay: float = 0.999, decay_func="exponential"):
         self.model = model
         self.decay = decay
-        self.func = decay_func
+        self.decay_func = decay_func
 
     def _is_classifier(self):
         return any(
