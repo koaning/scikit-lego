@@ -317,7 +317,7 @@ def make_simpleseries(
 ):
     """
     Generate a very simple timeseries dataset to play with. The generator
-    assumes to generate daily data with a season, trend and noise.
+    returns a daily time-series with a yearly seasonality, trend, and noise.
 
     :param n_samples: The number of days to simulate the timeseries for.
     :param trend: The long term trend in the dataset.
