@@ -3,11 +3,22 @@ import pytest
 
 from sklego.common import flatten
 from sklego.linear_model import ProbWeightRegression
-from tests.conftest import nonmeta_checks, regressor_checks, general_checks
+from tests.conftest import nonmeta_checks, regressor_checks, general_checks, select_tests
 
 
 @pytest.mark.parametrize(
-    "test_fn", flatten([nonmeta_checks, general_checks, regressor_checks])
+    "test_fn",
+    select_tests(
+        flatten([nonmeta_checks, regressor_checks, general_checks]),
+        exclude=[
+            # Nonsense checks because we always need at least two columns (group and value)
+            "check_fit1d",
+            "check_fit2d_predict1d",
+            "check_fit2d_1feature",
+            "check_transformer_data_not_an_array",
+            "check_sample_weights_invariance"
+        ],
+    ),
 )
 def test_estimator_checks(test_fn):
     regr_min_zero = ProbWeightRegression(non_negative=True)

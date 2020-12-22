@@ -5,7 +5,7 @@ import pytest
 from sklego.neighbors import BayesianKernelDensityClassifier
 from sklego.common import flatten
 from sklego.testing import check_shape_remains_same_classifier
-from tests.conftest import nonmeta_checks, general_checks, estimator_checks
+from tests.conftest import nonmeta_checks, general_checks, estimator_checks, select_tests
 
 
 @pytest.fixture()
@@ -20,19 +20,16 @@ def simple_dataset():
 
 @pytest.mark.parametrize(
     "test_fn",
-    flatten(
-        [
-            nonmeta_checks,
-            general_checks,
-            estimator_checks.check_classifier_data_not_an_array,
-            estimator_checks.check_classifiers_one_label,
-            estimator_checks.check_classifiers_classes,
-            estimator_checks.check_classifiers_train,
-            estimator_checks.check_supervised_y_2d,
-            estimator_checks.check_supervised_y_no_nan,
-            estimator_checks.check_estimators_unfitted,
-            check_shape_remains_same_classifier,
-        ]
+    select_tests(
+        flatten([nonmeta_checks, general_checks]),
+        exclude=[
+            # Nonsense checks because we always need at least two columns (group and value)
+            "check_fit1d",
+            "check_fit2d_predict1d",
+            "check_fit2d_1feature",
+            "check_transformer_data_not_an_array",
+            "check_sample_weights_invariance"
+        ],
     ),
 )
 def test_estimator_checks(test_fn):

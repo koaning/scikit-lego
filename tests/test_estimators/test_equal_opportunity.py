@@ -5,11 +5,22 @@ from sklearn.linear_model import LogisticRegression
 from sklego.common import flatten
 from sklego.linear_model import EqualOpportunityClassifier
 from sklego.metrics import equal_opportunity_score
-from tests.conftest import general_checks, nonmeta_checks, classifier_checks
+from tests.conftest import general_checks, nonmeta_checks, classifier_checks, select_tests
 
 
 @pytest.mark.parametrize(
-    "test_fn", flatten([general_checks, nonmeta_checks, classifier_checks])
+    "test_fn", select_tests(
+        flatten([nonmeta_checks, general_checks, classifier_checks]),
+        exclude=[
+            # Nonsense checks because we always need at least two columns (group and value)
+            "check_fit1d",
+            "check_fit2d_predict1d",
+            "check_fit2d_1feature",
+            "check_transformer_data_not_an_array",
+            "check_methods_subset_invariance",
+            "check_sample_weights_invariance"
+        ],
+    ),
 )
 def test_standard_checks(test_fn):
     trf = EqualOpportunityClassifier(

@@ -3,11 +3,17 @@ import pytest
 
 from sklego.common import flatten
 from sklego.linear_model import LowessRegression
-from tests.conftest import nonmeta_checks, regressor_checks, general_checks
+from tests.conftest import nonmeta_checks, regressor_checks, general_checks, select_tests
 
 
 @pytest.mark.parametrize(
-    "test_fn", flatten([nonmeta_checks, general_checks, regressor_checks])
+    "test_fn", select_tests(
+        flatten([nonmeta_checks, general_checks, regressor_checks]),
+        exclude=[
+            "check_methods_subset_invariance",
+            "check_sample_weights_invariance"
+        ],
+    ),
 )
 def test_estimator_checks(test_fn):
     lowess = LowessRegression()

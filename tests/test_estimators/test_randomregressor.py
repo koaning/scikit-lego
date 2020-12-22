@@ -5,33 +5,23 @@ from sklearn.utils import estimator_checks
 from sklego.common import flatten
 from sklego.dummy import RandomRegressor
 from sklego.testing import check_shape_remains_same_regressor
-from tests.conftest import nonmeta_checks
+from tests.conftest import nonmeta_checks, regressor_checks, general_checks, select_tests
 
 
 @pytest.mark.parametrize(
     "test_fn",
-    flatten(
-        [
-            nonmeta_checks,
-            check_shape_remains_same_regressor,
-            # General checks
-            estimator_checks.check_fit2d_predict1d,
-            estimator_checks.check_fit2d_1sample,
-            estimator_checks.check_fit2d_1feature,
-            estimator_checks.check_fit1d,
-            estimator_checks.check_get_params_invariance,
-            estimator_checks.check_set_params,
-            estimator_checks.check_dict_unchanged,
-            estimator_checks.check_dont_overwrite_parameters,
-            # Regressor checks
-            estimator_checks.check_regressor_data_not_an_array,
-            estimator_checks.check_estimators_partial_fit_n_features,
-            estimator_checks.check_regressors_no_decision_function,
-            estimator_checks.check_supervised_y_2d,
-            estimator_checks.check_supervised_y_no_nan,
-            estimator_checks.check_regressors_int,
-            estimator_checks.check_estimators_unfitted,
-        ]
+    select_tests(
+        flatten([nonmeta_checks, regressor_checks, general_checks]),
+        exclude=[
+            # Nonsense checks because we always need at least two columns (group and value)
+            "check_fit1d",
+            "check_fit2d_predict1d",
+            "check_fit2d_1feature",
+            "check_transformer_data_not_an_array",
+            "check_sample_weights_invariance",
+            "check_regressors_train",
+            "check_methods_subset_invariance"
+        ],
     ),
 )
 def test_estimator_checks(test_fn):

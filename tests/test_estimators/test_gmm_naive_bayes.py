@@ -4,27 +4,21 @@ import numpy as np
 from sklego.common import flatten
 from sklego.naive_bayes import GaussianMixtureNB, BayesianGaussianMixtureNB
 from sklego.testing import check_shape_remains_same_classifier
-from tests.conftest import nonmeta_checks, general_checks, estimator_checks
-
+from tests.conftest import nonmeta_checks, general_checks, classifier_checks, select_tests
 
 @pytest.mark.parametrize(
-    "test_fn",
-    flatten(
-        [
-            nonmeta_checks,
-            general_checks,
-            estimator_checks.check_classifier_data_not_an_array,
-            estimator_checks.check_classifiers_one_label,
-            estimator_checks.check_classifiers_classes,
-            estimator_checks.check_estimators_partial_fit_n_features,
-            estimator_checks.check_classifiers_train,
-            estimator_checks.check_supervised_y_2d,
-            estimator_checks.check_supervised_y_no_nan,
-            estimator_checks.check_estimators_unfitted,
-            # estimator_checks.check_non_transformer_estimators_n_iter, our method does not have n_iter
-            estimator_checks.check_decision_proba_consistency,
-            check_shape_remains_same_classifier,
-        ]
+    "test_fn", select_tests(
+        flatten([nonmeta_checks, general_checks, classifier_checks]),
+        exclude=[
+            # Nonsense checks because we always need at least two columns (group and value)
+            "check_fit1d",
+            "check_fit2d_predict1d",
+            "check_fit2d_1feature",
+            "check_transformer_data_not_an_array",
+            "check_methods_subset_invariance",
+            "check_sample_weights_invariance",
+            "check_non_transformer_estimators_n_iter"
+        ],
     ),
 )
 def test_estimator_checks(test_fn):
