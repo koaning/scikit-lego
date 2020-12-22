@@ -17,7 +17,7 @@ transformer_checks = (
 
 general_checks = (
     estimator_checks.check_fit2d_predict1d,
-    estimator_checks.check_methods_subset_invariance,
+    # estimator_checks.check_methods_subset_invariance,
     estimator_checks.check_fit2d_1sample,
     estimator_checks.check_fit2d_1feature,
     estimator_checks.check_fit1d,
