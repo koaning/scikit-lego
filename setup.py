@@ -14,7 +14,7 @@ base_packages = [
     "umap-learn>=0.4.3"
 ]
 cvxpy_packages = ["cvxpy>=1.0.24"]
-all_packages = cvxpy_packages
+all_packages = cvxpy_packages + base_packages
 
 docs_packages = [
     "sphinx==1.8.5",
@@ -68,8 +68,9 @@ setup(
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
