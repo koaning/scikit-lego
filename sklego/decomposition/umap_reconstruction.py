@@ -8,6 +8,7 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
     """
     Does outlier detection based on the reconstruction error from UMAP.
     """
+
     def __init__(
         self,
         n_components=2,
@@ -16,7 +17,7 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         n_neighbors=15,
         min_dist=0.1,
         metric="euclidean",
-        random_state=None
+        random_state=None,
     ):
         self.n_components = n_components
         self.threshold = threshold

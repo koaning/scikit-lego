@@ -11,9 +11,9 @@ base_packages = [
     "patsy>=0.5.1",
     "autograd>=1.2",
     "Deprecated>=1.2.6",
-    "umap-learn>=0.4.3"
+    "umap-learn>=0.4.3",
 ]
-cvxpy_packages = ["cvxpy>=1.0.24"]
+cvxpy_packages = ["cvxpy==1.0.24"]
 all_packages = cvxpy_packages + base_packages
 
 docs_packages = [
@@ -25,8 +25,8 @@ docs_packages = [
 test_packages = all_packages + [  # we need extras packages for their tests
     "flake8>=3.6.0",
     "nbval>=0.9.1",
-    "pytest==5.4.1",
-    "pytest-xdist==1.34.0",
+    "pytest>=5.4.1",
+    "pytest-xdist>=1.34.0",
     "black>=19.3b0",
     "pytest-cov>=2.6.1",
     "pytest-mock>=1.6.3",

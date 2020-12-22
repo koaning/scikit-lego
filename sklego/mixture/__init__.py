@@ -2,7 +2,7 @@ __all__ = [
     "GMMClassifier",
     "BayesianGMMClassifier",
     "GMMOutlierDetector",
-    "BayesianGMMOutlierDetector"
+    "BayesianGMMOutlierDetector",
 ]
 
 from .gmm_classifier import GMMClassifier

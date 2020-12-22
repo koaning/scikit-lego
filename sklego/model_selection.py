@@ -44,21 +44,18 @@ class TimeGapSplit:
     """
 
     def __init__(
-        self, date_serie,
+        self,
+        date_serie,
         valid_duration,
         train_duration=None,
         gap_duration=timedelta(0),
         n_splits=None,
-        window='rolling'
+        window="rolling",
     ):
-        if ((train_duration is None)
-                and (n_splits is None)):
-            raise ValueError(
-                "Either train_duration or n_splits have to be defined"
-            )
+        if (train_duration is None) and (n_splits is None):
+            raise ValueError("Either train_duration or n_splits have to be defined")
 
-        if ((train_duration is not None)
-                and (train_duration <= gap_duration)):
+        if (train_duration is not None) and (train_duration <= gap_duration):
             raise ValueError(
                 "gap_duration is longer than train_duration, it should be shorter."
             )
@@ -80,8 +77,7 @@ class TimeGapSplit:
         and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn
         :param pandas.DataFrame X:
         """
-        X_index_df = pd.DataFrame(range(len(X)), columns=[
-                                  "np_index"], index=X.index)
+        X_index_df = pd.DataFrame(range(len(X)), columns=["np_index"], index=X.index)
         X_index_df = X_index_df.join(self.date_serie)
 
         return X_index_df
@@ -105,28 +101,32 @@ class TimeGapSplit:
 
         date_min = X_index_df["__date__"].min()
         date_max = X_index_df["__date__"].max()
-        date_length = X_index_df["__date__"].max() - \
-            X_index_df["__date__"].min()
+        date_length = X_index_df["__date__"].max() - X_index_df["__date__"].min()
 
-        if ((self.train_duration is None)
-                and (self.n_splits is not None)):
-            self.train_duration = date_length - \
-                (self.gap_duration + self.valid_duration * self.n_splits)
+        if (self.train_duration is None) and (self.n_splits is not None):
+            self.train_duration = date_length - (
+                self.gap_duration + self.valid_duration * self.n_splits
+            )
 
-        if ((self.train_duration is not None)
-                and (self.train_duration <= self.gap_duration)):
+        if (self.train_duration is not None) and (
+            self.train_duration <= self.gap_duration
+        ):
             raise ValueError(
                 "gap_duration is longer than train_duration, it should be shorter."
             )
 
-        n_split_max = (date_length - self.train_duration -
-                       self.gap_duration) / self.valid_duration
+        n_split_max = (
+            date_length - self.train_duration - self.gap_duration
+        ) / self.valid_duration
         if self.n_splits:
             if n_split_max < self.n_splits:
                 raise ValueError(
-                    ("Number of folds requested = {1} are greater"
-                     " than maximum  ={0} possible without"
-                     " overlapping validation sets.").format(n_split_max, self.n_splits))
+                    (
+                        "Number of folds requested = {1} are greater"
+                        " than maximum  ={0} possible without"
+                        " overlapping validation sets."
+                    ).format(n_split_max, self.n_splits)
+                )
 
         current_date = date_min
         start_date = date_min
@@ -138,27 +138,32 @@ class TimeGapSplit:
             time_shift = self.valid_duration
 
         while True:
-            if current_date + self.train_duration + time_shift + self.gap_duration > date_max:
+            if (
+                current_date + self.train_duration + time_shift + self.gap_duration
+                > date_max
+            ):
                 break
 
             X_train_df = X_index_df[
                 (X_index_df["__date__"] >= start_date)
-                & (
-                    X_index_df["__date__"]
-                    < current_date + self.train_duration
-                )
+                & (X_index_df["__date__"] < current_date + self.train_duration)
             ]
             X_valid_df = X_index_df[
-                (X_index_df["__date__"] >= current_date +
-                 self.train_duration + self.gap_duration)
+                (
+                    X_index_df["__date__"]
+                    >= current_date + self.train_duration + self.gap_duration
+                )
                 & (
                     X_index_df["__date__"]
-                    < current_date + self.train_duration + self.valid_duration + self.gap_duration
+                    < current_date
+                    + self.train_duration
+                    + self.valid_duration
+                    + self.gap_duration
                 )
             ]
 
             current_date = current_date + time_shift
-            if self.window == 'rolling':
+            if self.window == "rolling":
                 start_date = current_date
             yield (X_train_df["np_index"].values, X_valid_df["np_index"].values)
 

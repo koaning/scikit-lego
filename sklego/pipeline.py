@@ -346,10 +346,16 @@ def make_debug_pipeline(*steps, **kwargs):
     -------
     p : DebugPipeline
     """
-    memory = kwargs.pop('memory', None)
-    verbose = kwargs.pop('verbose', False)
-    log_callback = kwargs.pop('log_callback', None)
+    memory = kwargs.pop("memory", None)
+    verbose = kwargs.pop("verbose", False)
+    log_callback = kwargs.pop("log_callback", None)
     if kwargs:
-        raise TypeError('Unknown keyword arguments: "{}"'
-                        .format(list(kwargs.keys())[0]))
-    return DebugPipeline(_name_estimators(steps), memory=memory, verbose=verbose, log_callback=log_callback)
+        raise TypeError(
+            'Unknown keyword arguments: "{}"'.format(list(kwargs.keys())[0])
+        )
+    return DebugPipeline(
+        _name_estimators(steps),
+        memory=memory,
+        verbose=verbose,
+        log_callback=log_callback,
+    )

@@ -86,7 +86,9 @@ def log_step(
         func_args_str = "".join(
             ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
         )
-        print_fn(f"[{func.__name__}(df{func_args_str})] " + combined,)
+        print_fn(
+            f"[{func.__name__}(df{func_args_str})] " + combined,
+        )
 
         return result
 
@@ -94,7 +96,9 @@ def log_step(
 
 
 def log_step_extra(
-    *log_functions, print_fn=print, **log_func_kwargs,
+    *log_functions,
+    print_fn=print,
+    **log_func_kwargs,
 ):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
@@ -133,7 +137,9 @@ def log_step_extra(
                     f"All log functions should be callable, got {[type(log_f) for log_f in log_functions]}"
                 )
 
-            print_fn(f"[{func.__name__}(df{func_args_str})] " + extra_logs,)
+            print_fn(
+                f"[{func.__name__}(df{func_args_str})] " + extra_logs,
+            )
 
             return result
 

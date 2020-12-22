@@ -104,7 +104,16 @@ def load_penguins(return_X_y=False, as_frame=False, **kwargs):
     if as_frame:
         return df
     X, y = (
-        df[["island", "bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g", "sex"]].values,
+        df[
+            [
+                "island",
+                "bill_length_mm",
+                "bill_depth_mm",
+                "flipper_length_mm",
+                "body_mass_g",
+                "sex",
+            ]
+        ].values,
         df["species"].values,
     )
     if return_X_y:

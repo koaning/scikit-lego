@@ -1,10 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, OutlierMixin
-from sklearn.utils.validation import (
-    check_is_fitted,
-    check_array
-)
+from sklearn.utils.validation import check_is_fitted, check_array
 
 
 class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
@@ -12,7 +9,8 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
     Morphs a regression model into one that can detect outliers. We will try
     to predict `column` in X.
     """
-    def __init__(self, model, column, lower=2, upper=2, method='sd'):
+
+    def __init__(self, model, column, lower=2, upper=2, method="sd"):
         self.model = model
         self.column = column
         self.lower = lower
@@ -20,9 +18,7 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         self.method = method
 
     def _is_regression_model(self):
-        return any(
-            ["RegressorMixin" in p.__name__ for p in type(self.model).__bases__]
-        )
+        return any(["RegressorMixin" in p.__name__ for p in type(self.model).__bases__])
 
     def _handle_thresholds(self, y_true, y_pred):
         difference = y_true - y_pred
@@ -34,8 +30,8 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
             lower_limit_hit = -self.lower * self.sd_ > difference
             upper_limit_hit = self.upper * self.sd_ < difference
         if self.method == "relative":
-            lower_limit_hit = -self.lower > difference/y_true
-            upper_limit_hit = self.upper < difference/y_true
+            lower_limit_hit = -self.lower > difference / y_true
+            upper_limit_hit = self.upper < difference / y_true
         if self.method == "absolute":
             lower_limit_hit = -self.lower > difference
             upper_limit_hit = self.upper < difference
@@ -59,7 +55,11 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
-        self.idx_ = np.argmax([i == self.column for i in X.columns]) if isinstance(X, pd.DataFrame) else self.column
+        self.idx_ = (
+            np.argmax([i == self.column for i in X.columns])
+            if isinstance(X, pd.DataFrame)
+            else self.column
+        )
         X = check_array(X, estimator=self)
         if not self._is_regression_model():
             raise ValueError("Passed model must be regression!")
@@ -75,14 +75,14 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
-        check_is_fitted(self, ['estimator_', 'sd_', 'idx_'])
+        check_is_fitted(self, ["estimator_", "sd_", "idx_"])
         X = check_array(X, estimator=self)
         X, y = self.to_x_y(X)
         preds = self.estimator_.predict(X)
         return self._handle_thresholds(y, preds)
 
     def score_samples(self, X, y=None):
-        check_is_fitted(self, ['estimator_', 'sd_', 'idx_'])
+        check_is_fitted(self, ["estimator_", "sd_", "idx_"])
         X = check_array(X, estimator=self)
         X, y_true = self.to_x_y(X)
         y_pred = self.estimator_.predict(X)
@@ -93,6 +93,6 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         if self.method == "sd":
             return difference
         if self.method == "relative":
-            return difference/y_true
+            return difference / y_true
         if self.method == "absolute":
             return difference

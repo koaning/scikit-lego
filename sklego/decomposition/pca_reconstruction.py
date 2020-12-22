@@ -8,6 +8,7 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
     """
     Does outlier detection based on the reconstruction error from PCA.
     """
+
     def __init__(
         self,
         n_components=None,
