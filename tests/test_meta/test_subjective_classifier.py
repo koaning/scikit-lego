@@ -69,7 +69,10 @@ def test_posterior_computation(mocker, classes, prior, cfm, first_class_posterio
     def mock_confusion_matrix(y, y_pred):
         return np.array(cfm)
 
-    mocker.patch("sklego.meta.subjective_classifier.confusion_matrix", side_effect=mock_confusion_matrix)
+    mocker.patch(
+        "sklego.meta.subjective_classifier.confusion_matrix",
+        side_effect=mock_confusion_matrix,
+    )
     mock_estimator = mocker.Mock(RandomForestClassifier())
     mock_estimator.classes_ = np.array(classes)
     subjective_model = SubjectiveClassifier(mock_estimator, dict(zip(classes, prior)))
@@ -145,7 +148,10 @@ def test_predict_proba(mocker, evidence_type, expected_probas):
     def mock_confusion_matrix(y, y_pred):
         return np.array([[80, 20], [10, 90]])
 
-    mocker.patch("sklego.meta.subjective_classifier.confusion_matrix", side_effect=mock_confusion_matrix)
+    mocker.patch(
+        "sklego.meta.subjective_classifier.confusion_matrix",
+        side_effect=mock_confusion_matrix,
+    )
     mock_inner_estimator = mocker.Mock(RandomForestClassifier)
     mock_inner_estimator.predict_proba.return_value = np.array(
         [[0.8, 0.2], [1, 0], [0.5, 0.5], [0.2, 0.8]]

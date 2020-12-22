@@ -31,7 +31,7 @@ from sklearn.utils import estimator_checks
 def test_estimator_checks(test_fn):
     mod_quantile = GMMOutlierDetector(threshold=0.999, method="quantile")
     clf_quantile = OutlierClassifier(mod_quantile)
-    test_fn('OutlierClassifier', clf_quantile)
+    test_fn("OutlierClassifier", clf_quantile)
 
 
 @pytest.fixture

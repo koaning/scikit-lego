@@ -9,7 +9,12 @@ from sklearn.utils import check_X_y
 from sklego.common import flatten
 from sklego.datasets import load_penguins
 from sklego.meta import GroupedTransformer
-from tests.conftest import transformer_checks, nonmeta_checks, general_checks, select_tests
+from tests.conftest import (
+    transformer_checks,
+    nonmeta_checks,
+    general_checks,
+    select_tests,
+)
 from tests.conftest import n_vals, k_vals, np_types
 
 
@@ -22,8 +27,8 @@ from tests.conftest import n_vals, k_vals, np_types
             "check_fit2d_1feature",
             "check_fit2d_predict1d",
             "check_transformer_data_not_an_array",
-        ]
-    )
+        ],
+    ),
 )
 def test_estimator_checks(test_fn):
     trf = GroupedTransformer(StandardScaler(), groups=0)
@@ -42,7 +47,7 @@ def dataset_with_single_grouping(request):
     X, y = check_X_y(X, y)
 
     # Make sure all groups are present
-    groups = np.repeat([0, 1], repeats=(X.shape[0] + 1) // 2)[:X.shape[0], np.newaxis]
+    groups = np.repeat([0, 1], repeats=(X.shape[0] + 1) // 2)[: X.shape[0], np.newaxis]
     X_with_groups = np.concatenate([groups, X], axis=1)
     grouper = 0  # First column
 
@@ -63,8 +68,8 @@ def dataset_with_multiple_grouping(request):
     groups = np.tile(
         # 4x2 array, repeated until it fits
         np.array([[0, 0], [0, 1], [1, 0], [1, 1]]),
-        reps=((X.shape[0] + 3) // 4, 1)
-    )[:X.shape[0], :]
+        reps=((X.shape[0] + 3) // 4, 1),
+    )[: X.shape[0], :]
     X_with_groups = np.concatenate([groups, X], axis=1)
 
     grouper = (0, 1)
@@ -84,6 +89,7 @@ def multiple_obs_fitter():
 
     class MultipleObsFitter(BaseEstimator, TransformerMixin):
         """A transformer that needs more than 1 value to fit"""
+
         def fit(self, X, y=None):
             if len(X) <= 1:
                 raise ValueError("Need more than 1 value to fit")
@@ -99,7 +105,7 @@ def multiple_obs_fitter():
 @pytest.fixture(scope="module")
 def penguins_df():
     df = load_penguins(as_frame=True).dropna()
-    X = df.drop(columns='species')
+    X = df.drop(columns="species")
 
     return X
 
@@ -116,7 +122,9 @@ def test_all_groups_scaled(dataset_with_single_grouping, scaling_range):
     transformer = GroupedTransformer(trf, groups=grouper)
     transformed = transformer.fit(X_with_groups, y).transform(X_with_groups)
 
-    df_with_groups = pd.concat([pd.Series(groups.flatten(), name="G"), pd.DataFrame(transformed)], axis=1)
+    df_with_groups = pd.concat(
+        [pd.Series(groups.flatten(), name="G"), pd.DataFrame(transformed)], axis=1
+    )
 
     assert np.allclose(df_with_groups.groupby("G").min(), scaling_range[0])
     assert np.allclose(df_with_groups.groupby("G").max(), scaling_range[1])
@@ -132,11 +140,14 @@ def test_group_correlation_minmaxscaler(dataset_with_single_grouping, scaling_ra
     # For each column, check that all grouped correlations are 1 (because MinMaxScaler scales linear)
     for col in range(X.shape[1]):
         assert (
-            pd.concat([
-                pd.Series(groups.flatten(), name="group"),
-                pd.Series(X[:, col], name="original"),
-                pd.Series(transformed[:, col], name="transformed"),
-            ], axis=1)
+            pd.concat(
+                [
+                    pd.Series(groups.flatten(), name="group"),
+                    pd.Series(X[:, col], name="original"),
+                    pd.Series(transformed[:, col], name="transformed"),
+                ],
+                axis=1,
+            )
             .groupby("group")
             .corr()
             .pipe(np.allclose, 1)
@@ -183,17 +194,17 @@ def test_multiple_grouping_columns(dataset_with_multiple_grouping, scaling_range
     transformer = GroupedTransformer(trf, groups=grouper)
     transformed = transformer.fit(X_with_groups, y).transform(X_with_groups)
 
-    df_with_groups = pd.concat([
-        pd.DataFrame(groups, columns=["A", "B"]),
-        pd.DataFrame(transformed)
-    ], axis=1)
+    df_with_groups = pd.concat(
+        [pd.DataFrame(groups, columns=["A", "B"]), pd.DataFrame(transformed)], axis=1
+    )
 
     assert np.allclose(df_with_groups.groupby(["A", "B"]).min(), scaling_range[0])
 
     # If a group has a single element, it defaults to min, so check wether all maxes are one of the bounds
     maxes = df_with_groups.groupby(["A", "B"]).max()
     assert np.all(
-        np.isclose(maxes, scaling_range[1]) | np.isclose(maxes, scaling_range[0])
+        np.isclose(maxes, scaling_range[1])
+        | np.isclose(maxes, scaling_range[0])
         # We have at least some groups larger than 1, so there we should find the max of the range
     ) and np.any(np.isclose(maxes, scaling_range[1]))
 
@@ -206,9 +217,9 @@ def test_missing_groups_transform_global(dataset_with_single_grouping, scaling_r
     transformer.fit(X_with_groups, y)
 
     # Array with 2 rows, first column a new group. Remaining top are out of range so should be the range
-    X_test = np.concatenate([
-        np.array([[3], [3]]), np.stack([X.min(axis=0), X.max(axis=0)], axis=0)
-    ], axis=1)
+    X_test = np.concatenate(
+        [np.array([[3], [3]]), np.stack([X.min(axis=0), X.max(axis=0)], axis=0)], axis=1
+    )
 
     transformed = transformer.transform(X_test)
 
@@ -225,23 +236,31 @@ def test_missing_groups_transform_noglobal(dataset_with_single_grouping, scaling
     transformer.fit(X_with_groups, y)
 
     # Array with 2 rows, first column a new group. Remaining top are out of range so should be the range
-    X_test = np.concatenate([
-        np.array([[3], [3]]), np.stack([X.min(axis=0) - 1, X.max(axis=0) + 1], axis=0)
-    ], axis=1)
+    X_test = np.concatenate(
+        [
+            np.array([[3], [3]]),
+            np.stack([X.min(axis=0) - 1, X.max(axis=0) + 1], axis=0),
+        ],
+        axis=1,
+    )
 
     with pytest.raises(ValueError):
         transformer.transform(X_test)
 
 
 def test_exception_in_group(multiple_obs_fitter):
-    X = np.array([
-        [1, 2],
-        [1, 0],
-        [2, 1],
-    ])
+    X = np.array(
+        [
+            [1, 2],
+            [1, 0],
+            [2, 1],
+        ]
+    )
 
     # Only works on groups greater than 1, so will raise an error in group 2
-    transformer = GroupedTransformer(multiple_obs_fitter, groups=0, use_global_model=False)
+    transformer = GroupedTransformer(
+        multiple_obs_fitter, groups=0, use_global_model=False
+    )
 
     with pytest.raises(ValueError) as e:
         transformer.fit(X)
@@ -250,12 +269,15 @@ def test_exception_in_group(multiple_obs_fitter):
 
 
 def test_array_with_strings():
-    X = np.array([
-        ("group0", 2),
-        ("group0", 0),
-        ("group1", 1),
-        ("group1", 3),
-    ], dtype='object')
+    X = np.array(
+        [
+            ("group0", 2),
+            ("group0", 0),
+            ("group1", 1),
+            ("group1", 3),
+        ],
+        dtype="object",
+    )
 
     trf = MinMaxScaler()
     transformer = GroupedTransformer(trf, groups=0, use_global_model=False)
@@ -312,12 +334,16 @@ def test_grouping_column_not_in_df(penguins_df):
 
 
 def test_no_grouping(penguins_df):
-    penguins_numeric = penguins_df[["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]]
+    penguins_numeric = penguins_df[
+        ["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]
+    ]
 
     meta = GroupedTransformer(StandardScaler(), groups=None)
     nonmeta = StandardScaler()
 
-    assert (meta.fit_transform(penguins_numeric) == nonmeta.fit_transform(penguins_numeric)).all()
+    assert (
+        meta.fit_transform(penguins_numeric) == nonmeta.fit_transform(penguins_numeric)
+    ).all()
 
 
 def test_with_y(penguins_df):

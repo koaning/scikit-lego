@@ -13,9 +13,13 @@ from tests.conftest import general_checks, select_tests, outlier_checks
     "test_fn",
     select_tests(
         flatten([general_checks, outlier_checks]),
-        exclude=['check_fit2d_predict1d', 'check_fit2d_1feature', 'check_outliers_train']
+        exclude=[
+            "check_fit2d_predict1d",
+            "check_fit2d_1feature",
+            "check_outliers_train",
+        ]
         # outliers train wont work because we have two thresholds
-    )
+    ),
 )
 def test_estimator_checks(test_fn):
     mod = RegressionOutlierDetector(LinearRegression(), column=0)
@@ -45,10 +49,10 @@ def test_obvious_example_pandas():
     y = 1 + x + np.random.normal(0, 0.2, 100)
     for i in [20, 25, 50, 80]:
         y[i] += 2
-    X = pd.DataFrame({'x': x, 'y': y})
+    X = pd.DataFrame({"x": x, "y": y})
 
     # fit and plot
-    mod = RegressionOutlierDetector(LinearRegression(), column='y')
+    mod = RegressionOutlierDetector(LinearRegression(), column="y")
     preds = mod.fit(X).predict(X)
     for i in [20, 25, 50, 80]:
         assert preds[i] == -1
@@ -61,8 +65,8 @@ def test_raises_error():
     y = 1 + x + np.random.normal(0, 0.2, 100)
     for i in [20, 25, 50, 80]:
         y[i] += 2
-    X = pd.DataFrame({'x': x, 'y': y})
+    X = pd.DataFrame({"x": x, "y": y})
 
     with pytest.raises(ValueError):
-        mod = RegressionOutlierDetector(LogisticRegression(), column='y')
+        mod = RegressionOutlierDetector(LogisticRegression(), column="y")
         mod.fit(X)

@@ -3,7 +3,12 @@ import pytest
 
 from sklego.common import flatten
 from sklego.linear_model import ProbWeightRegression
-from tests.conftest import nonmeta_checks, regressor_checks, general_checks, select_tests
+from tests.conftest import (
+    nonmeta_checks,
+    regressor_checks,
+    general_checks,
+    select_tests,
+)
 
 
 @pytest.mark.parametrize(
@@ -16,7 +21,7 @@ from tests.conftest import nonmeta_checks, regressor_checks, general_checks, sel
             "check_fit2d_predict1d",
             "check_fit2d_1feature",
             "check_transformer_data_not_an_array",
-            "check_sample_weights_invariance"
+            "check_sample_weights_invariance",
         ],
     ),
 )

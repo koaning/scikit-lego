@@ -1,5 +1,11 @@
 import pytest
-from sklego.datasets import load_chicken, load_abalone, make_simpleseries, load_hearts, load_penguins
+from sklego.datasets import (
+    load_chicken,
+    load_abalone,
+    make_simpleseries,
+    load_hearts,
+    load_penguins,
+)
 
 
 def test_chickweight1():

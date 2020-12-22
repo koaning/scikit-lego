@@ -4,7 +4,13 @@ import pytest
 from sklego.common import flatten
 from sklego.mixture import GMMClassifier, BayesianGMMClassifier
 from sklego.testing import check_shape_remains_same_classifier
-from tests.conftest import nonmeta_checks, general_checks, classifier_checks, estimator_checks, select_tests
+from tests.conftest import (
+    nonmeta_checks,
+    general_checks,
+    classifier_checks,
+    estimator_checks,
+    select_tests,
+)
 
 
 @pytest.mark.parametrize(
@@ -18,7 +24,7 @@ from tests.conftest import nonmeta_checks, general_checks, classifier_checks, es
             "check_fit2d_1feature",
             "check_transformer_data_not_an_array",
             "check_sample_weights_invariance",
-            "check_non_transformer_estimators_n_iter"
+            "check_non_transformer_estimators_n_iter",
         ],
     ),
 )

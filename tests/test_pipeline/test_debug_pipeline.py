@@ -62,21 +62,15 @@ def named_steps():
         ("add_1000", Adder(value=1000)),
     ]
 
+
 @pytest.fixture
 def nameless_steps():
-    return (
-        Adder(value=1),
-        Adder(value=10),
-        Adder(value=100),
-        Adder(value=1000)
-    )
+    return (Adder(value=1), Adder(value=10), Adder(value=100), Adder(value=1000))
+
 
 @pytest.fixture
 def repeated_steps():
-    return (
-        StandardScaler(),
-        StandardScaler()
-    )
+    return (StandardScaler(), StandardScaler())
 
 
 @pytest.mark.filterwarnings("ignore: The default of the `iid`")  # 0.22
@@ -153,7 +147,9 @@ def test_nbytes_in_logs_when_log_callback_is_custom(caplog, named_steps):
 
 def test_feature_union(caplog, named_steps):
     pipe_w_default_log_callback = DebugPipeline(named_steps, log_callback="default")
-    pipe_w_custom_log_callback = DebugPipeline(named_steps, log_callback=custom_log_callback)
+    pipe_w_custom_log_callback = DebugPipeline(
+        named_steps, log_callback=custom_log_callback
+    )
 
     pipe_union = FeatureUnion(
         [
@@ -179,7 +175,9 @@ def test_different_name_for_repeated_step(nameless_steps):
     assert ss_twice_pipeline.steps[0][0] != ss_twice_pipeline.steps[1][0]
 
 
-def test_nameless_step_name_in_logs_when_log_callback_is_default(caplog, nameless_steps):
+def test_nameless_step_name_in_logs_when_log_callback_is_default(
+    caplog, nameless_steps
+):
     pipe = make_debug_pipeline(*nameless_steps, log_callback="default")
     caplog.clear()
     with caplog.at_level(logging.INFO):

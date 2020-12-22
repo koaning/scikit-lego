@@ -5,7 +5,12 @@ from sklearn.utils import estimator_checks
 from sklego.common import flatten
 from sklego.dummy import RandomRegressor
 from sklego.testing import check_shape_remains_same_regressor
-from tests.conftest import nonmeta_checks, regressor_checks, general_checks, select_tests
+from tests.conftest import (
+    nonmeta_checks,
+    regressor_checks,
+    general_checks,
+    select_tests,
+)
 
 
 @pytest.mark.parametrize(
@@ -20,7 +25,7 @@ from tests.conftest import nonmeta_checks, regressor_checks, general_checks, sel
             "check_transformer_data_not_an_array",
             "check_sample_weights_invariance",
             "check_regressors_train",
-            "check_methods_subset_invariance"
+            "check_methods_subset_invariance",
         ],
     ),
 )

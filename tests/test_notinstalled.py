@@ -9,6 +9,7 @@ def test_installed_package_works():
         import pandas as pd
     except ImportError:
         from sklego.notinstalled import NotInstalledPackage
+
         pd = NotInstalledPackage(package_name, version=version)
 
     assert pd.__version__
@@ -22,6 +23,7 @@ def test_uninstsalled_package_raises():
         import thispackagedoesnotexist as package
     except ImportError:
         from sklego.notinstalled import NotInstalledPackage
+
         package = NotInstalledPackage(package_name, version=version)
 
     with pytest.raises(ImportError) as e:

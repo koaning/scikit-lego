@@ -4,10 +4,17 @@ import numpy as np
 from sklego.common import flatten
 from sklego.naive_bayes import GaussianMixtureNB, BayesianGaussianMixtureNB
 from sklego.testing import check_shape_remains_same_classifier
-from tests.conftest import nonmeta_checks, general_checks, classifier_checks, select_tests
+from tests.conftest import (
+    nonmeta_checks,
+    general_checks,
+    classifier_checks,
+    select_tests,
+)
+
 
 @pytest.mark.parametrize(
-    "test_fn", select_tests(
+    "test_fn",
+    select_tests(
         flatten([nonmeta_checks, general_checks, classifier_checks]),
         exclude=[
             # Nonsense checks because we always need at least two columns (group and value)
@@ -17,7 +24,7 @@ from tests.conftest import nonmeta_checks, general_checks, classifier_checks, se
             "check_transformer_data_not_an_array",
             "check_methods_subset_invariance",
             "check_sample_weights_invariance",
-            "check_non_transformer_estimators_n_iter"
+            "check_non_transformer_estimators_n_iter",
         ],
     ),
 )

@@ -18,7 +18,7 @@ from tests.conftest import nonmeta_checks, general_checks, select_tests
             "check_fit2d_predict1d",
             "check_fit2d_1feature",
             "check_transformer_data_not_an_array",
-            "check_sample_weights_invariance"
+            "check_sample_weights_invariance",
         ],
     ),
 )

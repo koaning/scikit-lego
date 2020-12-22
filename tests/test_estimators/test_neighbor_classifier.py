@@ -5,7 +5,12 @@ import pytest
 from sklego.neighbors import BayesianKernelDensityClassifier
 from sklego.common import flatten
 from sklego.testing import check_shape_remains_same_classifier
-from tests.conftest import nonmeta_checks, general_checks, estimator_checks, select_tests
+from tests.conftest import (
+    nonmeta_checks,
+    general_checks,
+    estimator_checks,
+    select_tests,
+)
 
 
 @pytest.fixture()
@@ -28,7 +33,7 @@ def simple_dataset():
             "check_fit2d_predict1d",
             "check_fit2d_1feature",
             "check_transformer_data_not_an_array",
-            "check_sample_weights_invariance"
+            "check_sample_weights_invariance",
         ],
     ),
 )
