@@ -39,7 +39,7 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         if self.n_components < 2:
             raise ValueError("Number of components must be at least two.")
         if not self.threshold:
-            raise ValueError(f"The `threshold` value cannot be `None`.")
+            raise ValueError("The `threshold` value cannot be `None`.")
 
         self.umap_ = umap.UMAP(
             n_components=self.n_components,

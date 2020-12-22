@@ -187,7 +187,7 @@ def subset_score(subset_picker: Callable, score: Callable, **kwargs):
                     + " series, returned {} instead".format(len(mask.shape))
                 )
         if np.sum(mask) == 0:
-            warnings.warn(f"No samples in subset, returning NaN", RuntimeWarning)
+            warnings.warn("No samples in subset, returning NaN", RuntimeWarning)
             return np.nan
         X = X[mask]
         y_pred = estimator.predict(X)

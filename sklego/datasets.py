@@ -53,7 +53,7 @@ def load_penguins(return_X_y=False, as_frame=False, **kwargs):
     From Gorman et al. (2014):
 
     > “Data reported here are publicly available within the PAL-LTER data
-    > system (datasets \#219, 220, and 221):
+    > system (datasets #219, 220, and 221):
     > `<http://oceaninformatics.ucsd.edu/datazoo/data/pallter/datasets>`_.
     > Individuals interested in using these data are therefore expected to
     > follow the US LTER Network’s Data Access Policy, Requirements and Use
@@ -380,10 +380,13 @@ def make_simpleseries(
 
 def load_hearts(return_X_y=False, as_frame=False, **kwargs):
     """
-    Loads the Cleveland Heart Diseases dataset. The goal is to predict the presence of a heart disease (target values 1, 2, 3, and 4).
-    The data originates from research to heart diseases by four institutions and originally contains 76 attributes.
+    Loads the Cleveland Heart Diseases dataset. The goal is to predict the
+    presence of a heart disease (target values 1, 2, 3, and 4).
+    The data originates from research to heart diseases by four institutions
+    and originally contains 76 attributes.
     Yet, all published experiments refer to using a subset of 13 features and one target.
-    This implementation loads the Cleveland dataset of the research which is the only set used by ML researchers to this date.
+    This implementation loads the Cleveland dataset of the research which is the only
+    set used by ML researchers to this date.
 
     :param return_X_y: If True, returns ``(data, target)`` instead of a dict object.
     :param as_frame: give the pandas dataframe instead of X, y matrices (default=False)
