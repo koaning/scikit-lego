@@ -5,38 +5,23 @@ import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
-from sklearn.utils import estimator_checks
 from sklearn.datasets import load_boston
 
 from sklego.common import flatten
 from sklego.preprocessing import InformationFilter
-from tests.conftest import transformer_checks, general_checks
+
+
+from tests.conftest import select_tests, transformer_checks, nonmeta_checks, general_checks
 
 
 @pytest.mark.parametrize(
     "test_fn",
-    flatten(
-        [
-            transformer_checks,
-            general_checks,
-            # nonmeta_checks
-            estimator_checks.check_estimators_dtypes,
-            estimator_checks.check_fit_score_takes_y,
-            estimator_checks.check_dtype_object,
-            estimator_checks.check_sample_weights_pandas_series,
-            estimator_checks.check_sample_weights_list,
-            estimator_checks.check_sample_weights_invariance,
-            estimator_checks.check_estimators_fit_returns_self,
-            estimator_checks.check_complex_data,
-            # this won't work because we need to select a column
-            # estimator_checks.check_estimators_empty_data_messages,
-            estimator_checks.check_pipeline_consistency,
-            estimator_checks.check_estimators_nan_inf,
-            estimator_checks.check_estimators_overwrite_params,
-            estimator_checks.check_estimator_sparse_data,
-            estimator_checks.check_estimators_pickle,
+    select_tests(
+        flatten([general_checks, transformer_checks, nonmeta_checks]),
+        exclude=[
+            "check_sample_weights_invariance",
         ]
-    ),
+    )
 )
 def test_estimator_checks(test_fn):
     test_fn(InformationFilter.__name__, InformationFilter(columns=[0]))

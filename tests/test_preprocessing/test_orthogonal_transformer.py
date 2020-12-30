@@ -5,7 +5,7 @@ import numpy as np
 from sklego.preprocessing import OrthogonalTransformer
 from sklego.common import flatten
 
-from tests.conftest import nonmeta_checks, general_checks, transformer_checks
+from tests.conftest import select_tests, transformer_checks, general_checks, nonmeta_checks
 
 
 @pytest.fixture
@@ -20,7 +20,13 @@ def sample_df(sample_matrix):
 
 
 @pytest.mark.parametrize(
-    "test_fn", flatten([nonmeta_checks, general_checks, transformer_checks])
+    "test_fn",
+    select_tests(
+        flatten([general_checks, nonmeta_checks, transformer_checks]),
+        exclude=[
+            "check_sample_weights_invariance",
+        ]
+    )
 )
 def test_estimator_checks(test_fn):
     test_fn(OrthogonalTransformer.__name__, OrthogonalTransformer())

@@ -1,38 +1,27 @@
 import numpy as np
 import pytest
 from sklearn.model_selection import train_test_split
-from sklearn.utils import estimator_checks
-from sklearn.utils.estimator_checks import check_transformers_unfitted
 
 from sklego.common import flatten
 from sklego.preprocessing import RandomAdder
-from tests.conftest import nonmeta_checks
+
+
+from tests.conftest import select_tests, transformer_checks, nonmeta_checks, general_checks
 
 
 @pytest.mark.parametrize(
     "test_fn",
-    flatten(
-        [
-            nonmeta_checks,
-            # Transformer checks
-            check_transformers_unfitted,
-            # General checks
-            estimator_checks.check_fit2d_predict1d,
-            estimator_checks.check_fit2d_1sample,
-            estimator_checks.check_fit2d_1feature,
-            estimator_checks.check_fit1d,
-            estimator_checks.check_get_params_invariance,
-            estimator_checks.check_set_params,
-            estimator_checks.check_dict_unchanged,
-            estimator_checks.check_dont_overwrite_parameters,
+    select_tests(
+        flatten([general_checks, transformer_checks, nonmeta_checks]),
+        exclude=[
+            "check_sample_weights_invariance",
+            "check_methods_subset_invariance",
+            "check_transformer_data_not_an_array",
+            "check_transformer_general"
         ]
-    ),
+    )
 )
 def test_estimator_checks(test_fn):
-    # Tests that are skipped:
-    # check_methods_subset_invariance: Since we add noise, the method is not invariant on a subset
-    # check_transformer_data_not_an_array: tests with `NotAnArray` as X for which we don't have a hashing function
-    # check_transformer_general: tests with lists as X for which we don't have a hashing function
     adder = RandomAdder()
     test_fn(RandomAdder.__name__, adder)
 
