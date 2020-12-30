@@ -1,25 +1,21 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.utils import estimator_checks
 
 from sklego.common import flatten
 from sklego.mixture import GMMOutlierDetector, BayesianGMMOutlierDetector
-from tests.conftest import nonmeta_checks, general_checks
+from tests.conftest import general_checks, nonmeta_checks, select_tests, outlier_checks
 
 
 @pytest.mark.parametrize(
     "test_fn",
-    flatten(
-        [
-            nonmeta_checks,
-            general_checks,
-            # outlier checks
-            estimator_checks.check_outliers_fit_predict,
-            estimator_checks.check_classifier_data_not_an_array,
-            estimator_checks.check_estimators_unfitted,
+    select_tests(
+        flatten([general_checks, nonmeta_checks, outlier_checks]),
+        exclude=[
+            "check_sample_weights_invariance",
+            "check_outliers_train"
         ]
-    ),
+    )
 )
 def test_estimator_checks(test_fn):
     clf_quantile = GMMOutlierDetector(threshold=0.999, method="quantile")
