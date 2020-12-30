@@ -1,7 +1,7 @@
 import itertools as it
 from copy import copy
 
-from sklearn.utils.testing import ignore_warnings
+from sklearn.utils._testing import ignore_warnings
 from sklearn.datasets import make_classification, make_regression
 
 
