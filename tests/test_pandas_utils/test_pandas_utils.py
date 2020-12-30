@@ -252,7 +252,7 @@ def test_log_extra(capsys):
     n_dogs = 2
 
     test_df = pd.DataFrame(
-        {"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats,}
+        {"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats}
     )
 
     def cat_counter(df):
@@ -281,7 +281,7 @@ def test_log_extra_kwargs(capsys):
     n_dogs = 2
 
     test_df = pd.DataFrame(
-        {"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats,}
+        {"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats}
     )
 
     def animal_counter(df, animal="cat"):

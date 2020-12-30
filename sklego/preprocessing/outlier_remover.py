@@ -7,6 +7,7 @@ from sklearn.utils.validation import (
 
 from sklego.common import TrainOnlyTransformerMixin
 
+
 class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
     """
     Removes outliers (train-time only) using the supplied removal model.

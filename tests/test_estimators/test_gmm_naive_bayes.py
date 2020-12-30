@@ -3,7 +3,6 @@ import numpy as np
 
 from sklego.common import flatten
 from sklego.naive_bayes import GaussianMixtureNB, BayesianGaussianMixtureNB
-from sklego.testing import check_shape_remains_same_classifier
 from tests.conftest import general_checks, nonmeta_checks, select_tests
 
 

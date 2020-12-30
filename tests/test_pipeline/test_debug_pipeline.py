@@ -62,6 +62,7 @@ def named_steps():
         ("add_1000", Adder(value=1000)),
     ]
 
+
 @pytest.fixture
 def nameless_steps():
     return (
@@ -70,6 +71,7 @@ def nameless_steps():
         Adder(value=100),
         Adder(value=1000)
     )
+
 
 @pytest.fixture
 def repeated_steps():
@@ -120,7 +122,7 @@ def test_time_in_logs_when_log_callback_is_default(caplog, named_steps):
     with caplog.at_level(logging.INFO):
         pipe.fit(IRIS.data, IRIS.target)
     assert caplog.text, f"Log should be none empty: {caplog.text}"
-    assert f"time=" in caplog.text, f'"time=" should be in: {caplog.text}'
+    assert "time=" in caplog.text, f'"time=" should be in: {caplog.text}'
     assert caplog.text.count("time") == (
         len(pipe.steps) - 1
     ), f'"time" should be {len(pipe.steps) - 1} times in {caplog.text}'

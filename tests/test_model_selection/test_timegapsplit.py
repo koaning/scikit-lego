@@ -85,7 +85,7 @@ def test_timegapsplit_too_many_splits():
 
 def test_timegapsplit_train_or_nsplit():
     with pytest.raises(ValueError):
-        cv = TimeGapSplit(
+        _ = TimeGapSplit(
             date_serie=df["date"],
             train_duration=None,
             valid_duration=timedelta(days=3),

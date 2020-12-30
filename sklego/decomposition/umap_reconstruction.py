@@ -8,6 +8,7 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
     """
     Does outlier detection based on the reconstruction error from UMAP.
     """
+
     def __init__(
         self,
         n_components=2,
@@ -16,7 +17,7 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         n_neighbors=15,
         min_dist=0.1,
         metric="euclidean",
-        random_state=None
+        random_state=None,
     ):
         self.n_components = n_components
         self.threshold = threshold
@@ -38,7 +39,7 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         if self.n_components < 2:
             raise ValueError("Number of components must be at least two.")
         if not self.threshold:
-            raise ValueError(f"The `threshold` value cannot be `None`.")
+            raise ValueError("The `threshold` value cannot be `None`.")
 
         self.umap_ = umap.UMAP(
             n_components=self.n_components,

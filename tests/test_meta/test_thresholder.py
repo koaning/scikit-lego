@@ -12,10 +12,17 @@ from tests.conftest import general_checks, classifier_checks, select_tests
     "test_fn",
     select_tests(
         flatten([general_checks, classifier_checks]),
-        exclude=['check_sample_weights_invariance', 'check_fit2d_predict1d', 'check_methods_subset_invariance', 'check_dont_overwrite_parameters',
-                 'check_classifiers_classes', 'check_classifiers_train', 'check_supervised_y_2d']
+        exclude=[
+            "check_sample_weights_invariance",
+            "check_fit2d_predict1d",
+            "check_methods_subset_invariance",
+            "check_dont_overwrite_parameters",
+            "check_classifiers_classes",
+            "check_classifiers_train",
+            "check_supervised_y_2d",
+        ]
         # outliers train wont work because we have two thresholds
-    )
+    ),
 )
 def test_standard_checks(test_fn):
     trf = Thresholder(LogisticRegression(), threshold=0.5)

@@ -11,7 +11,6 @@ from tests.conftest import (
     general_checks,
     classifier_checks,
     regressor_checks,
-    nonmeta_checks,
 )
 
 

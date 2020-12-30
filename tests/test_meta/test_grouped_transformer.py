@@ -9,7 +9,7 @@ from sklearn.utils import check_X_y
 from sklego.common import flatten
 from sklego.datasets import load_penguins
 from sklego.meta import GroupedTransformer
-from tests.conftest import transformer_checks, nonmeta_checks, general_checks, select_tests
+from tests.conftest import transformer_checks, general_checks, select_tests
 from tests.conftest import n_vals, k_vals, np_types
 
 
