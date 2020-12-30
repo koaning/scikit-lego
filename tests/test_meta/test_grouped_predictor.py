@@ -8,13 +8,13 @@ from sklego.common import flatten
 from sklego.meta import GroupedPredictor
 from sklego.datasets import load_chicken
 
-from tests.conftest import nonmeta_checks, general_checks, select_tests
+from tests.conftest import general_checks, select_tests
 
 
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
-        flatten([nonmeta_checks, general_checks]),
+        flatten([general_checks]),
         exclude=[
             # Nonsense checks because we always need at least two columns (group and value)
             "check_fit1d",
