@@ -50,7 +50,7 @@ setup(
     version=sklego.__version__,
     description="a collection of lego bricks for scikit-learn pipelines",
     author="Vincent D. Warmerdam & Matthijs Brouns",
-    url="https://scikit-lego.readthedocs.io/en/latest/",
+    url="https://scikit-lego.netlify.app/",
     packages=find_packages(exclude=["notebooks"]),
     package_data={"sklego": ["data/*.zip"]},
     long_description=read("readme.md"),
