@@ -8,6 +8,7 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
     """
     Does outlier detection based on the reconstruction error from PCA.
     """
+
     def __init__(
         self,
         n_components=None,
@@ -38,7 +39,7 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if not self.threshold:
-            raise ValueError(f"The `threshold` value cannot be `None`.")
+            raise ValueError("The `threshold` value cannot be `None`.")
 
         self.pca_ = PCA(
             n_components=self.n_components,

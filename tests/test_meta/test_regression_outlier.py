@@ -13,7 +13,7 @@ from tests.conftest import general_checks, select_tests, outlier_checks
     "test_fn",
     select_tests(
         flatten([general_checks, outlier_checks]),
-        exclude=['check_fit2d_predict1d', 'check_fit2d_1feature', 'check_outliers_train']
+        exclude=['check_fit2d_predict1d', 'check_fit2d_1feature', 'check_outliers_train', 'check_sample_weights_invariance']
         # outliers train wont work because we have two thresholds
     )
 )

@@ -8,11 +8,11 @@ from sklearn.utils import check_X_y
 
 from sklego.common import flatten
 from sklego.meta import EstimatorTransformer
-from tests.conftest import transformer_checks, nonmeta_checks, general_checks
+from tests.conftest import transformer_checks, general_checks
 
 
 @pytest.mark.parametrize(
-    "test_fn", flatten([transformer_checks, nonmeta_checks, general_checks])
+    "test_fn", flatten([transformer_checks, general_checks])
 )
 def test_estimator_checks(test_fn):
     trf = EstimatorTransformer(LinearRegression())

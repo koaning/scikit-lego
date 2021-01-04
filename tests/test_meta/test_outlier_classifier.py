@@ -5,28 +5,18 @@ from sklearn.linear_model import LinearRegression
 from sklego.common import flatten
 from sklego.mixture import GMMOutlierDetector
 from sklego.meta import OutlierClassifier
-from tests.conftest import general_checks
-from sklearn.utils import estimator_checks
+
+from tests.conftest import general_checks, select_tests
 
 
 @pytest.mark.parametrize(
     "test_fn",
-    flatten(
-        [
-            general_checks,
-            # classifier_checks,
-            estimator_checks.check_classifier_data_not_an_array,
-            # estimator_checks.check_classifiers_one_label,
-            # estimator_checks.check_classifiers_classes,
-            estimator_checks.check_estimators_partial_fit_n_features,
-            # estimator_checks.check_classifiers_train,
-            estimator_checks.check_supervised_y_2d,
-            estimator_checks.check_supervised_y_no_nan,
-            estimator_checks.check_estimators_unfitted,
-            estimator_checks.check_non_transformer_estimators_n_iter,
-            estimator_checks.check_decision_proba_consistency,
+    select_tests(
+        flatten([general_checks]),
+        exclude=[
+            "check_sample_weights_invariance",
         ]
-    ),
+    )
 )
 def test_estimator_checks(test_fn):
     mod_quantile = GMMOutlierDetector(threshold=0.999, method="quantile")

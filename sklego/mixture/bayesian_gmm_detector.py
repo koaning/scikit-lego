@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize_scalar
 from sklearn.base import BaseEstimator, OutlierMixin
-from sklearn.mixture import GaussianMixture, BayesianGaussianMixture
+from sklearn.mixture import BayesianGaussianMixture
 from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
 
 from scipy.stats import gaussian_kde

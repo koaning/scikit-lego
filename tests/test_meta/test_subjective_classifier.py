@@ -6,10 +6,17 @@ from sklearn.linear_model import Ridge, LogisticRegression
 
 from sklego.common import flatten
 from sklego.meta import SubjectiveClassifier
-from tests.conftest import general_checks, classifier_checks
+from tests.conftest import general_checks, classifier_checks, select_tests
 
 
-@pytest.mark.parametrize("test_fn", flatten([general_checks, classifier_checks]))
+@pytest.mark.parametrize(
+    "test_fn",
+    select_tests(
+        flatten([general_checks, classifier_checks]),
+        exclude=['check_sample_weights_invariance']
+        # outliers train wont work because we have two thresholds
+    )
+)
 def test_estimator_checks_classification(test_fn):
     if test_fn.__name__ == "check_classifiers_classes":
         prior = {

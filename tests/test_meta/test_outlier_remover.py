@@ -3,28 +3,23 @@ import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.cluster import KMeans
 from sklearn.pipeline import Pipeline
-from sklearn.utils import estimator_checks
 
 from sklego.common import flatten
 from sklego.meta import OutlierRemover
 from sklego.mixture import GMMOutlierDetector
 
+from tests.conftest import general_checks, select_tests
+
 
 @pytest.mark.parametrize(
     "test_fn",
-    flatten(
-        [
-            estimator_checks.check_transformers_unfitted,
-            estimator_checks.check_fit2d_predict1d,
-            estimator_checks.check_fit2d_1sample,
-            estimator_checks.check_fit2d_1feature,
-            estimator_checks.check_fit1d,
-            estimator_checks.check_get_params_invariance,
-            estimator_checks.check_set_params,
-            estimator_checks.check_dont_overwrite_parameters,
-            estimator_checks.check_transformers_unfitted,
+    select_tests(
+        flatten([general_checks]),
+        exclude=[
+            "check_sample_weights_invariance",
+            "check_methods_subset_invariance"
         ]
-    ),
+    )
 )
 def test_estimator_checks(test_fn):
     gmm_remover = OutlierRemover(outlier_detector=GMMOutlierDetector(), refit=True)

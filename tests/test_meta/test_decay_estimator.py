@@ -11,12 +11,11 @@ from tests.conftest import (
     general_checks,
     classifier_checks,
     regressor_checks,
-    nonmeta_checks,
 )
 
 
 @pytest.mark.parametrize(
-    "test_fn", flatten([general_checks, nonmeta_checks, regressor_checks])
+    "test_fn", flatten([general_checks, regressor_checks])
 )
 def test_estimator_checks_regression(test_fn):
     trf = DecayEstimator(LinearRegression())
@@ -24,7 +23,7 @@ def test_estimator_checks_regression(test_fn):
 
 
 @pytest.mark.parametrize(
-    "test_fn", flatten([general_checks, nonmeta_checks, classifier_checks])
+    "test_fn", flatten([general_checks, classifier_checks])
 )
 def test_estimator_checks_classification(test_fn):
     trf = DecayEstimator(LogisticRegression(solver="lbfgs"))

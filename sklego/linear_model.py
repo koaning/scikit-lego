@@ -12,7 +12,7 @@ from autograd.test_util import check_grads
 from deprecated.sphinx import deprecated
 from scipy.special._ufuncs import expit
 from sklearn.base import BaseEstimator, RegressorMixin
-from sklearn.linear_model.base import LinearClassifierMixin
+from sklearn.linear_model._base import LinearClassifierMixin
 from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import check_X_y

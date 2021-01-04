@@ -2,18 +2,28 @@ import warnings
 
 import pytest
 import numpy as np
-from cvxpy import SolverError
+try:
+    from cvxpy import SolverError
+except ImportError:
+    pass
 from sklearn.linear_model import LogisticRegression
 
 from sklego.common import flatten
 from sklego.linear_model import DemographicParityClassifier, FairClassifier
 from sklego.metrics import p_percent_score
-from tests.conftest import general_checks, nonmeta_checks, classifier_checks
+from tests.conftest import general_checks, classifier_checks, select_tests, nonmeta_checks
 
 
 @pytest.mark.parametrize(
-    "test_fn", flatten([general_checks, nonmeta_checks, classifier_checks])
+    "test_fn",
+    select_tests(
+        flatten([general_checks, nonmeta_checks, classifier_checks]),
+        exclude=[
+            "check_sample_weights_invariance",
+        ]
+    )
 )
+@pytest.mark.cvxpy
 def test_standard_checks(test_fn):
     trf = DemographicParityClassifier(
         covariance_threshold=None,
@@ -65,6 +75,7 @@ def _test_same(dataset):
         assert np.sum(lr.predict(X_without_sens) != fair.predict(X)) / len(X) < 0.01
 
 
+@pytest.mark.cvxpy
 def test_same_logistic(random_xy_dataset_clf):
     """
     Tests whether the fair classifier performs similar to logistic regression
@@ -74,6 +85,7 @@ def test_same_logistic(random_xy_dataset_clf):
     _test_same(random_xy_dataset_clf)
 
 
+@pytest.mark.cvxpy
 def test_same_logistic_multiclass(random_xy_dataset_multiclf):
     """
     Tests whether the fair classifier performs similar to logistic regression
@@ -83,6 +95,7 @@ def test_same_logistic_multiclass(random_xy_dataset_multiclf):
     _test_same(random_xy_dataset_multiclf)
 
 
+@pytest.mark.cvxpy
 def test_regularization(sensitive_classification_dataset):
     """Tests whether increasing regularization decreases the norm of the coefficient vector"""
     X, y = sensitive_classification_dataset
@@ -97,6 +110,7 @@ def test_regularization(sensitive_classification_dataset):
         prev_theta_norm = theta_norm
 
 
+@pytest.mark.cvxpy
 def test_fairness(sensitive_classification_dataset):
     """tests whether fairness (measured by p percent score) increases as we decrease the covariance threshold"""
     X, y = sensitive_classification_dataset
@@ -115,6 +129,7 @@ def test_fairness(sensitive_classification_dataset):
         prev_fairness = fairness
 
 
+@pytest.mark.cvxpy
 def test_deprecation():
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered.

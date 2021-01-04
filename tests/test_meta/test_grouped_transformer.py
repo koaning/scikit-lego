@@ -9,14 +9,14 @@ from sklearn.utils import check_X_y
 from sklego.common import flatten
 from sklego.datasets import load_penguins
 from sklego.meta import GroupedTransformer
-from tests.conftest import transformer_checks, nonmeta_checks, general_checks, select_tests
+from tests.conftest import transformer_checks, general_checks, select_tests
 from tests.conftest import n_vals, k_vals, np_types
 
 
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
-        flatten([transformer_checks, nonmeta_checks, general_checks]),
+        flatten([transformer_checks, general_checks]),
         exclude=[
             # Nonsense checks because we always need at least two columns (group and value)
             "check_fit2d_1feature",

@@ -1,10 +1,7 @@
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklego.base import OutlierModel
-from sklearn.utils.validation import (
-    check_is_fitted,
-    check_X_y
-)
+from sklearn.utils.validation import check_is_fitted, check_X_y
 
 
 class OutlierClassifier(BaseEstimator, ClassifierMixin):
@@ -14,13 +11,14 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
     This way you can use familiar metrics again and this allows you
     to consider outlier models as a fraud detector.
     """
+
     def __init__(self, model):
         self.model = model
 
     def _is_outlier_model(self):
         return isinstance(self.model, OutlierModel)
 
-    def fit(self, X, y):
+    def fit(self, X, y=None):
         """
         Fit the data after adapting the same weight.
 
@@ -42,7 +40,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :return: array, shape=(n_samples,) the predicted data
         """
-        check_is_fitted(self, ['estimator_', 'classes_'])
+        check_is_fitted(self, ["estimator_", "classes_"])
         preds = self.estimator_.predict(X)
         result = np.zeros(preds.shape)
         result[preds == -1] = 1
