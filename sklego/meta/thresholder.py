@@ -9,6 +9,7 @@ from sklearn.utils.validation import (
     check_X_y,
     FLOAT_DTYPES,
 )
+from sklearn.exceptions import NotFittedError
 
 from sklego.base import ProbabilisticClassifier
 
@@ -18,11 +19,27 @@ class Thresholder(BaseEstimator, ClassifierMixin):
     Takes a two class estimator and moves the threshold. This way you might
     design the algorithm to only accept a certain class if the probability
     for it is larger than, say, 90% instead of 50%.
+
+    :param model: the moddel to threshold
+    :param threshold: the actual threshold to use
+    :param refit: if True, we will always retrain the model even if it is already fitted.
+    If False we only refit if the original model isn't fitted.
     """
 
-    def __init__(self, model, threshold: float):
+    def __init__(self, model, threshold: float, refit=False):
         self.model = model
         self.threshold = threshold
+        self.refit = refit
+
+    def _handle_refit(self, X, y):
+        """Only refit when we need to, unless refit=True is present."""
+        if self.refit:
+            self.estimator_.fit(X, y)
+        else:
+            try:
+                _ = self.estimator_.predict(X[:1])
+            except NotFittedError:
+                self.estimator_.fit(X, y)
 
     def fit(self, X, y):
         """
@@ -38,7 +55,7 @@ class Thresholder(BaseEstimator, ClassifierMixin):
             raise ValueError(
                 "The Thresholder meta model only works on classifcation models with .predict_proba."
             )
-        self.estimator_.fit(X, y)
+        self._handle_refit(X, y)
         self.classes_ = self.estimator_.classes_
         if len(self.classes_) != 2:
             raise ValueError(
