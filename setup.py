@@ -4,8 +4,6 @@ from setuptools import setup, find_packages
 import sklego
 
 base_packages = [
-    "numpy>=1.20.0",
-    "scipy>=1.5.4",
     "scikit-learn>=0.24.1",
     "pandas>=1.1.5",
     "patsy>=0.5.1",
