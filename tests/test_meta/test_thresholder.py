@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from sklearn.linear_model import LogisticRegression, LinearRegression
-
+from sklearn.exceptions import NotFittedError
 
 from sklego.common import flatten
 from sklego.meta import Thresholder
@@ -66,3 +66,22 @@ def test_raise_error2():
         # we only support two classes
         y = np.random.choice(["a", "b", "c"], 1000)
         mod.fit(X, y)
+
+
+def test_refit_always():
+    lr = LogisticRegression()
+    mod = Thresholder(lr, threshold=0.5, refit=True)
+    np.random.seed(42)
+    X = np.random.normal(0, 1, (100, 3))
+    y = np.random.normal(0, 1, (100,)) < 0
+    assert mod.fit(X, y).predict(X).shape == y.shape
+
+
+def test_refit_auto():
+    lr = LogisticRegression()
+    mod = Thresholder(lr, threshold=0.5, refit=False)
+    np.random.seed(42)
+    X = np.random.normal(0, 1, (100, 3))
+    y = np.random.normal(0, 1, (100,)) < 0
+    mod.fit(X, y).predict(X)
+    assert mod.fit(X, y).predict(X).shape == y.shape
