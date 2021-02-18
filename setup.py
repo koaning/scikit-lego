@@ -4,16 +4,14 @@ from setuptools import setup, find_packages
 import sklego
 
 base_packages = [
-    "numpy>=1.16.0",
-    "scipy>=1.2.0",
-    "scikit-learn>=0.20.2",
-    "pandas>=0.23.4",
+    "scikit-learn>=0.24.1",
+    "pandas>=1.1.5",
     "patsy>=0.5.1",
     "autograd>=1.2",
     "Deprecated>=1.2.6",
-    "umap-learn>=0.4.3"
+    "umap-learn>=0.4.6"
 ]
-cvxpy_packages = ["cvxpy>=1.0.24"]
+cvxpy_packages = ["cvxpy>=1.1.8"]
 all_packages = cvxpy_packages
 
 docs_packages = [
