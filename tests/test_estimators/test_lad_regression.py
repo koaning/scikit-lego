@@ -82,6 +82,6 @@ def test_check_estimator():
     check_estimator(lad)
 
 @pytest.mark.parametrize("test_fn", [check_shape_remains_same_regressor])
-def test_deadzone(test_fn):
+def test_lad(test_fn):
     regr = LADRegression()
     test_fn(LADRegression.__name__, regr)

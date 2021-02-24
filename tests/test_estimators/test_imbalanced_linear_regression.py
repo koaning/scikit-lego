@@ -105,6 +105,6 @@ def test_check_estimator():
 
 
 @pytest.mark.parametrize("test_fn", [check_shape_remains_same_regressor])
-def test_deadzone(test_fn):
+def test_imbalanced(test_fn):
     regr = ImbalancedLinearRegression()
     test_fn(ImbalancedLinearRegression.__name__, regr)
