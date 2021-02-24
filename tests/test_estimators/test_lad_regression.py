@@ -6,6 +6,8 @@ from sklearn.utils.estimator_checks import check_estimator
 
 from sklego.linear_model import LADRegression
 from sklego.testing import check_shape_remains_same_regressor
+from sklego.common import flatten
+from tests.conftest import general_checks, nonmeta_checks, select_tests
 
 test_batch = [
     (np.array([0, 0, 3, 0, 6]), 3),
@@ -85,3 +87,20 @@ def test_check_estimator():
 def test_lad(test_fn):
     regr = LADRegression()
     test_fn(LADRegression.__name__, regr)
+
+
+@pytest.mark.parametrize(
+    "test_fn",
+    select_tests(
+        flatten([general_checks, nonmeta_checks]),
+    )
+)
+def test_estimator_checks(test_fn):
+    regr1 = LADRegression()
+    regr2 = LADRegression(positive=True)
+    regr3 = LADRegression(positive=True, fit_intercept=False)
+    regr4 = LADRegression(fit_intercept=False)
+    test_fn(LADRegression.__name__, regr1)
+    test_fn(LADRegression.__name__ + "_positive", regr2)
+    test_fn(LADRegression.__name__ + "_positive__no_intercept", regr3)
+    test_fn(LADRegression.__name__ + "_no_intercept", regr4)
