@@ -549,7 +549,6 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         grad_loss : Callable[[np.array], np.array]
             The gradient of the loss function. Speeds up finding the minimum.
         """
-        pass
 
     def _loss_regularize(self, loss):
         def regularized_loss(params):
@@ -592,11 +591,15 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         """
         X_, grad_loss, loss = self._prepare_inputs(X, sample_weight, y)
 
-        d = X_.shape[1]
-        bounds = [(0, np.inf) for _ in range(d)] if self.positive else None
+        d = X_.shape[1] - self.n_features_in_  # This is either zero or one.
+        bounds = (
+            self.n_features_in_ * [(0, np.inf)] + d * [(-np.inf, np.inf)]
+            if self.positive
+            else None
+        )
         minimize_result = minimize(
             loss,
-            x0=np.zeros(d),
+            x0=np.zeros(self.n_features_in_ + d),
             bounds=bounds,
             method="SLSQP",
             jac=grad_loss,
