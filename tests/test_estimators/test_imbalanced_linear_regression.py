@@ -2,12 +2,11 @@
 
 import numpy as np
 import pytest
-from sklearn.utils.estimator_checks import check_estimator
 
 from sklego.linear_model import ImbalancedLinearRegression
 from sklego.testing import check_shape_remains_same_regressor
 from sklego.common import flatten
-from tests.conftest import general_checks, nonmeta_checks, select_tests
+from tests.conftest import general_checks, nonmeta_checks, select_tests, regressor_checks
 
 test_batch = [
     (np.array([0, 0, 3, 0, 6]), 3),
@@ -99,31 +98,24 @@ def test_fit_intercept_and_copy(coefs, intercept):
     assert imb.intercept_ == 0.0
 
 
-def test_check_estimator():
-    """Conduct all scikit-learn estimator tests."""
-    imb = ImbalancedLinearRegression()
-
-    check_estimator(imb)
-
-
 @pytest.mark.parametrize("test_fn", [check_shape_remains_same_regressor])
 def test_imbalanced(test_fn):
     regr = ImbalancedLinearRegression()
     test_fn(ImbalancedLinearRegression.__name__, regr)
 
-
+@pytest.mark.parametrize(
+    "regr", [
+         (ImbalancedLinearRegression.__name__, ImbalancedLinearRegression()),
+         (ImbalancedLinearRegression.__name__ + "_positive", ImbalancedLinearRegression(positive=True)),
+         (ImbalancedLinearRegression.__name__ + "_positive__no_intercept", ImbalancedLinearRegression(positive=True, fit_intercept=False)),
+         (ImbalancedLinearRegression.__name__ + "_no_intercept", ImbalancedLinearRegression(fit_intercept=False))
+     ]
+)
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
-        flatten([general_checks, nonmeta_checks]),
+        flatten([general_checks, nonmeta_checks, regressor_checks]),
     )
 )
-def test_estimator_checks(test_fn):
-    regr1 = ImbalancedLinearRegression()
-    regr2 = ImbalancedLinearRegression(positive=True)
-    regr3 = ImbalancedLinearRegression(positive=True, fit_intercept=False)
-    regr4 = ImbalancedLinearRegression(fit_intercept=False)
-    test_fn(ImbalancedLinearRegression.__name__, regr1)
-    test_fn(ImbalancedLinearRegression.__name__ + "_positive", regr2)
-    test_fn(ImbalancedLinearRegression.__name__ + "_positive__no_intercept", regr3)
-    test_fn(ImbalancedLinearRegression.__name__ + "_no_intercept", regr4)
+def test_estimator_checks(regr, test_fn):
+    test_fn(*regr)
