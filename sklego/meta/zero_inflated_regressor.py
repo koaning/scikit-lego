@@ -41,8 +41,6 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
     ZeroInflatedRegressor(classifier=ExtraTreesClassifier(random_state=0))
     >>> z.predict(X)[:5]
     array([0.52977797, 0.        , 0.        , 0.73678052, 0.        ])
-
-
     """
 
     def __init__(self, classifier: Any = None, regressor: Any = None) -> None:
@@ -77,7 +75,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
         )
         self.classifier_.fit(X, y != 0)
 
-        non_zero_indices = self.classifier_.predict(X) == 1
+        non_zero_indices = np.where(self.classifier_.predict(X))[0]
 
         self.regressor_ = (
             clone(self.regressor) if self.regressor is not None else LinearRegression()
