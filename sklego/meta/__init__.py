@@ -10,6 +10,7 @@ __all__ = [
     "Thresholder",
     "RegressionOutlierDetector",
     "OutlierClassifier",
+    "ZeroInflatedRegressor"
 ]
 
 from .confusion_balancer import ConfusionBalancer
@@ -23,3 +24,4 @@ from .subjective_classifier import SubjectiveClassifier
 from .thresholder import Thresholder
 from .regression_outlier_detector import RegressionOutlierDetector
 from .outlier_classifier import OutlierClassifier
+from .zero_inflated_regressor import ZeroInflatedRegressor

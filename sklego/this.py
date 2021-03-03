@@ -18,10 +18,10 @@ not everything needs to be built, not everything needs to be explored.
 Change everything and you'll soon be a jerk,
 you may invent a new tool, not a way to work.
 Some problems cannot be solved in a single day,
-but if you ignore them, they sometimes go away.
+but if you can ignore them, they sometimes go away.
 
 There's a lot of power in simplicity,
-it keeps you approach strong,
+it keeps the approach strong,
 if you understand the solution better than the problem,
 you're doing it wrong.
 """
