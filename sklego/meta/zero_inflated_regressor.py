@@ -57,10 +57,10 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
 
         Parameters
         ----------
-        X : np.array of shape (n_samples, n_features)
+        X : np.ndarray of shape (n_samples, n_features)
             The training data.
 
-        y : np.array, 1-dimensional
+        y : np.ndarray, 1-dimensional
             The target values.
 
         Returns
@@ -101,12 +101,12 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
 
         Parameters
         ----------
-        X : np.array, shape (n_samples, n_features)
+        X : np.ndarray, shape (n_samples, n_features)
             Samples to get predictions of.
 
         Returns
         -------
-        y : np.array, shape (n_samples,)
+        y : np.ndarray, shape (n_samples,)
             The predicted values.
         """
         check_is_fitted(self)
