@@ -89,7 +89,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
             self.regressor_ = clone(self.regressor)
             self.regressor_.fit(X[non_zero_indices], y[non_zero_indices])
         else:
-            warnings.warn("The training labels are all zero. Hence, the passed regressor cannot be trained and is replaced by a model that constantly outputs zero.")
+            warnings.warn("The predicted training labels are all zero. Hence, the passed regressor cannot be trained and is replaced by a model that constantly outputs zero.")
             self.regressor_ = DummyRegressor(strategy="constant", constant=0.0)
             self.regressor_.fit(X, y)
 
