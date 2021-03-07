@@ -53,7 +53,7 @@ def test_zero_inflated_example():
     assert zir_score > 0.85
     assert zir_score > et_score
 
-def test_exceptions():
+def test_wrong_estimators_exceptions():
     X = np.array([[0.]])
     y = np.array([0.])
 
@@ -64,5 +64,6 @@ def test_exceptions():
     with pytest.raises(ValueError, match="`regressor` has to be a regressor."):
         zir = ZeroInflatedRegressor(ExtraTreesClassifier(), ExtraTreesClassifier())
         zir.fit(X, y)
+
 
 
