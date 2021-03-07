@@ -1,7 +1,9 @@
 from typing import Any
+import warnings
 
 import numpy as np
-from sklearn.base import BaseEstimator, RegressorMixin, clone
+from sklearn.base import BaseEstimator, RegressorMixin, clone, is_regressor, is_classifier
+from sklearn.dummy import DummyRegressor
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
 
 
@@ -66,9 +68,18 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
         -------
         ZeroInflatedRegressor
             Fitted regressor.
+
+        Raises
+        ------
+        ValueError
+            If `classifier` is not a classifier or `regressor` is not a regressor.
         """
         X, y = check_X_y(X, y)
         self._check_n_features(X, reset=True)
+        if not is_classifier(self.classifier):
+            raise ValueError(f"`classifier` has to be a classifier. Received instance of {type(self.classifier)} instead.")
+        if not is_regressor(self.regressor):
+            raise ValueError(f"`regressor` has to be a regressor. Received instance of {type(self.regressor)} instead.")
 
         self.classifier_ = clone(self.classifier)
         self.classifier_.fit(X, y != 0)
@@ -79,7 +90,9 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
             self.regressor_ = clone(self.regressor)
             self.regressor_.fit(X[non_zero_indices], y[non_zero_indices])
         else:
-            self.regressor_ = None
+            warnings.warn("The training labels are all zero. Hence, the passed regressor cannot be trained and is replaced by a model that constantly outputs zero.")
+            self.regressor_ = DummyRegressor(strategy="constant", constant=0)
+            self.regressor_.fit(X, y)
 
         return self
 
@@ -104,7 +117,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
         output = np.zeros(len(X))
         non_zero_indices = np.where(self.classifier_.predict(X))[0]
 
-        if self.regressor_ is not None and non_zero_indices.size > 0:
+        if non_zero_indices.size > 0:
             output[non_zero_indices] = self.regressor_.predict(X[non_zero_indices])
 
         return output

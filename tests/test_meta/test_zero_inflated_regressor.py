@@ -1,5 +1,6 @@
-"""Test the LADRegressor."""
+"""Test the ZeroInflatedRegressor."""
 
+import numpy as np
 import pytest
 from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
 
@@ -35,7 +36,6 @@ def test_estimator_checks(test_fn):
 
 
 def test_zero_inflated_example():
-    import numpy as np
     from sklearn.model_selection import cross_val_score
 
     np.random.seed(0)
@@ -52,3 +52,17 @@ def test_zero_inflated_example():
 
     assert zir_score > 0.85
     assert zir_score > et_score
+
+def test_exceptions():
+    X = np.array([[0.]])
+    y = np.array([0.])
+
+    with pytest.raises(ValueError, match="`classifier` has to be a classifier."):
+        zir = ZeroInflatedRegressor(ExtraTreesRegressor(), ExtraTreesRegressor())
+        zir.fit(X, y)
+
+    with pytest.raises(ValueError, match="`regressor` has to be a regressor."):
+        zir = ZeroInflatedRegressor(ExtraTreesClassifier(), ExtraTreesClassifier())
+        zir.fit(X, y)
+
+
