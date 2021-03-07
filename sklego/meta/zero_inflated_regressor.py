@@ -1,4 +1,3 @@
-from typing import Any
 import warnings
 
 import numpy as np
@@ -47,12 +46,12 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
     array([4.91483294, 0.        , 0.        , 0.04941909, 0.        ])
     """
 
-    def __init__(self, classifier: Any, regressor: Any) -> None:
+    def __init__(self, classifier, regressor) -> None:
         """Initialize."""
         self.classifier = classifier
         self.regressor = regressor
 
-    def fit(self, X: np.array, y: np.array) -> "ZeroInflatedRegressor":
+    def fit(self, X, y):
         """
         Fit the model.
 
@@ -91,12 +90,12 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
             self.regressor_.fit(X[non_zero_indices], y[non_zero_indices])
         else:
             warnings.warn("The training labels are all zero. Hence, the passed regressor cannot be trained and is replaced by a model that constantly outputs zero.")
-            self.regressor_ = DummyRegressor(strategy="constant", constant=0)
+            self.regressor_ = DummyRegressor(strategy="constant", constant=0.0)
             self.regressor_.fit(X, y)
 
         return self
 
-    def predict(self, X: np.array) -> np.array:
+    def predict(self, X):
         """
         Get predictions.
 
