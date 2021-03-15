@@ -20,8 +20,8 @@ from around the globe. It was initiated by [Matthijs Brouns](https://www.mbrouns
 and [Vincent D. Warmerdam](https://koaning.io) as a tool to teach people how
 to contribute to open source.
 
-Note that we're not formally affiliated with the scikit-learn project at all, 
-but we aim to strictly adhere to their standards. 
+Note that we're not formally affiliated with the scikit-learn project at all,
+but we aim to strictly adhere to their standards.
 
 The same holds with lego. LEGO® is a trademark of the LEGO Group of companies which does not sponsor, authorize or endorse this project.
 
@@ -52,8 +52,8 @@ The documentation can be found [here](https://scikit-lego.netlify.app).
 
 ## Usage
 
-We offer custom metrics, models and transformers. You can import them just like you would 
-in scikit-learn. 
+We offer custom metrics, models and transformers. You can import them just like you would
+in scikit-learn.
 
 ```python
 # the scikit learn stuff we love
@@ -112,6 +112,7 @@ Here's a list of features that this library currently offers:
 - `sklego.meta.SubjectiveClassifier` experimental feature to add a prior to your classifier
 - `sklego.meta.Thresholder` meta model that allows you to gridsearch over the threshold
 - `sklego.meta.RegressionOutlierDetector` meta model that finds outliers by adding a threshold to regression
+- `sklego.meta.ZeroInflatedRegressor` predicts zero or applies a regression based on a classifier
 - `sklego.preprocessing.ColumnCapper` limits extreme values of the model features
 - `sklego.preprocessing.ColumnDropper` drops a column from pandas
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
@@ -127,7 +128,7 @@ Here's a list of features that this library currently offers:
 - `sklego.model_selection.KlusterFoldValidation` experimental feature that does K folds based on clustering
 - `sklego.model_selection.TimeGapSplit` timeseries Kfold with a gap between train/test
 - `sklego.pipeline.DebugPipeline` adds debug information to make debugging easier
-- `sklego.pipeline.make_debug_pipeline` shorthand function to create a debugable pipeline 
+- `sklego.pipeline.make_debug_pipeline` shorthand function to create a debugable pipeline
 - `sklego.metrics.correlation_score` calculates correlation between model output and feature
 - `sklego.metrics.equal_opportunity_score` calculates equal opportunity metric
 - `sklego.metrics.p_percent_score` proxy for model fairness with regards to sensitive attribute
@@ -142,4 +143,4 @@ things before they become added to the project:
 2. any new feature passes standard unit tests (we use the ones from scikit-learn)
 3. the feature has been discussed in the issue list beforehand
 
-We automate all of our testing and use pre-commit hooks to keep the code working. 
+We automate all of our testing and use pre-commit hooks to keep the code working.
