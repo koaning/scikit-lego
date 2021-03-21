@@ -35,7 +35,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
 
         # fit sigmoid function for `predict_proba`
         decision_function_scores = self.estimator_.decision_function(X)
-        self.predict_proba_sigmoid = _SigmoidCalibration().fit(decision_function_scores, y)
+        self._predict_proba_sigmoid = _SigmoidCalibration().fit(decision_function_scores, y)
 
         return self
 
@@ -61,6 +61,6 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["estimator_", "classes_"])
         decision_function_scores = self.estimator_.decision_function(X)
-        probabilities = self.predict_proba_sigmoid.predict(decision_function_scores).reshape(-1, 1)
+        probabilities = self._predict_proba_sigmoid.predict(decision_function_scores).reshape(-1, 1)
         complement = np.ones_like(probabilities) - probabilities
         return np.hstack((complement, probabilities))
