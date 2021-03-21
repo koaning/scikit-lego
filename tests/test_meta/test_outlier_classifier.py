@@ -38,6 +38,8 @@ def test_obvious_usecase_quantile(dataset):
     clf_quantile.fit(X, y)
     assert clf_quantile.predict([[10, 10]]) == np.array([1])
     assert clf_quantile.predict([[0, 0]]) == np.array([0])
+    np.testing.assert_array_almost_equal(clf_quantile.predict_proba([[10, 10]]), np.array([[0, 1]]), decimal=4)
+    np.testing.assert_array_almost_equal(clf_quantile.predict_proba([[0, 0]]), np.array([[1, 0]]), decimal=4)
     assert isinstance(clf_quantile.score(X, y), float)
 
 
