@@ -4,7 +4,7 @@ Contribution
 .. image:: _static/contribute.png
    :align: center
 
-This project started becauser we saw people rewrite the same
+This project started because we saw people rewrite the same
 transformers and estimators at clients over and over again. Our
 goal is to have a place where more experimental building blocks
 for scikit learn pipelines might exist. This means we're usually
@@ -36,7 +36,7 @@ sample implementation of the `ColumnSelector` below. Please review all comments 
         Select columns in a pandas dataframe based on their dtype
 
         :param include: types to be included in the dataframe
-        :param exclude: types to be exluded in the dataframe
+        :param exclude: types to be excluded in the dataframe
         """
         def __init__(self, include=None, exclude=None):
             # Important: You can't use `*args` or `**kwargs` in the `__init__` method. `scikit-learn` uses the

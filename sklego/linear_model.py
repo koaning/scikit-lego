@@ -337,7 +337,7 @@ class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
     :param max_iter: Maximum number of iterations taken for the solvers to converge.
     :param train_sensitive_cols: Indicates whether the model should use the sensitive columns in the fit step.
     :param multi_class: The method to use for multiclass predictions
-    :param n_jobs: The amount of parallel jobs thata should be used to fit multiclass models
+    :param n_jobs: The amount of parallel jobs that should be used to fit multiclass models
 
     """
 
@@ -425,7 +425,7 @@ class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
     :param max_iter: Maximum number of iterations taken for the solvers to converge.
     :param train_sensitive_cols: Indicates whether the model should use the sensitive columns in the fit step.
     :param multi_class: The method to use for multiclass predictions
-    :param n_jobs: The amount of parallel jobs thata should be used to fit multiclass models
+    :param n_jobs: The amount of parallel jobs that should be used to fit multiclass models
 
     """
 
