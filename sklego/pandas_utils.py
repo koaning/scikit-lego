@@ -85,11 +85,12 @@ def log_step(
 
         combined = " ".join([s for s in optional_strings if s])
 
-        func_args = inspect.signature(func).bind(*args, **kwargs).arguments
-        func_args_str = "".join(
-            ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
-        )
         if print_args:
+
+            func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+            func_args_str = "".join(
+                ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
+            )
             print_fn(f"[{func.__name__}(df{func_args_str})] " + combined,)
         else:
             print_fn(f"[{func.__name__}]" + combined,)
