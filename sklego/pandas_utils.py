@@ -92,7 +92,7 @@ def log_step(
         if print_args:
             print_fn(f"[{func.__name__}(df{func_args_str})] " + combined,)
         else:
-            print_fn(f"[{func.__name__}()")
+            print_fn(f"[{func.__name__}]" + combined,)
         return result
 
     return wrapper
