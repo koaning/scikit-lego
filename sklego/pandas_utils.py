@@ -27,6 +27,7 @@ def log_step(
     names=False,
     dtypes=False,
     print_fn=print,
+    print_args=True
 ):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
@@ -38,6 +39,7 @@ def log_step(
     :param names: bool, log the names of the columns of the result, defaults to False
     :param dtypes: bool, log the dtypes of the results, defaults to False
     :param print_fn: callable, print function (e.g. print or logger.info), defaults to print
+    :param print_args: bool, whether or not to print the arguments given to the function.
     :returns: the result of the function
 
     :Example:
@@ -60,6 +62,7 @@ def log_step(
             names=names,
             dtypes=dtypes,
             print_fn=print_fn,
+            print_args=print_args
         )
 
     names = False if dtypes else names
@@ -86,8 +89,10 @@ def log_step(
         func_args_str = "".join(
             ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
         )
-        print_fn(f"[{func.__name__}(df{func_args_str})] " + combined,)
-
+        if print_args:
+            print_fn(f"[{func.__name__}(df{func_args_str})] " + combined,)
+        else:
+            print_fn(f"[{func.__name__}()")
         return result
 
     return wrapper
