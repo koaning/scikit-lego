@@ -88,7 +88,7 @@ def test_log_step_display_args(capsys, test_df):
     def do_something(df):
         return df.drop(0)
 
-    @log_step
+    @log_step(display_args=False)
     def do_nothing(df, *args, **kwargs):
         return df
 
