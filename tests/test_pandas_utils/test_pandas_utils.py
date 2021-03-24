@@ -97,10 +97,9 @@ def test_log_step_display_args(capsys, test_df):
     captured = capsys.readouterr()
     print_statements = captured.out.split("\n")
 
-    assert print_statements[0].startswith("[do_nothing(df)]")
-    raise Exception(print_statements[1])
+    assert print_statements[0].startswith("[do_nothing]") 
     assert "kwargs = {'a': '1'}" not in print_statements[1]
-    assert print_statements[2].startswith("[do_something(df)]")
+    assert print_statements[2].startswith("[do_something]")
 
 
 def test_log_step_logger(caplog, test_df):
