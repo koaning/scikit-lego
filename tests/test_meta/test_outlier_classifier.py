@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import LocalOutlierFactor
 
@@ -42,6 +43,21 @@ def test_obvious_usecase_quantile(dataset):
     np.testing.assert_array_almost_equal(clf_quantile.predict_proba([[10, 10]]), np.array([[0, 1]]), decimal=4)
     np.testing.assert_array_almost_equal(clf_quantile.predict_proba([[0, 0]]), np.array([[1, 0]]), decimal=4)
     assert isinstance(clf_quantile.score(X, y), float)
+
+
+def test_obvious_usecase_isolationforest(dataset):
+    X = dataset
+    y = (dataset.max(axis=1) > 3).astype(np.int)
+    outlier_model = IsolationForest(contamination=y.sum()/len(y))
+    clf_model = OutlierClassifier(outlier_model)
+    clf_model.fit(X, y)
+    assert clf_model.predict([[10, 10]]) == np.array([1])
+    assert clf_model.predict([[0, 0]]) == np.array([0])
+    np.testing.assert_array_almost_equal(clf_model.predict_proba([[0, 0]]), np.array([[1, 0]]), decimal=4)
+    outlier_proba = clf_model.predict_proba([[10, 10]])[0]
+    assert outlier_proba[0]<0.2
+    assert outlier_proba[1]>0.8
+    assert isinstance(clf_model.score(X, y), float)
 
 
 def test_raises_error(dataset):
