@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from sklearn.neighbors import LocalOutlierFactor
 
 from sklego.common import flatten
 from sklego.mixture import GMMOutlierDetector
@@ -50,3 +51,12 @@ def test_raises_error(dataset):
     y = (dataset.max(axis=1) > 3).astype(np.int)
     with pytest.raises(ValueError):
         clf_quantile.fit(X, y)
+
+
+def test_raises_error_no_decision_function(dataset):
+    outlier_model = LocalOutlierFactor()
+    clf_model = OutlierClassifier(outlier_model)
+    X = dataset
+    y = (dataset.max(axis=1) > 3).astype(np.int)
+    with pytest.raises(ValueError):
+        clf_model.fit(X, y)
