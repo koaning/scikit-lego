@@ -82,7 +82,7 @@ def test_log_step(capsys, test_df):
     assert print_statements[2].startswith("[do_something(df)]")
 
 def test_log_step_display_args(capsys, test_df):
-    """Base test of log_step without any arguments to the logger"""
+    """Test that we can disable printing function arguments in the log_step""
 
     @log_step(display_args=False)
     def do_something(df):
