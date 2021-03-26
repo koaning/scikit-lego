@@ -31,8 +31,8 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
         if not self._is_outlier_model():
             raise ValueError("Passed model does not detect outliers!")
         if not hasattr(self.model, 'decision_function'):
-            raise ValueError('Passed model does not have a `decision_function` method. This is required for '
-                             '`predict_proba` estimation.')
+            raise ValueError(f'Passed model {self.model} does not have a `decision_function` '
+                             f'method. This is required for `predict_proba` estimation.')
         self.estimator_ = self.model.fit(X, y)
         self.classes_ = np.array([0, 1])
 
