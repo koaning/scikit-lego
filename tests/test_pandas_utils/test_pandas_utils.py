@@ -81,6 +81,26 @@ def test_log_step(capsys, test_df):
     assert print_statements[1].startswith("[do_nothing(df, kwargs = {'a': '1'})]")
     assert print_statements[2].startswith("[do_something(df)]")
 
+def test_log_step_display_args(capsys, test_df):
+    """Test that we can disable printing function arguments in the log_step"""
+
+    @log_step(display_args=False)
+    def do_something(df):
+        return df.drop(0)
+
+    @log_step(display_args=False)
+    def do_nothing(df, *args, **kwargs):
+        return df
+
+    (test_df.pipe(do_nothing).pipe(do_nothing, a="1").pipe(do_something))
+
+    captured = capsys.readouterr()
+    print_statements = captured.out.split("\n")
+
+    assert print_statements[0].startswith("[do_nothing]") 
+    assert "kwargs = {'a': '1'}" not in print_statements[1]
+    assert print_statements[2].startswith("[do_something]")
+
 
 def test_log_step_logger(caplog, test_df):
     """Base test of log_step with a logger supplied instead of default print"""
