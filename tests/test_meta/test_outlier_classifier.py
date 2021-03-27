@@ -46,32 +46,24 @@ def test_obvious_usecase_quantile(dataset):
     assert isinstance(clf_quantile.score(X, y), float)
 
 
-def test_obvious_usecase_isolationforest(dataset):
-    X = dataset
-    y = (dataset.max(axis=1) > 3).astype(np.int)
-    outlier_model = IsolationForest(contamination=y.sum()/len(y))
-    clf_model = OutlierClassifier(outlier_model)
-    clf_model.fit(X, y)
-    assert clf_model.predict([[10, 10]]) == np.array([1])
-    assert clf_model.predict([[0, 0]]) == np.array([0])
-    np.testing.assert_array_almost_equal(clf_model.predict_proba([[0, 0]]), np.array([[1, 0]]), decimal=4)
-    outlier_proba = clf_model.predict_proba([[10, 10]])[0]
-    assert outlier_proba[0]<0.2
-    assert outlier_proba[1]>0.8
-    assert isinstance(clf_model.score(X, y), float)
+def check_predict_proba(outlier_classifier):
+    assert outlier_classifier.predict([[10, 10]]) == np.array([1])
+    assert outlier_classifier.predict([[0, 0]]) == np.array([0])
+    np.testing.assert_array_almost_equal(outlier_classifier.predict_proba([[0, 0]]), np.array([[1, 0]]), decimal=3)
+    np.testing.assert_allclose(outlier_classifier.predict_proba([[10, 10]]), np.array([[0, 1]]), atol=0.2)
 
 
-def test_obvious_usecase_oneclass_svm(dataset):
+@pytest.mark.parametrize(
+    "test_fn",
+    [check_predict_proba]
+)
+def test_obvious_usecases(test_fn, dataset):
     X = dataset
     y = (dataset.max(axis=1) > 3).astype(np.int)
-    outlier_model = OneClassSVM(nu=0.05)
-    clf_model = OutlierClassifier(outlier_model)
-    clf_model.fit(X, y)
-    assert clf_model.predict([[10, 10]]) == np.array([1])
-    assert clf_model.predict([[0, 0]]) == np.array([0])
-    np.testing.assert_array_almost_equal(clf_model.predict_proba([[10, 10]]), np.array([[0, 1]]), decimal=3)
-    np.testing.assert_array_almost_equal(clf_model.predict_proba([[0, 0]]), np.array([[1, 0]]), decimal=3)
-    assert isinstance(clf_model.score(X, y), float)
+    clf_isolation_forest = OutlierClassifier(IsolationForest(contamination=y.sum() / len(y))).fit(X, y)
+    test_fn(clf_isolation_forest)
+    clf_svm = OutlierClassifier(OneClassSVM(nu=0.05)).fit(X, y)
+    test_fn(clf_svm)
 
 
 def test_raises_error(dataset):
