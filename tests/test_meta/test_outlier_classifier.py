@@ -33,37 +33,17 @@ def dataset():
     return np.random.normal(0, 1, (2000, 2))
 
 
-def test_obvious_usecase_quantile(dataset):
-    mod_quantile = GMMOutlierDetector(threshold=0.999, method="quantile")
-    clf_quantile = OutlierClassifier(mod_quantile)
+@pytest.mark.parametrize('outlier_model', [GMMOutlierDetector(), OneClassSVM(nu=0.05), IsolationForest()])
+def test_obvious_usecase(dataset, outlier_model):
+    outlier_clf = OutlierClassifier(outlier_model)
     X = dataset
     y = (dataset.max(axis=1) > 3).astype(np.int)
-    clf_quantile.fit(X, y)
-    assert clf_quantile.predict([[10, 10]]) == np.array([1])
-    assert clf_quantile.predict([[0, 0]]) == np.array([0])
-    np.testing.assert_array_almost_equal(clf_quantile.predict_proba([[10, 10]]), np.array([[0, 1]]), decimal=4)
-    np.testing.assert_array_almost_equal(clf_quantile.predict_proba([[0, 0]]), np.array([[1, 0]]), decimal=4)
-    assert isinstance(clf_quantile.score(X, y), float)
-
-
-def check_predict_proba(outlier_classifier):
-    assert outlier_classifier.predict([[10, 10]]) == np.array([1])
-    assert outlier_classifier.predict([[0, 0]]) == np.array([0])
-    np.testing.assert_array_almost_equal(outlier_classifier.predict_proba([[0, 0]]), np.array([[1, 0]]), decimal=3)
-    np.testing.assert_allclose(outlier_classifier.predict_proba([[10, 10]]), np.array([[0, 1]]), atol=0.2)
-
-
-@pytest.mark.parametrize(
-    "test_fn",
-    [check_predict_proba]
-)
-def test_obvious_usecases(test_fn, dataset):
-    X = dataset
-    y = (dataset.max(axis=1) > 3).astype(np.int)
-    clf_isolation_forest = OutlierClassifier(IsolationForest(contamination=y.sum() / len(y))).fit(X, y)
-    test_fn(clf_isolation_forest)
-    clf_svm = OutlierClassifier(OneClassSVM(nu=0.05)).fit(X, y)
-    test_fn(clf_svm)
+    outlier_clf.fit(X, y)
+    assert outlier_clf.predict([[10, 10]]) == np.array([1])
+    assert outlier_clf.predict([[0, 0]]) == np.array([0])
+    np.testing.assert_array_almost_equal(outlier_clf.predict_proba([[0, 0]]), np.array([[1, 0]]), decimal=3)
+    np.testing.assert_allclose(outlier_clf.predict_proba([[10, 10]]), np.array([[0, 1]]), atol=0.2)
+    assert isinstance(outlier_clf.score(X, y), float)
 
 
 def test_raises_error(dataset):
