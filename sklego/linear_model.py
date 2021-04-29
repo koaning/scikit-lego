@@ -654,87 +654,6 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         return X @ self.coef_ + self.intercept_
 
 
-class LADRegression(BaseScipyMinimizeRegressor):
-    """
-    Least absolute deviation Regression.
-
-    LADRegression fits a linear model to minimize the residual sum of absolute deviations between
-    the observed targets in the dataset, and the targets predicted by the linear approximation, i.e.
-
-    .. math::
-        \frac{1}{N}\|y - Xw \|_1 + \alpha \cdot l_1 \cdot\|w\|_1 + \frac{\alpha}{2} \cdot (1-l_1)\cdot \|w\|_2^2
-
-    Compared to linear regression, this approach is robust to outliers. You can even
-    optimize for the lowest MAPE (Mean Average Percentage Error), if you pass in np.abs(1/y_train) for the
-    sample_weight keyword when fitting the regressor.
-
-    Parameters
-    ----------
-    alpha : float, default=0.0
-        Constant that multiplies the penalty terms. Defaults to 1.0.
-
-    l1_ratio : float, default=0.0
-        The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``. For
-        ``l1_ratio = 0`` the penalty is an L2 penalty. ``For l1_ratio = 1`` it
-        is an L1 penalty.  For ``0 < l1_ratio < 1``, the penalty is a
-        combination of L1 and L2.
-
-    fit_intercept : bool, default=True
-        Whether to calculate the intercept for this model. If set
-        to False, no intercept will be used in calculations
-        (i.e. data is expected to be centered).
-
-    copy_X : bool, default=True
-        If True, X will be copied; else, it may be overwritten.
-
-    positive : bool, default=False
-        When set to True, forces the coefficients to be positive.
-
-    Attributes
-    ----------
-    coef_ : np.array of shape (n_features,)
-        Estimated coefficients of the model.
-
-    intercept_ : float
-        Independent term in the linear model. Set to 0.0 if fit_intercept = False.
-
-    Notes
-    -----
-    This implementation uses scipy.optimize.minimize, see
-    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> np.random.seed(0)
-    >>> X = np.random.randn(100, 4)
-    >>> y = X @ np.array([1, 2, 3, 4])
-    >>> l = LADRegression().fit(X, y)
-    >>> l.coef_
-    array([1., 2., 3., 4.])
-
-    >>> import numpy as np
-    >>> np.random.seed(0)
-    >>> X = np.random.randn(100, 4)
-    >>> y = X @ np.array([-1, 2, -3, 4])
-    >>> l = LADRegression(positive=True).fit(X, y)
-    >>> l.coef_
-    array([7.39575926e-18, 1.42423304e+00, 2.80467827e-17, 4.29789588e+00])
-
-    """
-
-    def _get_objective(self, X, y, sample_weight):
-        @self._loss_regularize
-        def mae_loss(params):
-            return np.mean(sample_weight * np.abs(y - X @ params))
-
-        @self._grad_loss_regularize
-        def grad_mae_loss(params):
-            return -(sample_weight * np.sign(y - X @ params)) @ X / X.shape[0]
-
-        return mae_loss, grad_mae_loss
-
-
 class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
     """
     Linear regression where overestimating is `overestimation_punishment_factor` times worse than underestimating.
@@ -832,3 +751,187 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
             )
 
         return imbalanced_loss, grad_imbalanced_loss
+
+
+class QuantileRegression(BaseScipyMinimizeRegressor):
+    """
+    Compute Quantile Regression. This can be used for computing confidence intervals of linear regressions.
+    `QuantileRegression` fits a linear model to minimize a weighted residual sum of absolute deviations between
+    the observed targets in the dataset and the targets predicted by the linear approximation, i.e.
+        1 / (2 * n_samples) * switch * ||y - Xw||_1
+        + alpha * l1_ratio * ||w||_1
+        + 0.5 * alpha * (1 - l1_ratio) * ||w||_2 ** 2
+    where switch is a vector with value `quantile` if y - Xw < 0, else `1 - quantile`. The regressor defaults to
+    `LADRegression` for its default value of `quantile=0.5`.
+    Compared to linear regression, this approach is robust to outliers.
+    Parameters
+    ----------
+    alpha : float, default=0.0
+        Constant that multiplies the penalty terms.
+    l1_ratio : float, default=0.0
+        The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``. For
+        ``l1_ratio = 0`` the penalty is an L2 penalty. ``For l1_ratio = 1`` it
+        is an L1 penalty.  For ``0 < l1_ratio < 1``, the penalty is a
+        combination of L1 and L2.
+    fit_intercept : bool, default=True
+        Whether to calculate the intercept for this model. If set
+        to False, no intercept will be used in calculations
+        (i.e. data is expected to be centered).
+    copy_X : bool, default=True
+        If True, X will be copied; else, it may be overwritten.
+    positive : bool, default=False
+        When set to True, forces the coefficients to be positive.
+    quantile : float, between 0 and 1, default=0.5
+        The line output by the model will have a share of approximately `quantile` data points under it.
+        A value of `quantile=1` outputs a line that is above each data point, for example. `quantile=0.5` corresponds to LADRegression.
+    Attributes
+    ----------
+    coef_ : np.ndarray of shape (n_features,)
+        Estimated coefficients of the model.
+    intercept_ : float
+        Independent term in the linear model. Set to 0.0 if fit_intercept = False.
+    Notes
+    -----
+    This implementation uses scipy.optimize.minimize, see
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html.
+    Examples
+    --------
+    >>> import numpy as np
+    >>> np.random.seed(0)
+    >>> X = np.random.randn(100, 4)
+    >>> y = X @ np.array([1, 2, 3, 4])
+    >>> l = QuantileRegression().fit(X, y)
+    >>> l.coef_
+    array([1., 2., 3., 4.])
+    >>> import numpy as np
+    >>> np.random.seed(0)
+    >>> X = np.random.randn(100, 4)
+    >>> y = X @ np.array([-1, 2, -3, 4])
+    >>> l = QuantileRegression(quantile=0.8).fit(X, y)
+    >>> l.coef_
+    array([-1.,  2., -3.,  4.])
+    """
+
+    def __init__(self, alpha=0.0, l1_ratio=0.0, fit_intercept=True, copy_X=True, positive=False, quantile=0.5):
+        """Initialize."""
+        super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive)
+        self.quantile = quantile
+
+    def _get_objective(self, X, y, sample_weight):
+        @self._loss_regularize
+        def quantile_loss(params):
+            return np.mean(
+                sample_weight
+                * np.where(X @ params < y, self.quantile, 1 - self.quantile)
+                * np.abs(y - X @ params)
+            )
+
+        @self._grad_loss_regularize
+        def grad_quantile_loss(params):
+            return (
+                -(
+                    sample_weight
+                    * np.where(X @ params < y, self.quantile, 1 - self.quantile)
+                    * np.sign(y - X @ params)
+                )
+                @ X
+                / X.shape[0]
+            )
+
+        return quantile_loss, grad_quantile_loss
+
+    def fit(self, X, y, sample_weight=None):
+        """
+        Fit the model using the SLSQP algorithm.
+        Parameters
+        ----------
+        X : np.ndarray of shape (n_samples, n_features)
+            The training data.
+        y : np.ndarray, 1-dimensional
+            The target values.
+        sample_weight : Optional[np.ndarray], default=None
+            Individual weights for each sample.
+        Returns
+        -------
+        Fitted regressor.
+        """
+        if 0 <= self.quantile <= 1:
+            super().fit(X, y, sample_weight)
+        else:
+            raise ValueError("Parameter `quantile` should be between zero and one.")
+
+        return self
+
+
+class LADRegression(QuantileRegression):
+    """
+    Least absolute deviation Regression.
+
+    LADRegression fits a linear model to minimize the residual sum of absolute deviations between
+    the observed targets in the dataset, and the targets predicted by the linear approximation, i.e.
+
+    .. math::
+        \frac{1}{N}\|y - Xw \|_1 + \alpha \cdot l_1 \cdot\|w\|_1 + \frac{\alpha}{2} \cdot (1-l_1)\cdot \|w\|_2^2
+
+    Compared to linear regression, this approach is robust to outliers. You can even
+    optimize for the lowest MAPE (Mean Average Percentage Error), if you pass in np.abs(1/y_train) for the
+    sample_weight keyword when fitting the regressor.
+
+    Parameters
+    ----------
+    alpha : float, default=0.0
+        Constant that multiplies the penalty terms. Defaults to 1.0.
+
+    l1_ratio : float, default=0.0
+        The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``. For
+        ``l1_ratio = 0`` the penalty is an L2 penalty. ``For l1_ratio = 1`` it
+        is an L1 penalty.  For ``0 < l1_ratio < 1``, the penalty is a
+        combination of L1 and L2.
+
+    fit_intercept : bool, default=True
+        Whether to calculate the intercept for this model. If set
+        to False, no intercept will be used in calculations
+        (i.e. data is expected to be centered).
+
+    copy_X : bool, default=True
+        If True, X will be copied; else, it may be overwritten.
+
+    positive : bool, default=False
+        When set to True, forces the coefficients to be positive.
+
+    Attributes
+    ----------
+    coef_ : np.array of shape (n_features,)
+        Estimated coefficients of the model.
+
+    intercept_ : float
+        Independent term in the linear model. Set to 0.0 if fit_intercept = False.
+
+    Notes
+    -----
+    This implementation uses scipy.optimize.minimize, see
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> np.random.seed(0)
+    >>> X = np.random.randn(100, 4)
+    >>> y = X @ np.array([1, 2, 3, 4])
+    >>> l = LADRegression().fit(X, y)
+    >>> l.coef_
+    array([1., 2., 3., 4.])
+
+    >>> import numpy as np
+    >>> np.random.seed(0)
+    >>> X = np.random.randn(100, 4)
+    >>> y = X @ np.array([-1, 2, -3, 4])
+    >>> l = LADRegression(positive=True).fit(X, y)
+    >>> l.coef_
+    array([7.39575926e-18, 1.42423304e+00, 2.80467827e-17, 4.29789588e+00])
+
+    """
+
+    def __init__(self, alpha=0.0, l1_ratio=0.0, fit_intercept=True, copy_X=True, positive=False):
+        """Initialize."""
+        super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, quantile=0.5)
