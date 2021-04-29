@@ -6,6 +6,7 @@
 ![](https://img.shields.io/pypi/pyversions/scikit-lego)
 ![](https://img.shields.io/github/contributors/koaning/scikit-lego)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![DOI](https://zenodo.org/badge/166836939.svg)](https://zenodo.org/badge/latestdoi/166836939)
 
 # scikit-lego
 
