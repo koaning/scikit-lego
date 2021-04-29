@@ -36,17 +36,13 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     :type input_range: tuple or None, default=None
     :param input_range: the values at which the data repeats itself. For example, for days of
         the week this is (1,7). If input_range=None it is inferred from the training data.
-
-    :type width: float, default=1.
-    :param width: determines the width of the radial basis functions.
     """
 
-    def __init__(self, column=0, remainder="drop", n_periods=12, input_range=None, width=1.):
+    def __init__(self, column=0, remainder="drop", n_periods=12, input_range=None):
         self.column = column
         self.remainder = remainder
         self.n_periods = n_periods
         self.input_range = input_range
-        self.width = width
 
     def fit(self, X, y=None):
         self.pipeline_ = ColumnTransformer(
@@ -54,7 +50,7 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
                 (
                     "repeatingbasis",
                     _RepeatingBasisFunction(
-                        n_periods=self.n_periods, input_range=self.input_range, width=self.width
+                        n_periods=self.n_periods, input_range=self.input_range
                     ),
                     [self.column],
                 )
@@ -72,10 +68,9 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
 
 
 class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
-    def __init__(self, n_periods: int = 12, input_range=None, width: float = 1.):
+    def __init__(self, n_periods: int = 12, input_range=None):
         self.n_periods = n_periods
         self.input_range = input_range
-        self.width = width
 
     def fit(self, X, y=None):
         X = check_array(X, estimator=self)
@@ -88,7 +83,7 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         self.bases_ = np.linspace(0, 1, self.n_periods + 1)[:-1]
 
         # curves should narrower (wider) when we have more (fewer) basis functions
-        self.width_ = self.width / self.n_periods
+        self.width_ = 1 / self.n_periods
 
         return self
 
