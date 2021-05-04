@@ -550,25 +550,17 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
             The gradient of the loss function. Speeds up finding the minimum.
         """
 
-    def _loss_regularize(self, loss):
-        def regularized_loss(params):
-            return (
-                loss(params)
+    def regularized_loss(self, params):
+        return (
                 + self.alpha * self.l1_ratio * np.sum(np.abs(params))
                 + 0.5 * self.alpha * (1 - self.l1_ratio) * np.sum(params ** 2)
-            )
+        )
 
-        return regularized_loss
-
-    def _grad_loss_regularize(self, grad_loss):
-        def regularized_grad_loss(params):
-            return (
-                grad_loss(params)
+    def regularized_grad_loss(self, params):
+        return (
                 + self.alpha * self.l1_ratio * np.sign(params)
                 + self.alpha * (1 - self.l1_ratio) * params
-            )
-
-        return regularized_grad_loss
+        )
 
     def fit(self, X, y, sample_weight=None):
         """
@@ -730,15 +722,13 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
         self.overestimation_punishment_factor = overestimation_punishment_factor
 
     def _get_objective(self, X, y, sample_weight):
-        @self._loss_regularize
         def imbalanced_loss(params):
             return 0.5 * np.mean(
                 sample_weight
                 * np.where(X @ params > y, self.overestimation_punishment_factor, 1)
                 * np.square(y - X @ params)
-            )
+            ) + self.regularized_loss(params)
 
-        @self._grad_loss_regularize
         def grad_imbalanced_loss(params):
             return (
                 -(
@@ -748,7 +738,7 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
                 )
                 @ X
                 / X.shape[0]
-            )
+            ) + self.regularized_grad_loss(params)
 
         return imbalanced_loss, grad_imbalanced_loss
 
@@ -818,15 +808,13 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
         self.quantile = quantile
 
     def _get_objective(self, X, y, sample_weight):
-        @self._loss_regularize
         def quantile_loss(params):
             return np.mean(
                 sample_weight
                 * np.where(X @ params < y, self.quantile, 1 - self.quantile)
                 * np.abs(y - X @ params)
-            )
+            ) + self.regularized_loss(params)
 
-        @self._grad_loss_regularize
         def grad_quantile_loss(params):
             return (
                 -(
@@ -836,7 +824,7 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
                 )
                 @ X
                 / X.shape[0]
-            )
+            ) + self.regularized_grad_loss(params)
 
         return quantile_loss, grad_quantile_loss
 
