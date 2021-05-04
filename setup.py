@@ -32,7 +32,6 @@ test_packages = all_packages + [  # we need extras packages for their tests
 ]
 util_packages = [
     "matplotlib>=3.0.2",
-    "plotnine>=0.5.1",
     "jupyter>=1.0.0",
     "jupyterlab>=0.35.4",
 ]
