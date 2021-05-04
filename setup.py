@@ -32,7 +32,6 @@ test_packages = all_packages + [  # we need extras packages for their tests
 ]
 util_packages = [
     "matplotlib>=3.0.2",
-    "plotnine>=0.5.1",
     "jupyter>=1.0.0",
     "jupyterlab>=0.35.4",
 ]
@@ -66,7 +65,9 @@ setup(
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
