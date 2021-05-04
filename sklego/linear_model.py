@@ -550,13 +550,13 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
             The gradient of the loss function. Speeds up finding the minimum.
         """
 
-    def regularized_loss(self, params):
+    def _regularized_loss(self, params):
         return (
                 + self.alpha * self.l1_ratio * np.sum(np.abs(params))
                 + 0.5 * self.alpha * (1 - self.l1_ratio) * np.sum(params ** 2)
         )
 
-    def regularized_grad_loss(self, params):
+    def _regularized_grad_loss(self, params):
         return (
                 + self.alpha * self.l1_ratio * np.sign(params)
                 + self.alpha * (1 - self.l1_ratio) * params
@@ -727,7 +727,7 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
                 sample_weight
                 * np.where(X @ params > y, self.overestimation_punishment_factor, 1)
                 * np.square(y - X @ params)
-            ) + self.regularized_loss(params)
+            ) + self._regularized_loss(params)
 
         def grad_imbalanced_loss(params):
             return (
@@ -738,7 +738,7 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
                 )
                 @ X
                 / X.shape[0]
-            ) + self.regularized_grad_loss(params)
+            ) + self._regularized_grad_loss(params)
 
         return imbalanced_loss, grad_imbalanced_loss
 
@@ -813,7 +813,7 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
                 sample_weight
                 * np.where(X @ params < y, self.quantile, 1 - self.quantile)
                 * np.abs(y - X @ params)
-            ) + self.regularized_loss(params)
+            ) + self._regularized_loss(params)
 
         def grad_quantile_loss(params):
             return (
@@ -824,7 +824,7 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
                 )
                 @ X
                 / X.shape[0]
-            ) + self.regularized_grad_loss(params)
+            ) + self._regularized_grad_loss(params)
 
         return quantile_loss, grad_quantile_loss
 
