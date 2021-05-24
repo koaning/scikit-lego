@@ -16,6 +16,9 @@ develop:
 doctest:
 	python -m doctest -v sklego/*.py
 
+test-notebooks:
+	pytest --nbval-lax doc/*.ipynb
+
 test: doctest
 	pytest --disable-warnings --cov=sklego
 	rm -rf .coverage*

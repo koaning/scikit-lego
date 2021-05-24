@@ -38,8 +38,8 @@ def load_penguins(return_X_y=False, as_frame=False):
     (344,)
     >>> load_penguins(as_frame=True).columns
     Index(['species', 'island', 'bill_length_mm', 'bill_depth_mm',
-       'flipper_length_mm', 'body_mass_g', 'sex'],
-      dtype='object')
+           'flipper_length_mm', 'body_mass_g', 'sex'],
+          dtype='object')
 
     Additional data use information
     ###############################
