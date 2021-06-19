@@ -32,7 +32,7 @@ def test_estimator_checks(test_fn):
 @pytest.fixture
 def dataset():
     np.random.seed(42)
-    return np.concatenate([np.random.normal(0, 1, (2000, 10))])
+    return np.concatenate([np.random.normal(0, 1, (200, 10))])
 
 
 def test_obvious_usecase(dataset):
