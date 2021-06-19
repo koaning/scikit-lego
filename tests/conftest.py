@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 from sklearn.utils import estimator_checks
 
-n_vals = (10, 100, 5000)
-k_vals = (1, 2, 5)
+n_vals = (10, 500)
+k_vals = (1, 5)
 np_types = (np.int32, np.float32, np.float64)
 
 transformer_checks = (
