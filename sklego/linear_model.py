@@ -71,7 +71,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
 
     def predict(self, X):
         """
-        Fit the model using X, y as training data.
+        Predict using the LowessRegression.
 
         :param X: array-like, shape=(n_columns, n_samples, ) training data.
         :return: Returns an array of predictions shape=(n_samples,)
@@ -122,7 +122,7 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
 
     def predict(self, X):
         """
-        Fit the model using X, y as training data.
+        Predict using ProbWeightRegression.
 
         :param X: array-like, shape=(n_columns, n_samples, ) training data.
         :return: Returns an array of predictions shape=(n_samples,)
@@ -155,6 +155,13 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         self.coefs_ = None
 
     def fit(self, X, y):
+        """
+        Fit the model using X, y as training data.
+
+        :param X: array-like, shape=(n_columns, n_samples, ) training data.
+        :param y: array-like, shape=(n_samples, ) training data.
+        :return: Returns an instance of self.
+        """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         if self.effect not in self.allowed_effects:
             raise ValueError(f"effect {self.effect} must be in {self.allowed_effects}")
@@ -196,6 +203,12 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X):
+        """
+        Predict using DeadZoneRegressor.
+
+        :param X: array-like, shape=(n_columns, n_samples, ) training data.
+        :return: Returns an array of predictions shape=(n_samples,)
+        """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["coefs_"])
         return np.dot(X, self.coefs_)
