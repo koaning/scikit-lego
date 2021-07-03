@@ -257,14 +257,15 @@ class GroupedPredictor(BaseEstimator):
         )
 
         # This is a Series with values the tuples of hierarchical grouping
-        prediction_groups = X_group.agg(func=tuple, axis=1)
+        prediction_groups = pd.Series(
+            [tuple(_) for _ in X_group.itertuples(index=False)]
+        )
 
         # This is a Series of arrays
         shrinkage_factors = prediction_groups.map(self.shrinkage_factors_)
 
         # Convert the Series of arrays it to a DataFrame
         shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
-
         return (hierarchical_predictions * shrinkage_factors).sum(axis=1)
 
     def __predict_single_group(self, group, X):
