@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import copy
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.exceptions import NotFittedError
 
@@ -85,3 +86,19 @@ def test_refit_auto():
     y = np.random.normal(0, 1, (100,)) < 0
     mod.fit(X, y).predict(X)
     assert mod.fit(X, y).predict(X).shape == y.shape
+
+
+@pytest.mark.parametrize('refit', [True, False])
+def test_passes_sample_weight(refit):
+    class CustomLR(LogisticRegression):
+        def fit(self, X, y, sample_weight=None):
+            assert sample_weight is not None
+            super().fit(X, y)
+
+    mod = Thresholder(CustomLR(), threshold=0.5, refit=refit)
+    np.random.seed(42)
+    X = np.random.normal(0, 1, (100, 3))
+    y = np.random.normal(0, 1, (100,)) < 0
+    weight = np.random.random(100)
+
+    mod.fit(X, y, sample_weight=weight)
