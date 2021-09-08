@@ -1,6 +1,8 @@
 name: Cron Test Dependencies
 
-on: [push]
+on:
+  schedule:
+    - cron: "0 0 * * *"
 
 jobs:
   cron:
