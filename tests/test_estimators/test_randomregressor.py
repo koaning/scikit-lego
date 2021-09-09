@@ -13,7 +13,9 @@ from tests.conftest import nonmeta_checks, regressor_checks, general_checks, sel
         exclude=[
             "check_sample_weights_invariance",
             "check_methods_subset_invariance",
-            "check_regressors_train"
+            "check_regressors_train",
+            "check_sample_weights_list",
+            "check_sample_weights_pandas_series"
         ]
     )
 )
