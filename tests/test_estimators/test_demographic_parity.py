@@ -20,6 +20,8 @@ from tests.conftest import general_checks, classifier_checks, select_tests, nonm
         flatten([general_checks, nonmeta_checks, classifier_checks]),
         exclude=[
             "check_sample_weights_invariance",
+            "check_sample_weights_list",
+            "check_sample_weights_pandas_series"
         ]
     )
 )

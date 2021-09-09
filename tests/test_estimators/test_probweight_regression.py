@@ -12,6 +12,8 @@ from tests.conftest import nonmeta_checks, regressor_checks, general_checks, sel
         flatten([general_checks, nonmeta_checks, regressor_checks]),
         exclude=[
             "check_sample_weights_invariance",
+            "check_sample_weights_list",
+            "check_sample_weights_pandas_series"
         ]
     )
 )

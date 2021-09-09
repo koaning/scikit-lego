@@ -20,7 +20,9 @@ from tests.conftest import general_checks, outlier_checks, select_tests, nonmeta
             "check_fit2d_1feature",
             "check_dict_unchanged",
             "check_dont_overwrite_parameters",
-            "check_classifier_data_not_an_array"
+            "check_classifier_data_not_an_array",
+            "check_sample_weights_list",
+            "check_sample_weights_pandas_series"
         ]
     )
 )

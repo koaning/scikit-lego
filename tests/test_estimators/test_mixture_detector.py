@@ -13,7 +13,9 @@ from tests.conftest import general_checks, nonmeta_checks, select_tests, outlier
         flatten([general_checks, nonmeta_checks, outlier_checks]),
         exclude=[
             "check_sample_weights_invariance",
-            "check_outliers_train"
+            "check_outliers_train",
+            "check_sample_weights_list",
+            "check_sample_weights_pandas_series"
         ]
     )
 )

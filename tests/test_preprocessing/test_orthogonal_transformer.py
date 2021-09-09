@@ -25,6 +25,8 @@ def sample_df(sample_matrix):
         flatten([general_checks, nonmeta_checks, transformer_checks]),
         exclude=[
             "check_sample_weights_invariance",
+            "check_sample_weights_list",
+            "check_sample_weights_pandas_series"
         ]
     )
 )
