@@ -31,22 +31,23 @@ class Thresholder(BaseEstimator, ClassifierMixin):
         self.threshold = threshold
         self.refit = refit
 
-    def _handle_refit(self, X, y):
+    def _handle_refit(self, X, y, sample_weight=None):
         """Only refit when we need to, unless refit=True is present."""
         if self.refit:
-            self.estimator_.fit(X, y)
+            self.estimator_.fit(X, y, sample_weight=sample_weight)
         else:
             try:
                 _ = self.estimator_.predict(X[:1])
             except NotFittedError:
-                self.estimator_.fit(X, y)
+                self.estimator_.fit(X, y, sample_weight=sample_weight)
 
-    def fit(self, X, y):
+    def fit(self, X, y, sample_weight=None):
         """
         Fit the data.
 
         :param X: array-like, shape=(n_columns, n_samples,) training data.
         :param y: array-like, shape=(n_samples,) training data.
+        :param sample_weight: array-like, shape=(n_samples) Individual weights for each sample.
         :return: Returns an instance of self.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
@@ -55,7 +56,7 @@ class Thresholder(BaseEstimator, ClassifierMixin):
             raise ValueError(
                 "The Thresholder meta model only works on classifcation models with .predict_proba."
             )
-        self._handle_refit(X, y)
+        self._handle_refit(X, y, sample_weight)
         self.classes_ = self.estimator_.classes_
         if len(self.classes_) != 2:
             raise ValueError(
