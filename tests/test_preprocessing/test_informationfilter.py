@@ -20,7 +20,9 @@ from tests.conftest import select_tests, transformer_checks, nonmeta_checks, gen
         flatten([general_checks, transformer_checks, nonmeta_checks]),
         exclude=[
             "check_sample_weights_invariance",
-            "check_estimators_empty_data_messages"
+            "check_estimators_empty_data_messages",
+            "check_sample_weights_list",
+            "check_sample_weights_pandas_series"
         ]
     )
 )

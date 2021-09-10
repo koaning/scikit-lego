@@ -17,7 +17,9 @@ from tests.conftest import select_tests, transformer_checks, nonmeta_checks, gen
             "check_sample_weights_invariance",
             "check_methods_subset_invariance",
             "check_transformer_data_not_an_array",
-            "check_transformer_general"
+            "check_transformer_general",
+            "check_sample_weights_list",
+            "check_sample_weights_pandas_series"
         ]
     )
 )

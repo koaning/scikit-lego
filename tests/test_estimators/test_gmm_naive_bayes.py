@@ -13,6 +13,8 @@ from tests.conftest import general_checks, nonmeta_checks, select_tests
         exclude=[
             "check_sample_weights_invariance",
             "check_non_transformer_estimators_n_iter",
+            "check_sample_weights_list",
+            "check_sample_weights_pandas_series"
         ]
     )
 )
