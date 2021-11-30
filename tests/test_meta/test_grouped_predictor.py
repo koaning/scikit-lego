@@ -166,7 +166,8 @@ def test_constant_shrinkage(shrinkage_data):
         np.array([means["Earth"], means["BE"], means["Brussels"]]) @ shrinkage_factors,
     ]
 
-    assert expected_prediction == shrink_est.predict(X).tolist()
+    for exp, pred in zip(expected_prediction, shrink_est.predict(X).tolist()):
+        assert pytest.approx(exp) == pred
 
 
 def test_relative_shrinkage(shrinkage_data):
@@ -192,7 +193,8 @@ def test_relative_shrinkage(shrinkage_data):
         np.array([means["Earth"], means["BE"], means["Brussels"]]) @ shrinkage_factors,
     ]
 
-    assert expected_prediction == shrink_est.predict(X).tolist()
+    for exp, pred in zip(expected_prediction, shrink_est.predict(X).tolist()):
+        assert pytest.approx(exp) == pred
 
 
 def test_min_n_obs_shrinkage(shrinkage_data):
@@ -212,7 +214,8 @@ def test_min_n_obs_shrinkage(shrinkage_data):
 
     expected_prediction = [means["NL"], means["NL"], means["BE"], means["BE"]]
 
-    assert expected_prediction == shrink_est.predict(X).tolist()
+    for exp, pred in zip(expected_prediction, shrink_est.predict(X).tolist()):
+        assert pytest.approx(exp) == pred
 
 
 def test_min_n_obs_shrinkage_too_little_obs(shrinkage_data):
