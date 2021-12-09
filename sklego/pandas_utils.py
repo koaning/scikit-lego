@@ -1,12 +1,12 @@
+import datetime as dt
 import inspect
+from functools import partial, wraps
 
 import numpy as np
 import pandas as pd
-import datetime as dt
-
-from functools import wraps, partial
-from sklego.common import as_list
 from scipy.ndimage.interpolation import shift
+
+from sklego.common import as_list
 
 
 def _get_shape_delta(old_shape, new_shape):
@@ -27,7 +27,8 @@ def log_step(
     names=False,
     dtypes=False,
     print_fn=print,
-    display_args=True
+    display_args=True,
+    log_error=True,
 ):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
@@ -40,6 +41,7 @@ def log_step(
     :param dtypes: bool, log the dtypes of the results, defaults to False
     :param print_fn: callable, print function (e.g. print or logger.info), defaults to print
     :param print_args: bool, whether or not to print the arguments given to the function.
+    :param log_error: bool, whether to add the Exception message to the log if the function fails, defaults to True.
     :returns: the result of the function
 
     :Example:
@@ -62,7 +64,8 @@ def log_step(
             names=names,
             dtypes=dtypes,
             print_fn=print_fn,
-            display_args=display_args
+            display_args=display_args,
+            log_error=log_error,
         )
 
     names = False if dtypes else names
@@ -73,28 +76,35 @@ def log_step(
             old_shape = args[0].shape
         tic = dt.datetime.now()
 
-        result = func(*args, **kwargs)
+        optional_strings = []
+        try:
+            result = func(*args, **kwargs)
+            optional_strings = [
+                f"time={dt.datetime.now() - tic}" if time_taken else None,
+                f"n_obs={result.shape[0]}, n_col={result.shape[1]}" if shape else None,
+                _get_shape_delta(old_shape, result.shape) if shape_delta else None,
+                f"names={result.columns.to_list()}" if names else None,
+                f"dtypes={result.dtypes.to_dict()}" if dtypes else None,
+            ]
+            return result
+        except Exception as exc:
+            optional_strings = [
+                f"time={dt.datetime.now() - tic}" if time_taken else None,
+                "FAILED" + (f" with error: {exc}" if log_error else "")
+            ]
+            raise
+        finally:
+            combined = " ".join([s for s in optional_strings if s])
 
-        optional_strings = [
-            f"time={dt.datetime.now() - tic}" if time_taken else None,
-            f"n_obs={result.shape[0]}, n_col={result.shape[1]}" if shape else None,
-            _get_shape_delta(old_shape, result.shape) if shape_delta else None,
-            f"names={result.columns.to_list()}" if names else None,
-            f"dtypes={result.dtypes.to_dict()}" if dtypes else None,
-        ]
+            if display_args:
 
-        combined = " ".join([s for s in optional_strings if s])
-
-        if display_args:
-
-            func_args = inspect.signature(func).bind(*args, **kwargs).arguments
-            func_args_str = "".join(
-                ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
-            )
-            print_fn(f"[{func.__name__}(df{func_args_str})] " + combined,)
-        else:
-            print_fn(f"[{func.__name__}]" + combined,)
-        return result
+                func_args = inspect.signature(func).bind(*args, **kwargs).arguments
+                func_args_str = "".join(
+                    ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
+                )
+                print_fn(f"[{func.__name__}(df{func_args_str})] " + combined,)
+            else:
+                print_fn(f"[{func.__name__}]" + combined,)
 
     return wrapper
 

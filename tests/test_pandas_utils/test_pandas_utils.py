@@ -97,7 +97,7 @@ def test_log_step_display_args(capsys, test_df):
     captured = capsys.readouterr()
     print_statements = captured.out.split("\n")
 
-    assert print_statements[0].startswith("[do_nothing]") 
+    assert print_statements[0].startswith("[do_nothing]")
     assert "kwargs = {'a': '1'}" not in print_statements[1]
     assert print_statements[2].startswith("[do_something]")
 
@@ -264,6 +264,29 @@ def test_log_custom_logger(caplog, test_df):
     test_df.pipe(do_nothing)
 
     assert logger_name in caplog.text
+
+
+@pytest.mark.parametrize("log_error", [True, False])
+def test_log_error(log_error, capsys, test_df):
+    """Test logging of shape can be switched on and off"""
+
+    err_msg = "This is a test Exception"
+
+    @log_step(log_error=log_error)
+    def do_nothing(df, *args, **kwargs):
+        raise RuntimeError(err_msg)
+
+    err_reraised = False
+    try:
+        test_df.pipe(do_nothing)
+    except RuntimeError:
+        err_reraised = True
+
+    captured = capsys.readouterr()
+
+    assert err_reraised
+    assert "FAILED" in captured.out
+    assert (f"FAILED with error: {err_msg}" in captured.out) == log_error
 
 
 def test_log_extra(capsys):
