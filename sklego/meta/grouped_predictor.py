@@ -402,7 +402,7 @@ class GroupedPredictor(BaseEstimator):
         Predict probabilities on new data.
 
         :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :return: array, shape=(n_samples,) the predicted data
+        :return: array, shape=(n_samples, n_classes) the predicted data
         """
 
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
