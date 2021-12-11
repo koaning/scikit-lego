@@ -292,7 +292,6 @@ class GroupedPredictor(BaseEstimator):
         shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
         return (hierarchical_predictions * shrinkage_factors).sum(axis=1)
 
-
     def __predict_single_group(self, group, X):
         """Predict a single group by getting its estimator from the fitted dict"""
         # Keep track of the original index such that we can sort in __predict_groups
@@ -398,7 +397,7 @@ class GroupedPredictor(BaseEstimator):
         else:
             return self.__predict_shrinkage_groups(X_group, X_value)
 
-    @if_delegate_has_method('estimator')
+    @if_delegate_has_method("estimator")
     def predict_proba(self, X):
         """
         Predict probabilities on new data.
