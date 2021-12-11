@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn import clone
 from sklearn.base import BaseEstimator
+from sklearn.utils.metaestimators import if_delegate_has_method
 from sklearn.utils.validation import (
     check_is_fitted,
     check_array,
@@ -397,6 +398,7 @@ class GroupedPredictor(BaseEstimator):
         else:
             return self.__predict_shrinkage_groups(X_group, X_value)
 
+    @if_delegate_has_method('estimator')
     def predict_proba(self, X):
         """
         Predict probabilities on new data.
