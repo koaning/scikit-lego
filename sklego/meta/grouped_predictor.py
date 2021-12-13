@@ -273,6 +273,22 @@ class GroupedPredictor(BaseEstimator):
         shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
         return (hierarchical_predictions * shrinkage_factors).sum(axis=1)
 
+    def __predict_single_group(self, group, X, method="predict"):
+        """Predict a single group by getting its estimator from the fitted dict"""
+        # Keep track of the original index such that we can sort in __predict_groups
+        index = X.index
+        try:
+            group_predictor = self.estimators_[group]
+        except KeyError:
+            if self.fallback_:
+                group_predictor = self.fallback_
+            else:
+                raise ValueError(
+                    f"Found new group {group} during predict with use_global_model = False"
+                )
+
+        return pd.DataFrame(getattr(group_predictor, method)(X)).set_index(index)
+
     def __predict_groups(
         self,
         X_group: pd.DataFrame,
@@ -304,22 +320,6 @@ class GroupedPredictor(BaseEstimator):
             .sort_index()
             .values.squeeze()
         )
-
-    def __predict_single_group(self, group, X, method="predict"):
-        """Predict a single group by getting its estimator from the fitted dict"""
-        # Keep track of the original index such that we can sort in __predict_groups
-        index = X.index
-        try:
-            group_predictor = self.estimators_[group]
-        except KeyError:
-            if self.fallback_:
-                group_predictor = self.fallback_
-            else:
-                raise ValueError(
-                    f"Found new group {group} during predict with use_global_model = False"
-                )
-
-        return pd.DataFrame(getattr(group_predictor, method)(X)).set_index(index)
 
     def predict(self, X):
         """
