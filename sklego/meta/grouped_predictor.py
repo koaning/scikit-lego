@@ -246,12 +246,16 @@ class GroupedPredictor(BaseEstimator):
 
         return self
 
-    def __predict_shrinkage_groups(self, X_group, X_value):
+    def __predict_shrinkage_groups(self, X_group, X_value, method="predict"):
         """Make predictions for all shrinkage groups"""
         # DataFrame with predictions for each hierarchy level, per row. Missing groups errors are thrown here.
         hierarchical_predictions = pd.concat(
             [
-                pd.Series(self.__predict_groups(X_group, X_value, level_columns))
+                pd.Series(
+                    self.__predict_groups(
+                        X_group, X_value, level_columns, method=method
+                    )
+                )
                 for level_columns in self.group_colnames_hierarchical_
             ],
             axis=1,
@@ -268,64 +272,13 @@ class GroupedPredictor(BaseEstimator):
         # Convert the Series of arrays it to a DataFrame
         shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
         return (hierarchical_predictions * shrinkage_factors).sum(axis=1)
-
-    def __predict_proba_shrinkage_groups(self, X_group, X_value):
-        """Make probability predictions for all shrinkage groups"""
-        # DataFrame with predictions for each hierarchy level, per row. Missing groups errors are thrown here.
-        hierarchical_predictions = pd.concat(
-            [
-                pd.Series(self.__predict_proba_groups(X_group, X_value, level_columns))
-                for level_columns in self.group_colnames_hierarchical_
-            ],
-            axis=1,
-        )
-
-        # This is a Series with values the tuples of hierarchical grouping
-        prediction_groups = pd.Series(
-            [tuple(_) for _ in X_group.itertuples(index=False)]
-        )
-
-        # This is a Series of arrays
-        shrinkage_factors = prediction_groups.map(self.shrinkage_factors_)
-
-        # Convert the Series of arrays it to a DataFrame
-        shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
-        return (hierarchical_predictions * shrinkage_factors).sum(axis=1)
-
-    def __predict_single_group(self, group, X):
-        """Predict a single group by getting its estimator from the fitted dict"""
-        # Keep track of the original index such that we can sort in __predict_groups
-        index = X.index
-        try:
-            group_predictor = self.estimators_[group]
-        except KeyError:
-            if self.fallback_:
-                group_predictor = self.fallback_
-            else:
-                raise ValueError(
-                    f"Found new group {group} during predict with use_global_model = False"
-                )
-
-        return pd.DataFrame(group_predictor.predict(X)).set_index(index)
-
-    def __predict_proba_single_group(self, group, X):
-        """Predict probability for a single group by getting its estimator from the fitted dict"""
-        # Keep track of the original index such that we can sort in __predict_groups
-        index = X.index
-        try:
-            group_predictor = self.estimators_[group]
-        except KeyError:
-            if self.fallback_:
-                group_predictor = self.fallback_
-            else:
-                raise ValueError(
-                    f"Found new group {group} during predict with use_global_model = False"
-                )
-
-        return pd.DataFrame(group_predictor.predict_proba(X)).set_index(index)
 
     def __predict_groups(
-        self, X_group: pd.DataFrame, X_value: np.array, group_cols=None
+        self,
+        X_group: pd.DataFrame,
+        X_value: np.array,
+        group_cols=None,
+        method="predict",
     ):
         """Predict for all groups"""
         # Reset indices such that they are the same in X_group (reset in __check_grouping_columns),
@@ -341,7 +294,9 @@ class GroupedPredictor(BaseEstimator):
         return (
             pd.concat(
                 [
-                    self.__predict_single_group(group, X_value.loc[indices, :])
+                    self.__predict_single_group(
+                        group, X_value.loc[indices, :], method=method
+                    )
                     for group, indices in group_indices.items()
                 ],
                 axis=0,
@@ -350,31 +305,21 @@ class GroupedPredictor(BaseEstimator):
             .values.squeeze()
         )
 
-    def __predict_proba_groups(
-        self, X_group: pd.DataFrame, X_value: np.array, group_cols=None
-    ):
-        """Predict probabilities for all groups"""
-        # Reset indices such that they are the same in X_group (reset in __check_grouping_columns),
-        # this way we can track the order of the result
-        X_value = pd.DataFrame(X_value).reset_index(drop=True)
+    def __predict_single_group(self, group, X, method="predict"):
+        """Predict a single group by getting its estimator from the fitted dict"""
+        # Keep track of the original index such that we can sort in __predict_groups
+        index = X.index
+        try:
+            group_predictor = self.estimators_[group]
+        except KeyError:
+            if self.fallback_:
+                group_predictor = self.fallback_
+            else:
+                raise ValueError(
+                    f"Found new group {group} during predict with use_global_model = False"
+                )
 
-        if group_cols is None:
-            group_cols = X_group.columns.tolist()
-
-        # Make the groups based on the groups dataframe, use the indices on the values array
-        group_indices = X_group.groupby(group_cols).indices
-
-        return (
-            pd.concat(
-                [
-                    self.__predict_proba_single_group(group, X_value.loc[indices, :])
-                    for group, indices in group_indices.items()
-                ],
-                axis=0,
-            )
-            .sort_index()
-            .values.squeeze()
-        )
+        return pd.DataFrame(getattr(group_predictor, method)(X)).set_index(index)
 
     def predict(self, X):
         """
@@ -393,9 +338,9 @@ class GroupedPredictor(BaseEstimator):
         X_group = self.__add_shrinkage_column(X_group)
 
         if self.shrinkage is None:
-            return self.__predict_groups(X_group, X_value)
+            return self.__predict_groups(X_group, X_value, method="predict")
         else:
-            return self.__predict_shrinkage_groups(X_group, X_value)
+            return self.__predict_shrinkage_groups(X_group, X_value, method="predict")
 
     @if_delegate_has_method("estimator")
     def predict_proba(self, X):
@@ -415,6 +360,8 @@ class GroupedPredictor(BaseEstimator):
         X_group = self.__add_shrinkage_column(X_group)
 
         if self.shrinkage is None:
-            return self.__predict_proba_groups(X_group, X_value)
+            return self.__predict_groups(X_group, X_value, method="predict_proba")
         else:
-            return self.__predict_proba_shrinkage_groups(X_group, X_value)
+            return self.__predict_shrinkage_groups(
+                X_group, X_value, method="predict_proba"
+            )
