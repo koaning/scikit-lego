@@ -61,7 +61,7 @@ def _split_groups_and_values(
     except (KeyError, IndexError):
         raise ValueError(f"Could not drop groups {groups} from columns of X")
 
-    check_X = kwargs.pop('check_X')
+    check_X = kwargs.pop('check_X', True)
     X_group = _check_grouping_columns(X_group, **kwargs)
 
     if check_X:

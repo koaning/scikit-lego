@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.dummy import DummyRegressor
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import make_pipeline
 
 from sklego.common import flatten
 from sklego.meta import GroupedPredictor
@@ -527,3 +529,27 @@ def test_bad_shrinkage_value_error():
         )
         mod.fit(df[["time", "diet"]], df["weight"])
         assert "shrinkage function" in str(e)
+
+
+@pytest.fixture
+def missing_value_setup():
+    df = load_chicken(as_frame=True)
+
+    X, y = df.drop(columns='weight'),  df['weight']
+    # create missing value
+    X.loc[0, 'chick'] = np.nan
+    model =  make_pipeline(SimpleImputer(), LinearRegression())
+
+    return X, y, model
+
+
+def test_missing_check(missing_value_setup):
+    X, y, model = missing_value_setup
+
+    # Should not raise error, check is disabled
+    GroupedPredictor(model, groups = ['diet'], check_X = False).fit(X, y)
+
+    # Should raise error, check is still enabled
+    with pytest.raises(ValueError) as e:
+        GroupedPredictor(model, groups = ['diet']).fit(X, y)
+        assert "contains NaN" in str(e)
