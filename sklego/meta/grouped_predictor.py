@@ -32,11 +32,14 @@ class GroupedPredictor(BaseEstimator):
     :param use_global_model: With shrinkage: whether to have a model over the entire input as first group
                              Without shrinkage: whether or not to fall back to a general model in case the group
                              parameter is not found during `.predict()`
+    :param check_X: Whether to validate X to be non-empty 2D array of finite values and attempt to cast X to float.
+                    If disabled, the model/pipeline is expected to handle e.g. missing,
+                    non-numeric, or non-finite values.
     :param **shrinkage_kwargs: keyword arguments to the shrinkage function
     """
 
     # Number of features in value df can be 0, e.g. for dummy models
-    _check_kwargs = {"ensure_min_features": 0, "accept_large_sparse": False}
+    _check_kwargs = {"ensure_min_features": 0, "accept_large_sparse": False, "check_X": True}
     _global_col_name = "a-column-that-is-constant-for-all-data"
     _global_col_value = "global"
 
@@ -46,6 +49,7 @@ class GroupedPredictor(BaseEstimator):
         groups,
         shrinkage=None,
         use_global_model=True,
+        check_X=True,
         **shrinkage_kwargs,
     ):
         self.estimator = estimator
@@ -53,6 +57,10 @@ class GroupedPredictor(BaseEstimator):
         self.shrinkage = shrinkage
         self.use_global_model = use_global_model
         self.shrinkage_kwargs = shrinkage_kwargs
+        self.check_X = check_X
+
+        self._check_kwargs['check_X'] =  self.check_X
+
 
     def __set_shrinkage_function(self):
         if (
