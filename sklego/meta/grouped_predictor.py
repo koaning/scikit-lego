@@ -287,6 +287,8 @@ class GroupedPredictor(BaseEstimator):
                     f"Found new group {group} during predict with use_global_model = False"
                 )
 
+        # getattr(group_predictor, method) returns the predict method of the fitted model
+        # if the method argument is "predict" and the predict_proba method if method argument is "predict_proba"
         return pd.DataFrame(getattr(group_predictor, method)(X)).set_index(index)
 
     def __predict_groups(
@@ -342,6 +344,7 @@ class GroupedPredictor(BaseEstimator):
         else:
             return self.__predict_shrinkage_groups(X_group, X_value, method="predict")
 
+    # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
     @if_delegate_has_method("estimator")
     def predict_proba(self, X):
         """
