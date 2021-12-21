@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.dummy import DummyRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
@@ -60,6 +60,17 @@ def test_chickweight_can_do_fallback():
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
     assert mod.predict(to_predict).shape == (2,)
     assert mod.predict(to_predict)[0] == mod.predict(to_predict)[1]
+
+
+def test_chickweight_can_do_fallback_proba():
+    df = load_chicken(as_frame=True)
+    y = np.where(df.weight > df.weight.mean(), 1, 0)
+    mod = GroupedPredictor(estimator=LogisticRegression(), groups="diet")
+    mod.fit(df[["time", "diet"]], y)
+    assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
+    to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
+    assert mod.predict_proba(to_predict).shape == (2, 2)
+    assert (mod.predict_proba(to_predict)[0] == mod.predict_proba(to_predict)[1]).all()
 
 
 def test_fallback_can_raise_error():
