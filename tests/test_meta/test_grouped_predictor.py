@@ -531,20 +531,13 @@ def test_bad_shrinkage_value_error():
         assert "shrinkage function" in str(e)
 
 
-@pytest.fixture
-def missing_value_setup():
+def test_missing_check():
     df = load_chicken(as_frame=True)
 
     X, y = df.drop(columns='weight'),  df['weight']
     # create missing value
     X.loc[0, 'chick'] = np.nan
     model =  make_pipeline(SimpleImputer(), LinearRegression())
-
-    return X, y, model
-
-
-def test_missing_check(missing_value_setup):
-    X, y, model = missing_value_setup
 
     # Should not raise error, check is disabled
     GroupedPredictor(model, groups = ['diet'], check_X = False).fit(X, y)
