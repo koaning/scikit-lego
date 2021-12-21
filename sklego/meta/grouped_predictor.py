@@ -39,7 +39,7 @@ class GroupedPredictor(BaseEstimator):
     """
 
     # Number of features in value df can be 0, e.g. for dummy models
-    _check_kwargs = {"ensure_min_features": 0, "accept_large_sparse": False, "check_X": True}
+    _check_kwargs = {"ensure_min_features": 0, "accept_large_sparse": False}
     _global_col_name = "a-column-that-is-constant-for-all-data"
     _global_col_value = "global"
 
@@ -58,9 +58,6 @@ class GroupedPredictor(BaseEstimator):
         self.use_global_model = use_global_model
         self.shrinkage_kwargs = shrinkage_kwargs
         self.check_X = check_X
-
-        self._check_kwargs['check_X'] =  self.check_X
-
 
     def __set_shrinkage_function(self):
         if (
@@ -222,7 +219,7 @@ class GroupedPredictor(BaseEstimator):
         """
 
         X_group, X_value = _split_groups_and_values(
-            X, self.groups, min_value_cols=0, **self._check_kwargs
+            X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
 
         X_group = self.__add_shrinkage_column(X_group)

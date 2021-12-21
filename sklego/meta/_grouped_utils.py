@@ -45,7 +45,7 @@ def min_n_obs_shrinkage(group_sizes: list, min_n_obs) -> np.ndarray:
 
 
 def _split_groups_and_values(
-    X, groups, name="", min_value_cols=1, **kwargs
+    X, groups, name="", min_value_cols=1, check_X=True, **kwargs
 ) -> Tuple[pd.DataFrame, np.ndarray]:
     _data_format_checks(X, name=name)
     _shape_check(X, min_value_cols)
@@ -61,7 +61,6 @@ def _split_groups_and_values(
     except (KeyError, IndexError):
         raise ValueError(f"Could not drop groups {groups} from columns of X")
 
-    check_X = kwargs.pop('check_X', True)
     X_group = _check_grouping_columns(X_group, **kwargs)
 
     if check_X:
