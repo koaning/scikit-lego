@@ -54,7 +54,7 @@ class Thresholder(BaseEstimator, ClassifierMixin):
         self.estimator_ = clone(self.model)
         if not isinstance(self.estimator_, ProbabilisticClassifier):
             raise ValueError(
-                "The Thresholder meta model only works on classifcation models with .predict_proba."
+                "The Thresholder meta model only works on classification models with .predict_proba."
             )
         self._handle_refit(X, y, sample_weight)
         self.classes_ = self.estimator_.classes_
