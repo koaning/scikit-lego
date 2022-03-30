@@ -3,7 +3,10 @@ import numpy as np
 import copy
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.exceptions import NotFittedError
-
+from sklearn.ensemble import StackingClassifier, RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.svm import LinearSVC
 from sklego.common import flatten
 from sklego.meta import Thresholder
 from tests.conftest import general_checks, classifier_checks, select_tests
@@ -102,3 +105,20 @@ def test_passes_sample_weight(refit):
     weight = np.random.random(100)
 
     mod.fit(X, y, sample_weight=weight)
+
+
+def test_stacking_classifier():
+    estimators = [
+    ('rf', RandomForestClassifier(n_estimators=10, random_state=42)),
+    ('svr', make_pipeline(StandardScaler(), LinearSVC(random_state=42)))
+    ]
+    
+    X = np.random.normal(0, 1, (100, 3))
+    y = np.random.normal(0, 1, (100,)) < 0
+
+    clf = StackingClassifier(estimators=estimators, final_estimator=LogisticRegression())
+    clf.fit(X, y)
+    
+    a = Thresholder(clf, threshold=0.2)
+    a.fit(X, y)
+    a.predict(X)

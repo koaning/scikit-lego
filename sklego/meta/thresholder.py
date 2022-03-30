@@ -51,7 +51,7 @@ class Thresholder(BaseEstimator, ClassifierMixin):
         :return: Returns an instance of self.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        self.estimator_ = clone(self.model)
+        self.estimator_ = self.model
         if not isinstance(self.estimator_, ProbabilisticClassifier):
             raise ValueError(
                 "The Thresholder meta model only works on classification models with .predict_proba."
