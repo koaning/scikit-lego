@@ -1,12 +1,8 @@
 import pytest
 import numpy as np
-import copy
 from sklearn.linear_model import LogisticRegression, LinearRegression
-from sklearn.exceptions import NotFittedError
-from sklearn.ensemble import StackingClassifier, RandomForestClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
-from sklearn.svm import LinearSVC
+from sklearn.dummy import DummyClassifier
+from sklearn.ensemble import StackingClassifier
 from sklego.common import flatten
 from sklego.meta import Thresholder
 from tests.conftest import general_checks, classifier_checks, select_tests
@@ -108,17 +104,22 @@ def test_passes_sample_weight(refit):
 
 
 def test_stacking_classifier():
-    estimators = [
-    ('rf', RandomForestClassifier(n_estimators=10, random_state=42)),
-    ('svr', make_pipeline(StandardScaler(), LinearSVC(random_state=42)))
-    ]
-    
+    '''
+    Tests issue https://github.com/koaning/scikit-lego/issues/501
+
+    No asserts are added as we only test for being exception free.
+    When cloning the model in Thresholder an unfitted model is generated
+    where no predict_proba exists
+    '''
+    estimators = [("dummy", DummyClassifier(strategy="constant", constant=0))]
+
     X = np.random.normal(0, 1, (100, 3))
     y = np.random.normal(0, 1, (100,)) < 0
 
-    clf = StackingClassifier(estimators=estimators, final_estimator=LogisticRegression())
+    clf = StackingClassifier(estimators=estimators, final_estimator=DummyClassifier(strategy="constant", constant=0))
+
     clf.fit(X, y)
-    
+
     a = Thresholder(clf, threshold=0.2)
     a.fit(X, y)
     a.predict(X)
