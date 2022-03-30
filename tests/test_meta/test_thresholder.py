@@ -103,6 +103,32 @@ def test_passes_sample_weight(refit):
     mod.fit(X, y, sample_weight=weight)
 
 
+def test_no_refit_does_not_fit_underlying():
+    X = np.array([1, 2, 3, 4]).reshape(-1, 1)
+    y_ones = np.array([0, 1, 1, 1]).reshape(-1, )
+    y_zeros = np.array([0, 0, 0, 1]).reshape(-1, )
+
+    clf = DummyClassifier(strategy="most_frequent")
+    clf.fit(X, y_ones)
+    a = Thresholder(clf, threshold=0.2, refit=False)      
+    a.fit(X, y_zeros)
+
+    assert a.predict(np.array([[1]])) == 1
+
+
+def test_refit_fits_underlying():
+    X = np.array([1,2,3,4]).reshape(-1,1)
+    y_ones = np.array([0,1,1,1]).reshape(-1,)
+    y_zeros = np.array([0,0,0,1]).reshape(-1,)
+
+    clf = DummyClassifier(strategy="most_frequent")
+    clf.fit(X, y_ones)
+    a = Thresholder(clf, threshold=0.2, refit=True)      
+    a.fit(X, y_zeros)
+
+    assert a.predict(np.array([[1]])) == 0
+
+
 def test_stacking_classifier():
     '''
     Tests issue https://github.com/koaning/scikit-lego/issues/501

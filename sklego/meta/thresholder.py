@@ -34,6 +34,7 @@ class Thresholder(BaseEstimator, ClassifierMixin):
     def _handle_refit(self, X, y, sample_weight=None):
         """Only refit when we need to, unless refit=True is present."""
         if self.refit:
+            self.estimator_ = clone(self.model)
             self.estimator_.fit(X, y, sample_weight=sample_weight)
         else:
             try:
