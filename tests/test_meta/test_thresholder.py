@@ -117,9 +117,9 @@ def test_no_refit_does_not_fit_underlying():
 
 
 def test_refit_fits_underlying():
-    X = np.array([1,2,3,4]).reshape(-1,1)
-    y_ones = np.array([0,1,1,1]).reshape(-1,)
-    y_zeros = np.array([0,0,0,1]).reshape(-1,)
+    X = np.array([1, 2, 3, 4]).reshape(-1, 1)
+    y_ones = np.array([0, 1, 1, 1]).reshape(-1, )
+    y_zeros = np.array([0, 0, 0, 1]).reshape(-1, )
 
     clf = DummyClassifier(strategy="most_frequent")
     clf.fit(X, y_ones)
