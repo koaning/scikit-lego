@@ -37,7 +37,6 @@ class Thresholder(BaseEstimator, ClassifierMixin):
             self.estimator_.fit(X, y, sample_weight=sample_weight)
         else:
             try:
-                print(type(self.estimator_))
                 _ = self.estimator_.predict(X[:1])
             except NotFittedError:
                 self.estimator_.fit(X, y, sample_weight=sample_weight)
