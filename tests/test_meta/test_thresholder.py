@@ -1,9 +1,8 @@
 import pytest
 import numpy as np
-import copy
 from sklearn.linear_model import LogisticRegression, LinearRegression
-from sklearn.exceptions import NotFittedError
-
+from sklearn.dummy import DummyClassifier
+from sklearn.ensemble import StackingClassifier
 from sklego.common import flatten
 from sklego.meta import Thresholder
 from tests.conftest import general_checks, classifier_checks, select_tests
@@ -102,3 +101,51 @@ def test_passes_sample_weight(refit):
     weight = np.random.random(100)
 
     mod.fit(X, y, sample_weight=weight)
+
+
+def test_no_refit_does_not_fit_underlying():
+    X = np.array([1, 2, 3, 4]).reshape(-1, 1)
+    y_ones = np.array([0, 1, 1, 1]).reshape(-1, )
+    y_zeros = np.array([0, 0, 0, 1]).reshape(-1, )
+
+    clf = DummyClassifier(strategy="most_frequent")
+    clf.fit(X, y_ones)
+    a = Thresholder(clf, threshold=0.2, refit=False)      
+    a.fit(X, y_zeros)
+
+    assert a.predict(np.array([[1]])) == 1
+
+
+def test_refit_fits_underlying():
+    X = np.array([1, 2, 3, 4]).reshape(-1, 1)
+    y_ones = np.array([0, 1, 1, 1]).reshape(-1, )
+    y_zeros = np.array([0, 0, 0, 1]).reshape(-1, )
+
+    clf = DummyClassifier(strategy="most_frequent")
+    clf.fit(X, y_ones)
+    a = Thresholder(clf, threshold=0.2, refit=True)      
+    a.fit(X, y_zeros)
+
+    assert a.predict(np.array([[1]])) == 0
+
+
+def test_stacking_classifier():
+    '''
+    Tests issue https://github.com/koaning/scikit-lego/issues/501
+
+    No asserts are added as we only test for being exception free.
+    When cloning the model in Thresholder an unfitted model is generated
+    where no predict_proba exists
+    '''
+    estimators = [("dummy", DummyClassifier(strategy="constant", constant=0))]
+
+    X = np.random.normal(0, 1, (100, 3))
+    y = np.random.normal(0, 1, (100,)) < 0
+
+    clf = StackingClassifier(estimators=estimators, final_estimator=DummyClassifier(strategy="constant", constant=0))
+
+    clf.fit(X, y)
+
+    a = Thresholder(clf, threshold=0.2)
+    a.fit(X, y)
+    a.predict(X)

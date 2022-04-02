@@ -34,6 +34,7 @@ class Thresholder(BaseEstimator, ClassifierMixin):
     def _handle_refit(self, X, y, sample_weight=None):
         """Only refit when we need to, unless refit=True is present."""
         if self.refit:
+            self.estimator_ = clone(self.model)
             self.estimator_.fit(X, y, sample_weight=sample_weight)
         else:
             try:
@@ -51,10 +52,10 @@ class Thresholder(BaseEstimator, ClassifierMixin):
         :return: Returns an instance of self.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        self.estimator_ = clone(self.model)
+        self.estimator_ = self.model
         if not isinstance(self.estimator_, ProbabilisticClassifier):
             raise ValueError(
-                "The Thresholder meta model only works on classifcation models with .predict_proba."
+                "The Thresholder meta model only works on classification models with .predict_proba."
             )
         self._handle_refit(X, y, sample_weight)
         self.classes_ = self.estimator_.classes_
