@@ -16,7 +16,7 @@ all_packages = cvxpy_packages
 
 docs_packages = [
     "sphinx==1.8.5",
-    "sphinx_rtd_theme>=0.4.3",
+    "sphinx_rtd_theme>=1.0.0",
     "nbsphinx>=0.4.2",
     "recommonmark==0.6.0",
 ]
