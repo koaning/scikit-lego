@@ -16,8 +16,9 @@ all_packages = cvxpy_packages
 
 docs_packages = [
     "sphinx==4.5.0",
-    "sphinx_rtd_theme>=1.0.0",
-    "nbsphinx>=0.8.8",
+    "sphinx_rtd_theme==1.0.0",
+    "nbsphinx==0.8.8",
+    "recommonmark==0.7.1"
 ]
 test_packages = all_packages + [  # we need extras packages for their tests
     "flake8>=3.6.0",
