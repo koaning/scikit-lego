@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from sklearn.linear_model import LogisticRegression, LinearRegression
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import StackingClassifier
 from sklego.common import flatten
@@ -20,6 +21,7 @@ from tests.conftest import general_checks, classifier_checks, select_tests
             "check_classifiers_classes",
             "check_classifiers_train",
             "check_supervised_y_2d",
+            "check_classifier_data_not_an_array", # https://github.com/koaning/scikit-lego/issues/490
         ]
         # outliers train wont work because we have two thresholds
     ),
