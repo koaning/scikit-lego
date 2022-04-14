@@ -1,7 +1,6 @@
 import pytest
 import numpy as np
 from sklearn.linear_model import LogisticRegression, LinearRegression
-from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import StackingClassifier
 from sklego.common import flatten

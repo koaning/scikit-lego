@@ -5,9 +5,7 @@ from sklearn.base import (
     ClassifierMixin,
 )
 from sklearn.utils.validation import (
-    check_is_fitted,
-    check_X_y,
-    FLOAT_DTYPES,
+    check_is_fitted
 )
 from sklearn.exceptions import NotFittedError
 
