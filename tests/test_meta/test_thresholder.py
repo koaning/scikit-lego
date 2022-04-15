@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import StackingClassifier
@@ -150,3 +151,10 @@ def test_stacking_classifier():
     a = Thresholder(clf, threshold=0.2)
     a.fit(X, y)
     a.predict(X)
+
+
+def test_nans_could_work():
+    X = np.array([[np.nan, 4], [7, 3], [5, 5], [7, 2], [5, 7]])
+    y = np.array([1, 0, 1, 0, 1])
+    model = Thresholder(HistGradientBoostingClassifier(), 0.6)
+    model.fit(X, y)
