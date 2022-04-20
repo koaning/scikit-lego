@@ -11,7 +11,7 @@ from tests.conftest import general_checks, classifier_checks, select_tests, nonm
 def simple_dataset():
     # Two linearly separable mvn should have a 100% prediction accuracy
     x = np.concatenate(
-        [np.random.normal(-10, 1, (100, 2)), np.random.normal(10, 1, (100, 2))]
+        [np.random.normal(-1000, 0.01, (100, 2)), np.random.normal(1000, 0.01, (100, 2))]
     )
     y = np.concatenate([np.zeros(100), np.ones(100)])
     return x, y
