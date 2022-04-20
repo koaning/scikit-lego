@@ -5,9 +5,7 @@ from sklearn.base import (
     ClassifierMixin,
 )
 from sklearn.utils.validation import (
-    check_is_fitted,
-    check_X_y,
-    FLOAT_DTYPES,
+    check_is_fitted
 )
 from sklearn.exceptions import NotFittedError
 
@@ -51,7 +49,6 @@ class Thresholder(BaseEstimator, ClassifierMixin):
         :param sample_weight: array-like, shape=(n_samples) Individual weights for each sample.
         :return: Returns an instance of self.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         self.estimator_ = self.model
         if not isinstance(self.estimator_, ProbabilisticClassifier):
             raise ValueError(
