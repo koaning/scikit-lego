@@ -91,4 +91,4 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         res = np.zeros((X.shape[0], self.classes_.shape[0]))
         for idx, c in enumerate(self.classes_):
             res[:, idx] = self.gmms_[c].score_samples(X)
-        return softmax(res)
+        return softmax(res, axis=1)
