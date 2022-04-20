@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import softmax
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.utils import check_X_y
@@ -99,4 +100,4 @@ class BayesianGMMClassifier(BaseEstimator, ClassifierMixin):
         res = np.zeros((X.shape[0], self.classes_.shape[0]))
         for idx, c in enumerate(self.classes_):
             res[:, idx] = self.gmms_[c].score_samples(X)
-        return np.exp(res) / np.exp(res).sum(axis=1)[:, np.newaxis]
+        return softmax(res, axis=1)
