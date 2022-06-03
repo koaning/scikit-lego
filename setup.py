@@ -23,7 +23,7 @@ docs_packages = [
 test_packages = all_packages + [  # we need extras packages for their tests
     "flake8>=3.6.0",
     "nbval>=0.9.1",
-    "pytest==6.2.5",
+    "pytest>=6.2.5",
     "pytest-xdist==1.34.0",
     "black>=19.3b0",
     "pytest-cov>=2.6.1",
