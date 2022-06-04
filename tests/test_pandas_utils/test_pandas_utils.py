@@ -76,7 +76,7 @@ def test_log_step(capsys, test_df):
 
     captured = capsys.readouterr()
     print_statements = captured.out.split("\n")
-
+    
     assert print_statements[0].startswith("[do_nothing(df)]")
     assert print_statements[1].startswith("[do_nothing(df, kwargs = {'a': '1'})]")
     assert print_statements[2].startswith("[do_something(df)]")
@@ -113,9 +113,10 @@ def test_log_step_logger(caplog, test_df):
     @log_step(print_fn=logging.info)
     def do_nothing(df, *args, **kwargs):
         return df
-
-    (test_df.pipe(do_nothing).pipe(do_nothing, a="1").pipe(do_something))
-
+    
+    with caplog.at_level(logging.INFO):
+        (test_df.pipe(do_nothing).pipe(do_nothing, a="1").pipe(do_something))
+    
     assert caplog.messages[0].startswith("[do_nothing(df)]")
     assert caplog.messages[1].startswith("[do_nothing(df, kwargs = {'a': '1'})]")
     assert caplog.messages[2].startswith("[do_something(df)]")
@@ -261,7 +262,8 @@ def test_log_custom_logger(caplog, test_df):
     def do_nothing(df, *args, **kwargs):
         return df
 
-    test_df.pipe(do_nothing)
+    with caplog.at_level(logging.INFO):
+        test_df.pipe(do_nothing)
 
     assert logger_name in caplog.text
 
@@ -401,6 +403,7 @@ def test_log_extra_custom_logger(caplog, test_df):
     def do_nothing(df, *args, **kwargs):
         return df
 
-    test_df.pipe(do_nothing)
+    with caplog.at_level(logging.INFO):
+        test_df.pipe(do_nothing)
 
     assert logger_name in caplog.text
