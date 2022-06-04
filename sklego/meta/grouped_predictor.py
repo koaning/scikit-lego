@@ -373,3 +373,28 @@ class GroupedPredictor(BaseEstimator):
             return self.__predict_shrinkage_groups(
                 X_group, X_value, method="predict_proba"
             )
+
+    # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
+    @if_delegate_has_method("estimator")
+    def decision_function(self, X):
+        """
+        Evaluate the decision function for the samples in X.
+
+        :param X: array-like, shape=(n_columns, n_samples,) training data.
+        :return: the decision function of the sample for each class in the model.
+        """
+
+        check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
+
+        X_group, X_value = _split_groups_and_values(
+            X, self.groups, min_value_cols=0, **self._check_kwargs
+        )
+
+        X_group = self.__add_shrinkage_column(X_group)
+
+        if self.shrinkage is None:
+            return self.__predict_groups(X_group, X_value, method="decision_function")
+        else:
+            return self.__predict_shrinkage_groups(
+                X_group, X_value, method="decision_function"
+            )
