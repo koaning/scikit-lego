@@ -557,3 +557,12 @@ def test_missing_check():
     with pytest.raises(ValueError) as e:
         GroupedPredictor(model, groups = ['diet']).fit(X, y)
         assert "contains NaN" in str(e)
+
+
+def test_has_decision_function():
+    # needed as for example cross_val_score(pipe, X, y, cv=5, scoring="roc_auc", error_score='raise') may fail otherwise, see https://github.com/koaning/scikit-lego/issues/511 
+    df = load_chicken(as_frame=True)
+
+    X, y = df.drop(columns='weight'),  df['weight']
+    # This should NOT raise errors
+    GroupedPredictor(LogisticRegression(), groups=["diet"]).fit(X, y).decision_function(X)
