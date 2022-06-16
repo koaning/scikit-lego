@@ -144,7 +144,7 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         :param X: array-like, shape=(n_columns, n_samples, ) training data.
         :return: array, shape=(n_samples,) the predicted data. 1 for inliers, -1 for outliers.
         """
-        predictions = (self.decision_function(X) >= 0).astype(np.int)
+        predictions = (self.decision_function(X) >= 0).astype(int)
         predictions[predictions == 1] = -1
         predictions[predictions == 0] = 1
         return predictions

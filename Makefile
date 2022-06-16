@@ -6,12 +6,9 @@ flake:
 	flake8 setup.py
 
 install:
-	pip install -e .
-
-develop:
-	pip install -e ".[dev]"
+	python -m pip install --upgrade pip
+	python -m pip install -e ".[dev]"
 	pre-commit install
-	python setup.py develop
 
 doctest:
 	python -m doctest -v sklego/*.py

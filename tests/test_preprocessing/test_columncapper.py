@@ -115,9 +115,9 @@ def test_nan_inf(valid_df):
 
 def test_dtype_regression(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
-    assert ColumnCapper().fit(X, y).transform(X).dtype in FLOAT_DTYPES
+    assert ColumnCapper().fit(X, y).transform(X).dtype == float
 
 
 def test_dtype_classification(random_xy_dataset_clf):
     X, y = random_xy_dataset_clf
-    assert ColumnCapper().fit(X, y).transform(X).dtype in FLOAT_DTYPES
+    assert ColumnCapper().fit(X, y).transform(X).dtype == float
