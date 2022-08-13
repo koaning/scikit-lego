@@ -551,7 +551,8 @@ def test_missing_check():
     model =  make_pipeline(SimpleImputer(), LinearRegression())
 
     # Should not raise error, check is disabled
-    GroupedPredictor(model, groups = ['diet'], check_X = False).fit(X, y)
+    m = GroupedPredictor(model, groups = ['diet'], check_X = False).fit(X, y)
+    m.predict(X)
 
     # Should raise error, check is still enabled
     with pytest.raises(ValueError) as e:
@@ -560,7 +561,7 @@ def test_missing_check():
 
 
 def test_has_decision_function():
-    # needed as for example cross_val_score(pipe, X, y, cv=5, scoring="roc_auc", error_score='raise') may fail otherwise, see https://github.com/koaning/scikit-lego/issues/511 
+    # needed as for example cross_val_score(pipe, X, y, cv=5, scoring="roc_auc", error_score='raise') may fail otherwise, see https://github.com/koaning/scikit-lego/issues/511
     df = load_chicken(as_frame=True)
 
     X, y = df.drop(columns='weight'),  df['weight']
