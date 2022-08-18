@@ -339,7 +339,7 @@ class GroupedPredictor(BaseEstimator):
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         X_group, X_value = _split_groups_and_values(
-            X, self.groups, min_value_cols=0, **self._check_kwargs
+            X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
 
         X_group = self.__add_shrinkage_column(X_group)
@@ -362,7 +362,7 @@ class GroupedPredictor(BaseEstimator):
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         X_group, X_value = _split_groups_and_values(
-            X, self.groups, min_value_cols=0, **self._check_kwargs
+            X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
 
         X_group = self.__add_shrinkage_column(X_group)
@@ -387,7 +387,7 @@ class GroupedPredictor(BaseEstimator):
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         X_group, X_value = _split_groups_and_values(
-            X, self.groups, min_value_cols=0, **self._check_kwargs
+            X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
 
         X_group = self.__add_shrinkage_column(X_group)
