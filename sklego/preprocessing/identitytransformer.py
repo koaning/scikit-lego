@@ -11,13 +11,13 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
     """
     def __init__(
         self,
-        check_input: bool = True
+        check_X: bool = True
     ):
-        self.check_input = check_input
+        self.check_X = check_X
 
     def fit(self, X, y=None):
         """'Fits' the estimator."""
-        if self.check_input:
+        if self.check_X:
             X = check_array(X, copy=True, estimator=self)
         else:
             X = X.copy()
@@ -26,7 +26,7 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         """'Applies' the estimator."""
-        if self.check_input:
+        if self.check_X:
             X = check_array(X, copy=True, estimator=self)
         else:
             X = X.copy()
