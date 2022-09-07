@@ -24,7 +24,7 @@ def test_estimator_checks(test_fn):
 
 def test_same_values(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
-    X_new = IdentityTransformer().fit_transform(X)
+    X_new = IdentityTransformer(check_X=True).fit_transform(X)
     assert np.isclose(X, X_new).all()
 
 
