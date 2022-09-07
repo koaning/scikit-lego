@@ -26,3 +26,11 @@ def test_same_values(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
     X_new = IdentityTransformer().fit_transform(X)
     assert np.isclose(X, X_new).all()
+
+
+def test_nan_inf(random_xy_dataset_regr):
+    X, y = random_xy_dataset_regr
+    X[np.random.ranf(size=X.shape) > 0.9] = np.nan
+    X[np.random.ranf(size=X.shape) > 0.9] = -np.inf
+    X[np.random.ranf(size=X.shape) > 0.9] = np.inf
+    X_new = IdentityTransformer(check_X=False).fit_transform(X)
