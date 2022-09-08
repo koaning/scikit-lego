@@ -29,6 +29,7 @@ def test_same_values(random_xy_dataset_regr):
 
 
 def test_nan_inf(random_xy_dataset_regr):
+    # see https://github.com/koaning/scikit-lego/pull/527
     X, y = random_xy_dataset_regr
     X = X.astype(np.float32)
     X[np.random.ranf(size=X.shape) > 0.9] = np.nan
