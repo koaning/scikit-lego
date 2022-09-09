@@ -19,7 +19,7 @@ from tests.conftest import select_tests, transformer_checks, general_checks, non
     )
 )
 def test_estimator_checks(test_fn):
-    test_fn(IdentityTransformer.__name__, IdentityTransformer())
+    test_fn(IdentityTransformer.__name__, IdentityTransformer(check_X=True))
 
 
 def test_same_values(random_xy_dataset_regr):
