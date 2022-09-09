@@ -25,8 +25,6 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
         """'Fits' the estimator."""
         if self.check_X:
             X = check_array(X, copy=True, estimator=self)
-        else:
-            X = X.copy()
         self.shape_ = X.shape
         return self
 
@@ -34,8 +32,6 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
         """'Applies' the estimator."""
         if self.check_X:
             X = check_array(X, copy=True, estimator=self)
-        else:
-            X = X.copy()
         check_is_fitted(self, 'shape_')
         if X.shape[1] != self.shape_[1]:
             raise ValueError(f"Wrong shape is passed to transform. Trained on {self.shape_[1]} cols got {X.shape[1]}")
