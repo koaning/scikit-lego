@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from sklearn import clone
 from sklearn.dummy import DummyClassifier
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.multioutput import MultiOutputRegressor
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.utils import check_X_y
@@ -80,7 +80,7 @@ def test_shape_multitarget(random_xy_dataset_multitarget):
         [
             (
                 "multi_ml_features",
-                EstimatorTransformer(DecisionTreeClassifier())
+                EstimatorTransformer(MultiOutputRegressor(Ridge()))
             )
         ]
     )
