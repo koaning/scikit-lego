@@ -35,11 +35,8 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         """
         Applies the `predict_func` on the fitted estimator.
 
-        Returns array of shape `(X.shape[0], )` if estimator has a single output.
+        Returns array of shape `(X.shape[0], prediction.shape[1])` if estimator has a single output.
         For multi-output estimators the output is returned as is.
         """
         check_is_fitted(self, "estimator_")
-        output_array = getattr(self.estimator_, self.predict_func)(X)
-        if len(X.shape) == 1 or X.shape[1] == 1:
-            output_array = output_array.reshape(-1, 1)
-        return output_array
+        return getattr(self.estimator_, self.predict_func)(X)

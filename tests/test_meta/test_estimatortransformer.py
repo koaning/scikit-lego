@@ -3,6 +3,7 @@ import numpy as np
 from sklearn import clone
 from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.multioutput import MultiOutputClassifier
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.utils import check_X_y
 
@@ -69,3 +70,19 @@ def test_shape(random_xy_dataset_regr):
     )
 
     assert pipeline.fit(X, y).transform(X).shape == (m, 2)
+
+
+def test_shape_multitarget(random_xy_dataset_multiclf):
+    X, y = random_xy_dataset_multiclf
+    m = X.shape[0]
+    n = y.shape[1]
+    pipeline = Pipeline(
+        [
+            (
+                "multi_ml_features",
+                ("model", EstimatorTransformer(MultiOutputClassifier(LinearRegression())))
+            )
+        ]
+    )
+
+    assert pipeline.fit(X, y).transform(X).shape == (m, n)
