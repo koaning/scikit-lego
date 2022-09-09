@@ -25,8 +25,8 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
     def fit(self, X, y):
         """Fits the estimator"""
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
+        self.multi_output_ = len(y.shape) > 1
         self.estimator_ = clone(self.estimator)
         self.estimator_.fit(X, y)
         return self
@@ -35,7 +35,9 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         """
         Applies the `predict_func` on the fitted estimator.
 
-        Returns array of shape `(X.shape[0], output.shape[1])`.
+        Returns array of shape `(X.shape[0], )` if estimator is not multi output.
+        For multi output estimators an array of shape `(X.shape[0], y.shape[1])` is returned.
         """
         check_is_fitted(self, "estimator_")
-        return getattr(self.estimator_, self.predict_func)(X)
+        output = getattr(self.estimator_, self.predict_func)(X)
+        return output if self.multi_output_ else output.reshape(-1, 1)
