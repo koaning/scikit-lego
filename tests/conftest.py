@@ -127,6 +127,17 @@ def random_xy_dataset_multiclf(request):
     return X, y
 
 
+@pytest.fixture(
+    scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
+)
+def random_xy_dataset_multitarget(request):
+    n, k, np_type = request.param
+    np.random.seed(42)
+    X = np.random.normal(0, 2, (n, k)).astype(np_type)
+    y = np.random.randint(0, 2, (n, k)) > 0.0
+    return X, y
+
+
 @pytest.fixture
 def sensitive_classification_dataset():
     df = pd.DataFrame(
