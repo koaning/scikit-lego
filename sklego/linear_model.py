@@ -548,6 +548,11 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         self.fit_intercept = fit_intercept
         self.copy_X = copy_X
         self.positive = positive
+        if method not in ("SLSQP", "TNC", "L-BFGS-B"):
+            raise ValueError(
+                f'method should be one of "SLSQP", "TNC", "L-BFGS-B", '
+                f'got {method} instead'
+            )
         self.method = method
 
     @abstractmethod
@@ -969,6 +974,14 @@ class LADRegression(QuantileRegression):
 
     """
 
-    def __init__(self, alpha=0.0, l1_ratio=0.0, fit_intercept=True, copy_X=True, positive=False, method="SLSQP"):
+    def __init__(
+        self,
+        alpha=0.0,
+        l1_ratio=0.0,
+        fit_intercept=True,
+        copy_X=True,
+        positive=False,
+        method="SLSQP"
+    ):
         """Initialize."""
         super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, method, quantile=0.5)
