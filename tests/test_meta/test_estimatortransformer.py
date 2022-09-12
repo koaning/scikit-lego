@@ -98,11 +98,11 @@ def test_kwargs(random_xy_dataset_clf):
             )
         ]
     )
-    # If the additional parameter sample_weight is passed transform_no_kwargs and transform_kwargs cannot be equal.
+    # If the additional parameter sample_weight is passed transform_no_kwargs and transform_kwargs should not be equal.
     transform_no_kwargs = pipeline.fit(X, y).transform(X)
     transform_kwargs = pipeline.fit(X, y, model__sample_weight=0.1).transform(X)
     assert not np.array_equal(transform_no_kwargs, transform_kwargs)
 
-    # Fitting with sample_weight=1 should be the same as fitting with sample_weight not specified.
+    # Fitting with sample_weight=1. should be the same as fitting with sample_weight not specified.
     transform_kwargs2 = pipeline.fit(X, y, model__sample_weight=1.).transform(X)
     assert np.array_equal(transform_no_kwargs, transform_kwargs2)
