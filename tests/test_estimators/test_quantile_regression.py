@@ -27,20 +27,20 @@ def _create_dataset(coefs, intercept, noise=0.0):
 def test_coefs_and_intercept__no_noise(coefs, intercept):
     """Regression problems without noise."""
     X, y = _create_dataset(coefs, intercept)
-    quant = QuantileRegression()
-    quant.fit(X, y)
-
-    assert quant.score(X, y) > 0.99
+    for method in ("SLSQP", "TNC", "L-BFGS-B"):
+        quant = QuantileRegression(method=method)
+        quant.fit(X, y)
+        assert quant.score(X, y) > 0.99
 
 
 @pytest.mark.parametrize("coefs, intercept", test_batch)
 def test_score(coefs, intercept):
     """Tests with noise on an easy problem. A good score should be possible."""
     X, y = _create_dataset(coefs, intercept, noise=1.0)
-    quant = QuantileRegression()
-    quant.fit(X, y)
-
-    assert quant.score(X, y) > 0.9
+    for method in ("SLSQP", "TNC", "L-BFGS-B"):
+        quant = QuantileRegression(method=method)
+        quant.fit(X, y)
+        assert quant.score(X, y) > 0.9
 
 
 @pytest.mark.parametrize("coefs, intercept", test_batch)
@@ -58,11 +58,11 @@ def test_quantile(coefs, intercept, quantile):
 def test_coefs_and_intercept__no_noise_positive(coefs, intercept):
     """Test with only positive coefficients."""
     X, y = _create_dataset(coefs, intercept, noise=0.0)
-    quant = QuantileRegression(positive=True)
-    quant.fit(X, y)
-
-    assert all(quant.coef_ >= 0)
-    assert quant.score(X, y) > 0.3
+    for method in ("SLSQP", "TNC", "L-BFGS-B"):
+        quant = QuantileRegression(method=method, positive=True)
+        quant.fit(X, y)
+        assert all(quant.coef_ >= 0)
+        assert quant.score(X, y) > 0.3
 
 
 @pytest.mark.parametrize("coefs, intercept", test_batch)
