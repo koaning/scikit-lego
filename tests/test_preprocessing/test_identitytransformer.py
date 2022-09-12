@@ -19,10 +19,20 @@ from tests.conftest import select_tests, transformer_checks, general_checks, non
     )
 )
 def test_estimator_checks(test_fn):
-    test_fn(IdentityTransformer.__name__, IdentityTransformer())
+    test_fn(IdentityTransformer.__name__, IdentityTransformer(check_X=True))
 
 
 def test_same_values(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
-    X_new = IdentityTransformer().fit_transform(X)
+    X_new = IdentityTransformer(check_X=True).fit_transform(X)
     assert np.isclose(X, X_new).all()
+
+
+def test_nan_inf(random_xy_dataset_regr):
+    # see https://github.com/koaning/scikit-lego/pull/527
+    X, y = random_xy_dataset_regr
+    X = X.astype(np.float32)
+    X[np.random.ranf(size=X.shape) > 0.9] = np.nan
+    X[np.random.ranf(size=X.shape) > 0.9] = -np.inf
+    X[np.random.ranf(size=X.shape) > 0.9] = np.inf
+    X_new = IdentityTransformer(check_X=False).fit_transform(X)
