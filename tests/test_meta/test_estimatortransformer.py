@@ -85,3 +85,20 @@ def test_shape_multitarget(random_xy_dataset_multitarget):
         ]
     )
     assert pipeline.fit(X, y).transform(X).shape == (m, n)
+
+
+def test_kwargs(random_xy_dataset_clf):
+    """ Test if kwargs are properly passed to an underlying estimator. """
+    X, y = random_xy_dataset_clf
+    pipeline = Pipeline(
+        [
+            (
+                "model",
+                EstimatorTransformer(Ridge(random_state=0))
+            )
+        ]
+    )
+    # If the additional parameter sample_weight is passed transform_no_kwargs and transform_kwargs cannot be equal.
+    transform_no_kwargs = pipeline.fit(X, y).transform(X)
+    transform_kwargs = pipeline.fit(X, y, model__sample_weight=0.1).transform(X)
+    assert not np.array_equal(transform_no_kwargs, transform_kwargs)
