@@ -48,7 +48,7 @@ def test_coefs_and_intercept__no_noise_positive(coefs, intercept):
     """Test with only positive coefficients."""
     X, y = _create_dataset(coefs, intercept, noise=0.0)
     for method in ("SLSQP", "TNC", "L-BFGS-B"):
-        lad = LADRegression(method=method)
+        lad = LADRegression(method=method, positive=True)
         lad.fit(X, y)
         assert all(lad.coef_ >= 0)
         assert lad.score(X, y) > 0.3
