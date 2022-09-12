@@ -23,12 +23,12 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         self.estimator = estimator
         self.predict_func = predict_func
 
-    def fit(self, X, y, *args, **kwargs):
+    def fit(self, X, y, **kwargs):
         """Fits the estimator"""
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
         self.multi_output_ = len(y.shape) > 1
         self.estimator_ = clone(self.estimator)
-        self.estimator_.fit(X, y, *args, **kwargs)
+        self.estimator_.fit(X, y, **kwargs)
         return self
 
     def transform(self, X):
