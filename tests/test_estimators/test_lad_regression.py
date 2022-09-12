@@ -27,31 +27,31 @@ def _create_dataset(coefs, intercept, noise=0.0):
 def test_coefs_and_intercept__no_noise(coefs, intercept):
     """Regression problems without noise."""
     X, y = _create_dataset(coefs, intercept)
-    lad = LADRegression()
-    lad.fit(X, y)
-
-    assert lad.score(X, y) > 0.99
+    for method in ("SLSQP", "TNC", "L-BFGS-B"):
+        lad = LADRegression(method=method)
+        lad.fit(X, y)
+        assert lad.score(X, y) > 0.99
 
 
 @pytest.mark.parametrize("coefs, intercept", test_batch)
 def test_score(coefs, intercept):
     """Tests with noise on an easy problem. A good score should be possible."""
     X, y = _create_dataset(coefs, intercept, noise=1.0)
-    lad = LADRegression()
-    lad.fit(X, y)
-
-    assert lad.score(X, y) > 0.9
+    for method in ("SLSQP", "TNC", "L-BFGS-B"):
+        lad = LADRegression(method=method)
+        lad.fit(X, y)
+        assert lad.score(X, y) > 0.9
 
 
 @pytest.mark.parametrize("coefs, intercept", test_batch)
 def test_coefs_and_intercept__no_noise_positive(coefs, intercept):
     """Test with only positive coefficients."""
     X, y = _create_dataset(coefs, intercept, noise=0.0)
-    lad = LADRegression(positive=True)
-    lad.fit(X, y)
-
-    assert all(lad.coef_ >= 0)
-    assert lad.score(X, y) > 0.3
+    for method in ("SLSQP", "TNC", "L-BFGS-B"):
+        lad = LADRegression(method=method)
+        lad.fit(X, y)
+        assert all(lad.coef_ >= 0)
+        assert lad.score(X, y) > 0.3
 
 
 @pytest.mark.parametrize("coefs, intercept", test_batch)
