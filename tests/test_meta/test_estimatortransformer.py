@@ -95,7 +95,7 @@ def test_kwargs(random_xy_dataset_clf):
         [
             (
                 "model",
-                EstimatorTransformer(Ridge(random_state=0))
+                EstimatorTransformer(LinearRegression())
             )
         ]
     )
