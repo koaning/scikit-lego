@@ -75,6 +75,7 @@ def test_shape(random_xy_dataset_regr):
 def test_shape_multitarget(random_xy_dataset_multitarget):
     X, y = random_xy_dataset_multitarget
     m = X.shape[0]
+    print('hello')
     n = y.shape[1]
     pipeline = Pipeline(
         [
@@ -98,9 +99,14 @@ def test_kwargs(random_xy_dataset_clf):
             )
         ]
     )
-    # If the additional parameter sample_weight is passed transform_no_kwargs and transform_kwargs should not be equal.
     transform_no_kwargs = pipeline.fit(X, y).transform(X)
-    transform_kwargs = pipeline.fit(X, y, model__sample_weight=0.1).transform(X)
+
+    # First sample is weighted twice as much
+    sample_weights = np.ones(shape=len(y))
+    sample_weights[0] = 2
+
+    # If sample_weights are passed transform_no_kwargs and transform_kwargs should not be equal.
+    transform_kwargs = pipeline.fit(X, y, model__sample_weight=sample_weights).transform(X)
     assert not np.array_equal(transform_no_kwargs, transform_kwargs)
 
     # Fitting with sample_weight=1. should be the same as fitting with sample_weight not specified.
