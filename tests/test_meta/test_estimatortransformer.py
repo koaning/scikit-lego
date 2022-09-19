@@ -90,14 +90,7 @@ def test_shape_multitarget(random_xy_dataset_multitarget):
 def test_kwargs(random_xy_dataset_clf):
     """ Test if kwargs are properly passed to an underlying estimator. """
     X, y = random_xy_dataset_clf
-    pipeline = Pipeline(
-        [
-            (
-                "model",
-                EstimatorTransformer(LinearRegression())
-            )
-        ]
-    )
+    pipeline = EstimatorTransformer(LinearRegression())
     transform_no_kwargs = pipeline.fit(X, y).transform(X)
 
     # First sample is weighted twice as much
