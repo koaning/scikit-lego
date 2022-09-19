@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from unittest.mock import Mock
 from sklearn import clone
 from sklearn.dummy import DummyClassifier
 from sklearn.multioutput import MultiOutputRegressor
@@ -91,16 +92,12 @@ def test_kwargs(random_xy_dataset_clf):
     """ Test if kwargs are properly passed to an underlying estimator. """
     X, y = random_xy_dataset_clf
     pipeline = EstimatorTransformer(LinearRegression())
-    transform_no_kwargs = pipeline.fit(X, y).transform(X)
 
     # First sample is weighted twice as much
     sample_weights = np.ones(shape=len(y))
     sample_weights[0] = 2
 
-    # If sample_weights are passed transform_no_kwargs and transform_kwargs should not be equal.
-    transform_kwargs = pipeline.fit(X, y, model__sample_weight=sample_weights).transform(X)
-    assert not np.array_equal(transform_no_kwargs, transform_kwargs)
-
-    # Fitting with sample_weight=1. should be the same as fitting with sample_weight not specified.
-    transform_kwargs2 = pipeline.fit(X, y, model__sample_weight=1.).transform(X)
-    assert np.array_equal(transform_no_kwargs, transform_kwargs2)
+    # Check if fit method is explicitly called with sample weights
+    pipeline.fit = Mock()
+    pipeline.fit(X, y, model__sample_weight=sample_weights)
+    pipeline.fit.assert_called_with(X, y, model__sample_weight=sample_weights)
