@@ -75,7 +75,6 @@ def test_shape(random_xy_dataset_regr):
 def test_shape_multitarget(random_xy_dataset_multitarget):
     X, y = random_xy_dataset_multitarget
     m = X.shape[0]
-    print('hello')
     n = y.shape[1]
     pipeline = Pipeline(
         [
