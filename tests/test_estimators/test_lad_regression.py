@@ -27,7 +27,7 @@ def _create_dataset(coefs, intercept, noise=0.0):
 def test_coefs_and_intercept__no_noise(coefs, intercept):
     """Regression problems without noise."""
     X, y = _create_dataset(coefs, intercept)
-    lad = LADRegression(method=method)
+    lad = LADRegression()
     lad.fit(X, y)
     assert lad.score(X, y) > 0.99
 
@@ -36,7 +36,7 @@ def test_coefs_and_intercept__no_noise(coefs, intercept):
 def test_score(coefs, intercept):
     """Tests with noise on an easy problem. A good score should be possible."""
     X, y = _create_dataset(coefs, intercept, noise=1.0)
-    lad = LADRegression(method=method)
+    lad = LADRegression()
     lad.fit(X, y)
     assert lad.score(X, y) > 0.9
 
@@ -45,7 +45,7 @@ def test_score(coefs, intercept):
 def test_coefs_and_intercept__no_noise_positive(coefs, intercept):
     """Test with only positive coefficients."""
     X, y = _create_dataset(coefs, intercept, noise=0.0)
-    lad = LADRegression(method=method, positive=True)
+    lad = LADRegression(positive=True)
     lad.fit(X, y)
     assert all(lad.coef_ >= 0)
     assert lad.score(X, y) > 0.3
