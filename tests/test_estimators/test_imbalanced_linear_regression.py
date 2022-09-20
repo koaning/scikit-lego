@@ -27,31 +27,28 @@ def _create_dataset(coefs, intercept, noise=0.0):
 def test_coefs_and_intercept__no_noise(coefs, intercept):
     """Regression problems without noise."""
     X, y = _create_dataset(coefs, intercept)
-    for method in ("SLSQP", "TNC", "L-BFGS-B"):
-        imb = ImbalancedLinearRegression(method=method)
-        imb.fit(X, y)
-        assert imb.score(X, y) > 0.99
+    imb = ImbalancedLinearRegression()
+    imb.fit(X, y)
+    assert imb.score(X, y) > 0.99
 
 
 @pytest.mark.parametrize("coefs, intercept", test_batch)
 def test_score(coefs, intercept):
     """Tests with noise on an easy problem. A good score should be possible."""
     X, y = _create_dataset(coefs, intercept, noise=0.1)
-    for method in ("SLSQP", "TNC", "L-BFGS-B"):
-        imb = ImbalancedLinearRegression(method=method)
-        imb.fit(X, y)
-        assert imb.score(X, y) > 0.9
+    imb = ImbalancedLinearRegression()
+    imb.fit(X, y)
+    assert imb.score(X, y) > 0.9
 
 
 @pytest.mark.parametrize("coefs, intercept", test_batch)
 def test_coefs_and_intercept__no_noise_positive(coefs, intercept):
     """Test with only positive coefficients."""
     X, y = _create_dataset(coefs, intercept)
-    for method in ("SLSQP", "TNC", "L-BFGS-B"):
-        imb = ImbalancedLinearRegression(method=method, positive=True)
-        imb.fit(X, y)
-        assert all(imb.coef_ >= 0)
-        assert imb.score(X, y) > 0.5
+    imb = ImbalancedLinearRegression(positive=True)
+    imb.fit(X, y)
+    assert all(imb.coef_ >= 0)
+    assert imb.score(X, y) > 0.5
 
 
 @pytest.mark.parametrize("coefs, intercept", test_batch)
@@ -105,11 +102,25 @@ def test_imbalanced(test_fn):
 
 @pytest.mark.parametrize(
     "regr", [
-         (ImbalancedLinearRegression.__name__, ImbalancedLinearRegression()),
-         (ImbalancedLinearRegression.__name__ + "_positive", ImbalancedLinearRegression(positive=True)),
-         (ImbalancedLinearRegression.__name__ + "_positive__no_intercept", ImbalancedLinearRegression(positive=True, fit_intercept=False)),
-         (ImbalancedLinearRegression.__name__ + "_no_intercept", ImbalancedLinearRegression(fit_intercept=False))
-     ]
+        # SLSQP
+        (
+            ImbalancedLinearRegression.__name__,
+            ImbalancedLinearRegression(method=method)
+        ),
+        (
+            ImbalancedLinearRegression.__name__ + "_positive",
+            ImbalancedLinearRegression(method=method, positive=True)
+        ),
+        (
+            ImbalancedLinearRegression.__name__ + "_positive__no_intercept",
+            ImbalancedLinearRegression(method=method, positive=True, fit_intercept=False)
+        ),
+        (
+            ImbalancedLinearRegression.__name__ + "_no_intercept",
+            ImbalancedLinearRegression(method=method, fit_intercept=False)
+        ) 
+        for method in ("SLSQP", "TNC", "L-BFGS-B")
+    ]
 )
 @pytest.mark.parametrize(
     "test_fn",
