@@ -45,7 +45,7 @@ def test_score(coefs, intercept, method):
 
 @pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
-def test_coefs_and_intercept__no_noise_positive(coefs, intercept):
+def test_coefs_and_intercept__no_noise_positive(coefs, intercept, method):
     """Test with only positive coefficients."""
     X, y = _create_dataset(coefs, intercept)
     imb = ImbalancedLinearRegression(method=method, positive=True)
