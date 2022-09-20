@@ -104,53 +104,53 @@ def test_imbalanced(test_fn):
     "regr", [
         # SLSQP, default
         (
-            ImbalancedLinearRegression.__name__,
+            ImbalancedLinearRegression.__name__ + "_SLSQP",
             ImbalancedLinearRegression(method="SLSQP")
         ),
         (
-            ImbalancedLinearRegression.__name__ + "_positive",
+            ImbalancedLinearRegression.__name__ + "_SLSQP_positive",
             ImbalancedLinearRegression(method="SLSQP", positive=True)
         ),
         (
-            ImbalancedLinearRegression.__name__ + "_positive__no_intercept",
+            ImbalancedLinearRegression.__name__ + "_SLSQP_positive__no_intercept",
             ImbalancedLinearRegression(method="SLSQP", positive=True, fit_intercept=False)
         ),
         (
-            ImbalancedLinearRegression.__name__ + "_no_intercept",
+            ImbalancedLinearRegression.__name__ + "_SLSQP_no_intercept",
             ImbalancedLinearRegression(method="SLSQP", fit_intercept=False)
         ),
         # TNC
         (
-            ImbalancedLinearRegression.__name__,
+            ImbalancedLinearRegression.__name__ + "TNC",
             ImbalancedLinearRegression(method="TNC")
         ),
         (
-            ImbalancedLinearRegression.__name__ + "_positive",
+            ImbalancedLinearRegression.__name__ + "_TNC_positive",
             ImbalancedLinearRegression(method="TNC", positive=True)
         ),
         (
-            ImbalancedLinearRegression.__name__ + "_positive__no_intercept",
+            ImbalancedLinearRegression.__name__ + "_TNC_positive__no_intercept",
             ImbalancedLinearRegression(method="TNC", positive=True, fit_intercept=False)
         ),
         (
-            ImbalancedLinearRegression.__name__ + "_no_intercept",
+            ImbalancedLinearRegression.__name__ + "_TNC_no_intercept",
             ImbalancedLinearRegression(method="TNC", fit_intercept=False)
         ),
         # L-BFGS-B
         (
-            ImbalancedLinearRegression.__name__,
+            ImbalancedLinearRegression.__name__ + "_LBFGSB",
             ImbalancedLinearRegression(method="L-BFGS-B")
         ),
         (
-            ImbalancedLinearRegression.__name__ + "_positive",
+            ImbalancedLinearRegression.__name__ + "_LBFGSB_positive",
             ImbalancedLinearRegression(method="L-BFGS-B", positive=True)
         ),
         (
-            ImbalancedLinearRegression.__name__ + "_positive__no_intercept",
+            ImbalancedLinearRegression.__name__ + "_LBFGSB_positive__no_intercept",
             ImbalancedLinearRegression(method="L-BFGS-B", positive=True, fit_intercept=False)
         ),
         (
-            ImbalancedLinearRegression.__name__ + "_no_intercept",
+            ImbalancedLinearRegression.__name__ + "_LBFGSB_no_intercept",
             ImbalancedLinearRegression(method="L-BFGS-B", fit_intercept=False)
         )
     ]
