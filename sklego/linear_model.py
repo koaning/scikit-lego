@@ -594,7 +594,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
 
     def fit(self, X, y, sample_weight=None):
         """
-        Fit the model using the SLSQP algorithm.
+        Fit the model using the chosen algorithm.
 
         Parameters
         ----------
