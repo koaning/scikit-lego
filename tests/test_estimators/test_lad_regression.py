@@ -80,57 +80,10 @@ def test_lad(test_fn):
 
 @pytest.mark.parametrize(
     "regr", [
-        # SLSQP, default
-        (
-            LADRegression.__name__ + "_SLSQP",
-            LADRegression(method="SLSQP")
-        ),
-        (
-            LADRegression.__name__ + "_SLSQP_positive",
-            LADRegression(method="SLSQP", positive=True)
-        ),
-        (
-            LADRegression.__name__ + "_SLSQP_positive__no_intercept",
-            LADRegression(method="SLSQP", positive=True, fit_intercept=False)
-        ),
-        (
-            LADRegression.__name__ + "_SLSQP_no_intercept",
-            LADRegression(method="SLSQP", fit_intercept=False)
-        ),
-        # TNC
-        (
-            LADRegression.__name__ + "_TNC",
-            LADRegression(method="TNC")
-        ),
-        (
-            LADRegression.__name__ + "_TNC_positive",
-            LADRegression(method="TNC", positive=True)
-        ),
-        (
-            LADRegression.__name__ + "_TNC_positive__no_intercept",
-            LADRegression(method="TNC", positive=True, fit_intercept=False)
-        ),
-        (
-            LADRegression.__name__ + "_TNC_no_intercept",
-            LADRegression(method="TNC", fit_intercept=False)
-        ),
-        # L-BFGS-B
-        (
-            LADRegression.__name__ + "_LBFGSB",
-            LADRegression(method="L-BFGS-B")
-        ),
-        (
-            LADRegression.__name__ + "_LBFGSB_positive",
-            LADRegression(method="L-BFGS-B", positive=True)
-        ),
-        (
-            LADRegression.__name__ + "_LBFGSB_positive__no_intercept",
-            LADRegression(method="L-BFGS-B", positive=True, fit_intercept=False)
-        ),
-        (
-            LADRegression.__name__ + "_LBFGSB_no_intercept",
-            LADRegression(method="L-BFGS-B", fit_intercept=False)
-        )
+        (LADRegression.__name__, LADRegression()),
+        (LADRegression.__name__ + "_positive", LADRegression(positive=True)),
+        (LADRegression.__name__ + "_positive__no_intercept", LADRegression(positive=True, fit_intercept=False)),
+        (LADRegression.__name__ + "_no_intercept", LADRegression(fit_intercept=False))
      ]
 )
 @pytest.mark.parametrize(
