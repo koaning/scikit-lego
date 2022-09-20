@@ -102,7 +102,7 @@ def test_imbalanced(test_fn):
 
 @pytest.mark.parametrize(
     "regr", [
-        (
+        ((
             ImbalancedLinearRegression.__name__,
             ImbalancedLinearRegression(method=method)
         ),
@@ -117,8 +117,7 @@ def test_imbalanced(test_fn):
         (
             ImbalancedLinearRegression.__name__ + "_no_intercept",
             ImbalancedLinearRegression(method=method, fit_intercept=False)
-        ) 
-        for method in ("SLSQP", "TNC", "L-BFGS-B")
+        )) for method in ("SLSQP", "TNC", "L-BFGS-B")
     ]
 )
 @pytest.mark.parametrize(
