@@ -23,29 +23,32 @@ def _create_dataset(coefs, intercept, noise=0.0):
     return X, y
 
 
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
-def test_coefs_and_intercept__no_noise(coefs, intercept):
+def test_coefs_and_intercept__no_noise(coefs, intercept, method):
     """Regression problems without noise."""
     X, y = _create_dataset(coefs, intercept)
-    imb = ImbalancedLinearRegression()
+    imb = ImbalancedLinearRegression(method=method)
     imb.fit(X, y)
     assert imb.score(X, y) > 0.99
 
 
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
-def test_score(coefs, intercept):
+def test_score(coefs, intercept, method):
     """Tests with noise on an easy problem. A good score should be possible."""
     X, y = _create_dataset(coefs, intercept, noise=0.1)
-    imb = ImbalancedLinearRegression()
+    imb = ImbalancedLinearRegression(method=method)
     imb.fit(X, y)
     assert imb.score(X, y) > 0.9
 
 
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
 def test_coefs_and_intercept__no_noise_positive(coefs, intercept):
     """Test with only positive coefficients."""
     X, y = _create_dataset(coefs, intercept)
-    imb = ImbalancedLinearRegression(positive=True)
+    imb = ImbalancedLinearRegression(method=method, positive=True)
     imb.fit(X, y)
     assert all(imb.coef_ >= 0)
     assert imb.score(X, y) > 0.5
@@ -65,21 +68,23 @@ def test_coefs_and_intercept__no_noise_regularization(coefs, intercept):
         assert coef_size[i] >= coef_size[i + 1]
 
 
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
-def test_under_estimation(coefs, intercept):
+def test_under_estimation(coefs, intercept, method):
     """Test if the model is able to underestimate."""
     X, y = _create_dataset(coefs, intercept, noise=2.0)
-    imb = ImbalancedLinearRegression(overestimation_punishment_factor=50)
+    imb = ImbalancedLinearRegression(method=method, overestimation_punishment_factor=50)
     imb.fit(X, y)
 
     assert (imb.predict(X) < y).mean() > 0.8
 
 
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
-def test_over_estimation(coefs, intercept):
+def test_over_estimation(coefs, intercept, method):
     """Test if the model is able to overestimate."""
     X, y = _create_dataset(coefs, intercept, noise=2.0)
-    imb = ImbalancedLinearRegression(overestimation_punishment_factor=0.01)
+    imb = ImbalancedLinearRegression(method=method, overestimation_punishment_factor=0.01)
     imb.fit(X, y)
 
     assert (imb.predict(X) < y).mean() < 0.15
@@ -112,7 +117,7 @@ def test_imbalanced(test_fn):
 )
 def test_estimator_checks(positive, fit_intercept, method, test_fn):
     regr = (
-        f'{ImbalancedLinearRegression.__name__}_method_{method}_positive_{positive}_fit_intercept_{fit_intercept}'
+        f'{ImbalancedLinearRegression.__name__}_method_{method}_positive_{positive}_fit_intercept_{fit_intercept}',
         ImbalancedLinearRegression(method=method, positive=positive, fit_intercept=fit_intercept)
     )
     test_fn(*regr)
