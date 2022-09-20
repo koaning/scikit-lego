@@ -102,7 +102,6 @@ def test_imbalanced(test_fn):
 
 @pytest.mark.parametrize(
     "regr", [
-        # SLSQP
         (
             ImbalancedLinearRegression.__name__,
             ImbalancedLinearRegression(method=method)
