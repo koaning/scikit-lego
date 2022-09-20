@@ -100,66 +100,19 @@ def test_imbalanced(test_fn):
     regr = ImbalancedLinearRegression()
     test_fn(ImbalancedLinearRegression.__name__, regr)
 
-@pytest.mark.parametrize(
-    "regr", [
-        # SLSQP, default
-        (
-            ImbalancedLinearRegression.__name__ + "_SLSQP",
-            ImbalancedLinearRegression(method="SLSQP")
-        ),
-        (
-            ImbalancedLinearRegression.__name__ + "_SLSQP_positive",
-            ImbalancedLinearRegression(method="SLSQP", positive=True)
-        ),
-        (
-            ImbalancedLinearRegression.__name__ + "_SLSQP_positive__no_intercept",
-            ImbalancedLinearRegression(method="SLSQP", positive=True, fit_intercept=False)
-        ),
-        (
-            ImbalancedLinearRegression.__name__ + "_SLSQP_no_intercept",
-            ImbalancedLinearRegression(method="SLSQP", fit_intercept=False)
-        ),
-        # TNC
-        (
-            ImbalancedLinearRegression.__name__ + "TNC",
-            ImbalancedLinearRegression(method="TNC")
-        ),
-        (
-            ImbalancedLinearRegression.__name__ + "_TNC_positive",
-            ImbalancedLinearRegression(method="TNC", positive=True)
-        ),
-        (
-            ImbalancedLinearRegression.__name__ + "_TNC_positive__no_intercept",
-            ImbalancedLinearRegression(method="TNC", positive=True, fit_intercept=False)
-        ),
-        (
-            ImbalancedLinearRegression.__name__ + "_TNC_no_intercept",
-            ImbalancedLinearRegression(method="TNC", fit_intercept=False)
-        ),
-        # L-BFGS-B
-        (
-            ImbalancedLinearRegression.__name__ + "_LBFGSB",
-            ImbalancedLinearRegression(method="L-BFGS-B")
-        ),
-        (
-            ImbalancedLinearRegression.__name__ + "_LBFGSB_positive",
-            ImbalancedLinearRegression(method="L-BFGS-B", positive=True)
-        ),
-        (
-            ImbalancedLinearRegression.__name__ + "_LBFGSB_positive__no_intercept",
-            ImbalancedLinearRegression(method="L-BFGS-B", positive=True, fit_intercept=False)
-        ),
-        (
-            ImbalancedLinearRegression.__name__ + "_LBFGSB_no_intercept",
-            ImbalancedLinearRegression(method="L-BFGS-B", fit_intercept=False)
-        )
-    ]
-)
+
+@pytest.mark.parametrize("positive", [True, False])
+@pytest.mark.parametrize("fit_intercept", [True, False])
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
         flatten([general_checks, nonmeta_checks, regressor_checks]),
     )
 )
-def test_estimator_checks(regr, test_fn):
+def test_estimator_checks(positive, fit_intercept, method, test_fn):
+    regr = (
+        f'{ImbalancedLinearRegression.__name__}_method_{method}_positive_{positive}_fit_intercept_{fit_intercept}'
+        ImbalancedLinearRegression(method=method, positive=positive, fit_intercept=fit_intercept)
+    )
     test_fn(*regr)
