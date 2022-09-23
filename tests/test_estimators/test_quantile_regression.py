@@ -33,7 +33,7 @@ def test_coefs_and_intercept__no_noise(coefs, intercept, method):
     assert quant.score(X, y) > 0.99
 
 
-    @pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
 def test_score(coefs, intercept, method):
     """Tests with noise on an easy problem. A good score should be possible."""
