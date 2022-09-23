@@ -640,7 +640,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         return self
 
     def _prepare_inputs(self, X, sample_weight, y):
-        X, y = check_X_y(X, y)
+        X, y = check_X_y(X, y, y_numeric=True)
         sample_weight = _check_sample_weight(sample_weight, X)
         self.n_features_in_ = X.shape[1]
 
