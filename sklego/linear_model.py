@@ -625,7 +625,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
             bounds=bounds,
             method=self.method,
             jac=grad_loss,
-            tol=1e-6,
+            tol=1e-20,
         )
         self.convergence_status_ = minimize_result.message
 
