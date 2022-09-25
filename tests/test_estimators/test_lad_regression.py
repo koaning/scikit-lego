@@ -23,33 +23,33 @@ def _create_dataset(coefs, intercept, noise=0.0):
     return X, y
 
 
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
-def test_coefs_and_intercept__no_noise(coefs, intercept):
+def test_coefs_and_intercept__no_noise(coefs, intercept, method):
     """Regression problems without noise."""
     X, y = _create_dataset(coefs, intercept)
-    lad = LADRegression()
+    lad = LADRegression(method=method)
     lad.fit(X, y)
-
     assert lad.score(X, y) > 0.99
 
 
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
-def test_score(coefs, intercept):
+def test_score(coefs, intercept, method):
     """Tests with noise on an easy problem. A good score should be possible."""
     X, y = _create_dataset(coefs, intercept, noise=1.0)
-    lad = LADRegression()
+    lad = LADRegression(method=method)
     lad.fit(X, y)
-
     assert lad.score(X, y) > 0.9
 
 
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
-def test_coefs_and_intercept__no_noise_positive(coefs, intercept):
+def test_coefs_and_intercept__no_noise_positive(coefs, intercept, method):
     """Test with only positive coefficients."""
     X, y = _create_dataset(coefs, intercept, noise=0.0)
-    lad = LADRegression(positive=True)
+    lad = LADRegression(method=method, positive=True)
     lad.fit(X, y)
-
     assert all(lad.coef_ >= 0)
     assert lad.score(X, y) > 0.3
 
@@ -81,19 +81,19 @@ def test_lad(test_fn):
     regr = LADRegression()
     test_fn(LADRegression.__name__, regr)
 
-@pytest.mark.parametrize(
-    "regr", [
-         (LADRegression.__name__, LADRegression()),
-         (LADRegression.__name__ + "_positive", LADRegression(positive=True)),
-         (LADRegression.__name__ + "_positive__no_intercept", LADRegression(positive=True, fit_intercept=False)),
-         (LADRegression.__name__ + "_no_intercept", LADRegression(fit_intercept=False))
-     ]
-)
+
+@pytest.mark.parametrize("positive", [True, False])
+@pytest.mark.parametrize("fit_intercept", [True, False])
+@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
         flatten([general_checks, nonmeta_checks, regressor_checks]),
     )
 )
-def test_estimator_checks(regr, test_fn):
+def test_estimator_checks(positive, fit_intercept, method, test_fn):
+    regr = (
+        f'{LADRegression.__name__}_method_{method}_positive_{positive}_fit_intercept_{fit_intercept}',
+        LADRegression(method=method, positive=positive, fit_intercept=fit_intercept)
+    )
     test_fn(*regr)

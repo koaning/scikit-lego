@@ -517,6 +517,9 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
     positive : bool, default=False
         When set to True, forces the coefficients to be positive.
 
+    method : str, default="SLSQP"
+        Type of solver. Should be one of "SLSQP", "TNC", "L-BFGS-B".
+
     Attributes
     ----------
     coef_ : np.array of shape (n_features,)
@@ -531,12 +534,26 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html.
     """
 
-    def __init__(self, alpha=0.0, l1_ratio=0.0, fit_intercept=True, copy_X=True, positive=False):
+    def __init__(
+        self,
+        alpha=0.0,
+        l1_ratio=0.0,
+        fit_intercept=True,
+        copy_X=True,
+        positive=False,
+        method="SLSQP"
+    ):
         self.alpha = alpha
         self.l1_ratio = l1_ratio
         self.fit_intercept = fit_intercept
         self.copy_X = copy_X
         self.positive = positive
+        if method not in ("SLSQP", "TNC", "L-BFGS-B"):
+            raise ValueError(
+                f'method should be one of "SLSQP", "TNC", "L-BFGS-B", '
+                f'got {method} instead'
+            )
+        self.method = method
 
     @abstractmethod
     def _get_objective(self, X, y, sample_weight):
@@ -577,7 +594,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
 
     def fit(self, X, y, sample_weight=None):
         """
-        Fit the model using the SLSQP algorithm.
+        Fit the model using the chosen algorithm.
 
         Parameters
         ----------
@@ -606,7 +623,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
             loss,
             x0=np.zeros(self.n_features_in_ + d),
             bounds=bounds,
-            method="SLSQP",
+            method=self.method,
             jac=grad_loss,
             tol=1e-20,
         )
@@ -623,7 +640,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         return self
 
     def _prepare_inputs(self, X, sample_weight, y):
-        X, y = check_X_y(X, y)
+        X, y = check_X_y(X, y, y_numeric=True)
         sample_weight = _check_sample_weight(sample_weight, X)
         self.n_features_in_ = X.shape[1]
 
@@ -697,6 +714,9 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
     positive : bool, default=False
         When set to True, forces the coefficients to be positive.
 
+    method : str, default="SLSQP"
+        Type of solver. Should be one of "SLSQP", "TNC", "L-BFGS-B".
+
     overestimation_punishment_factor : float, default=1
         Factor to punish overestimations more (if the value is larger than 1) or less (if the value is between 0 and 1).
 
@@ -730,8 +750,8 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
     """
 
     def __init__(self, alpha=0.0, l1_ratio=0.0, fit_intercept=True, copy_X=True, positive=False,
-                 overestimation_punishment_factor=1.0):
-        super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive)
+                 method="SLSQP", overestimation_punishment_factor=1.0):
+        super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, method)
         self.overestimation_punishment_factor = overestimation_punishment_factor
 
     def _get_objective(self, X, y, sample_weight):
@@ -771,22 +791,31 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
     ----------
     alpha : float, default=0.0
         Constant that multiplies the penalty terms.
+
     l1_ratio : float, default=0.0
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``. For
         ``l1_ratio = 0`` the penalty is an L2 penalty. ``For l1_ratio = 1`` it
         is an L1 penalty.  For ``0 < l1_ratio < 1``, the penalty is a
         combination of L1 and L2.
+
     fit_intercept : bool, default=True
         Whether to calculate the intercept for this model. If set
         to False, no intercept will be used in calculations
         (i.e. data is expected to be centered).
+
     copy_X : bool, default=True
         If True, X will be copied; else, it may be overwritten.
+
     positive : bool, default=False
         When set to True, forces the coefficients to be positive.
+
+    method : str, default="SLSQP"
+        Type of solver. Should be one of "SLSQP", "TNC", "L-BFGS-B".
+
     quantile : float, between 0 and 1, default=0.5
         The line output by the model will have a share of approximately `quantile` data points under it.
         A value of `quantile=1` outputs a line that is above each data point, for example. `quantile=0.5` corresponds to LADRegression.
+
     Attributes
     ----------
     coef_ : np.ndarray of shape (n_features,)
@@ -815,9 +844,18 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
     array([-1.,  2., -3.,  4.])
     """
 
-    def __init__(self, alpha=0.0, l1_ratio=0.0, fit_intercept=True, copy_X=True, positive=False, quantile=0.5):
+    def __init__(
+        self,
+        alpha=0.0,
+        l1_ratio=0.0,
+        fit_intercept=True,
+        copy_X=True,
+        positive=False,
+        method="SLSQP",
+        quantile=0.5
+    ):
         """Initialize."""
-        super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive)
+        super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, method)
         self.quantile = quantile
 
     def _get_objective(self, X, y, sample_weight):
@@ -900,6 +938,9 @@ class LADRegression(QuantileRegression):
     positive : bool, default=False
         When set to True, forces the coefficients to be positive.
 
+    method : str, default="SLSQP"
+        Type of solver. Should be one of "SLSQP", "TNC", "L-BFGS-B".
+
     Attributes
     ----------
     coef_ : np.array of shape (n_features,)
@@ -933,6 +974,14 @@ class LADRegression(QuantileRegression):
 
     """
 
-    def __init__(self, alpha=0.0, l1_ratio=0.0, fit_intercept=True, copy_X=True, positive=False):
+    def __init__(
+        self,
+        alpha=0.0,
+        l1_ratio=0.0,
+        fit_intercept=True,
+        copy_X=True,
+        positive=False,
+        method="SLSQP"
+    ):
         """Initialize."""
-        super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, quantile=0.5)
+        super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, method, quantile=0.5)
