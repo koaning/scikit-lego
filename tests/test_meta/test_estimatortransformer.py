@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from unittest.mock import Mock
+from unittest.mock import patch
 from sklearn import clone
 from sklearn.dummy import DummyClassifier
 from sklearn.multioutput import MultiOutputRegressor
@@ -88,16 +89,27 @@ def test_shape_multitarget(random_xy_dataset_multitarget):
     assert pipeline.fit(X, y).transform(X).shape == (m, n)
 
 
-def test_kwargs(random_xy_dataset_clf):
+@patch('sklego.meta.estimator_transformer.clone')
+def test_kwargs(patched_clone, random_xy_dataset_clf):
     """ Test if kwargs are properly passed to an underlying estimator. """
     X, y = random_xy_dataset_clf
-    pipeline = EstimatorTransformer(LinearRegression())
+    estimator = Mock()
+    patched_clone.return_value = estimator
 
-    # First sample is weighted twice as much
     sample_weights = np.ones(shape=len(y))
-    sample_weights[0] = 2
+    pipeline = EstimatorTransformer(estimator)
+    pipeline.fit(X, y, sample_weight=sample_weights)
 
-    # Check if fit method is explicitly called with sample weights
-    pipeline.fit = Mock()
-    pipeline.fit(X, y, model__sample_weight=sample_weights)
-    pipeline.fit.assert_called_with(X, y, model__sample_weight=sample_weights)
+    # We can't use `assert_called_with` because that compares by `==` which is ambiguous
+    # on numpy arrays
+    np.testing.assert_array_equal(
+        X, estimator.fit.call_args.args[0]
+    )
+    np.testing.assert_array_equal(
+        y, estimator.fit.call_args.args[1]
+    )
+    np.testing.assert_array_equal(
+        sample_weights, estimator.fit.call_args.kwargs['sample_weight']
+    )
+
+
