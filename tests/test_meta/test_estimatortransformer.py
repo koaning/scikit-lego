@@ -105,5 +105,3 @@ def test_kwargs(patched_clone, random_xy_dataset_clf):
     np.testing.assert_array_equal(
         sample_weights, estimator.fit.call_args.kwargs['sample_weight']
     )
-
-
