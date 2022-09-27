@@ -45,13 +45,20 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         return output if self.multi_output_ else output.reshape(-1, 1)
 
     def get_feature_names_out(self, feature_names_out=None) -> list:
-        if not hasattr(self, "estimator_"):
-            raise NotFittedError
-        check_is_fitted(self.estimator_)
+        """
+        Defines descriptive names for each output of the (fitted) estimator.
+        :param feature_names_out: Redundant parameter for which the contents are ignored in this function.
+        feature_names_out is defined here because EstimatorTransformer can be part of a larger complex pipeline.
+        Some components may depend on defined feature_names_out and some not, but it is passed to all components
+        in the pipeline if `Pipeline.get_feature_names_out` is called. feature_names_out is therefore necessary
+        to define here to avoid `TypeError`s when used within a scikit-learn `Pipeline` object.
+        :return: List of descriptive names for each output variable from the fitted estimator.
+        """
+        check_is_fitted(self, "estimator_")
 
         estimator_name_lower = self.estimator_.__class__.__name__.lower()
         if self.multi_output_:
-            feature_names = [f"{estimator_name_lower}_prediction_{i}" for i in range(self.output_len_)]
+            feature_names = [f"{estimator_name_lower}_{i}" for i in range(self.output_len_)]
         else:
-            feature_names = [f"{estimator_name_lower}_prediction"]
+            feature_names = [estimator_name_lower]
         return feature_names

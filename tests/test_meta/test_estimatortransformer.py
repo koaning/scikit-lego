@@ -8,7 +8,7 @@ from sklearn.multioutput import MultiOutputRegressor
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.utils import check_X_y
-
+from sklearn.exceptions import NotFittedError
 from sklego.common import flatten
 from sklego.meta import EstimatorTransformer
 from tests.conftest import transformer_checks, general_checks
@@ -113,20 +113,55 @@ def test_kwargs(patched_clone, random_xy_dataset_clf):
     )
 
 
-def test_get_feature_names_out(random_xy_dataset_clf, random_xy_dataset_multitarget):
-    datasets = [random_xy_dataset_clf, random_xy_dataset_multitarget]
-    for X, y in datasets:
-        estimator = LinearRegression()
-        pipeline = EstimatorTransformer(estimator)
-        pipeline.fit(X, y)
-        feature_names = pipeline.get_feature_names_out()
+def test_get_feature_names_out(random_xy_dataset_clf):
+    X, y = random_xy_dataset_clf
+    pipeline = EstimatorTransformer(LinearRegression())
+    # We cannot call get_feature_names_out before estimator is fitted.
+    # This is because of the unknown output shape of an unfitted estimator.
+    with pytest.raises(NotFittedError):
+        pipeline.get_feature_names_out()
 
-        estimator_name_lower = estimator.__class__.__name__.lower()
-        output_len = y.shape[1] if pipeline.multi_output_ else 1
-        if pipeline.multi_output_:
-            expected_feature_names = [f"{estimator_name_lower}_prediction_{i}" for i in range(output_len)]
-            np.testing.assert_array_equal(feature_names, expected_feature_names)
-        else:
-            expected_feature_names = [f"{estimator_name_lower}_prediction"]
-            np.testing.assert_array_equal(feature_names, expected_feature_names)
+    pipeline.fit(X, y)
+    feature_names = pipeline.get_feature_names_out()
+
+    estimator_name_lower = pipeline.estimator.__class__.__name__.lower()
+    expected_feature_names = [estimator_name_lower]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)
+
+
+def test_get_feature_names_out_multitarget(random_xy_dataset_multitarget):
+    X, y = random_xy_dataset_multitarget
+    pipeline = EstimatorTransformer(LinearRegression())
+    pipeline.fit(X, y)
+    feature_names = pipeline.get_feature_names_out()
+
+    estimator_name_lower = pipeline.estimator.__class__.__name__.lower()
+    expected_feature_names = [f"{estimator_name_lower}_{i}" for i in range(pipeline.output_len_)]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)
+
+
+def test_get_feature_names_out_featureunion(random_xy_dataset_clf):
+    X, y = random_xy_dataset_clf
+    pipeline = Pipeline(
+        [
+            (
+                "ml_features",
+                FeatureUnion(
+                    [
+                        ("model_1", EstimatorTransformer(LinearRegression())),
+                        ("model_2", EstimatorTransformer(Ridge())),
+                    ]
+                ),
+            )
+        ]
+    )
+    # We cannot call get_feature_names_out before estimator is fitted.
+    # This is because of the unknown output shape of an unfitted estimator.
+    with pytest.raises(NotFittedError):
+        pipeline.get_feature_names_out()
+
+    pipeline.fit(X, y)
+    feature_names = pipeline.get_feature_names_out()
+    expected_feature_names = ["model_1__linearregression", "model_2__ridge"]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)
 
