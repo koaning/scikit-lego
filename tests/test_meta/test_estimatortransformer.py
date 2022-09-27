@@ -111,3 +111,22 @@ def test_kwargs(patched_clone, random_xy_dataset_clf):
     np.testing.assert_array_equal(
         sample_weights, estimator.fit.call_args[1]['sample_weight']
     )
+
+
+def test_get_feature_names_out(random_xy_dataset_clf, random_xy_dataset_multitarget):
+    datasets = [random_xy_dataset_clf, random_xy_dataset_multitarget]
+    for X, y in datasets:
+        estimator = LinearRegression()
+        pipeline = EstimatorTransformer(estimator)
+        pipeline.fit(X, y)
+        feature_names = pipeline.get_feature_names_out()
+
+        estimator_name_lower = estimator.__class__.__name__.lower()
+        output_len = y.shape[1] if pipeline.multi_output_ else 1
+        if pipeline.multi_output_:
+            expected_feature_names = [f"{estimator_name_lower}_prediction_{i}" for i in range(output_len)]
+            np.testing.assert_array_equal(feature_names, expected_feature_names)
+        else:
+            expected_feature_names = [f"{estimator_name_lower}_prediction"]
+            np.testing.assert_array_equal(feature_names, expected_feature_names)
+

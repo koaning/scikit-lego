@@ -9,6 +9,7 @@ from sklearn.utils.validation import (
     check_X_y,
     FLOAT_DTYPES,
 )
+from sklearn.exceptions import NotFittedError
 
 
 class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
@@ -27,6 +28,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         """Fits the estimator"""
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
         self.multi_output_ = len(y.shape) > 1
+        self.output_len_ = y.shape[1] if self.multi_output_ else 1
         self.estimator_ = clone(self.estimator)
         self.estimator_.fit(X, y, **kwargs)
         return self
@@ -41,3 +43,15 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         check_is_fitted(self, "estimator_")
         output = getattr(self.estimator_, self.predict_func)(X)
         return output if self.multi_output_ else output.reshape(-1, 1)
+
+    def get_feature_names_out(self, feature_names_out=None) -> list:
+        if not hasattr(self, "estimator_"):
+            raise NotFittedError
+        check_is_fitted(self.estimator_)
+
+        estimator_name_lower = self.estimator_.__class__.__name__.lower()
+        if self.multi_output_:
+            feature_names = [f"{estimator_name_lower}_prediction_{i}" for i in range(self.output_len_)]
+        else:
+            feature_names = [f"{estimator_name_lower}_prediction"]
+        return feature_names
