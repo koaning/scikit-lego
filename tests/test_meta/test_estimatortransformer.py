@@ -103,5 +103,11 @@ def test_kwargs(patched_clone, random_xy_dataset_clf):
     # We can't use `assert_called_with` because that compares by `==` which is ambiguous
     # on numpy arrays
     np.testing.assert_array_equal(
-        sample_weights, estimator.fit.call_args.kwargs['sample_weight']
+        X, estimator.fit.call_args[0][0]
+    )
+    np.testing.assert_array_equal(
+        y, estimator.fit.call_args[0][1]
+    )
+    np.testing.assert_array_equal(
+        sample_weights, estimator.fit.call_args[1]['sample_weight']
     )
