@@ -40,7 +40,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         Returns array of shape `(X.shape[0], )` if estimator is not multi output.
         For multi output estimators an array of shape `(X.shape[0], y.shape[1])` is returned.
         """
-        check_is_fitted(self, "estimator_")
+        check_is_fitted(self)
         output = getattr(self.estimator_, self.predict_func)(X)
         return output if self.multi_output_ else output.reshape(-1, 1)
 
@@ -54,11 +54,20 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         to define here to avoid `TypeError`s when used within a scikit-learn `Pipeline` object.
         :return: List of descriptive names for each output variable from the fitted estimator.
         """
-        check_is_fitted(self, "estimator_")
-
+        check_is_fitted(self)
         estimator_name_lower = self.estimator_.__class__.__name__.lower()
         if self.multi_output_:
             feature_names = [f"{estimator_name_lower}_{i}" for i in range(self.output_len_)]
         else:
             feature_names = [estimator_name_lower]
         return feature_names
+
+    def __sklearn_is_fitted(self) -> bool:
+        """
+        Custom additional requirements that need to be satisfied to pass check_is_fitted.
+        :return: Boolean indicating if the additional requirements
+        for determining check_is_fitted are satisfied.
+        """
+        has_fit_attr = all(hasattr(self, attr) for attr in ["estimator_", "multi_output_", "output_len_"])
+        check_is_fitted(self.estimator_)
+        return has_fit_attr
