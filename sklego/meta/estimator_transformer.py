@@ -9,7 +9,6 @@ from sklearn.utils.validation import (
     check_X_y,
     FLOAT_DTYPES,
 )
-from sklearn.exceptions import NotFittedError
 
 
 class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
