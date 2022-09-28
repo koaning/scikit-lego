@@ -116,8 +116,8 @@ def test_kwargs(patched_clone, random_xy_dataset_clf):
 def test_get_feature_names_out(random_xy_dataset_clf):
     X, y = random_xy_dataset_clf
     pipeline = EstimatorTransformer(LinearRegression())
-    # We cannot call get_feature_names_out before estimator is fitted.
-    # This is because of the unknown output shape of an unfitted estimator.
+
+    # We shouldn't be able to call get_feature_names_out before estimator is fitted.
     with pytest.raises(NotFittedError):
         pipeline.get_feature_names_out()
 
@@ -132,6 +132,7 @@ def test_get_feature_names_out(random_xy_dataset_clf):
 def test_get_feature_names_out_multitarget(random_xy_dataset_multitarget):
     X, y = random_xy_dataset_multitarget
     pipeline = EstimatorTransformer(LinearRegression())
+
     pipeline.fit(X, y)
     feature_names = pipeline.get_feature_names_out()
 
@@ -155,8 +156,8 @@ def test_get_feature_names_out_featureunion(random_xy_dataset_clf):
             )
         ]
     )
-    # We cannot call get_feature_names_out before estimator is fitted.
-    # This is because of the unknown output shape of an unfitted estimator.
+
+    # We shouldn't be able to call get_feature_names_out before estimator is fitted.
     with pytest.raises(NotFittedError):
         pipeline.get_feature_names_out()
 
@@ -164,4 +165,3 @@ def test_get_feature_names_out_featureunion(random_xy_dataset_clf):
     feature_names = pipeline.get_feature_names_out()
     expected_feature_names = ["model_1__linearregression", "model_2__ridge"]
     np.testing.assert_array_equal(feature_names, expected_feature_names)
-
