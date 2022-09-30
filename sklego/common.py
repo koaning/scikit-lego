@@ -4,7 +4,7 @@ import hashlib
 import numpy as np
 import pandas as pd
 from sklearn.base import TransformerMixin
-from sklearn.utils.validation import check_is_fitted, check_array, check_X_y
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
 class TrainOnlyTransformerMixin(TransformerMixin):
@@ -166,3 +166,27 @@ def expanding_list(list_to_extent, return_type=list):
         return [listed]
 
     return [return_type(listed[: n + 1]) for n in range(len(listed))]
+
+
+def chunker(sequence, chunk_size, step_size):
+    """Returns generator object that chunks a sequence into pieces
+
+    :param sequence: e.g. a list
+    :type sequence: Iterable
+    :param chunk_size: the size of each chunk
+    :type chunk_size: int
+    :param step_size: the amount of steps to the next chunk
+    :type step_size: int
+    :return: a generator object
+    :rtype: Generator
+
+    :Example:
+
+    >>> generator = chunker([1,2,4,5], 2, 1)
+    >>> [i for i in generator]
+    [[1,2], [2,4], [4,5], [5]]
+    """
+    return (
+        sequence[pos: pos + chunk_size]
+        for pos in range(0, len(sequence), step_size)
+    )
