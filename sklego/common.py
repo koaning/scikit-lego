@@ -168,7 +168,7 @@ def expanding_list(list_to_extent, return_type=list):
     return [return_type(listed[: n + 1]) for n in range(len(listed))]
 
 
-def chunker(sequence, chunk_size, step_size):
+def sliding_window(sequence, window_size, step_size):
     """Returns generator object that chunks a sequence into pieces
 
     :param sequence: e.g. a list
@@ -187,6 +187,6 @@ def chunker(sequence, chunk_size, step_size):
     [[1,2], [2,4], [4,5], [5]]
     """
     return (
-        sequence[pos: pos + chunk_size]
+        sequence[pos: pos + window_size]
         for pos in range(0, len(sequence), step_size)
     )
