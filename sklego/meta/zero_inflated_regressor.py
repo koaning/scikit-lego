@@ -1,4 +1,5 @@
 from inspect import signature
+import logging
 
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin, clone, is_regressor, is_classifier
@@ -94,6 +95,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
             if "sample_weight" in signature(self.classifier_.fit).parameters:
                 self.classifier_.fit(X, y != 0, sample_weight=sample_weight)
             else:
+                logging.warning("Classifier ignores sample_weight.")
                 self.classifier_.fit(X, y != 0)
 
         non_zero_indices = np.where(self.classifier_.predict(X) == 1)[0]
@@ -112,6 +114,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
                         sample_weight=sample_weight[non_zero_indices] if sample_weight is not None else None
                     )
                 else:
+                    logging.warning("Regressor ignores sample_weight.")
                     self.regressor_.fit(
                         X[non_zero_indices],
                         y[non_zero_indices],
