@@ -46,6 +46,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     def get_feature_names_out(self, feature_names_out=None) -> list:
         """
         Defines descriptive names for each output of the (fitted) estimator.
+
         :param feature_names_out: Redundant parameter for which the contents are ignored in this function.
         feature_names_out is defined here because EstimatorTransformer can be part of a larger complex pipeline.
         Some components may depend on defined feature_names_out and some not, but it is passed to all components
@@ -64,6 +65,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     def __sklearn_is_fitted(self) -> bool:
         """
         Custom additional requirements that need to be satisfied to pass check_is_fitted.
+
         :return: Boolean indicating if the additional requirements
         for determining check_is_fitted are satisfied.
         """
