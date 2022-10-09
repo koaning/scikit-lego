@@ -1,5 +1,4 @@
-import hypothesis.strategies as st
-from hypothesis import given
+import pytest
 from sklego.common import as_list, sliding_window
 
 
@@ -20,10 +19,10 @@ def test_as_list_other():
     assert as_list(f) == [f]
     assert as_list(range(1, 4)) == [1, 2, 3]
 
-@given(
-    sequence = st.lists(st.integers(min_value=-10000, max_value=10000),min_size=20, max_size=200),
-    window_size = st.integers(min_value=2,max_value=10),
-    step_size = st.integers(min_value=1, max_value=10)
+
+@pytest.mark.parametrize(
+    "sequence, window_size, step_size",
+    [([1, 2, 3, 4, 5], 2, 1), (["a", "b", "c", "d", "e"], 3, 2)],
 )
 def test_sliding_window(sequence, window_size, step_size):
     windows = list(sliding_window(sequence, window_size, step_size))

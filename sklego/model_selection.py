@@ -10,7 +10,7 @@ from sklearn.model_selection._split import _BaseKFold, check_array
 from sklearn.utils.validation import indexable
 
 from sklego.base import Clusterer
-from sklego.common import chunker
+from sklego.common import sliding_window
 
 
 class TimeGapSplit:
@@ -303,6 +303,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
     | - - - - - - * * * x x |
     |-----------------------|
     """
+
     # table above inspired by sktime
 
     def __init__(self, n_splits):
@@ -411,13 +412,22 @@ class GroupTimeSeriesSplit(_BaseKFold):
             " can take several minutes."
         ).format(unique_groups, self.n_splits)
         if self.n_splits == 4 and unique_groups > 250:
-            warn(warning + " Consider to decrease n_splits to 3 or lower.", UserWarning)
+            warn(
+                warning + " Consider to decrease n_splits to 3 or lower.",
+                UserWarning,
+            )
 
         elif self.n_splits == 5 and unique_groups > 100:
-            warn(warning + " Consider to decrease n_splits to 4 or lower.", UserWarning)
+            warn(
+                warning + " Consider to decrease n_splits to 4 or lower.",
+                UserWarning,
+            )
 
         elif self.n_splits > 5 and unique_groups > 30:
-            warn(warning + " Consider to decrease n_splits to 5 or lower.", UserWarning)
+            warn(
+                warning + " Consider to decrease n_splits to 5 or lower.",
+                UserWarning,
+            )
 
     def _iter_test_indices(self, X=None, y=None, groups=None):
         """
@@ -540,15 +550,15 @@ class GroupTimeSeriesSplit(_BaseKFold):
         diff_from_ideal_list = [
             sum(observations[: first_splits[0]]) - self._ideal_group_size
         ]
-        for split in chunker(first_splits, chunk_size=2, step_size=1):
+        for split in sliding_window(first_splits, window_size=2, step_size=1):
             try:
                 diff_from_ideal_list += [
-                    sum(observations[split[0]: split[1]])
+                    sum(observations[split[0] : split[1]])
                     - self._ideal_group_size
                 ]
             except IndexError:
                 diff_from_ideal_list += [
-                    sum(observations[split[0]:]) - self._ideal_group_size
+                    sum(observations[split[0] :]) - self._ideal_group_size
                 ]
 
         # keep track of the minimum of the total difference from all groups to the ideal group size
@@ -633,11 +643,13 @@ class GroupTimeSeriesSplit(_BaseKFold):
         df = self._grouped_df.copy().reset_index()
         # set each unique group to the right group_id to group them into folds
         df.loc[: self._best_splits[0], "group"] = 0
-        for group_id, splits in enumerate(chunker(self._best_splits, 2, 1)):
+        for group_id, splits in enumerate(
+            sliding_window(self._best_splits, 2, 1)
+        ):
             try:
-                df.loc[splits[0]: splits[1], "group"] = group_id + 1
+                df.loc[splits[0] : splits[1], "group"] = group_id + 1
             except IndexError:
-                df.loc[splits[0]:, "group"] = group_id + 1
+                df.loc[splits[0] :, "group"] = group_id + 1
 
         self._grouped_df = df
         # create a mapper to set every group to the right group_id

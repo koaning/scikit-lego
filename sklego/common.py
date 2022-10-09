@@ -169,24 +169,24 @@ def expanding_list(list_to_extent, return_type=list):
 
 
 def sliding_window(sequence, window_size, step_size):
-    """Returns generator object that chunks a sequence into pieces
+    """Returns sliding window generator object from a sequence
 
     :param sequence: e.g. a list
     :type sequence: Iterable
-    :param chunk_size: the size of each chunk
-    :type chunk_size: int
-    :param step_size: the amount of steps to the next chunk
+    :param window_size: the size of each window
+    :type window_size: int
+    :param step_size: the amount of steps to the next window
     :type step_size: int
-    :return: a generator object
+    :return: a sliding window generator object
     :rtype: Generator
 
     :Example:
 
-    >>> generator = chunker([1,2,4,5], 2, 1)
+    >>> generator = sliding_window([1,2,4,5], 2, 1)
     >>> [i for i in generator]
     [[1,2], [2,4], [4,5], [5]]
     """
     return (
-        sequence[pos: pos + window_size]
+        sequence[pos : pos + window_size]
         for pos in range(0, len(sequence), step_size)
     )
