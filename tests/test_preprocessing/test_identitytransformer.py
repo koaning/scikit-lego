@@ -36,3 +36,18 @@ def test_nan_inf(random_xy_dataset_regr):
     X[np.random.ranf(size=X.shape) > 0.9] = -np.inf
     X[np.random.ranf(size=X.shape) > 0.9] = np.inf
     X_new = IdentityTransformer(check_X=False).fit_transform(X)
+
+
+def test_get_feature_names_in(random_xy_dataset_regr):
+    X, y = random_xy_dataset_regr
+    it = IdentityTransformer()
+
+    # get_feature_names_out should not work without given input_features if IdentityTransformer is not fitted.
+    with pytest.raises(ValueError):
+        it.get_feature_names_out(input_features=None)
+
+    # Test with no input_features after being fitted
+    it.fit(X, y)
+    feature_names = it.get_feature_names_out()
+    expected_feature_names = [f"x{i}" for i in range(X.shape[1])]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)

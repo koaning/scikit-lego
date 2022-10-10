@@ -72,7 +72,7 @@ def test_get_feature_names_out(random_xy_dataset_clf):
     expected_feature_names = ['foobar_feature']
     np.testing.assert_array_equal(feature_names, expected_feature_names)
 
-    # Make sure get_feature_names_out cannot be called without given input_features if DictMapper is not fitted.
+    # get_feature_names_out should not work without given input_features if DictMapper is not fitted.
     with pytest.raises(ValueError):
         dm.get_feature_names_out(input_features=None)
 
