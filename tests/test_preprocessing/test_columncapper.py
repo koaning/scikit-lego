@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
+from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import FLOAT_DTYPES
 from sklego.common import flatten
 from sklego.preprocessing import ColumnCapper
@@ -121,3 +122,13 @@ def test_dtype_regression(random_xy_dataset_regr):
 def test_dtype_classification(random_xy_dataset_clf):
     X, y = random_xy_dataset_clf
     assert ColumnCapper().fit(X, y).transform(X).dtype in FLOAT_DTYPES
+
+
+def test_get_feature_names_out(random_xy_dataset_clf):
+    X, y = random_xy_dataset_clf
+    cc = ColumnCapper()
+    cc.fit(X, y)
+
+    feature_names = cc.get_feature_names_out()
+    expected_feature_names = [f"x{i}" for i in range(X.shape[1])]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)
