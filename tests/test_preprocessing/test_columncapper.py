@@ -135,6 +135,10 @@ def test_get_feature_names_out(random_xy_dataset_clf):
     expected_feature_names = [f"feature_{i}" for i in n_col_range]
     np.testing.assert_array_equal(feature_names, expected_feature_names)
 
+    # Make sure get_feature_names_out cannot be called without given input_features if ColumnCapper is not fitted.
+    with pytest.raises(ValueError):
+        cc.get_feature_names_out(input_features=None)
+
     # Test with no input_features after being fitted
     cc.fit(X, y)
     feature_in_names = cc.get_feature_names_out(input_features=None)
