@@ -138,6 +138,8 @@ Here's a list of features that this library currently offers:
 
 ## New Features
 
+### Base Requirements
+
 We want to be rather open here in what we accept but we do demand three
 things before they become added to the project:
 
@@ -146,3 +148,11 @@ things before they become added to the project:
 3. the feature has been discussed in the issue list beforehand
 
 We automate all of our testing and use pre-commit hooks to keep the code working.
+
+### Implementing a new preprocessor
+
+When creating a completely new transformer in `sklego.preprocessing`, make sure to implement `get_feature_names_out` functionality. 
+
+Our preferred method to implement this is to add [_ClassNamePrefixFeaturesOutMixin](https://github.com/scikit-learn/scikit-learn/blob/626b4608d4f840af7c37bff2ccb38fcfd2ef594f/sklearn/base.py#L868) as a base class\
+and make sure `self._n_features_out` (i.e. the number of output features) is defined in `.fit`.
+

@@ -88,16 +88,10 @@ def test_throw_valuerror_given_nonsense():
         IntervalEncoder(method="dinosaurhead").fit(X, y)
 
 
-def test_feature_names_out(random_xy_dataset_clf):
+def test_get_feature_names_out(random_xy_dataset_clf):
     X, y = random_xy_dataset_clf
-    ie = IntervalEncoder()
-
-    # get_feature_names_out should not work without given input_features if IntervalEncoder is not fitted.
-    with pytest.raises(ValueError):
-        ie.get_feature_names_out(input_features=None)
-
-    # Test with no input_features after being fitted
-    ie.fit_transform(X, y)
-    feature_names = ie.get_feature_names_out()
-    expected_feature_names = [f"x{i}" for i in range(X.shape[1])]
+    transformer = IntervalEncoder()
+    transformer.fit(X, y)
+    feature_names = transformer.get_feature_names_out()
+    expected_feature_names = [f"intervalencoder{i}" for i in range(X.shape[1])]
     np.testing.assert_array_equal(feature_names, expected_feature_names)
