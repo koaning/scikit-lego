@@ -174,7 +174,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
 
 
-class ColumnSelector(BaseEstimator, TransformerMixin):
+class ColumnSelector(BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin):
     """
     Allows selecting specific columns from a pandas DataFrame by name. Can be useful in a sklearn Pipeline.
 
@@ -239,6 +239,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         :returns: ``ColumnSelector`` object.
         """
         self.columns_ = as_list(self.columns)
+        self._n_features_out = len(self.columns_)
         self._check_X_for_type(X)
         self._check_column_length()
         self._check_column_names(X)
