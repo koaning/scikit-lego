@@ -126,21 +126,8 @@ def test_dtype_classification(random_xy_dataset_clf):
 
 def test_get_feature_names_out(random_xy_dataset_clf):
     X, y = random_xy_dataset_clf
-    cc = ColumnCapper()
-    n_col_range = range(X.shape[1])
-
-    # Test with given input_features
-    input_features = [f"feature_{i}" for i in n_col_range]
-    feature_names = cc.get_feature_names_out(input_features=input_features)
-    expected_feature_names = [f"feature_{i}" for i in n_col_range]
+    transformer = ColumnCapper()
+    transformer.fit(X)
+    feature_names = transformer.get_feature_names_out()
+    expected_feature_names = [f"columncapper{i}" for i in range(X.shape[1])]
     np.testing.assert_array_equal(feature_names, expected_feature_names)
-
-    # get_feature_names_out should not work without given input_features if ColumnCapper is not fitted.
-    with pytest.raises(ValueError):
-        cc.get_feature_names_out(input_features=None)
-
-    # Test with no input_features after being fitted
-    cc.fit(X, y)
-    feature_in_names = cc.get_feature_names_out(input_features=None)
-    expected_feature_names = [f"x{i}" for i in n_col_range]
-    np.testing.assert_array_equal(feature_in_names, expected_feature_names)

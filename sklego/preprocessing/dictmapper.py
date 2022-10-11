@@ -1,10 +1,10 @@
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin, _OneToOneFeatureMixin
+from sklearn.base import BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 
-class DictMapper(TransformerMixin, _OneToOneFeatureMixin, BaseEstimator):
+class DictMapper(TransformerMixin, BaseEstimator, _ClassNamePrefixFeaturesOutMixin):
     """
     Map the values of values of columns according to the input dictionary,
     fall back to the default if the key is not present in the dictionary.
@@ -38,7 +38,7 @@ class DictMapper(TransformerMixin, _OneToOneFeatureMixin, BaseEstimator):
             ensure_2d=True,
         )
         self.dim_ = X.shape[1]
-        self.n_features_in_ = self.dim_
+        self._n_features_out = self.dim_
         return self
 
     def transform(self, X):

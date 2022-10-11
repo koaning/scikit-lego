@@ -1,10 +1,10 @@
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin, _OneToOneFeatureMixin
+from sklearn.base import BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 
 
-class ColumnCapper(TransformerMixin, _OneToOneFeatureMixin, BaseEstimator):
+class ColumnCapper(TransformerMixin, BaseEstimator, _ClassNamePrefixFeaturesOutMixin):
     """
     Caps the values of columns according to the given quantile thresholds.
 
@@ -126,7 +126,7 @@ class ColumnCapper(TransformerMixin, _OneToOneFeatureMixin, BaseEstimator):
 
         # Saving the number of columns to ensure coherence between fit and transform inputs
         self.n_features_in_ = X.shape[1]
-
+        self._n_features_out = self.n_features_in_
         return self
 
     def transform(self, X):
