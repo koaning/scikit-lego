@@ -47,7 +47,7 @@ def test_get_feature_names_in(random_xy_dataset_regr):
         it.get_feature_names_out(input_features=None)
 
     # Test with no input_features after being fitted
-    it.fit(X, y)
+    it.fit_transform(X, y)
     feature_names = it.get_feature_names_out()
     expected_feature_names = [f"x{i}" for i in range(X.shape[1])]
     np.testing.assert_array_equal(feature_names, expected_feature_names)

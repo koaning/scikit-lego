@@ -6,7 +6,7 @@ except ImportError:
     cp = NotInstalledPackage("cvxpy")
 
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, _OneToOneFeatureMixin
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import check_is_fitted
 
@@ -67,7 +67,7 @@ def _mk_average(xs, ys, intervals, method="average", span=1, **kwargs):
     return results
 
 
-class IntervalEncoder(TransformerMixin, BaseEstimator):
+class IntervalEncoder(TransformerMixin, BaseEstimator, _OneToOneFeatureMixin):
     """
     The interval encoder bends features in `X` with regards to`y`.
     We take each column in X separately and smooth it towards `y` using
@@ -114,6 +114,7 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         # heights indicate what heights these intervals will have
         self.heights_ = np.zeros((X.shape[1], self.n_chunks))
         self.num_cols_ = X.shape[1]
+        self.n_features_in_ = self.num_cols_
 
         average_func = (
             _mk_average
