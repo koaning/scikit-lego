@@ -101,3 +101,11 @@ def test_orthogonal_with_df(sample_df):
     trans = ot.transform(sample_df)
 
     check_is_orthogonal(trans)
+
+
+def test_get_feature_names_out(sample_df):
+    ot = OrthogonalTransformer(normalize=False)
+    transformer = ot.fit(X=sample_df)
+    feature_names = transformer.get_feature_names_out()
+    expected_feature_names = [f'orthogonaltransformer{i}' for i in range(sample_df.shape[1])]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)

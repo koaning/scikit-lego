@@ -133,3 +133,12 @@ def test_pipeline_gridsearch():
         estimator=pipe, param_grid={"info__columns": [[], [11], [12], [11, 12]]}, cv=2
     )
     assert pd.DataFrame(mod.fit(X, y).cv_results_).shape[0] == 4
+
+
+def test_get_feature_names_out(random_xy_dataset_regr):
+    X, y = random_xy_dataset_regr
+    transformer = InformationFilter(columns=[0])
+    transformer.fit(X)
+    feature_names = transformer.get_feature_names_out()
+    expected_feature_names = [f'informationfilter{i}' for i in range(X.shape[1])]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)

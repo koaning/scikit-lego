@@ -1,13 +1,13 @@
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from sklego.common import as_list
 
 
-class OrthogonalTransformer(BaseEstimator, TransformerMixin):
+class OrthogonalTransformer(BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin):
     """
     Transform the columns of a dataframe or numpy array to a column orthogonal or orthonormal matrix.
     Q, R such that X = Q*R, with Q orthogonal, from which follows Q = X*inv(R)
@@ -35,7 +35,7 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
             self.normalization_vector_ = np.linalg.norm(Q, ord=2, axis=0)
         else:
             self.normalization_vector_ = np.ones((X.shape[1],))
-
+        self._n_features_out = X.shape[1]
         return self
 
     def transform(self, X):
@@ -58,7 +58,7 @@ def vector_projection(vec, unto):
     return scalar_projection(vec, unto) * unto
 
 
-class InformationFilter(BaseEstimator, TransformerMixin):
+class InformationFilter(BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin):
     """
     The `InformationFilter` uses a variant of the gram smidt process
     to filter information out of the dataset. This can be useful if you
@@ -137,6 +137,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         # we want to learn matrix P: X P = X_fair
         # this means we first need to create X_fair in order to learn P
         self.projection_, resid, rank, s = np.linalg.lstsq(X, X_fair, rcond=None)
+        self._n_features_out = X_fair.shape[1]
         return self
 
     def transform(self, X):
