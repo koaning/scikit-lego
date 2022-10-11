@@ -27,7 +27,6 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         """Fits the estimator"""
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
         self.multi_output_ = len(y.shape) > 1
-        self.output_len_ = y.shape[1] if self.multi_output_ else 1
         self.estimator_ = clone(self.estimator)
         self.estimator_.fit(X, y, **kwargs)
         return self
@@ -39,36 +38,6 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         Returns array of shape `(X.shape[0], )` if estimator is not multi output.
         For multi output estimators an array of shape `(X.shape[0], y.shape[1])` is returned.
         """
-        check_is_fitted(self)
+        check_is_fitted(self, "estimator_")
         output = getattr(self.estimator_, self.predict_func)(X)
         return output if self.multi_output_ else output.reshape(-1, 1)
-
-    def get_feature_names_out(self, feature_names_out=None) -> list:
-        """
-        Defines descriptive names for each output of the (fitted) estimator.
-
-        :param feature_names_out: Redundant parameter for which the contents are ignored in this function.
-        feature_names_out is defined here because EstimatorTransformer can be part of a larger complex pipeline.
-        Some components may depend on defined feature_names_out and some not, but it is passed to all components
-        in the pipeline if `Pipeline.get_feature_names_out` is called. feature_names_out is therefore necessary
-        to define here to avoid `TypeError`s when used within a scikit-learn `Pipeline` object.
-        :return: List of descriptive names for each output variable from the fitted estimator.
-        """
-        check_is_fitted(self)
-        estimator_name_lower = self.estimator_.__class__.__name__.lower()
-        if self.multi_output_:
-            feature_names = [f"{estimator_name_lower}_{i}" for i in range(self.output_len_)]
-        else:
-            feature_names = [estimator_name_lower]
-        return feature_names
-
-    def __sklearn_is_fitted(self) -> bool:
-        """
-        Custom additional requirements that need to be satisfied to pass check_is_fitted.
-
-        :return: Boolean indicating if the additional requirements
-        for determining check_is_fitted are satisfied.
-        """
-        has_fit_attr = all(hasattr(self, attr) for attr in ["multi_output_", "output_len_"])
-        check_is_fitted(self.estimator_)
-        return has_fit_attr
