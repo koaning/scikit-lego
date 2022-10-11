@@ -1,11 +1,11 @@
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.validation import check_is_fitted
 
 from sklego.common import as_list
 
 
-class ColumnDropper(BaseEstimator, TransformerMixin):
+class ColumnDropper(BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin):
     """
     Allows dropping specific columns from a pandas DataFrame by name. Can be useful in a sklearn Pipeline.
 
@@ -74,6 +74,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         self._check_column_names(X)
         self.feature_names_ = list(X.drop(columns=self.columns_).columns)
         self._check_column_length()
+        self._n_features_out = len(self.feature_names_)
         return self
 
     def transform(self, X):
