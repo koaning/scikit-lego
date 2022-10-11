@@ -112,7 +112,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOut
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
 
 
-class PandasTypeSelector(BaseEstimator, TransformerMixin):
+class PandasTypeSelector(BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin):
     """
     Select columns in a pandas dataframe based on their dtype
 
@@ -135,9 +135,9 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         self.feature_names_ = list(
             X.select_dtypes(include=self.include, exclude=self.exclude).columns
         )
-
+        self._n_features_out = len(self.feature_names_)
         if len(self.feature_names_) == 0:
-            raise ValueError("Provided type(s) results in empty dateframe")
+            raise ValueError("Provided type(s) results in empty DataFrame")
 
         return self
 
