@@ -153,3 +153,15 @@ def test_amount_of_n_splits(init_data, valid_n_splits):
     X, y, groups = init_data
     cv = GroupTimeSeriesSplit(valid_n_splits)
     assert len(cv.split(X, y, groups)) == valid_n_splits
+
+
+def test_series_same_output_as_arrays(init_data, valid_n_splits):
+    X, y, groups = init_data
+    df = pd.DataFrame({"X": X, "y": y, "groups": groups})
+    cv1 = GroupTimeSeriesSplit(valid_n_splits)
+    cv2 = GroupTimeSeriesSplit(valid_n_splits)
+    cv1.split(X, y, groups)
+    summary1 = cv1.summary()
+    cv2.split(df, df["y"], df["groups"])
+    summary2 = cv2.summary()
+    pd.testing.assert_frame_equal(summary1, summary2)

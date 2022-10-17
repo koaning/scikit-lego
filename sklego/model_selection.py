@@ -467,7 +467,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
 
         # get the counts (=amount of rows) for each group
         self._grouped_df = (
-            pd.DataFrame(groups)
+            pd.DataFrame(np.array(groups))
             .rename(columns={0: "index"})
             .groupby("index")
             .size()
@@ -499,9 +499,9 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # initalize the index of the last split point, to reduce the amount of possible index split options
         last_split_index = len(self._grouped_df) - (
             self._grouped_df.assign(
-                observations=lambda df: np.flip(df["observations"])
+                observations=lambda df: df["observations"].values[::-1],
+                cumsum_obs=lambda df: df["observations"].cumsum(),
             )
-            .assign(cumsum_obs=lambda df: df["observations"].cumsum())
             .reset_index()
             .assign(
                 group_id=lambda df: (df["cumsum_obs"] - 1)
