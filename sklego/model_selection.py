@@ -288,7 +288,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
     """
     Sliding window time series split
 
-    - Create n_splits folds with an as equally possible size through a smart variant of a brute
+    Create n_splits folds with an as equally possible size through a smart variant of a brute
     force search. Groups parameter in .split() should be filled with the time groups (e.g. years)
 
     :param n_splits: the amount of train-test combinations.

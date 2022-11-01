@@ -40,8 +40,7 @@ def valid_cv(init_data, valid_n_splits):
 
 
 @pytest.mark.parametrize("n_splits", [(1), ("a"), (2.2), ([5]), (-1)])
-def test_invalid_n_splits(init_data, n_splits):
-    X, y, groups = init_data
+def test_invalid_n_splits(n_splits):
     with pytest.raises(ValueError):
         GroupTimeSeriesSplit(n_splits=n_splits)
 
