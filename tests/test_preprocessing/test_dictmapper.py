@@ -60,3 +60,13 @@ def test_no_mapper():
     expected = np.array([-1, -1, -1]).reshape(-1, 1)
     result = DictMapper(mapper=mapper, default=-1).fit_transform(X)
     np.testing.assert_array_equal(result, expected)
+
+
+def test_get_feature_names_out(random_xy_dataset_clf):
+    X = pd.DataFrame(["foo", "bar", "baz"], dtype=object)
+    transformer = DictMapper(mapper=mapper, default=-1)
+    transformer.fit(X)
+    feature_names = transformer.get_feature_names_out()
+    assert len(feature_names) == 1
+    expected_feature_names = [f"dictmapper{i}" for i in range(X.shape[1])]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)

@@ -1,10 +1,10 @@
 import numpy as np
 from patsy import dmatrix, build_design_matrices, PatsyError
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.validation import check_is_fitted
 
 
-class PatsyTransformer(TransformerMixin, BaseEstimator):
+class PatsyTransformer(TransformerMixin, BaseEstimator, _ClassNamePrefixFeaturesOutMixin):
     """
     The patsy transformer offers a method to select the right columns
     from a dataframe as well as a DSL for transformations. It is inspired
@@ -26,6 +26,7 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
         # be necessary given NA_action='raise' above but just to be safe
         assert np.array(X_).shape[0] == np.array(X).shape[0]
         self.design_info_ = X_.design_info
+        self._n_features_out = X_.shape[1]
         return self
 
     def transform(self, X):

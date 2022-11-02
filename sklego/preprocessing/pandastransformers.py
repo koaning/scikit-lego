@@ -1,11 +1,11 @@
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.validation import check_is_fitted
 
 from sklego.common import as_list
 
 
-class ColumnDropper(BaseEstimator, TransformerMixin):
+class ColumnDropper(BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin):
     """
     Allows dropping specific columns from a pandas DataFrame by name. Can be useful in a sklearn Pipeline.
 
@@ -74,6 +74,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         self._check_column_names(X)
         self.feature_names_ = list(X.drop(columns=self.columns_).columns)
         self._check_column_length()
+        self._n_features_out = len(self.feature_names_)
         return self
 
     def transform(self, X):
@@ -111,7 +112,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
 
 
-class PandasTypeSelector(BaseEstimator, TransformerMixin):
+class PandasTypeSelector(BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin):
     """
     Select columns in a pandas dataframe based on their dtype
 
@@ -134,9 +135,9 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         self.feature_names_ = list(
             X.select_dtypes(include=self.include, exclude=self.exclude).columns
         )
-
+        self._n_features_out = len(self.feature_names_)
         if len(self.feature_names_) == 0:
-            raise ValueError("Provided type(s) results in empty dateframe")
+            raise ValueError("Provided type(s) results in empty DataFrame")
 
         return self
 
@@ -173,7 +174,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
 
 
-class ColumnSelector(BaseEstimator, TransformerMixin):
+class ColumnSelector(BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin):
     """
     Allows selecting specific columns from a pandas DataFrame by name. Can be useful in a sklearn Pipeline.
 
@@ -238,6 +239,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         :returns: ``ColumnSelector`` object.
         """
         self.columns_ = as_list(self.columns)
+        self._n_features_out = len(self.columns_)
         self._check_X_for_type(X)
         self._check_column_length()
         self._check_column_names(X)

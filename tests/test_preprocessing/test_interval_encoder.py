@@ -73,7 +73,6 @@ def test_monotonicity_decreasing(data_init):
     X, y = generate_dataset(start=data_init)
     encoder = IntervalEncoder(n_chunks=40, method="decreasing")
     y_transformed = encoder.fit_transform(X, y).reshape(-1).round(4)
-    print(y_transformed.reshape(-1))
     for i in range(len(y_transformed) - 1):
         assert y_transformed[i] >= y_transformed[i + 1]
 
@@ -91,3 +90,12 @@ def test_throw_valuerror_given_nonsense():
         IntervalEncoder(span=2.0).fit(X, y)
     with pytest.raises(ValueError):
         IntervalEncoder(method="dinosaurhead").fit(X, y)
+
+
+def test_get_feature_names_out(random_xy_dataset_clf):
+    X, y = random_xy_dataset_clf
+    transformer = IntervalEncoder()
+    transformer.fit(X, y)
+    feature_names = transformer.get_feature_names_out()
+    expected_feature_names = [f"intervalencoder{i}" for i in range(X.shape[1])]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)

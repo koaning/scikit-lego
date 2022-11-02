@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
 from sklearn.pipeline import make_pipeline
@@ -79,3 +80,12 @@ def test_get_feature_names():
     df = pd.DataFrame({"a": [4, 5, 6], "b": ["4", "5", "6"]})
     transformer = ColumnDropper("a").fit(df)
     assert transformer.get_feature_names() == ["b"]
+
+
+def test_get_feature_names_out(df):
+    transformer = ColumnDropper(["a"]).fit(df)
+    feature_names = transformer.get_feature_names_out()
+    expected_feature_names = [f'columndropper{i}' for i in range(len(feature_names))]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)
+
+

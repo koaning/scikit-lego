@@ -90,3 +90,15 @@ def test_value_error_inequal(random_xy_dataset_regr):
             transformer.fit(X)
             # Remove column to create error
             transformer.transform(X.iloc[:, :-1])
+
+
+@pytest.mark.parametrize(
+    "transformer", [PandasTypeSelector(include=["number"])], ids=id_func
+)
+def test_get_feature_names_out(transformer, random_xy_dataset_regr):
+    X, y = random_xy_dataset_regr
+    X = pd.DataFrame(X)
+    transformer.fit(X, y)
+    feature_names = transformer.get_feature_names_out()
+    expected_feature_names = [f"pandastypeselector{i}" for i in range(X.shape[1])]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)

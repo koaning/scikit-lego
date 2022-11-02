@@ -50,3 +50,11 @@ def test_when_rbf_helper_receives_more_than_one_col_raises_value_error(df):
     rbf_helper_tf = _RepeatingBasisFunction()
     with pytest.raises(ValueError):
         rbf_helper_tf.fit(X, y)
+
+
+def test_get_feature_names_out(df):
+    rbf = RepeatingBasisFunction()
+    transformer = rbf.fit(df)
+    feature_names = transformer.get_feature_names_out()
+    expected_feature_names = [f'repeatingbasisfunction{i}' for i in range(df.shape[1])]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)

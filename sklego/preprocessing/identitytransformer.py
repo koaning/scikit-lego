@@ -1,10 +1,10 @@
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, _OneToOneFeatureMixin
 
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 
-class IdentityTransformer(BaseEstimator, TransformerMixin):
+class IdentityTransformer(BaseEstimator, TransformerMixin, _OneToOneFeatureMixin):
     """
     The identity transformer returns what it is fed. Does not apply anything useful.
     The reason for having it is because you can build more expressive pipelines.
@@ -26,6 +26,7 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
         if self.check_X:
             X = check_array(X, copy=True, estimator=self)
         self.shape_ = X.shape
+        self.n_features_in_ = X.shape[1]
         return self
 
     def transform(self, X):

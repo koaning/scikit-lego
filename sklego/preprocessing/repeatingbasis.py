@@ -1,11 +1,11 @@
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, _ClassNamePrefixFeaturesOutMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 
-class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
+class RepeatingBasisFunction(TransformerMixin, BaseEstimator, _ClassNamePrefixFeaturesOutMixin):
     """
     This is a transformer for features with some form of circularity.
     E.g. for days of the week you might face the problem that, conceptually, day 7 is as
@@ -63,7 +63,7 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         )
 
         self.pipeline_.fit(X, y)
-
+        self._n_features_out = X.shape[1]
         return self
 
     def transform(self, X):

@@ -58,28 +58,24 @@ def test_apply_numpy_transform(df):
 def test_multiply_columns(df):
     X, y = df[["a", "b", "c", "d"]], df[["e"]]
     tf = PatsyTransformer("a*b - 1")
-    print(tf.fit(X, y).transform(X))
     assert tf.fit(X, y).transform(X).shape == (6, 3)
 
 
 def test_transform_dummy1(df):
     X, y = df[["a", "b", "c", "d"]], df[["e"]]
     tf = PatsyTransformer("a + b + d")
-    print(tf.fit(X, y).transform(X))
     assert tf.fit(X, y).transform(X).shape == (6, 4)
 
 
 def test_transform_dummy2(df):
     X, y = df[["a", "b", "c", "d"]], df[["e"]]
     tf = PatsyTransformer("a + b + c + d")
-    print(tf.fit(X, y).transform(X))
     assert tf.fit(X, y).transform(X).shape == (6, 6)
 
 
 def test_mult_usage(df):
     X, y = df[["a", "b", "c", "d"]], df[["e"]]
     tf = PatsyTransformer("a*b - 1")
-    print(tf.fit(X, y).transform(X))
     assert tf.fit(X, y).transform(X).shape == (6, 3)
 
 
@@ -127,3 +123,10 @@ def test_design_matrix_error(df):
     pipe.fit(X_train, y_train)
     with pytest.raises(RuntimeError):
         pipe.predict(X_test)
+
+
+def test_get_feature_names_out(df):
+    transformer = PatsyTransformer("a + np.log(a) + b + c + d - 1").fit(df)
+    feature_names = transformer.get_feature_names_out()
+    expected_feature_names = [f'patsytransformer{i}' for i in range(len(feature_names))]
+    np.testing.assert_array_equal(feature_names, expected_feature_names)

@@ -147,3 +147,5 @@ things before they become added to the project:
 3. the feature has been discussed in the issue list beforehand
 
 We automate all of our testing and use pre-commit hooks to keep the code working.
+
+For detailed contribution guidelines check out [the documentation](https://scikit-lego.netlify.app/contribution.html).
