@@ -69,6 +69,6 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         :return: Boolean indicating if the additional requirements
         for determining check_is_fitted are satisfied.
         """
-        has_fit_attr = all(hasattr(self, attr) for attr in ["multi_output_", "output_len_"])
+        has_fit_attr = all(hasattr(self, attr) for attr in ["multi_output_", "output_len_", "estimator_"])
         check_is_fitted(self.estimator_)
         return has_fit_attr
