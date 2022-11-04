@@ -119,9 +119,10 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     :param exclude: types to be excluded in the dataframe
     """
 
-    def __init__(self, include=None, exclude=None):
+    def __init__(self, include=None, exclude=None, allow_empty:bool=False):
         self.include = include
         self.exclude = exclude
+        self.allow_empty = allow_empty
 
     def fit(self, X, y=None):
         """
@@ -135,7 +136,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
             X.select_dtypes(include=self.include, exclude=self.exclude).columns
         )
 
-        if len(self.feature_names_) == 0:
+        if not self.allow_empty and len(self.feature_names_) == 0:
             raise ValueError("Provided type(s) results in empty dateframe")
 
         return self
@@ -225,9 +226,10 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
            [-1.13554995]])
     """
 
-    def __init__(self, columns: list):
+    def __init__(self, columns: list, allow_empty:bool=False):
         # if the columns parameter is not a list, make it into a list
         self.columns = columns
+        self.allow_empty = allow_empty
 
     def fit(self, X, y=None):
         """
@@ -239,7 +241,8 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         """
         self.columns_ = as_list(self.columns)
         self._check_X_for_type(X)
-        self._check_column_length()
+        if not self.allow_empty:
+            self._check_column_length()
         self._check_column_names(X)
         return self
 
