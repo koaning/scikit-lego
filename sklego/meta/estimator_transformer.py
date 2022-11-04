@@ -39,6 +39,8 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         Returns array of shape `(X.shape[0], )` if estimator is not multi output.
         For multi output estimators an array of shape `(X.shape[0], y.shape[1])` is returned.
         """
+        # The check below will also check if the underlying estimator_ is fitted.
+        # This is checked through the __sklearn_is_fitted method.
         check_is_fitted(self)
         output = getattr(self.estimator_, self.predict_func)(X)
         return output if self.multi_output_ else output.reshape(-1, 1)
@@ -65,7 +67,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     def __sklearn_is_fitted(self) -> bool:
         """
         Custom additional requirements that need to be satisfied to pass check_is_fitted.
-
+        check_is_fitted(self) will call this method.
         :return: Boolean indicating if the additional requirements
         for determining check_is_fitted are satisfied.
         """
