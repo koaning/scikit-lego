@@ -68,6 +68,8 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         """
         Custom additional requirements that need to be satisfied to pass check_is_fitted.
         check_is_fitted(self) will call this method.
+        Source code where this method is called:
+        https://github.com/scikit-learn/scikit-learn/blob/626b4608d4f840af7c37bff2ccb38fcfd2ef594f/sklearn/utils/validation.py#L1338
         :return: Boolean indicating if the additional requirements
         for determining check_is_fitted are satisfied.
         """
