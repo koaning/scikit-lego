@@ -54,7 +54,6 @@ def test_zero_inflated_example():
     assert zir_score > 0.85
     assert zir_score > et_score
 
-
 @pytest.mark.parametrize("classifier,regressor,performance", [
     (ExtraTreesClassifier(random_state=0), ExtraTreesRegressor(random_state=0), 0.85),
     (KNeighborsClassifier(), KNeighborsRegressor(), 0.55)
@@ -75,7 +74,6 @@ def test_zero_inflated_with_sample_weights_example(classifier, regressor, perfor
 
     assert zir_score > performance
 
-
 def test_wrong_estimators_exceptions():
     X = np.array([[0.]])
     y = np.array([0.])
@@ -87,3 +85,6 @@ def test_wrong_estimators_exceptions():
     with pytest.raises(ValueError, match="`regressor` has to be a regressor."):
         zir = ZeroInflatedRegressor(ExtraTreesClassifier(), ExtraTreesClassifier())
         zir.fit(X, y)
+
+
+
