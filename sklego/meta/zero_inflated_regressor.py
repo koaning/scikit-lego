@@ -1,5 +1,3 @@
-from inspect import signature
-
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin, clone, is_regressor, is_classifier
 from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
@@ -13,8 +11,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
     `ZeroInflatedRegressor` consists of a classifier and a regressor.
 
         - The classifier's task is to find of if the target is zero or not.
-        - The regressor's task is to output a (usually positive) prediction whenever the classifier indicates that the
-        there should be a non-zero prediction.
+        - The regressor's task is to output a (usually positive) prediction whenever the classifier indicates that the there should be a non-zero prediction.
 
     The regressor is only trained on examples where the target is non-zero, which makes it easier for it to focus.
 
@@ -90,11 +87,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
             self.classifier_ = self.classifier
         except NotFittedError:
             self.classifier_ = clone(self.classifier)
-
-            if "sample_weight" in signature(self.classifier_.fit).parameters:
-                self.classifier_.fit(X, y != 0, sample_weight=sample_weight)
-            else:
-                self.classifier_.fit(X, y != 0)
+            self.classifier_.fit(X, y != 0, sample_weight=sample_weight)
 
         non_zero_indices = np.where(self.classifier_.predict(X) == 1)[0]
 
@@ -104,23 +97,14 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
                 self.regressor_ = self.regressor
             except NotFittedError:
                 self.regressor_ = clone(self.regressor)
-
-                if "sample_weight" in signature(self.regressor_.fit).parameters:
-                    self.regressor_.fit(
-                        X[non_zero_indices],
-                        y[non_zero_indices],
-                        sample_weight=sample_weight[non_zero_indices] if sample_weight is not None else None
-                    )
-                else:
-                    self.regressor_.fit(
-                        X[non_zero_indices],
-                        y[non_zero_indices],
-                    )
+                self.regressor_.fit(
+                    X[non_zero_indices],
+                    y[non_zero_indices],
+                    sample_weight=sample_weight[non_zero_indices] if sample_weight is not None else None
+                )
         else:
             raise ValueError(
-                """The predicted training labels are all zero, making the regressor obsolete. Change the classifier
-                or use a plain regressor instead."""
-            )
+                "The predicted training labels are all zero, making the regressor obsolete. Change the classifier or use a plain regressor instead.")
 
         return self
 
