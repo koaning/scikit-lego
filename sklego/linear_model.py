@@ -674,7 +674,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
 
 
 class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
-    """
+    r"""
     Linear regression where overestimating is `overestimation_punishment_factor` times worse than underestimating.
 
     A value of `overestimation_punishment_factor=5` implies that overestimations by the model are penalized with a factor of 5
@@ -908,7 +908,7 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
 
 
 class LADRegression(QuantileRegression):
-    """
+    r"""
     Least absolute deviation Regression.
 
     LADRegression fits a linear model to minimize the residual sum of absolute deviations between
