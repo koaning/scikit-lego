@@ -48,7 +48,7 @@ setup(
     description="a collection of lego bricks for scikit-learn pipelines",
     author="Vincent D. Warmerdam & Matthijs Brouns",
     url="https://scikit-lego.netlify.app/",
-    packages=find_packages(exclude=["notebooks"]),
+    packages=find_packages(exclude=["notebooks", "tests"]),
     package_data={"sklego": ["data/*.zip"]},
     long_description=read("readme.md"),
     long_description_content_type="text/markdown",
