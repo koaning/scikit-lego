@@ -30,12 +30,12 @@ def test_estimator_checks(test_fn):
 
 def test_dtype_regression(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
-    assert RandomAdder().fit(X, y).transform(X).dtype == np.float
+    assert RandomAdder().fit(X, y).transform(X).dtype == float
 
 
 def test_dtype_classification(random_xy_dataset_clf):
     X, y = random_xy_dataset_clf
-    assert RandomAdder().fit(X, y).transform(X).dtype == np.float
+    assert RandomAdder().fit(X, y).transform(X).dtype == float
 
 
 def test_only_transform_train(random_xy_dataset_clf):

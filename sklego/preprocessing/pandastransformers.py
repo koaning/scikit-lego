@@ -72,7 +72,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         self.columns_ = as_list(self.columns)
         self._check_X_for_type(X)
         self._check_column_names(X)
-        self.feature_names_ = list(X.drop(columns=self.columns_).columns)
+        self.feature_names_ = X.columns.drop(self.columns_).tolist()
         self._check_column_length()
         return self
 
@@ -136,7 +136,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
         )
 
         if len(self.feature_names_) == 0:
-            raise ValueError("Provided type(s) results in empty dateframe")
+            raise ValueError("Provided type(s) results in empty dataframe")
 
         return self
 

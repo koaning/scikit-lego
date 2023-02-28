@@ -4,7 +4,7 @@ from functools import partial, wraps
 
 import numpy as np
 import pandas as pd
-from scipy.ndimage.interpolation import shift
+from scipy.ndimage import shift
 
 from sklego.common import as_list
 
@@ -90,27 +90,32 @@ def log_step(
         except Exception as exc:
             optional_strings = [
                 f"time={dt.datetime.now() - tic}" if time_taken else None,
-                "FAILED" + (f" with error: {exc}" if log_error else "")
+                "FAILED" + (f" with error: {exc}" if log_error else ""),
             ]
             raise
         finally:
             combined = " ".join([s for s in optional_strings if s])
 
             if display_args:
-
                 func_args = inspect.signature(func).bind(*args, **kwargs).arguments
                 func_args_str = "".join(
                     ", {} = {!r}".format(*item) for item in list(func_args.items())[1:]
                 )
-                print_fn(f"[{func.__name__}(df{func_args_str})] " + combined,)
+                print_fn(
+                    f"[{func.__name__}(df{func_args_str})] " + combined,
+                )
             else:
-                print_fn(f"[{func.__name__}]" + combined,)
+                print_fn(
+                    f"[{func.__name__}]" + combined,
+                )
 
     return wrapper
 
 
 def log_step_extra(
-    *log_functions, print_fn=print, **log_func_kwargs,
+    *log_functions,
+    print_fn=print,
+    **log_func_kwargs,
 ):
     """
     Decorates a function that transforms a pandas dataframe to add automated logging statements
@@ -149,7 +154,9 @@ def log_step_extra(
                     f"All log functions should be callable, got {[type(log_f) for log_f in log_functions]}"
                 )
 
-            print_fn(f"[{func.__name__}(df{func_args_str})] " + extra_logs,)
+            print_fn(
+                f"[{func.__name__}(df{func_args_str})] " + extra_logs,
+            )
 
             return result
 

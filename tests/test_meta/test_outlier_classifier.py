@@ -37,7 +37,7 @@ def dataset():
 def test_obvious_usecase(dataset, outlier_model):
     outlier_clf = OutlierClassifier(outlier_model)
     X = dataset
-    y = (dataset.max(axis=1) > 3).astype(np.int)
+    y = (dataset.max(axis=1) > 3).astype(int)
     outlier_clf.fit(X, y)
     assert outlier_clf.predict([[10, 10]]) == np.array([1])
     assert outlier_clf.predict([[0, 0]]) == np.array([0])
@@ -50,7 +50,7 @@ def test_raises_error(dataset):
     mod_quantile = LinearRegression()
     clf_quantile = OutlierClassifier(mod_quantile)
     X = dataset
-    y = (dataset.max(axis=1) > 3).astype(np.int)
+    y = (dataset.max(axis=1) > 3).astype(int)
     with pytest.raises(ValueError):
         clf_quantile.fit(X, y)
 
@@ -59,6 +59,6 @@ def test_raises_error_no_decision_function(dataset):
     outlier_model = LocalOutlierFactor()
     clf_model = OutlierClassifier(outlier_model)
     X = dataset
-    y = (dataset.max(axis=1) > 3).astype(np.int)
+    y = (dataset.max(axis=1) > 3).astype(int)
     with pytest.raises(ValueError):
         clf_model.fit(X, y)

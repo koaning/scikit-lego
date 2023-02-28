@@ -77,7 +77,6 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         discard_infs=False,
         copy=True,
     ):
-
         self._check_quantile_range(quantile_range)
         self._check_interpolation(interpolation)
 
@@ -121,7 +120,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
 
         q = [quantile_limit / 100 for quantile_limit in self.quantile_range]
         self.quantiles_ = np.nanquantile(
-            a=X, q=q, axis=0, overwrite_input=True, interpolation=self.interpolation
+            a=X, q=q, axis=0, overwrite_input=True, method=self.interpolation
         )
 
         # Saving the number of columns to ensure coherence between fit and transform inputs

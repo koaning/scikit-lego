@@ -22,9 +22,9 @@ def _mk_monotonic_average(xs, ys, intervals, method="increasing", **kwargs):
         An array as long as `intervals` that represents the average `y`-values at those intervals,
         keeping the constraint in mind.
     """
-    x_internal = np.array([xs >= i for i in intervals]).T.astype(np.float)
+    x_internal = np.array([xs >= i for i in intervals]).T.astype(float)
     betas = cp.Variable(x_internal.shape[1])
-    objective = cp.Minimize(cp.sum_squares(x_internal * betas - ys))
+    objective = cp.Minimize(cp.sum_squares(x_internal @ betas - ys))
     if method == "increasing":
         constraints = [betas[i + 1] >= 0 for i in range(betas.shape[0] - 1)]
     elif method == "decreasing":

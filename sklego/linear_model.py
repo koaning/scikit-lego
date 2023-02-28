@@ -64,7 +64,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         distances = np.array(
             [np.linalg.norm(self.X_[i, :] - x_i) for i in range(self.X_.shape[0])]
         )
-        weights = np.exp(-(distances ** 2) / self.sigma)
+        weights = np.exp(-(distances**2) / self.sigma)
         if self.span:
             weights = weights * (distances <= np.quantile(distances, q=self.span))
         return weights
@@ -109,7 +109,7 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
 
         # Construct the problem.
         betas = cp.Variable(X.shape[1])
-        objective = cp.Minimize(cp.sum_squares(X * betas - y))
+        objective = cp.Minimize(cp.sum_squares(X @ betas - y))
         constraints = [sum(betas) == 1]
         if self.non_negative:
             constraints.append(0 <= betas)
@@ -171,7 +171,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
                 return np.where(errors > self.threshold, errors, np.zeros(errors.shape))
             if self.effect == "quadratic":
                 return np.where(
-                    errors > self.threshold, errors ** 2, np.zeros(errors.shape)
+                    errors > self.threshold, errors**2, np.zeros(errors.shape)
                 )
 
         def training_loss(weights):
@@ -355,7 +355,6 @@ class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
     """
 
     def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
-
         multiclass_meta = {"ovr": OneVsRestClassifier, "ovo": OneVsOneClassifier}[
             multi_class
         ]
@@ -443,7 +442,6 @@ class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
     """
 
     def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
-
         multiclass_meta = {"ovr": OneVsRestClassifier, "ovo": OneVsOneClassifier}[
             multi_class
         ]
@@ -541,7 +539,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         fit_intercept=True,
         copy_X=True,
         positive=False,
-        method="SLSQP"
+        method="SLSQP",
     ):
         self.alpha = alpha
         self.l1_ratio = l1_ratio
@@ -551,7 +549,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         if method not in ("SLSQP", "TNC", "L-BFGS-B"):
             raise ValueError(
                 f'method should be one of "SLSQP", "TNC", "L-BFGS-B", '
-                f'got {method} instead'
+                f"got {method} instead"
             )
         self.method = method
 
@@ -581,15 +579,14 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         """
 
     def _regularized_loss(self, params):
-        return (
-                + self.alpha * self.l1_ratio * np.sum(np.abs(params))
-                + 0.5 * self.alpha * (1 - self.l1_ratio) * np.sum(params ** 2)
-        )
+        return +self.alpha * self.l1_ratio * np.sum(
+            np.abs(params)
+        ) + 0.5 * self.alpha * (1 - self.l1_ratio) * np.sum(params**2)
 
     def _regularized_grad_loss(self, params):
         return (
-                + self.alpha * self.l1_ratio * np.sign(params)
-                + self.alpha * (1 - self.l1_ratio) * params
+            +self.alpha * self.l1_ratio * np.sign(params)
+            + self.alpha * (1 - self.l1_ratio) * params
         )
 
     def fit(self, X, y, sample_weight=None):
@@ -677,7 +674,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
 
 
 class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
-    """
+    r"""
     Linear regression where overestimating is `overestimation_punishment_factor` times worse than underestimating.
 
     A value of `overestimation_punishment_factor=5` implies that overestimations by the model are penalized with a factor of 5
@@ -749,8 +746,16 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
 
     """
 
-    def __init__(self, alpha=0.0, l1_ratio=0.0, fit_intercept=True, copy_X=True, positive=False,
-                 method="SLSQP", overestimation_punishment_factor=1.0):
+    def __init__(
+        self,
+        alpha=0.0,
+        l1_ratio=0.0,
+        fit_intercept=True,
+        copy_X=True,
+        positive=False,
+        method="SLSQP",
+        overestimation_punishment_factor=1.0,
+    ):
         super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, method)
         self.overestimation_punishment_factor = overestimation_punishment_factor
 
@@ -852,7 +857,7 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
         copy_X=True,
         positive=False,
         method="SLSQP",
-        quantile=0.5
+        quantile=0.5,
     ):
         """Initialize."""
         super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, method)
@@ -903,7 +908,7 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
 
 
 class LADRegression(QuantileRegression):
-    """
+    r"""
     Least absolute deviation Regression.
 
     LADRegression fits a linear model to minimize the residual sum of absolute deviations between
@@ -981,7 +986,9 @@ class LADRegression(QuantileRegression):
         fit_intercept=True,
         copy_X=True,
         positive=False,
-        method="SLSQP"
+        method="SLSQP",
     ):
         """Initialize."""
-        super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, method, quantile=0.5)
+        super().__init__(
+            alpha, l1_ratio, fit_intercept, copy_X, positive, method, quantile=0.5
+        )
