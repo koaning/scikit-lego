@@ -30,5 +30,5 @@ def test_obvious_usecase():
         [np.random.normal(-10, 1, (100, 2)), np.random.normal(10, 1, (100, 2))]
     )
     y = np.concatenate([np.zeros(100), np.ones(100)])
-    assert (GMMClassifier().fit(X, y).predict(X) == y).all()
-    assert (BayesianGMMClassifier().fit(X, y).predict(X) == y).all()
+    assert (GMMClassifier(max_iter=1000).fit(X, y).predict(X) == y).all()
+    assert (BayesianGMMClassifier(max_iter=1000).fit(X, y).predict(X) == y).all()

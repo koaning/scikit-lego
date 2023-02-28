@@ -46,7 +46,7 @@ def _test_same(dataset):
     sensitive_cols = [0]
     X_without_sens = np.delete(X, sensitive_cols, axis=1)
     lr = LogisticRegression(
-        penalty="none",
+        penalty=None,
         solver="lbfgs",
         multi_class="ovr",
         dual=False,
