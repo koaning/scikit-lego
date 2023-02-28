@@ -44,7 +44,6 @@ def test_bare_trainonlytransformer(random_xy_dataset_regr):
     """Tests whether the trainonlytransformer will only transform train when used directly"""
 
     X_train, X_test, y_train, y_test = train_test_split(*random_xy_dataset_regr)
-
     trf = TrainOnlyTrainOnlyTransformer()
     trf.fit(X_train, y_train)
 

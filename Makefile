@@ -6,12 +6,8 @@ flake:
 	flake8 setup.py
 
 install:
-	pip install -e .
-
-develop:
 	pip install -e ".[dev]"
 	pre-commit install
-	python setup.py develop
 
 doctest:
 	python -m doctest -v sklego/*.py
@@ -26,9 +22,6 @@ test: doctest
 
 precommit:
 	pre-commit run
-
-spelling:
-	codespell sklego/*.py
 
 docs:
 	rm -rf doc/.ipynb_checkpoints
@@ -49,7 +42,7 @@ clean:
 black:
 	black sklego tests setup.py
 
-check: flake precommit test spelling clean
+check: flake precommit test clean
 
 pypi: clean
 	python setup.py sdist
