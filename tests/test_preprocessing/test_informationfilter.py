@@ -31,7 +31,7 @@ def test_estimator_checks(test_fn):
 
 
 def test_v_columns_orthogonal():
-    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False)
+    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser='liac-arff')
     print(y)
     ifilter = InformationFilter(columns=[11, 12]).fit(X, y)
     v_values = ifilter._make_v_vectors(X, [11, 12])
@@ -39,21 +39,21 @@ def test_v_columns_orthogonal():
 
 
 def test_output_orthogonal():
-    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False)
+    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser='liac-arff')
     X_fair = InformationFilter(columns=[11, 12]).fit_transform(X)
     assert all([(c * X[:, 11]).sum() < 1e-5 for c in X_fair.T])
     assert all([(c * X[:, 12]).sum() < 1e-5 for c in X_fair.T])
 
 
 def test_alpha_param1():
-    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False)
+    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser='liac-arff')
     ifilter = InformationFilter(columns=[11, 12], alpha=0.0)
     X_removed = np.delete(X, [11, 12], axis=1)
     assert np.isclose(ifilter.fit_transform(X), X_removed).all()
 
 
 def test_alpha_param2():
-    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False)
+    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser='liac-arff')
     df = pd.DataFrame(
         X,
         columns=[
@@ -78,7 +78,7 @@ def test_alpha_param2():
 
 
 def test_output_orthogonal_pandas():
-    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False)
+    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser='liac-arff')
     df = pd.DataFrame(
         X,
         columns=[
@@ -103,7 +103,7 @@ def test_output_orthogonal_pandas():
 
 
 def test_output_orthogonal_general_cols():
-    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False)
+    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser='liac-arff')
     cols = [
         "crim",
         "zn",
@@ -126,7 +126,7 @@ def test_output_orthogonal_general_cols():
 
 
 def test_pipeline_gridsearch():
-    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False)
+    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser='liac-arff')
     pipe = Pipeline(
         [("info", InformationFilter(columns=[11, 12])), ("model", LinearRegression())]
     )
