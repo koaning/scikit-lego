@@ -34,13 +34,12 @@ def test_simpleseries_constant_season():
             noise=0,
             season_trend=0,
         )
-        .assign(month=lambda d: d["date"].dt.month)
-        .assign(year=lambda d: d["date"].dt.year)
+        .assign(month=lambda d: d["date"].dt.month,
+                year=lambda d: d["date"].dt.year)
     )
     agg = df.groupby(["year", "month"]).mean().reset_index()
-    assert agg.loc[lambda d: d["month"] == 1].var().month == pytest.approx(
-        0.0, abs=0.01
-    )
+    var = agg.loc[lambda d: d["month"] == 1]['yt'].var()
+    assert var == pytest.approx(0.0, abs=0.01)
 
 
 def test_load_hearts():
