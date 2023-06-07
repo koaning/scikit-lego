@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn import clone
 from sklearn.base import BaseEstimator
-from sklearn.utils.metaestimators import if_delegate_has_method
+from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import (
     check_is_fitted,
     check_array,
@@ -350,7 +350,7 @@ class GroupedPredictor(BaseEstimator):
             return self.__predict_shrinkage_groups(X_group, X_value, method="predict")
 
     # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
-    @if_delegate_has_method("estimator")
+    @available_if(lambda self: hasattr(self.estimator, 'predict_proba'))
     def predict_proba(self, X):
         """
         Predict probabilities on new data.
@@ -375,7 +375,7 @@ class GroupedPredictor(BaseEstimator):
             )
 
     # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
-    @if_delegate_has_method("estimator")
+    @available_if(lambda self: hasattr(self.estimator, 'decision_function'))
     def decision_function(self, X):
         """
         Evaluate the decision function for the samples in X.
