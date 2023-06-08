@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 import sklego
 
 base_packages = [
-    "scikit-learn>=0.24.1",
+    "scikit-learn>=1.0",
     "pandas>=1.1.5",
     "patsy>=0.5.1",
     "autograd>=1.2",
