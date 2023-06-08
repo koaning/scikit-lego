@@ -45,7 +45,7 @@ def test_decay_weight_regr(mod):
 def test_decay_weight_clf(mod):
     X, y = (
         np.random.normal(0, 1, (100, 100)),
-        (np.random.normal(0, 1, (100,)) < 0).astype(np.int),
+        (np.random.normal(0, 1, (100,)) < 0).astype(int),
     )
     mod = DecayEstimator(mod, decay=0.95).fit(X, y)
     assert mod.weights_[0] == pytest.approx(0.95 ** 100, abs=0.001)

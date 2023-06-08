@@ -85,4 +85,4 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         check_is_fitted(self, ["umap_", "offset_"])
         result = np.ones(X.shape[0])
         result[self.difference(X) > self.threshold] = -1
-        return result.astype(np.int)
+        return result.astype(int)
