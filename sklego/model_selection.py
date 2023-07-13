@@ -17,22 +17,29 @@ class TimeGapSplit:
     """
     Provides train/test indices to split time series data samples.
     This cross-validation object is a variation of TimeSeriesSplit with the following differences:
+
     - The splits are made based on datetime duration, instead of number of rows.
     - The user specifies the validation durations and either training_duration or n_splits
     - The user can specify a 'gap' duration that is added
       after the training split and before the validation split
+
     The 3 duration parameters can be used to really replicate how the model
     is going to be used in production in batch learning.
+
     Each validation fold doesn't overlap. The entire 'window' moves by 1 valid_duration until there is not enough data.
+
     If this would lead to more splits then specified with n_splits, the 'window' moves by
-    the validation_duration times the fraction of possible splits and requested splits
-     -- n_possible_splits = (total_length-train_duration-gap_duration)//valid_duration
-     -- time_shift = valid_duration n_possible_splits/n_slits
+    the validation_duration times the fraction of possible splits and requested splits:
+
+    - n_possible_splits = (total_length-train_duration-gap_duration) // valid_duration
+    - time_shift = valid_duration * n_possible_splits / n_slits
     so the CV spans the whole dataset.
-    If train_duration is not passed but n_split is,
-    the training duration is increased to
-     -- train_duration = total_length-(self.gap_duration + self.valid_duration * self.n_splits)
-     such that the shifting the entire window by one validation duration spans the whole training set
+
+    If train_duration is not passed but n_splits is, the training duration is increased to
+
+    train_duration = total_length - (self.gap_duration + self.valid_duration * self.n_splits)
+
+    such that the shifting the entire window by one validation duration spans the whole training set.
 
     :param pandas.Series date_serie: Series with the date, that should have all the indices of X used in split()
     :param datetime.timedelta train_duration: historical training data.
@@ -46,7 +53,6 @@ class TimeGapSplit:
     :param string window:
          'rolling' window has fixed size and is shifted entirely
          'expanding' left side of window is fixed, right border increases each fold
-
     """
 
     def __init__(
@@ -59,9 +65,7 @@ class TimeGapSplit:
         window="rolling",
     ):
         if (train_duration is None) and (n_splits is None):
-            raise ValueError(
-                "Either train_duration or n_splits have to be defined"
-            )
+            raise ValueError("Either train_duration or n_splits have to be defined")
 
         if (train_duration is not None) and (train_duration <= gap_duration):
             raise ValueError(
@@ -82,12 +86,11 @@ class TimeGapSplit:
     def _join_date_and_x(self, X):
         """
         Make a DataFrame indexed by the pandas index (the same as date_series) with date column joined with that index
-        and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn
-        :param pandas.DataFrame X:
+        and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn.
+
+        :param pandas.DataFrame X: Dataframe with the data to split
         """
-        X_index_df = pd.DataFrame(
-            range(len(X)), columns=["np_index"], index=X.index
-        )
+        X_index_df = pd.DataFrame(range(len(X)), columns=["np_index"], index=X.index)
         X_index_df = X_index_df.join(self.date_serie)
 
         return X_index_df
@@ -95,7 +98,8 @@ class TimeGapSplit:
     def split(self, X, y=None, groups=None):
         """
         Generate indices to split data into training and test set.
-        :param pandas.DataFrame X:
+
+        :param pandas.DataFrame X: Dataframe with the data to split
         :param y: Always ignored, exists for compatibility
         :param groups: Always ignored, exists for compatibility
         """
@@ -111,9 +115,7 @@ class TimeGapSplit:
 
         date_min = X_index_df["__date__"].min()
         date_max = X_index_df["__date__"].max()
-        date_length = (
-            X_index_df["__date__"].max() - X_index_df["__date__"].min()
-        )
+        date_length = X_index_df["__date__"].max() - X_index_df["__date__"].min()
 
         if (self.train_duration is None) and (self.n_splits is not None):
             self.train_duration = date_length - (
@@ -148,13 +150,9 @@ class TimeGapSplit:
             time_shift = self.valid_duration * n_split_max / self.n_splits
         else:
             time_shift = self.valid_duration
-
         while True:
             if (
-                current_date
-                + self.train_duration
-                + time_shift
-                + self.gap_duration
+                current_date + self.train_duration + time_shift + self.gap_duration
                 > date_max
             ):
                 break
@@ -186,12 +184,16 @@ class TimeGapSplit:
             )
 
     def get_n_splits(self, X=None, y=None, groups=None):
+        """Gets the number of splits
 
+        :return: amount of n_splits
+        :rtype: int
+        """
         return sum(1 for x in self.split(X, y, groups))
 
     def summary(self, X):
-        """
-        Describe all folds
+        """Describes all folds
+
         :param pandas.DataFrame X:
         :returns: ``pd.DataFrame`` summary of all folds
         """
@@ -288,20 +290,19 @@ class GroupTimeSeriesSplit(_BaseKFold):
     """
     Sliding window time series split
 
-    Create n_splits folds with an as equally possible size through a smart variant of a brute
-    force search. Groups parameter in .split() should be filled with the time groups (e.g. years)
+    Create n_splits folds with an as equally as possible size through a smart variant of a brute
+    force search. Groups parameter in .split() should be filled with the time groups (e.g. years).
 
-    :param n_splits: the amount of train-test combinations.
-    :type n_splits: int
+    If n_splits is 3 ("*" = train, "x" = test)::
 
-    with n_splits at 3
-    * = train
-    x = test
     |-----------------------|
     | * * * x x x - - - - - |
     | - - - * * * x x x - - |
     | - - - - - - * * * x x |
     |-----------------------|
+
+    :param n_splits: the amount of train-test combinations.
+    :type n_splits: int
     """
 
     # table above inspired by sktime
@@ -350,8 +351,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
             )
         except AttributeError:
             raise AttributeError(
-                ".summary() only works after having ran"
-                " .split(X, y, groups)."
+                ".summary() only works after having ran" " .split(X, y, groups)."
             )
 
     def split(self, X=None, y=None, groups=None):
@@ -359,7 +359,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
 
         :param X: array-like of shape (n_samples, n_features)
             Training data, where `n_samples` is the number of samples
-            and `n_features` is the number of features., defaults to None
+            and `n_features` is the number of features, defaults to None
         :type X: np.array, optional
         :param y: array-like of shape (n_samples,)
             The target variable for supervised learning problems, defaults to None
@@ -484,13 +484,8 @@ class GroupTimeSeriesSplit(_BaseKFold):
 
         # initalize the index of the first split, to reduce the amount of possible index split options
         first_split_index = (
-            self._grouped_df.assign(
-                cumsum_obs=lambda df: df["observations"].cumsum()
-            )
-            .assign(
-                group_id=lambda df: (df["cumsum_obs"] - 1)
-                // init_ideal_group_size
-            )
+            self._grouped_df.assign(cumsum_obs=lambda df: df["observations"].cumsum())
+            .assign(group_id=lambda df: (df["cumsum_obs"] - 1) // init_ideal_group_size)
             .reset_index()
             .loc[lambda df: df["group_id"] != 0]
             .iloc[0]
@@ -503,10 +498,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
                 cumsum_obs=lambda df: df["observations"].cumsum(),
             )
             .reset_index()
-            .assign(
-                group_id=lambda df: (df["cumsum_obs"] - 1)
-                // init_ideal_group_size
-            )
+            .assign(group_id=lambda df: (df["cumsum_obs"] - 1) // init_ideal_group_size)
             .loc[lambda df: df["group_id"] != 0]
             .iloc[0]
             .name
@@ -553,8 +545,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         for split in sliding_window(first_splits, window_size=2, step_size=1):
             try:
                 diff_from_ideal_list += [
-                    sum(observations[split[0] : split[1]])
-                    - self._ideal_group_size
+                    sum(observations[split[0] : split[1]]) - self._ideal_group_size
                 ]
             except IndexError:
                 diff_from_ideal_list += [
@@ -567,9 +558,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
 
         # loop through all possible split points and check whether a new split
         # has a less total difference from all groups to the ideal group size
-        for prev_splits, new_splits in zip(
-            splits_generator, splits_generator_shifted
-        ):
+        for prev_splits, new_splits in zip(splits_generator, splits_generator_shifted):
             diff_from_ideal_list = self._calc_new_diffs(
                 observations, diff_from_ideal_list, prev_splits, new_splits
             )
@@ -643,9 +632,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         df = self._grouped_df.copy().reset_index()
         # set each unique group to the right group_id to group them into folds
         df.loc[: self._best_splits[0], "group"] = 0
-        for group_id, splits in enumerate(
-            sliding_window(self._best_splits, 2, 1)
-        ):
+        for group_id, splits in enumerate(sliding_window(self._best_splits, 2, 1)):
             try:
                 df.loc[splits[0] : splits[1], "group"] = group_id + 1
             except IndexError:

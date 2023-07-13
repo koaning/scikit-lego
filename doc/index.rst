@@ -80,7 +80,7 @@ Usage
    meta.ipynb
    fairness.ipynb
    outliers.ipynb
-   timegapsplit.ipynb
+   crossvalidation.ipynb
    preprocessing.ipynb
    debug_pipeline.ipynb
    pandas_pipeline.ipynb
