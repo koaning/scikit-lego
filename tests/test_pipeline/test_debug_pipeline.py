@@ -28,6 +28,10 @@ class Adder(TransformerMixin, BaseEstimator):
     def transform(self, X):
         return X + self._value
 
+    def fit_transform(self, X, y=None):
+        self.fit(X, y)
+        return self.transform(X)
+
     def __repr__(self):
         return f"Adder(value={self._value})"
 
