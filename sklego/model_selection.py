@@ -19,29 +19,29 @@ class TimeGapSplit:
     This cross-validation object is a variation of TimeSeriesSplit with the following differences:
 
     - The splits are made based on datetime duration, instead of number of rows.
-    - The user specifies the validation durations and either training_duration or n_splits
-    - The user can specify a 'gap' duration that is added
-      after the training split and before the validation split
+    - The user specifies the validation durations and either training_duration or n_splits.
+    - The user can specify a 'gap' duration that is added after the training split and before the validation split.
 
-    The 3 duration parameters can be used to really replicate how the model
-    is going to be used in production in batch learning.
+    The 3 duration parameters can be used to really replicate how the model is going to
+    be used in production in batch learning.
 
-    Each validation fold doesn't overlap. The entire 'window' moves by 1 valid_duration until there is not enough data.
+    Each validation fold doesn't overlap. The entire 'window' moves by 1 'valid_duration'
+    until there is not enough data.
 
-    If this would lead to more splits then specified with n_splits, the 'window' moves by
-    the validation_duration times the fraction of possible splits and requested splits:
+    If this would lead to more splits then specified with 'n_splits', the 'window' moves by
+    the 'validation_duration' times the fraction of possible splits and requested splits:
 
-    - n_possible_splits = (total_length-train_duration-gap_duration) // valid_duration
+    - n_possible_splits = (total_length - train_duration-gap_duration) // valid_duration
     - time_shift = valid_duration * n_possible_splits / n_slits
     so the CV spans the whole dataset.
 
-    If train_duration is not passed but n_splits is, the training duration is increased to
+    If 'train_duration' is not passed but 'n_splits' is, the training duration is increased to:
 
-    train_duration = total_length - (self.gap_duration + self.valid_duration * self.n_splits)
+        train_duration = total_length - (gap_duration + valid_duration * n_splits)
 
     such that the shifting the entire window by one validation duration spans the whole training set.
 
-    :param pandas.Series date_serie: Series with the date, that should have all the indices of X used in split()
+    :param pandas.Series date_serie: series with the date, that should have all the indices of X used in the split() method.
     :param datetime.timedelta train_duration: historical training data.
     :param datetime.timedelta valid_duration: retraining period.
     :param datetime.timedelta gap_duration: forward looking window of the target.
@@ -49,10 +49,10 @@ class TimeGapSplit:
         This period is dropped at the end of your training folds due to lack of recent data.
         In production you would have not been able to create the target for that period, and you would have drop it from
         the training data.
-    :param int n_splits: number of splits
-    :param string window:
-         'rolling' window has fixed size and is shifted entirely
-         'expanding' left side of window is fixed, right border increases each fold
+    :param int n_splits: number of splits.
+    :param string window: either 'rolling' or 'expanding'.
+        'rolling' window has fixed size and is shifted entirely.
+        'expanding' left side of window is fixed, right border increases each fold.
     """
 
     def __init__(
@@ -194,7 +194,7 @@ class TimeGapSplit:
     def summary(self, X):
         """Describes all folds
 
-        :param pandas.DataFrame X:
+        :param pandas.DataFrame X: Dataframe with the data to split
         :returns: ``pd.DataFrame`` summary of all folds
         """
         summary = []
@@ -290,8 +290,8 @@ class GroupTimeSeriesSplit(_BaseKFold):
     """
     Sliding window time series split
 
-    Create n_splits folds with an as equally as possible size through a smart variant of a brute
-    force search. Groups parameter in .split() should be filled with the time groups (e.g. years).
+    Create n_splits folds with an as equally possible size through a smart variant of a brute
+    force search. Groups parameter in .split() should be filled with the time groups (e.g. years)
 
     If n_splits is 3 ("*" = train, "x" = test)::
 
