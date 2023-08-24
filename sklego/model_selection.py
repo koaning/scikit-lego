@@ -16,7 +16,8 @@ from sklego.common import sliding_window
 class TimeGapSplit:
     """
     Provides train/test indices to split time series data samples.
-    This cross-validation object is a variation of TimeSeriesSplit with the following differences:
+    This cross-validation object is a variation of TimeSeriesSplit with the following 
+    differences:
 
     - The splits are made based on datetime duration, instead of number of rows.
     - The user specifies the validation durations and either training_duration or n_splits.
