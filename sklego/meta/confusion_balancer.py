@@ -48,7 +48,7 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
         if not isinstance(self.estimator, ProbabilisticClassifier):
             raise ValueError(
-                "The ConfusionBalancer meta model only works on classifcation models with .predict_proba."
+                "The ConfusionBalancer meta model only works on classification models with .predict_proba."
             )
         self.estimator.fit(X, y)
         self.classes_ = unique_labels(y)

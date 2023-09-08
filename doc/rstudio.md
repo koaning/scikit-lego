@@ -6,10 +6,10 @@ on how to build a proper scikit-learn gridsearch using reticulate so
 we figured we might add a resource to our documentation here.
 
 It should be said that we feel that the best developer experience
-is definately going to be in python but we figured it be helpful
+is definitely going to be in python but we figured it be helpful
 to put a small example in our documentation. 
 
-## Demo 
+## Demo
 
 You'll first need to install a dependency and set up a link to a 
 python virtualenv that has scikit-lego already installed.
@@ -127,7 +127,7 @@ ggplot(data=cv_df) +
 
 ![](_static/Rplot2.png)
 
-## Important 
+## Important
 
 Note that we're mainly trying to demonstrate the R api here. In terms of fairness you 
 would want to explore the dataset further before you say anything conclusive.

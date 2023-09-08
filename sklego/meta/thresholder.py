@@ -18,7 +18,7 @@ class Thresholder(BaseEstimator, ClassifierMixin):
     design the algorithm to only accept a certain class if the probability
     for it is larger than, say, 90% instead of 50%.
 
-    :param model: the moddel to threshold
+    :param model: the model to threshold
     :param threshold: the actual threshold to use
     :param refit: if True, we will always retrain the model even if it is already fitted.
     If False we only refit if the original model isn't fitted.
