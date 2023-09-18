@@ -483,7 +483,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         )
         init_ideal_group_size = self._ideal_group_size * 0.9
 
-        # initalize the index of the first split, to reduce the amount of possible index split options
+        # initialize the index of the first split, to reduce the amount of possible index split options
         first_split_index = (
             self._grouped_df.assign(cumsum_obs=lambda df: df["observations"].cumsum())
             .assign(group_id=lambda df: (df["cumsum_obs"] - 1) // init_ideal_group_size)
@@ -492,7 +492,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
             .iloc[0]
             .name
         )
-        # initalize the index of the last split point, to reduce the amount of possible index split options
+        # initialize the index of the last split point, to reduce the amount of possible index split options
         last_split_index = len(self._grouped_df) - (
             self._grouped_df.assign(
                 observations=lambda df: df["observations"].values[::-1],
@@ -624,7 +624,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         """
         Specifies in which group every observation belongs
 
-        :param groups: orginal groups in array
+        :param groups: original groups in array
         :type: groups: np.array
 
         :return: indices for the train and test splits of each fold

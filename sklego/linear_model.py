@@ -491,7 +491,7 @@ class _EqualOpportunityClassifier(_FairClassifier):
 
 class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
     """
-    Base class for regressors relying on scipy's minimze method. Derive a class from this one and give it the function to be minimized.
+    Base class for regressors relying on scipy's minimize method. Derive a class from this one and give it the function to be minimized.
 
     Parameters
     ----------
