@@ -142,7 +142,7 @@ Here's a list of features that this library currently offers:
 We want to be rather open here in what we accept but we do demand three
 things before they become added to the project:
 
-1. any new feature contributes towards a demonstratable real-world usecase
+1. any new feature contributes towards a demonstrable real-world usecase
 2. any new feature passes standard unit tests (we use the ones from scikit-learn)
 3. the feature has been discussed in the issue list beforehand
 
