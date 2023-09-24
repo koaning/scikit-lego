@@ -31,6 +31,11 @@ class DecayEstimator(BaseEstimator):
             ["ClassifierMixin" in p.__name__ for p in type(self.model).__bases__]
         )
 
+    @property
+    def _estimator_type(self):
+        """Estimator type is computed dynamically from the given model."""
+        return self.model._estimator_type
+
     def fit(self, X, y):
         """
         Fit the data after adapting the same weight.
