@@ -33,7 +33,7 @@ class DecayEstimator(BaseEstimator):
 
     @property
     def _estimator_type(self):
-        """Estimator type is computed dynamically from the given model."""
+        """Computes `_estimator_type` dynamically from the wrapped model."""
         return self.model._estimator_type
 
     def fit(self, X, y):
