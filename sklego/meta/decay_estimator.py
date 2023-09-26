@@ -16,6 +16,9 @@ class DecayEstimator(BaseEstimator):
     This meta estimator will only work for estimators that have a
     "sample_weights" argument in their `.fit()` method.
 
+    The `fit` method computes the weights to pass to the estimator. All the checks are
+    delegated to the wrapped estimator.
+
     The DecayEstimator will use exponential decay to weight the parameters.
 
     w_{t-1} = decay * w_{t}
