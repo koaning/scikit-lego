@@ -13,32 +13,23 @@ from sklego.datasets import load_chicken
 from tests.conftest import general_checks, select_tests
 
 
-@pytest.fixture
+@pytest.fixture(name="df_predict_proba")
 def get_df_different_classes_classification():
+
+    np.random.seed(43)
     group_size = 5
+    n_groups = 2
 
-
-n_groups = 2
-
-# Create the "group" column
-group_col = np.repeat(["A", "B"], group_size)
-
-# Create the "x" column with random normal values
-x_col = np.random.normal(size=group_size * n_groups)
-
-# Create the "y" column with random choices
-y_col = np.hstack(
-    [
-        np.random.choice([0, 2], size=group_size),
-        np.random.choice([0, 1, 2], size=group_size),
-    ]
-)
-
-# Create the DataFrame
-df = pd.DataFrame({"group": group_col, "x": x_col, "y": y_col})
-
-# Print the DataFrame
-print(df)
+    group_col = np.repeat(["A", "B"], group_size)
+    x_col = np.random.normal(size=group_size * n_groups)
+    y_col = np.hstack(
+        [
+            np.random.choice([0, 2], size=group_size),
+            np.random.choice([0, 1, 2], size=group_size),
+        ]
+    )
+    df = pd.DataFrame({"group": group_col, "x": x_col, "y": y_col})
+    return df
 
 
 @pytest.mark.parametrize(
@@ -108,6 +99,16 @@ def test_chickweight_can_do_fallback_proba():
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
     assert mod.predict_proba(to_predict).shape == (2, 2)
     assert (mod.predict_proba(to_predict)[0] == mod.predict_proba(to_predict)[1]).all()
+
+def test_df_predict_proba_correct_labels(df_predict_proba):
+    mod = GroupedPredictor(estimator=LogisticRegression(), groups='group')
+    X, y = df_predict_proba[["group", "x"]], df_predict_proba["y"]
+    _ = mod.fit(X, y)
+    y_proba = mod.predict_proba(X)
+
+    # Ensure there are 5 null values for column 1
+    col_1 = y_proba[:, 1]
+    assert(np.isnan(col_1).sum() == 5)
 
 
 def test_fallback_can_raise_error():
