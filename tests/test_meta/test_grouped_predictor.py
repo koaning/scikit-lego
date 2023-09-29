@@ -13,6 +13,34 @@ from sklego.datasets import load_chicken
 from tests.conftest import general_checks, select_tests
 
 
+@pytest.fixture
+def get_df_different_classes_classification():
+    group_size = 5
+
+
+n_groups = 2
+
+# Create the "group" column
+group_col = np.repeat(["A", "B"], group_size)
+
+# Create the "x" column with random normal values
+x_col = np.random.normal(size=group_size * n_groups)
+
+# Create the "y" column with random choices
+y_col = np.hstack(
+    [
+        np.random.choice([0, 2], size=group_size),
+        np.random.choice([0, 1, 2], size=group_size),
+    ]
+)
+
+# Create the DataFrame
+df = pd.DataFrame({"group": group_col, "x": x_col, "y": y_col})
+
+# Print the DataFrame
+print(df)
+
+
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
@@ -36,6 +64,15 @@ def test_estimator_checks(test_fn):
         estimator=LinearRegression(), groups=0, use_global_model=False
     )
     test_fn(GroupedPredictor.__name__ + "_nofallback", clf)
+
+
+@pytest.fixture
+def dataset():
+    np.random.seed(42)
+    n = 100
+    inputs = np.concatenate([np.ones((n, 1)), np.random.normal(0, 1, (n, 1))], axis=1)
+    targets = 3.1 * inputs[:, 0] + 2.0 * inputs[:, 1]
+    return inputs, targets
 
 
 def test_chickweight_df1_keys():
@@ -117,7 +154,6 @@ def test_chickweight_np_keys():
 
 
 def test_chickweigt_string_groups():
-
     df = load_chicken(as_frame=True)
     df["diet"] = ["omgomgomg" + s for s in df["diet"].astype(str)]
 
@@ -545,18 +581,18 @@ def test_bad_shrinkage_value_error():
 def test_missing_check():
     df = load_chicken(as_frame=True)
 
-    X, y = df.drop(columns='weight'),  df['weight']
+    X, y = df.drop(columns="weight"), df["weight"]
     # create missing value
-    X.loc[0, 'chick'] = np.nan
-    model =  make_pipeline(SimpleImputer(), LinearRegression())
+    X.loc[0, "chick"] = np.nan
+    model = make_pipeline(SimpleImputer(), LinearRegression())
 
     # Should not raise error, check is disabled
-    m = GroupedPredictor(model, groups = ['diet'], check_X = False).fit(X, y)
+    m = GroupedPredictor(model, groups=["diet"], check_X=False).fit(X, y)
     m.predict(X)
 
     # Should raise error, check is still enabled
     with pytest.raises(ValueError) as e:
-        GroupedPredictor(model, groups = ['diet']).fit(X, y)
+        GroupedPredictor(model, groups=["diet"]).fit(X, y)
         assert "contains NaN" in str(e)
 
 
@@ -564,6 +600,8 @@ def test_has_decision_function():
     # needed as for example cross_val_score(pipe, X, y, cv=5, scoring="roc_auc", error_score='raise') may fail otherwise, see https://github.com/koaning/scikit-lego/issues/511
     df = load_chicken(as_frame=True)
 
-    X, y = df.drop(columns='weight'),  df['weight']
+    X, y = df.drop(columns="weight"), df["weight"]
     # This should NOT raise errors
-    GroupedPredictor(LogisticRegression(max_iter=2000), groups=["diet"]).fit(X, y).decision_function(X)
+    GroupedPredictor(LogisticRegression(max_iter=2000), groups=["diet"]).fit(
+        X, y
+    ).decision_function(X)
