@@ -57,15 +57,6 @@ def test_estimator_checks(test_fn):
     test_fn(GroupedPredictor.__name__ + "_nofallback", clf)
 
 
-@pytest.fixture
-def dataset():
-    np.random.seed(42)
-    n = 100
-    inputs = np.concatenate([np.ones((n, 1)), np.random.normal(0, 1, (n, 1))], axis=1)
-    targets = 3.1 * inputs[:, 0] + 2.0 * inputs[:, 1]
-    return inputs, targets
-
-
 def test_chickweight_df1_keys():
     df = load_chicken(as_frame=True)
     mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
