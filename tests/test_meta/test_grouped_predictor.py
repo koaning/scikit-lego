@@ -24,13 +24,30 @@ def get_df_different_classes_classification():
     x_col = np.random.normal(size=group_size * n_groups)
     y_col = np.hstack(
         [
-            np.random.choice([0, 2], size=group_size),
             np.random.choice([0, 1, 2], size=group_size),
+            np.random.choice([0, 2], size=group_size),
         ]
     )
     df = pd.DataFrame({"group": group_col, "x": x_col, "y": y_col})
     return df
 
+@pytest.fixture(name="df_predict_proba_request")
+def my_custom_df(request):
+    group_size = request.param.get("group_size")
+    y_choices_grpa = request.param.get("y_choices_grpa")
+    y_choices_grpb = request.param.get("y_choices_grpb")
+
+    np.random.seed(43)
+    group_col = np.repeat(["A", "B"], group_size)
+    x_col = np.random.normal(size=group_size * 2)
+    y_col = np.hstack(
+        [
+            np.random.choice(y_choices_grpa, size=group_size),
+            np.random.choice(y_choices_grpb, size=group_size),
+        ]
+    )
+    df = pd.DataFrame({"group": group_col, "x": x_col, "y": y_col})
+    return df
 
 @pytest.mark.parametrize(
     "test_fn",
@@ -91,7 +108,22 @@ def test_chickweight_can_do_fallback_proba():
     assert mod.predict_proba(to_predict).shape == (2, 2)
     assert (mod.predict_proba(to_predict)[0] == mod.predict_proba(to_predict)[1]).all()
 
-def test_df_predict_proba_correct_labels(df_predict_proba):
+@pytest.mark.parametrize("df_predict_proba_request", [
+    {"group_size": 10, "y_choices_grpa": [0, 1, 2], "y_choices_grpb": [0, 1, 2, 4]},
+    {"group_size": 10, "y_choices_grpa": [0, 2], "y_choices_grpb": [0, 2]},
+    {"group_size": 10, "y_choices_grpa": [0, 1, 2, 3], "y_choices_grpb": [0, 4]},
+    {"group_size": 10, "y_choices_grpa": [0, 1, 2], "y_choices_grpb": [0, 3]},
+], indirect=True)
+def test_predict_proba_has_same_columns_as_distinct_labels(df_predict_proba_request):
+    mod = GroupedPredictor(estimator=LogisticRegression(), groups='group')
+    X, y = df_predict_proba_request[["group", "x"]], df_predict_proba_request["y"]
+    _ = mod.fit(X, y)
+    y_proba = mod.predict_proba(X)
+
+    # Ensure the number of col output is always equal to the cardinality of the labels
+    assert(len(df_predict_proba_request['y'].unique()) == y_proba.shape[1])
+
+def test_predict_proba_correct_nulls_different_labels(df_predict_proba):
     mod = GroupedPredictor(estimator=LogisticRegression(), groups='group')
     X, y = df_predict_proba[["group", "x"]], df_predict_proba["y"]
     _ = mod.fit(X, y)
@@ -100,6 +132,19 @@ def test_df_predict_proba_correct_labels(df_predict_proba):
     # Ensure there are 5 null values for column 1
     col_1 = y_proba[:, 1]
     assert(np.isnan(col_1).sum() == 5)
+
+def test_predict_proba_correct_nulls_same_labels(df_predict_proba):
+    mod = GroupedPredictor(estimator=LogisticRegression(), groups='group')
+
+    # Drop label present only in group B
+    df = df_predict_proba.loc[lambda x: x['y']!=1]
+    X, y = df[["group", "x"]], df["y"]
+    _ = mod.fit(X, y)
+    y_proba = mod.predict_proba(X)
+
+    # Ensure there are 0 null values for column 1
+    col_1 = y_proba[:, 1]
+    assert(np.isnan(col_1).sum() == 0)
 
 
 def test_fallback_can_raise_error():
