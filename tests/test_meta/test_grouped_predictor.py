@@ -126,7 +126,7 @@ def test_predict_proba_has_same_columns_as_distinct_labels(
     ],
     indirect=True,
 )
-def test_predict_proba_correct_nulls_different_labels(
+def test_predict_proba_correct_zeros_different_labels(
     random_xy_grouped_clf_different_classes,
 ):
     mod = GroupedPredictor(estimator=LogisticRegression(), groups="group")
@@ -137,9 +137,16 @@ def test_predict_proba_correct_nulls_different_labels(
     _ = mod.fit(X, y)
     y_proba = mod.predict_proba(X)
 
-    # Ensure there are 5-zero values for column 1
-    col_1 = y_proba[:, 1]
-    assert len(col_1[col_1 == 0]) == 5
+    df_proba = pd.concat(
+        [random_xy_grouped_clf_different_classes["group"], pd.DataFrame(y_proba)],
+        axis=1,
+    )
+
+    # Ensure for the label not in group for group B it gets filled with all zeros
+    label_not_in_group = {"B": 1}
+    for grp_name, grp in df_proba.groupby("group"):
+        if grp_name in label_not_in_group.keys():
+            assert (grp.loc[:, label_not_in_group[grp_name]] == 0).all()
 
 
 @pytest.mark.parametrize(
@@ -149,20 +156,28 @@ def test_predict_proba_correct_nulls_different_labels(
     ],
     indirect=True,
 )
-def test_predict_proba_correct_nulls_same_labels(
+def test_predict_proba_correct_zeros_same_labels(
     random_xy_grouped_clf_different_classes,
 ):
     mod = GroupedPredictor(estimator=LogisticRegression(), groups="group")
 
-    # Drop label present only in group B
-    df = random_xy_grouped_clf_different_classes.loc[lambda x: x["y"] != 1]
-    X, y = df[["group", "x"]], df["y"]
+    X, y = (
+        random_xy_grouped_clf_different_classes[["group", "x"]],
+        random_xy_grouped_clf_different_classes["y"],
+    )
     _ = mod.fit(X, y)
     y_proba = mod.predict_proba(X)
 
-    # Ensure there are 0 null values for column 1
-    col_1 = y_proba[:, 1]
-    assert np.isnan(col_1).sum() == 0
+    df_proba = pd.concat(
+        [random_xy_grouped_clf_different_classes["group"], pd.DataFrame(y_proba)],
+        axis=1,
+    )
+
+    # Ensure for the common labels there are no zeros
+    in_common_labels = [0, 2]
+    for _, grp in df_proba.groupby("group"):
+        for label in in_common_labels:
+            assert (grp.loc[:, label] != 0).all()
 
 
 def test_fallback_can_raise_error():
