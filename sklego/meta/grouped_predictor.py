@@ -282,7 +282,6 @@ class GroupedPredictor(BaseEstimator):
         """Predict a single group by getting its estimator from the fitted dict"""
         # Keep track of the original index such that we can sort in __predict_groups
         index = X.index
-        extra_kwargs = {}
 
         try:
             group_predictor = self.estimators_[group]
@@ -294,9 +293,9 @@ class GroupedPredictor(BaseEstimator):
                     f"Found new group {group} during predict with use_global_model = False"
                 )
 
-        # Ensure to mantain label order if it's called with predict_proba
-        if is_classifier(group_predictor) and method == "predict_proba":
-            extra_kwargs = {"columns": group_predictor.classes_}
+        is_predict_proba = is_classifier(group_predictor) and method == "predict_proba"
+        # Ensure to provide pd.DataFrame with the correct label name
+        extra_kwargs = {"columns": group_predictor.classes_} if is_predict_proba else {}
 
         # getattr(group_predictor, method) returns the predict method of the fitted model
         # if the method argument is "predict" and the predict_proba method if method argument is "predict_proba"
@@ -331,7 +330,9 @@ class GroupedPredictor(BaseEstimator):
                     for group, indices in group_indices.items()
                 ],
                 axis=0,
+                # Fill with prob = 0 impossible labels
             )
+            .fillna(0)
             .sort_index()
             .values.squeeze()
         )
