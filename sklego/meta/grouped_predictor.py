@@ -330,8 +330,8 @@ class GroupedPredictor(BaseEstimator):
                     for group, indices in group_indices.items()
                 ],
                 axis=0,
-                # Fill with prob = 0 impossible labels
             )
+            # Fill with prob = 0 for impossible labels in predict_proba
             .fillna(0)
             .sort_index()
             .values.squeeze()
