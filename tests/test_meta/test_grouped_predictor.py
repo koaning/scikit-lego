@@ -152,9 +152,7 @@ def test_predict_proba_correct_zeros_same_and_different_labels(
 
     # Ensure for the common labels there are no zeros
     in_common_labels = labels_a.intersection(labels_b)
-    for _, grp in df_proba.groupby("group"):
-        for label in in_common_labels:
-            assert (grp.loc[:, label] != 0).all()
+    assert all((df_proba.loc[:, label] != 0).all() for label in in_common_labels)
 
     # Ensure for the non common labels there are only zeros
     label_not_in_group = {
@@ -162,8 +160,9 @@ def test_predict_proba_correct_zeros_same_and_different_labels(
         "B": list(labels_a.difference(labels_b)),
     }
     for grp_name, grp in df_proba.groupby("group"):
-        for _grp in label_not_in_group[grp_name]:
-            assert (grp.loc[:, _grp] == 0).all()
+        assert all(
+            (grp.loc[:, label] == 0).all() for label in label_not_in_group[grp_name]
+        )
 
 
 def test_fallback_can_raise_error():
