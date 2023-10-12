@@ -16,6 +16,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
     :param estimator: An instance of the estimator that should be used for the transformation
     :param predict_func: The function called on the estimator when transforming e.g. (`predict`, `predict_proba`)
+    :param check_X: Whether to check the input data for NaNs, Infs and non-numeric values
     """
 
     def __init__(self, estimator, predict_func="predict", check_X=True):
