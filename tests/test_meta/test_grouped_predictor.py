@@ -13,6 +13,25 @@ from sklego.datasets import load_chicken
 from tests.conftest import general_checks, select_tests
 
 
+@pytest.fixture
+def random_xy_grouped_clf_different_classes(request):
+    group_size = request.param.get("group_size")
+    y_choices_grpa = request.param.get("y_choices_grpa")
+    y_choices_grpb = request.param.get("y_choices_grpb")
+
+    np.random.seed(43)
+    group_col = np.repeat(["A", "B"], group_size)
+    x_col = np.random.normal(size=group_size * 2)
+    y_col = np.hstack(
+        [
+            np.random.choice(y_choices_grpa, size=group_size),
+            np.random.choice(y_choices_grpb, size=group_size),
+        ]
+    )
+    df = pd.DataFrame({"group": group_col, "x": x_col, "y": y_col})
+    return df
+
+
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
@@ -73,6 +92,79 @@ def test_chickweight_can_do_fallback_proba():
     assert (mod.predict_proba(to_predict)[0] == mod.predict_proba(to_predict)[1]).all()
 
 
+@pytest.mark.parametrize(
+    "random_xy_grouped_clf_different_classes",
+    [
+        {"group_size": 10, "y_choices_grpa": [0, 1, 2], "y_choices_grpb": [0, 1, 2, 4]},
+        {"group_size": 10, "y_choices_grpa": [0, 2], "y_choices_grpb": [0, 2]},
+        {"group_size": 10, "y_choices_grpa": [0, 1, 2, 3], "y_choices_grpb": [0, 4]},
+        {"group_size": 10, "y_choices_grpa": [0, 1, 2], "y_choices_grpb": [0, 3]},
+    ],
+    indirect=True,
+)
+def test_predict_proba_has_same_columns_as_distinct_labels(
+    random_xy_grouped_clf_different_classes,
+):
+    mod = GroupedPredictor(estimator=LogisticRegression(), groups="group")
+    X, y = (
+        random_xy_grouped_clf_different_classes[["group", "x"]],
+        random_xy_grouped_clf_different_classes["y"],
+    )
+    _ = mod.fit(X, y)
+    y_proba = mod.predict_proba(X)
+
+    # Ensure the number of col output is always equal to the cardinality of the labels
+    assert (
+        len(random_xy_grouped_clf_different_classes["y"].unique()) == y_proba.shape[1]
+    )
+
+
+@pytest.mark.parametrize(
+    "random_xy_grouped_clf_different_classes",
+    [
+        {"group_size": 5, "y_choices_grpa": [0, 1, 2], "y_choices_grpb": [0, 2]},
+    ],
+    indirect=True,
+)
+def test_predict_proba_correct_zeros_same_and_different_labels(
+    random_xy_grouped_clf_different_classes,
+):
+    mod = GroupedPredictor(estimator=LogisticRegression(), groups="group")
+
+    X, y = (
+        random_xy_grouped_clf_different_classes[["group", "x"]],
+        random_xy_grouped_clf_different_classes["y"],
+    )
+    _ = mod.fit(X, y)
+    y_proba = mod.predict_proba(X)
+
+    df_proba = pd.concat(
+        [random_xy_grouped_clf_different_classes["group"], pd.DataFrame(y_proba)],
+        axis=1,
+    )
+
+    # Take distinct labels for group A and group B
+    labels_a, labels_b = (
+        random_xy_grouped_clf_different_classes.groupby("group")
+        .agg({"y": set})
+        .sort_index()["y"]
+    )
+
+    # Ensure for the common labels there are no zeros
+    in_common_labels = labels_a.intersection(labels_b)
+    assert all((df_proba.loc[:, label] != 0).all() for label in in_common_labels)
+
+    # Ensure for the non common labels there are only zeros
+    label_not_in_group = {
+        "A": list(labels_b.difference(labels_a)),
+        "B": list(labels_a.difference(labels_b)),
+    }
+    for grp_name, grp in df_proba.groupby("group"):
+        assert all(
+            (grp.loc[:, label] == 0).all() for label in label_not_in_group[grp_name]
+        )
+
+
 def test_fallback_can_raise_error():
     df = load_chicken(as_frame=True)
     mod = GroupedPredictor(
@@ -117,7 +209,6 @@ def test_chickweight_np_keys():
 
 
 def test_chickweigt_string_groups():
-
     df = load_chicken(as_frame=True)
     df["diet"] = ["omgomgomg" + s for s in df["diet"].astype(str)]
 
@@ -545,18 +636,18 @@ def test_bad_shrinkage_value_error():
 def test_missing_check():
     df = load_chicken(as_frame=True)
 
-    X, y = df.drop(columns='weight'),  df['weight']
+    X, y = df.drop(columns="weight"), df["weight"]
     # create missing value
-    X.loc[0, 'chick'] = np.nan
-    model =  make_pipeline(SimpleImputer(), LinearRegression())
+    X.loc[0, "chick"] = np.nan
+    model = make_pipeline(SimpleImputer(), LinearRegression())
 
     # Should not raise error, check is disabled
-    m = GroupedPredictor(model, groups = ['diet'], check_X = False).fit(X, y)
+    m = GroupedPredictor(model, groups=["diet"], check_X=False).fit(X, y)
     m.predict(X)
 
     # Should raise error, check is still enabled
     with pytest.raises(ValueError) as e:
-        GroupedPredictor(model, groups = ['diet']).fit(X, y)
+        GroupedPredictor(model, groups=["diet"]).fit(X, y)
         assert "contains NaN" in str(e)
 
 
@@ -564,6 +655,8 @@ def test_has_decision_function():
     # needed as for example cross_val_score(pipe, X, y, cv=5, scoring="roc_auc", error_score='raise') may fail otherwise, see https://github.com/koaning/scikit-lego/issues/511
     df = load_chicken(as_frame=True)
 
-    X, y = df.drop(columns='weight'),  df['weight']
+    X, y = df.drop(columns="weight"), df["weight"]
     # This should NOT raise errors
-    GroupedPredictor(LogisticRegression(max_iter=2000), groups=["diet"]).fit(X, y).decision_function(X)
+    GroupedPredictor(LogisticRegression(max_iter=2000), groups=["diet"]).fit(
+        X, y
+    ).decision_function(X)
