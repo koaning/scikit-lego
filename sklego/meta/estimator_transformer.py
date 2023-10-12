@@ -7,7 +7,6 @@ from sklearn.base import (
 from sklearn.utils.validation import (
     check_is_fitted,
     check_X_y,
-    FLOAT_DTYPES,
 )
 
 
@@ -19,13 +18,15 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     :param predict_func: The function called on the estimator when transforming e.g. (`predict`, `predict_proba`)
     """
 
-    def __init__(self, estimator, predict_func="predict"):
+    def __init__(self, estimator, predict_func="predict", check_X=True):
         self.estimator = estimator
         self.predict_func = predict_func
+        self.check_X = check_X
 
     def fit(self, X, y, **kwargs):
         """Fits the estimator"""
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
+        X, y = check_X_y(X, y, estimator=self, force_all_finite=self.check_X, dtype=None, multi_output=True)
+
         self.multi_output_ = len(y.shape) > 1
         self.estimator_ = clone(self.estimator)
         self.estimator_.fit(X, y, **kwargs)

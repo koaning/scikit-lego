@@ -4,6 +4,7 @@ from unittest.mock import Mock
 from unittest.mock import patch
 from sklearn import clone
 from sklearn.dummy import DummyClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.pipeline import Pipeline, FeatureUnion
@@ -51,6 +52,7 @@ def test_get_params():
         "estimator": clf,
         "estimator__strategy": "most_frequent",
         "predict_func": "predict",
+        "check_X": True,
     }
 
 
@@ -111,3 +113,27 @@ def test_kwargs(patched_clone, random_xy_dataset_clf):
     np.testing.assert_array_equal(
         sample_weights, estimator.fit.call_args[1]['sample_weight']
     )
+
+
+def test_nan_input():
+    """ Test X containing nan with check_X=False. """
+    X = np.array([[np.nan, 4], [7, 3], [5, 5], [7, 2], [5, 7]])
+    y = np.array([1, 0, 1, 0, 1])
+    clf = HistGradientBoostingClassifier()
+    transformer = EstimatorTransformer(clf, check_X=False)
+    transformed = transformer.fit(X, y).transform(X)
+
+    assert transformed.shape == (y.shape[0], 1)
+    assert np.all(transformed == clf.fit(X, y).predict(X))
+
+
+def test_object_input():
+    """ Test X containing string with check_X=False. """
+    X = np.array([["1", 4], ["7", 3], ["5", 5], ["7", 2], ["5", 7]])
+    y = np.array([1, 0, 1, 0, 1])
+    clf = HistGradientBoostingClassifier()
+    transformer = EstimatorTransformer(clf, check_X=False)
+    transformed = transformer.fit(X, y).transform(X)
+
+    assert transformed.shape == (y.shape[0], 1)
+    assert np.all(transformed == clf.fit(X, y).predict(X))
