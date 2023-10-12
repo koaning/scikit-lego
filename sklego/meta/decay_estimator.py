@@ -18,9 +18,9 @@ class DecayEstimator(BaseEstimator):
 
     The `fit` method computes the weights to pass to the estimator.
 
-    .. warning:: By default all the checks on `X` and `y` are delegated to the wrapped estimator.
+    .. warning:: By default all the checks on the inputs `X` and `y` are delegated to the wrapped estimator.
 
-        To change such behaviour, set `check_X_y` to `True`.
+        To change such behaviour, set `check_input` to `True`.
 
         Remark that if the check is skipped, then `y` should have a `shape` attrbute, which is
         used to extract the number of samples in training data, and compute the weights.
@@ -31,12 +31,12 @@ class DecayEstimator(BaseEstimator):
     """
 
     def __init__(
-        self, model, decay: float = 0.999, decay_func="exponential", check_X_y=False
+        self, model, decay: float = 0.999, decay_func="exponential", check_input=False
     ):
         self.model = model
         self.decay = decay
         self.decay_func = decay_func
-        self.check_X_y = check_X_y
+        self.check_input = check_input
 
     def _is_classifier(self):
         return any(
@@ -57,7 +57,7 @@ class DecayEstimator(BaseEstimator):
         :return: Returns an instance of self.
         """
 
-        if self.check_X_y:
+        if self.check_input:
             X, y = check_X_y(
                 X, y, estimator=self, dtype=FLOAT_DTYPES, ensure_min_features=0
             )
