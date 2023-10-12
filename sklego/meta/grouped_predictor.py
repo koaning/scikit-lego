@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn import clone
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, is_classifier
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import (
     check_is_fitted,
@@ -282,6 +282,7 @@ class GroupedPredictor(BaseEstimator):
         """Predict a single group by getting its estimator from the fitted dict"""
         # Keep track of the original index such that we can sort in __predict_groups
         index = X.index
+
         try:
             group_predictor = self.estimators_[group]
         except KeyError:
@@ -292,9 +293,15 @@ class GroupedPredictor(BaseEstimator):
                     f"Found new group {group} during predict with use_global_model = False"
                 )
 
+        is_predict_proba = is_classifier(group_predictor) and method == "predict_proba"
+        # Ensure to provide pd.DataFrame with the correct label name
+        extra_kwargs = {"columns": group_predictor.classes_} if is_predict_proba else {}
+
         # getattr(group_predictor, method) returns the predict method of the fitted model
         # if the method argument is "predict" and the predict_proba method if method argument is "predict_proba"
-        return pd.DataFrame(getattr(group_predictor, method)(X)).set_index(index)
+        return pd.DataFrame(
+            getattr(group_predictor, method)(X), **extra_kwargs
+        ).set_index(index)
 
     def __predict_groups(
         self,
@@ -324,6 +331,8 @@ class GroupedPredictor(BaseEstimator):
                 ],
                 axis=0,
             )
+            # Fill with prob = 0 for impossible labels in predict_proba
+            .fillna(0)
             .sort_index()
             .values.squeeze()
         )
@@ -350,7 +359,7 @@ class GroupedPredictor(BaseEstimator):
             return self.__predict_shrinkage_groups(X_group, X_value, method="predict")
 
     # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
-    @available_if(lambda self: hasattr(self.estimator, 'predict_proba'))
+    @available_if(lambda self: hasattr(self.estimator, "predict_proba"))
     def predict_proba(self, X):
         """
         Predict probabilities on new data.
@@ -375,7 +384,7 @@ class GroupedPredictor(BaseEstimator):
             )
 
     # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
-    @available_if(lambda self: hasattr(self.estimator, 'decision_function'))
+    @available_if(lambda self: hasattr(self.estimator, "decision_function"))
     def decision_function(self, X):
         """
         Evaluate the decision function for the samples in X.
