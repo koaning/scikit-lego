@@ -8,6 +8,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.preprocessing import OrdinalEncoder
 from sklearn.utils import check_X_y
 
 from sklego.common import flatten
@@ -52,7 +53,7 @@ def test_get_params():
         "estimator": clf,
         "estimator__strategy": "most_frequent",
         "predict_func": "predict",
-        "check_X": True,
+        "check_input": True,
     }
 
 
@@ -115,24 +116,20 @@ def test_kwargs(patched_clone, random_xy_dataset_clf):
     )
 
 
-def test_nan_input():
-    """ Test X containing nan with check_X=False. """
-    X = np.array([[np.nan, 4], [7, 3], [5, 5], [7, 2], [5, 7]])
+@pytest.mark.parametrize(
+    "X", [np.array([[np.nan, 4], [7, 3], [5, 5], [7, 2], [5, 7]]),
+          np.array([["a", 4], ["a", 3], ["b", 5], ["b", 2], ["b", 7]])]
+)
+def test_nan_and_string_input(X):
+    """ Test X containing nan and string with check_input=False. """
     y = np.array([1, 0, 1, 0, 1])
-    clf = HistGradientBoostingClassifier()
-    transformer = EstimatorTransformer(clf, check_X=False)
-    transformed = transformer.fit(X, y).transform(X)
-
-    assert transformed.shape == (y.shape[0], 1)
-    assert np.all(transformed == clf.fit(X, y).predict(X))
-
-
-def test_object_input():
-    """ Test X containing string with check_X=False. """
-    X = np.array([["1", 4], ["7", 3], ["5", 5], ["7", 2], ["5", 7]])
-    y = np.array([1, 0, 1, 0, 1])
-    clf = HistGradientBoostingClassifier()
-    transformer = EstimatorTransformer(clf, check_X=False)
+    clf = Pipeline(
+        [
+            ("encoder", OrdinalEncoder()),
+            ("gbm", HistGradientBoostingClassifier())
+        ]
+    )
+    transformer = EstimatorTransformer(clf, check_input=False)
     transformed = transformer.fit(X, y).transform(X)
 
     assert transformed.shape == (y.shape[0], 1)

@@ -16,17 +16,17 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
     :param estimator: An instance of the estimator that should be used for the transformation
     :param predict_func: The function called on the estimator when transforming e.g. (`predict`, `predict_proba`)
-    :param check_X: Whether to check the input data for NaNs, Infs and non-numeric values
+    :param check_input: Whether to check the input data for NaNs, Infs and non-numeric values
     """
 
-    def __init__(self, estimator, predict_func="predict", check_X=True):
+    def __init__(self, estimator, predict_func="predict", check_input=True):
         self.estimator = estimator
         self.predict_func = predict_func
-        self.check_X = check_X
+        self.check_input = check_input
 
     def fit(self, X, y, **kwargs):
         """Fits the estimator"""
-        X, y = check_X_y(X, y, estimator=self, force_all_finite=self.check_X, dtype=None, multi_output=True)
+        X, y = check_X_y(X, y, estimator=self, force_all_finite=self.check_input, dtype=None, multi_output=True)
 
         self.multi_output_ = len(y.shape) > 1
         self.estimator_ = clone(self.estimator)
