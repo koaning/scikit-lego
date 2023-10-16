@@ -7,7 +7,7 @@ from sklearn.base import (
 from sklearn.utils.validation import (
     check_is_fitted,
     check_X_y,
-    FLOAT_DTYPES
+    FLOAT_DTYPES,
 )
 
 
