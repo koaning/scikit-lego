@@ -7,6 +7,7 @@ from sklearn.base import (
 from sklearn.utils.validation import (
     check_is_fitted,
     check_X_y,
+    FLOAT_DTYPES
 )
 
 
@@ -19,14 +20,16 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     :param check_input: Whether to check the input data for NaNs, Infs and non-numeric values
     """
 
-    def __init__(self, estimator, predict_func="predict", check_input=True):
+    def __init__(self, estimator, predict_func="predict", check_input=False):
         self.estimator = estimator
         self.predict_func = predict_func
         self.check_input = check_input
 
     def fit(self, X, y, **kwargs):
         """Fits the estimator"""
-        X, y = check_X_y(X, y, estimator=self, force_all_finite=self.check_input, dtype=None, multi_output=True)
+
+        if self.check_input:
+            X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
 
         self.multi_output_ = len(y.shape) > 1
         self.estimator_ = clone(self.estimator)

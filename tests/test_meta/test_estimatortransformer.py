@@ -20,7 +20,7 @@ from tests.conftest import transformer_checks, general_checks
     "test_fn", flatten([transformer_checks, general_checks])
 )
 def test_estimator_checks(test_fn):
-    trf = EstimatorTransformer(LinearRegression())
+    trf = EstimatorTransformer(LinearRegression(), check_input=True)
     test_fn(EstimatorTransformer.__name__, trf)
 
 
@@ -53,7 +53,7 @@ def test_get_params():
         "estimator": clf,
         "estimator__strategy": "most_frequent",
         "predict_func": "predict",
-        "check_input": True,
+        "check_input": False,
     }
 
 
