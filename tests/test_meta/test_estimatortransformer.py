@@ -4,9 +4,11 @@ from unittest.mock import Mock
 from unittest.mock import patch
 from sklearn import clone
 from sklearn.dummy import DummyClassifier
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.preprocessing import OrdinalEncoder
 from sklearn.utils import check_X_y
 
 from sklego.common import flatten
@@ -18,7 +20,7 @@ from tests.conftest import transformer_checks, general_checks
     "test_fn", flatten([transformer_checks, general_checks])
 )
 def test_estimator_checks(test_fn):
-    trf = EstimatorTransformer(LinearRegression())
+    trf = EstimatorTransformer(LinearRegression(), check_input=True)
     test_fn(EstimatorTransformer.__name__, trf)
 
 
@@ -51,6 +53,7 @@ def test_get_params():
         "estimator": clf,
         "estimator__strategy": "most_frequent",
         "predict_func": "predict",
+        "check_input": False,
     }
 
 
@@ -111,3 +114,23 @@ def test_kwargs(patched_clone, random_xy_dataset_clf):
     np.testing.assert_array_equal(
         sample_weights, estimator.fit.call_args[1]['sample_weight']
     )
+
+
+@pytest.mark.parametrize(
+    "X", [np.array([[np.nan, 4], [7, 3], [5, 5], [7, 2], [5, 7]]),
+          np.array([["a", 4], ["a", 3], ["b", 5], ["b", 2], ["b", 7]])]
+)
+def test_nan_and_string_input(X):
+    """ Test X containing nan and string with check_input=False. """
+    y = np.array([1, 0, 1, 0, 1])
+    clf = Pipeline(
+        [
+            ("encoder", OrdinalEncoder()),
+            ("gbm", HistGradientBoostingClassifier())
+        ]
+    )
+    transformer = EstimatorTransformer(clf, check_input=False)
+    transformed = transformer.fit(X, y).transform(X)
+
+    assert transformed.shape == (y.shape[0], 1)
+    assert np.all(transformed == clf.fit(X, y).predict(X))
