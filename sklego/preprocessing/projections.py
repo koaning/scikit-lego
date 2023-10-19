@@ -8,19 +8,63 @@ from sklego.common import as_list
 
 
 class OrthogonalTransformer(BaseEstimator, TransformerMixin):
-    """
-    Transform the columns of a dataframe or numpy array to a column orthogonal or orthonormal matrix.
-    Q, R such that X = Q*R, with Q orthogonal, from which follows Q = X*inv(R)
-    :param normalize: whether orthogonal matrix should be orthonormal as well
+    r"""The `OrthogonalTransformer` transforms the columns of a dataframe or numpy array to orthogonal (or
+    orthonormal if `normalize=True`) matrix.
+
+    It learns matrices $Q, R$ such that $X = Q \cdot R$, with $Q$ orthogonal, from which follows $Q = X \cdot R^{-1}$
+
+    Parameters
+    ----------
+    normalize : bool, default=False
+        Whether or not orthogonal matrix should be orthonormal as well.
+
+    Attributes
+    ----------
+    inv_R_ : array-like of shape (n_features, n_features)
+        The inverse of R of the QR decomposition of `X`.
+    normalization_vector_ : array-like of shape (n_features,)
+        The normalization terms to make the orthogonal matrix orthonormal.
+
+    Examples
+    --------
+    ```
+    from sklearn.datasets import make_regression
+    from sklego.preprocessing import OrthogonalTransformer
+
+    # Generate a synthetic dataset
+    X, y = make_regression(n_samples=100, n_features=3, noise=0.1, random_state=42)
+
+    # Instantiate the transformer
+    transformer = OrthogonalTransformer(normalize=True)
+
+    # Fit the pipeline with the training data
+    transformer.fit(X)
+
+    # Transform the data using the fitted transformer
+    X_transformed = transformer.transform(X)
+    ```
     """
 
     def __init__(self, normalize=False):
         self.normalize = normalize
 
     def fit(self, X, y=None):
-        """
-        Store the inverse of R of the QR decomposition of X, which can be used to calculate the orthogonal projection
-        of X. If normalization is required, also stores a vector with normalization terms
+        """Fit the transformer to the input data by calculating the inverse of R of the QR decomposition of `X`.
+        This can be used to calculate the orthogonal projection of `X`.
+
+        If normalization is required, also stores a vector with normalization terms.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to fit.
+        y : array-like of shape (n_samples,), default=None
+            Ignored, present for compatibility.
+
+        Returns
+        -------
+        self : OrthogonalTransformer
+            The fitted transformer.
         """
         X = check_array(X, estimator=self)
 
@@ -39,7 +83,18 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        """Transforms X using the fitted inverse of R. Normalizes the result if required"""
+        """Transforms `X` using the fitted inverse of R. Normalizes the result if required.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to transform.
+
+        Returns
+        -------
+        array-like of shape (n_samples, n_features)
+            The transformed data.
+        """
         if self.normalize:
             check_is_fitted(self, ["inv_R_", "normalization_vector_"])
         else:
@@ -59,28 +114,47 @@ def vector_projection(vec, unto):
 
 
 class InformationFilter(BaseEstimator, TransformerMixin):
-    """
-    The `InformationFilter` uses a variant of the gram smidt process
-    to filter information out of the dataset. This can be useful if you
-    want to filter information out of a dataset because of fairness.
-    To explain how it works: given a training matrix :math:`X` that contains
-    columns :math:`x_1, ..., x_k`. If we assume columns :math:`x_1` and :math:`x_2`
-    to be the sensitive columns then the information-filter will
-    remove information by applying these transformations;
-    .. math::
-       \\begin{split}
-       v_1 & = x_1 \\\\
-       v_2 & = x_2 - \\frac{x_2 v_1}{v_1 v_1}\\\\
-       v_3 & = x_3 - \\frac{x_k v_1}{v_1 v_1} - \\frac{x_2 v_2}{v_2 v_2}\\\\
-       ... \\\\
-       v_k & = x_k - \\frac{x_k v_1}{v_1 v_1} - \\frac{x_2 v_2}{v_2 v_2}
-       \\end{split}
-    Concatenating our vectors (but removing the sensitive ones) gives us
-    a new training matrix :math:`X_{fair} =  [v_3, ..., v_k]`.
-    :param columns: the columns to filter out this can be a sequence of either int
-                    (in the case of numpy) or string (in the case of pandas).
-    :param alpha: parameter to control how much to filter, for alpha=1 we filter out
-                  all information while for alpha=0 we don't apply any.
+    r"""The `InformationFilter` transformer uses a variant of the
+    [Gram-Schmidt process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process) to filter information out of the
+    dataset.
+
+    This can be useful if you want to filter information out of a dataset because of fairness.
+
+    To explain how it works: given a training matrix $X$ that contains columns $x_1, ..., x_k$.
+    If we assume columns $x_1$ and $x_2$ to be the _sensitive_ columns then the information-filter will remove
+    information by applying these transformations:
+
+    $$\begin{split}
+       v_1 & = x_1 \\
+       v_2 & = x_2 - \frac{x_2 v_1}{v_1 v_1} \\
+       v_3 & = x_3 - \frac{x_k v_1}{v_1 v_1} - \frac{x_2 v_2}{v_2 v_2} \\
+           & ... \\
+       v_k & = x_k - \frac{x_k v_1}{v_1 v_1} - \frac{x_2 v_2}{v_2 v_2}
+       \end{split}$$
+
+    Concatenating our vectors (but removing the sensitive ones) gives us a new training matrix
+
+    $$X_{fair} = [v_3, ..., v_k]$$
+
+    Parameters
+    ----------
+    columns : int | str | Sequence[int] | Sequence[str]
+        The columns to filter out. This can be a sequence of either int (in the case of numpy) or string
+        (in the case of pandas).
+    alpha : float, default=1.0
+        Parameter to control how much to filter:
+
+        - `alpha=1` we filter out all information.
+        - `alpha=0` we don't apply any filtering.
+
+        Should be between 0 and 1.
+
+    Attributes
+    ----------
+    projection_ : array-like of shape (n_features, n_features)
+        The projection matrix that can be used to filter information out of a dataset.
+    col_ids_ : List[int] of length `len(columns)`
+        The list of column ids of the sensitive columns.
     """
 
     def __init__(self, columns, alpha=1):
@@ -88,31 +162,28 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         self.alpha = alpha
 
     def _check_coltype(self, X):
+        """Check if the `columns` type(s) are compatible with `X` type."""
         for col in as_list(self.columns):
             if isinstance(col, str):
                 if isinstance(X, np.ndarray):
-                    raise ValueError(
-                        f"column {col} is a string but datatype receive is numpy."
-                    )
+                    raise ValueError(f"column {col} is a string but datatype receive is numpy.")
                 if isinstance(X, pd.DataFrame):
                     if col not in X.columns:
                         raise ValueError(f"column {col} is not in {X.columns}")
             if isinstance(col, int):
                 if col not in range(np.atleast_2d(np.array(X)).shape[1]):
-                    raise ValueError(
-                        f"column {col} is out of bounds for input shape {X.shape}"
-                    )
+                    raise ValueError(f"column {col} is out of bounds for input shape {X.shape}")
 
     def _col_idx(self, X, name):
+        """Get the column index of a column name."""
         if isinstance(name, str):
             if isinstance(X, np.ndarray):
-                raise ValueError(
-                    "You cannot have a column of type string on a numpy input matrix."
-                )
+                raise ValueError("You cannot have a column of type string on a numpy input matrix.")
             return {name: i for i, name in enumerate(X.columns)}[name]
         return name
 
     def _make_v_vectors(self, X, col_ids):
+        """Make the v vectors that we will use to filter out information."""
         vs = np.zeros((X.shape[0], len(col_ids)))
         for i, c in enumerate(col_ids):
             vs[:, i] = X[:, col_ids[i]]
@@ -121,12 +192,28 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         return vs
 
     def fit(self, X, y=None):
-        """Learn the projection required to make the dataset orthogonal to sensitive columns."""
+        """Fit the transformer by learning the projection required to make the dataset orthogonal to sensitive
+        columns.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to fit.
+        y : array-like of shape (n_samples,), default=None
+            Ignored, present for compatibility.
+
+        Returns
+        -------
+        self : InformationFilter
+            The fitted transformer.
+
+        Raises
+        ------
+        ValueError
+            If `columns` type(s) are incompatible with input data `X` type.
+        """
         self._check_coltype(X)
-        self.col_ids_ = [
-            v if isinstance(v, int) else self._col_idx(X, v)
-            for v in as_list(self.columns)
-        ]
+        self.col_ids_ = [v if isinstance(v, int) else self._col_idx(X, v) for v in as_list(self.columns)]
         X = check_array(X, estimator=self)
         X_fair = X.copy()
         v_vectors = self._make_v_vectors(X, self.col_ids_)
@@ -140,7 +227,23 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        """Transforms X by applying the information filter."""
+        """Transforms `X` by applying the information filter.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to transform.
+
+        Returns
+        -------
+        array-like of shape (n_samples, n_features)
+            The transformed data.
+
+        Raises
+        ------
+        ValueError
+            If `columns` type(s) are incompatible with input data `X` type.
+        """
         check_is_fitted(self, ["projection_", "col_ids_"])
         self._check_coltype(X)
         X = check_array(X, estimator=self)
@@ -148,6 +251,4 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         X_fair = X @ self.projection_
         X_removed = np.delete(X_fair, self.col_ids_, axis=1)
         X_orig = np.delete(X, self.col_ids_, axis=1)
-        return self.alpha * np.atleast_2d(X_removed) + (1 - self.alpha) * np.atleast_2d(
-            X_orig
-        )
+        return self.alpha * np.atleast_2d(X_removed) + (1 - self.alpha) * np.atleast_2d(X_orig)

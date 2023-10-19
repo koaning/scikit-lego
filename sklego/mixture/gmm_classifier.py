@@ -4,10 +4,27 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import GaussianMixture
 from sklearn.utils import check_X_y
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
+from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
 
 
 class GMMClassifier(BaseEstimator, ClassifierMixin):
+    """The `GMMClassifier` trains a Gaussian Mixture Model for each class in `y` on a dataset `X`. Once a density is
+    trained for each class we can evaluate the likelihood scores to see which class is more likely.
+
+    All parameters of the model are an exact copy of the parameters in scikit-learn.
+
+    !!! note
+        All the parameters are an exact copy of those of
+        [sklearn.mixture.GaussianMixture]( https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html).
+
+    Attributes
+    ----------
+    gmms_ : dict[int, GaussianMixture]
+        A dictionary of Gaussian Mixture Models, one for each class.
+    classes_ : np.ndarray of shape (n_classes,)
+        The classes seen during `fit`.
+    """
+
     def __init__(
         self,
         n_components=1,
@@ -25,11 +42,6 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         verbose=0,
         verbose_interval=10,
     ):
-        """
-        The GMMClassifier trains a Gaussian Mixture Model for each class in y on a dataset X. Once
-        a density is trained for each class we can evaluate the likelihood scores to see which class
-        is more likely. All parameters of the model are an exact copy of the parameters in scikit-learn.
-        """
         self.n_components = n_components
         self.covariance_type = covariance_type
         self.tol = tol
@@ -45,13 +57,20 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         self.verbose = verbose
         self.verbose_interval = verbose_interval
 
-    def fit(self, X: np.array, y: np.array) -> "GMMClassifier":
-        """
-        Fit the model using X, y as training data.
+    def fit(self, X: np.ndarray, y: np.ndarray) -> "GMMClassifier":
+        """Fit the `GMMClassifier` model using `X`, `y` as training data.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :param y: array-like, shape=(n_samples, ) training data.
-        :return: Returns an instance of self.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            The training data.
+        y : array-like of shape (n_samples,)
+            The target values.
+
+        Returns
+        -------
+        self : GMMClassifier
+            The fitted estimator.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         if X.ndim == 1:
@@ -81,11 +100,35 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
+        """Predict labels for `X` using fitted estimator.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted data.
+        """
         check_is_fitted(self, ["gmms_", "classes_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     def predict_proba(self, X):
+        """Predict probabilities for `X` using fitted estimator.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples, n_classes)
+            The predicted probabilities.
+        """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["gmms_", "classes_"])
         res = np.zeros((X.shape[0], self.classes_.shape[0]))

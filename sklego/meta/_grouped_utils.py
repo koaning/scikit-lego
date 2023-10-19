@@ -10,8 +10,7 @@ from sklego.common import as_list
 
 
 def constant_shrinkage(group_sizes: list, alpha: float) -> np.ndarray:
-    r"""
-    The augmented prediction for each level is the weighted average between its prediction and the augmented
+    r"""The augmented prediction for each level is the weighted average between its prediction and the augmented
     prediction for its parent.
 
     Let $\hat{y}_i$ be the prediction at level $i$, with $i=0$ being the root, than the augmented prediction
@@ -19,10 +18,7 @@ def constant_shrinkage(group_sizes: list, alpha: float) -> np.ndarray:
     """
     return np.array(
         [alpha ** (len(group_sizes) - 1)]
-        + [
-            alpha ** (len(group_sizes) - 1 - i) * (1 - alpha)
-            for i in range(1, len(group_sizes) - 1)
-        ]
+        + [alpha ** (len(group_sizes) - 1 - i) * (1 - alpha) for i in range(1, len(group_sizes) - 1)]
         + [(1 - alpha)]
     )
 
@@ -35,9 +31,7 @@ def relative_shrinkage(group_sizes: list) -> np.ndarray:
 def min_n_obs_shrinkage(group_sizes: list, min_n_obs) -> np.ndarray:
     """Use only the smallest group with a certain amount of observations"""
     if min_n_obs > max(group_sizes):
-        raise ValueError(
-            f"There is no group with size greater than or equal to {min_n_obs}"
-        )
+        raise ValueError(f"There is no group with size greater than or equal to {min_n_obs}")
 
     res = np.zeros(len(group_sizes))
     res[np.argmin(np.array(group_sizes) >= min_n_obs) - 1] = 1
@@ -79,14 +73,10 @@ def _data_format_checks(X, name):
 def _shape_check(X, min_value_cols):
     if min_value_cols > 1:
         if X.ndim == 1 or X.shape[1] < 2:
-            raise ValueError(
-                f"0 feature(s) (shape={X.shape}) while a minimum of {min_value_cols} is required."
-            )
+            raise ValueError(f"0 feature(s) (shape={X.shape}) while a minimum of {min_value_cols} is required.")
     else:
         if X.ndim == 2 and X.shape[1] < 1:
-            raise ValueError(
-                f"0 feature(s) (shape={X.shape}) while a minimum of {min_value_cols} is required."
-            )
+            raise ValueError(f"0 feature(s) (shape={X.shape}) while a minimum of {min_value_cols} is required.")
 
 
 def _check_grouping_columns(X_group, **kwargs) -> pd.DataFrame:

@@ -1,35 +1,36 @@
-from sklearn.base import (
-    BaseEstimator,
-    ClassifierMixin,
-    MetaEstimatorMixin,
-)
+from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import (
-    check_is_fitted,
-    check_X_y,
-    check_array,
-    FLOAT_DTYPES,
-)
+from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted, check_X_y
 
 from sklego.base import ProbabilisticClassifier
 
 
 class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
-    """
-    The ConfusionBalancer attempts to give it's child estimator a more balanced
-    output by learning from the confusion matrix during training. The idea is that
-    the confusion matrix calculates P(C_i | M_i) where C_i is the actual class and
-    M_i is the class that the underlying model gives. We use these probabilities to
-    attempt a more balanced prediction by averaging the correction from the confusion
-    matrix with the original probabilities.
+    r"""The `ConfusionBalancer` estimator attempts to give it's child estimator a more balanced output by learning from
+    the confusion matrix during training.
 
-    .. math::
-        p(\text{class_j}) = \alpha p(\text{model}_j) + (1-\alpha) p(\text{class_j} | \text{model}_j) p(\text{model}_j)
+    The idea is that the confusion matrix calculates $P(C_i | M_i)$ where $C_i$ is the actual class and $M_i$ is the
+    class that the underlying model gives. We use these probabilities to attempt a more balanced prediction by averaging
+    the correction from the confusion matrix with the original probabilities.
 
-    :param model: a scikit learn compatible classification model that has predict_proba
-    :param alpha: a hyperparameter between 0 and 1, determines how much to apply smoothing
-    :param cfm_smooth: a smoothing parameter for the confusion matrices to ensure zeros don't exist
+    $$P(\text{class_j}) = \alpha P(\text{model}_j) + (1-\alpha) P(\text{class_j} | \text{model}_j) P(\text{model}_j)$$
+
+    Parameters
+    ----------
+    estimator : scikit-learn compatible classifier
+        The estimator to be wrapped, it must implement a `predict_proba` method.
+    alpha : float, default=0.5
+        Hyperparameter which determines how much smoothing to apply. Must be between 0 and 1.
+    cfm_smooth : float, default=0
+        Smoothing parameter for the confusion matrices to ensure zeros don't exist.
+
+    Attributes
+    ----------
+    classes_ : array-like of shape (n_classes,)
+        The target class labels.
+    cfm_ : array-like of shape (n_classes, n_classes)
+        The confusion matrix used for the correction.
     """
 
     def __init__(self, estimator, alpha: float = 0.5, cfm_smooth=0):
@@ -38,13 +39,27 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         self.cfm_smooth = cfm_smooth
 
     def fit(self, X, y):
-        """
-        Fit the data.
+        """Fit the underlying estimator on the training data `X` and `y`, it calculates the confusion matrix,
+        normalizes it and stores it for later use.
 
-        :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :param y: array-like, shape=(n_samples,) training data.
-        :return: Returns an instance of self.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : array-like of shape (n_samples,)
+            Target values.
+
+        Returns
+        -------
+        self : ConfusionBalancer
+            The fitted estimator.
+
+        Raises
+        ------
+        ValueError
+            If the underlying estimator does not have a `predict_proba` method.
         """
+
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
         if not isinstance(self.estimator, ProbabilisticClassifier):
             raise ValueError(
@@ -57,22 +72,35 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         return self
 
     def predict_proba(self, X):
-        """
-        Predict new data, with probabilities
+        """Predict probabilities for new data `X` using the underlying estimator and then applying the confusion matrix
+        correction.
 
-        :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :return: array, shape=(n_samples, n_classes) the predicted data
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples, n_classes)
+            The predicted values.
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         preds = self.estimator.predict_proba(X)
         return (1 - self.alpha) * preds + self.alpha * preds @ self.cfm_
 
     def predict(self, X):
-        """
-        Predict new data.
+        """Predict most likely class for new data `X` using the underlying estimator.
 
-        :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :return: array, shape=(n_samples,) the predicted data
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted values.
         """
         check_is_fitted(self, ["cfm_", "classes_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)

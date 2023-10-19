@@ -1,8 +1,8 @@
 import itertools as it
 from copy import copy
 
-from sklearn.utils._testing import ignore_warnings
 from sklearn.datasets import make_classification, make_regression
+from sklearn.utils._testing import ignore_warnings
 
 
 @ignore_warnings(category=(DeprecationWarning, FutureWarning))
