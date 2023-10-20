@@ -29,7 +29,5 @@ def test_values_uniform(dataset, mod):
         pytest.skip("Constant effect")
     X, y = dataset
     coefs = mod.fit(X, y).coefs_
-    print(np.mean(np.abs(y - mod.predict(X))))
-    print(coefs)
     assert coefs[0] == pytest.approx(3.1, abs=0.2)
     assert coefs[1] == pytest.approx(2.0, abs=0.2)

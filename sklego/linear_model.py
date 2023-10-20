@@ -136,12 +136,10 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         threshold=0.3,
         relative=False,
         effect="linear",
-        check_grad=False,
     ):
         self.threshold = threshold
         self.relative = relative
         self.effect = effect
-        self.check_grad = check_grad
         self.allowed_effects = ("linear", "quadratic", "constant")
 
     def fit(self, X, y):
