@@ -157,7 +157,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             raise ValueError(f"effect {self.effect} must be in {self.allowed_effects}")
 
         def deadzone(errors):
-             
+
             if self.effect == "constant":
                 error_weight = errors.shape[0]
             elif self.effect == "linear":
@@ -174,7 +174,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
 
             if self.relative:
                 errors /= y
-            
+
             loss = np.mean(deadzone(errors))
             return loss
 
@@ -196,7 +196,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
 
             if self.relative:
                 errors /= y
-            
+
             loss_derivative = deadzone_derivative(errors)
             errors_derivative = np.sign(prediction - y)
 
@@ -211,7 +211,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
 
         minimize_result = minimize(
             training_loss,
-            x0=np.zeros(n_features_), # np.random.normal(0, 1, n_features_)
+            x0=np.zeros(n_features_),  # np.random.normal(0, 1, n_features_)
             tol=1e-20,
             jac=training_loss_derivative
         )
