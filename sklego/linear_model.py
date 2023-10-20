@@ -171,7 +171,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             errors = np.abs(prediction - y)
 
             if self.relative:
-                errors /= y
+                errors /= np.abs(y)
 
             loss = np.mean(deadzone(errors))
             return loss
