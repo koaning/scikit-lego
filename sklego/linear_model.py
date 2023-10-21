@@ -7,10 +7,8 @@ except ImportError:
 
 from abc import ABC, abstractmethod
 
-import autograd.numpy as np
+import numpy as np
 import pandas as pd
-from autograd import grad
-from autograd.test_util import check_grads
 from deprecated.sphinx import deprecated
 from scipy.optimize import minimize
 from scipy.special._ufuncs import expit
@@ -138,21 +136,11 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         threshold=0.3,
         relative=False,
         effect="linear",
-        n_iter=2000,
-        stepsize=0.01,
-        check_grad=False,
     ):
         self.threshold = threshold
         self.relative = relative
         self.effect = effect
-        self.n_iter = n_iter
-        self.stepsize = stepsize
-        self.check_grad = check_grad
         self.allowed_effects = ("linear", "quadratic", "constant")
-        self.loss_log_ = None
-        self.wts_log_ = None
-        self.deriv_log_ = None
-        self.coefs_ = None
 
     def fit(self, X, y):
         """
@@ -167,39 +155,67 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             raise ValueError(f"effect {self.effect} must be in {self.allowed_effects}")
 
         def deadzone(errors):
-            if self.effect == "linear":
-                return np.where(errors > self.threshold, errors, np.zeros(errors.shape))
-            if self.effect == "quadratic":
-                return np.where(
-                    errors > self.threshold, errors**2, np.zeros(errors.shape)
-                )
+
+            if self.effect == "constant":
+                error_weight = errors.shape[0]
+            elif self.effect == "linear":
+                error_weight = errors
+            elif self.effect == "quadratic":
+                error_weight = errors**2
+
+            return np.where(errors > self.threshold, error_weight, 0.0)
 
         def training_loss(weights):
-            diff = np.abs(np.dot(X, weights) - y)
+
+            prediction = np.dot(X, weights)
+            errors = np.abs(prediction - y)
+
             if self.relative:
-                diff = diff / y
-            return np.mean(deadzone(diff))
+                errors /= np.abs(y)
 
-        n, k = X.shape
+            loss = np.mean(deadzone(errors))
+            return loss
 
-        # Build a function that returns gradients of training loss using autograd.
-        training_gradient_fun = grad(training_loss)
+        def deadzone_derivative(errors):
 
-        # Check the gradients numerically, just to be safe.
-        weights = np.random.normal(0, 1, k)
-        if self.check_grad:
-            check_grads(training_loss, modes=["rev"])(weights)
+            if self.effect == "constant":
+                error_weight = 0.0
+            elif self.effect == "linear":
+                error_weight = 1.0
+            elif self.effect == "quadratic":
+                error_weight = 2 * errors
 
-        # Optimize weights using gradient descent.
-        self.loss_log_ = np.zeros(self.n_iter)
-        self.wts_log_ = np.zeros((self.n_iter, k))
-        self.deriv_log_ = np.zeros((self.n_iter, k))
-        for i in range(self.n_iter):
-            weights -= training_gradient_fun(weights) * self.stepsize
-            self.wts_log_[i, :] = weights.ravel()
-            self.loss_log_[i] = training_loss(weights)
-            self.deriv_log_[i, :] = training_gradient_fun(weights).ravel()
-        self.coefs_ = weights
+            return np.where(errors > self.threshold, error_weight, 0.0)
+
+        def training_loss_derivative(weights):
+
+            prediction = np.dot(X, weights)
+            errors = np.abs(prediction - y)
+
+            if self.relative:
+                errors /= np.abs(y)
+
+            loss_derivative = deadzone_derivative(errors)
+            errors_derivative = np.sign(prediction - y)
+
+            if self.relative:
+                errors_derivative /= np.abs(y)
+
+            derivative = np.dot(errors_derivative * loss_derivative, X)/X.shape[0]
+
+            return derivative
+
+        _, n_features_ = X.shape
+
+        minimize_result = minimize(
+            training_loss,
+            x0=np.zeros(n_features_),  # np.random.normal(0, 1, n_features_)
+            tol=1e-20,
+            jac=training_loss_derivative
+        )
+
+        self.convergence_status_ = minimize_result.message
+        self.coefs_ = minimize_result.x
         return self
 
     def predict(self, X):

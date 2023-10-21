@@ -14,18 +14,19 @@ def dataset():
     return inputs, targets
 
 
-@pytest.fixture(scope="module", params=["linear", "quadratic"])
+@pytest.fixture(scope="module", params=["constant", "linear", "quadratic"])
 def mod(request):
-    return DeadZoneRegressor(effect=request.param, n_iter=1000)
+    return DeadZoneRegressor(effect=request.param, threshold=0.3)
 
 
 @pytest.mark.parametrize("test_fn", [check_shape_remains_same_regressor])
 def test_deadzone(test_fn):
-    regr = DeadZoneRegressor(n_iter=10)
+    regr = DeadZoneRegressor()
     test_fn(DeadZoneRegressor.__name__, regr)
 
-
 def test_values_uniform(dataset, mod):
+    if mod.effect == "constant":
+        pytest.skip("Constant effect")
     X, y = dataset
     coefs = mod.fit(X, y).coefs_
     assert coefs[0] == pytest.approx(3.1, abs=0.2)

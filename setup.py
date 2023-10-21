@@ -7,7 +7,6 @@ base_packages = [
     "scikit-learn>=1.0",
     "pandas>=1.1.5",
     "patsy>=0.5.1",
-    "autograd>=1.2",
     "Deprecated>=1.2.6",
     "umap-learn>=0.4.6"
 ]
