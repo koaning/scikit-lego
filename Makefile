@@ -24,8 +24,8 @@ precommit:
 	pre-commit run
 
 docs:
-	rm -rf doc/.ipynb_checkpoints
-	sphinx-build -a -E doc docs
+	pip install -e ".[docs]"
+	mkdocs serve
 
 docs-deploy: docs
 	netlify deploy --dir=docs --prod
