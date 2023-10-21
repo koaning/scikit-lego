@@ -193,13 +193,13 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             errors = np.abs(prediction - y)
 
             if self.relative:
-                errors /= y
+                errors /= np.abs(y)
 
             loss_derivative = deadzone_derivative(errors)
             errors_derivative = np.sign(prediction - y)
 
             if self.relative:
-                errors_derivative /= y
+                errors_derivative /= np.abs(y)
 
             derivative = np.dot(errors_derivative * loss_derivative, X)/X.shape[0]
 
