@@ -162,3 +162,12 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
             DeprecationWarning,
         )
         return self.n_features_in_
+
+    @property
+    def allowed_methods(self):
+        warn(
+            "Please use `_ALLOWED_METHODS` instead of `allowed_methods`,"
+            "`allowed_methods` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self._ALLOWED_METHODS

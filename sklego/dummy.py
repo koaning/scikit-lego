@@ -77,3 +77,12 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
             DeprecationWarning,
         )
         return self.n_features_in_
+
+    @property
+    def allowed_strategies(self):
+        warn(
+            "Please use `_ALLOWED_STRATEGIES` instead of `allowed_strategies`,"
+            "`allowed_strategies` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self._ALLOWED_STRATEGIES

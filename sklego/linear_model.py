@@ -244,6 +244,15 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         )
         return self.coef_
 
+    @property
+    def allowed_effects(self):
+        warn(
+            "Please use `_ALLOWED_EFFECTS` instead of `allowed_effects`,"
+            "`allowed_effects` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self._ALLOWED_EFFECTS
+
 
 class _FairClassifier(BaseEstimator, LinearClassifierMixin):
     def __init__(
