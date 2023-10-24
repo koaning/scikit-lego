@@ -24,6 +24,8 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
     numbers of standard deviations before calling something an outlier.
     """
 
+    _ALLOWED_METHODS = ("quantile", "stddev")
+
     def __init__(
         self,
         threshold=0.99,
@@ -46,7 +48,6 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         self.threshold = threshold
         self.method = method
         self.random_state = random_state
-        self.allowed_methods = ["quantile", "stddev"]
         self.n_components = n_components
         self.covariance_type = covariance_type
         self.tol = tol
@@ -86,9 +87,9 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
             raise ValueError(
                 f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold "
             )
-        if self.method not in self.allowed_methods:
+        if self.method not in self._ALLOWED_METHODS:
             raise ValueError(
-                f"Method not recognised. Method must be in {self.allowed_methods}"
+                f"Method not recognised. Method must be in {self._ALLOWED_METHODS}"
             )
 
         self.gmm_ = GaussianMixture(

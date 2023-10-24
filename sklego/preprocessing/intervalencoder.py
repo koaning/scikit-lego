@@ -5,6 +5,8 @@ except ImportError:
 
     cp = NotInstalledPackage("cvxpy")
 
+from warnings import warn
+
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array, check_X_y
@@ -84,6 +86,8 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
     "increasing" or "decreasing".
     """
 
+    _ALLOWED_METHODS = ("average", "normal", "increasing", "decreasing")
+
     def __init__(self, n_chunks=10, span=1, method="normal"):
         self.span = span
         self.method = method
@@ -91,10 +95,10 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
 
     def fit(self, X, y):
         """Fits the estimator"""
-        allowed_methods = ["average", "normal", "increasing", "decreasing"]
-        if self.method not in allowed_methods:
+
+        if self.method not in self._ALLOWED_METHODS:
             raise ValueError(
-                f"`method` must be in {allowed_methods}, got `{self.method}`"
+                f"`method` must be in {self._ALLOWED_METHODS}, got `{self.method}`"
             )
         if self.n_chunks <= 0:
             raise ValueError(f"`n_chunks` must be >= 1, received {self.n_chunks}")
@@ -113,7 +117,7 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         self.quantiles_ = np.zeros((X.shape[1], self.n_chunks))
         # heights indicate what heights these intervals will have
         self.heights_ = np.zeros((X.shape[1], self.n_chunks))
-        self.num_cols_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
 
         average_func = (
             _mk_average
@@ -138,11 +142,11 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         """
         Transform each column such that it is bends smoothly towards y.
         """
-        check_is_fitted(self, ["quantiles_", "heights_", "num_cols_"])
+        check_is_fitted(self, ["quantiles_", "heights_", "n_features_in_"])
         X = check_array(X, estimator=self)
-        if X.shape[1] != self.num_cols_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError(
-                f"fitted on {self.num_cols_} features but received {X.shape[1]}"
+                f"fitted on {self.n_features_in_} features but received {X.shape[1]}"
             )
         transformed = np.zeros(X.shape)
         for col in range(transformed.shape[1]):
@@ -150,3 +154,11 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
                 X[:, col], self.quantiles_[col, :], self.heights_[col, :]
             )
         return transformed
+
+    @property
+    def num_cols_(self):
+        warn(
+            "Please use `n_features_in_` instead of `num_cols_`, `num_cols_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_

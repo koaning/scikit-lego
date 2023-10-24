@@ -24,7 +24,12 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
 
         # check the number of observations hasn't changed. This ought not to
         # be necessary given NA_action='raise' above but just to be safe
-        assert np.array(X_).shape[0] == np.array(X).shape[0]
+        if np.asarray(X_).shape[0] != np.asarray(X).shape[0]:
+            raise RuntimeError(
+                "Number of observations has changed during fit. "
+                "This is likely because some rows have been removed "
+                "due to NA values."
+            )
         self.design_info_ = X_.design_info
         return self
 

@@ -29,6 +29,8 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
     https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html.
     """
 
+    _ALLOWED_METHODS = ("quantile", "stddev")
+
     def __init__(
         self,
         threshold=0.99,
@@ -53,7 +55,6 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
     ):
         self.threshold = threshold
         self.method = method
-        self.allowed_methods = ["quantile", "stddev"]
 
         self.n_components = n_components
         self.covariance_type = covariance_type
@@ -97,9 +98,9 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
             raise ValueError(
                 f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold "
             )
-        if self.method not in self.allowed_methods:
+        if self.method not in self._ALLOWED_METHODS:
             raise ValueError(
-                f"Method not recognised. Method must be in {self.allowed_methods}"
+                f"Method not recognised. Method must be in {self._ALLOWED_METHODS}"
             )
 
         self.gmm_ = BayesianGaussianMixture(

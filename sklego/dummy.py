@@ -1,3 +1,5 @@
+from warnings import warn
+
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils import check_X_y
@@ -19,10 +21,11 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
     :param int seed: the seed value, default: 42
     """
 
+    _ALLOWED_STRATEGIES = ("uniform", "normal")
+
     def __init__(self, strategy="uniform", random_state=None):
-        self.allowed_strategies = ("uniform", "normal")
-        self.random_state = random_state
         self.strategy = strategy
+        self.random_state = random_state
 
     def fit(self, X: np.array, y: np.array) -> "RandomRegressor":
         """
@@ -32,12 +35,12 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         :param y: array-like, shape=(n_samples,) training data.
         :return: Returns an instance of self.
         """
-        if self.strategy not in self.allowed_strategies:
+        if self.strategy not in self._ALLOWED_STRATEGIES:
             raise ValueError(
-                f"strategy {self.strategy} is not in {self.allowed_strategies}"
+                f"strategy {self.strategy} is not in {self._ALLOWED_STRATEGIES}"
             )
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        self.dim_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
 
         self.min_ = np.min(y)
         self.max_ = np.max(y)
@@ -54,10 +57,10 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         :return: array, shape=(n_samples,) the predicted data
         """
         rs = check_random_state(self.random_state)
-        check_is_fitted(self, ["dim_", "min_", "max_", "mu_", "sigma_"])
+        check_is_fitted(self, ["n_features_in_", "min_", "max_", "mu_", "sigma_"])
 
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        if X.shape[1] != self.dim_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError(
                 f"Unexpected input dimension {X.shape[1]}, expected {self.dim_}"
             )
@@ -66,3 +69,11 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
             return rs.normal(self.mu_, self.sigma_, X.shape[0])
         if self.strategy == "uniform":
             return rs.uniform(self.min_, self.max_, X.shape[0])
+
+    @property
+    def dim_(self):
+        warn(
+            "Please use `n_features_in_` instead of `dim_`, `dim_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_
