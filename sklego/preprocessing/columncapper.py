@@ -1,3 +1,5 @@
+from warnings import warn
+
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
@@ -124,7 +126,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         )
 
         # Saving the number of columns to ensure coherence between fit and transform inputs
-        self.n_columns_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -151,7 +153,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             estimator=self,
         )
 
-        if X.shape[1] != self.n_columns_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError(
                 "X must have the same number of columns in fit and transform"
             )
@@ -202,3 +204,11 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
                     ", ".join(allowed_interpolations)
                 )
             )
+
+    @property
+    def n_columns_(self):
+        warn(
+            "Please use `n_features_in_` instead of `n_columns_`, `n_columns_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_

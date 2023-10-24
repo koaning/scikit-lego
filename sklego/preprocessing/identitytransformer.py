@@ -1,3 +1,5 @@
+from warnings import warn
+
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from sklearn.utils import check_array
@@ -15,24 +17,29 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
                     If disabled, the model/pipeline is expected to handle e.g. missing,
                     non-numeric, or non-finite values.
     """
-    def __init__(
-        self,
-        check_X: bool = False
-    ):
+
+    def __init__(self, check_X: bool = False):
         self.check_X = check_X
 
     def fit(self, X, y=None):
         """'Fits' the estimator."""
         if self.check_X:
             X = check_array(X, copy=True, estimator=self)
-        self.shape_ = X.shape
+        self.n_samples_, self.n_features_in_ = X.shape
         return self
 
     def transform(self, X):
         """'Applies' the estimator."""
         if self.check_X:
             X = check_array(X, copy=True, estimator=self)
-        check_is_fitted(self, 'shape_')
-        if X.shape[1] != self.shape_[1]:
-            raise ValueError(f"Wrong shape is passed to transform. Trained on {self.shape_[1]} cols got {X.shape[1]}")
+        check_is_fitted(self, "n_features_in_")
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(
+                f"Wrong shape is passed to transform. Trained on {self.n_features_in_} cols got {X.shape[1]}"
+            )
         return X
+
+    @property
+    def shape_(self):
+        """Returns the shape of the estimator."""
+        return (self.n_samples_, self.n_features_in_)

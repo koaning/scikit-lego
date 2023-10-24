@@ -6,6 +6,7 @@ except ImportError:
     cp = NotInstalledPackage("cvxpy")
 
 from abc import ABC, abstractmethod
+from warnings import warn
 
 import numpy as np
 import pandas as pd
@@ -59,9 +60,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         return self
 
     def _calc_wts(self, x_i):
-        distances = np.array(
-            [np.linalg.norm(self.X_[i, :] - x_i) for i in range(self.X_.shape[0])]
-        )
+        distances = np.linalg.norm(self.X_ - x_i, axis=1)
         weights = np.exp(-(distances**2) / self.sigma)
         if self.span:
             weights = weights * (distances <= np.quantile(distances, q=self.span))
@@ -76,9 +75,10 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["X_", "y_"])
-        results = np.zeros(X.shape[0])
-        for idx in range(X.shape[0]):
-            results[idx] = np.average(self.y_, weights=self._calc_wts(x_i=X[idx, :]))
+
+        results = np.stack(
+            [np.average(self.y_, weights=self._calc_wts(x_i=x_i)) for x_i in X]
+        )
         return results
 
 
@@ -115,7 +115,9 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         # Solve the problem.
         prob = cp.Problem(objective, constraints)
         prob.solve()
-        self.coefs_ = betas.value
+        self.coef_ = betas.value
+        self.n_features_in_ = X.shape[1]
+
         return self
 
     def predict(self, X):
@@ -126,11 +128,21 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         :return: Returns an array of predictions shape=(n_samples,)
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ["coefs_"])
-        return np.dot(X, self.coefs_)
+        check_is_fitted(self, ["coef_"])
+        return np.dot(X, self.coef_)
+
+    @property
+    def coefs_(self):
+        warn(
+            "Please use `coef_` instead of `coefs_`, `coefs_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.coef_
 
 
 class DeadZoneRegressor(BaseEstimator, RegressorMixin):
+    _ALLOWED_EFFECTS = ("linear", "quadratic", "constant")
+
     def __init__(
         self,
         threshold=0.3,
@@ -140,7 +152,6 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         self.threshold = threshold
         self.relative = relative
         self.effect = effect
-        self.allowed_effects = ("linear", "quadratic", "constant")
 
     def fit(self, X, y):
         """
@@ -151,11 +162,10 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         :return: Returns an instance of self.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        if self.effect not in self.allowed_effects:
-            raise ValueError(f"effect {self.effect} must be in {self.allowed_effects}")
+        if self.effect not in self._ALLOWED_EFFECTS:
+            raise ValueError(f"effect {self.effect} must be in {self._ALLOWED_EFFECTS}")
 
         def deadzone(errors):
-
             if self.effect == "constant":
                 error_weight = errors.shape[0]
             elif self.effect == "linear":
@@ -166,7 +176,6 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             return np.where(errors > self.threshold, error_weight, 0.0)
 
         def training_loss(weights):
-
             prediction = np.dot(X, weights)
             errors = np.abs(prediction - y)
 
@@ -177,7 +186,6 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             return loss
 
         def deadzone_derivative(errors):
-
             if self.effect == "constant":
                 error_weight = 0.0
             elif self.effect == "linear":
@@ -188,7 +196,6 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             return np.where(errors > self.threshold, error_weight, 0.0)
 
         def training_loss_derivative(weights):
-
             prediction = np.dot(X, weights)
             errors = np.abs(prediction - y)
 
@@ -201,21 +208,21 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             if self.relative:
                 errors_derivative /= np.abs(y)
 
-            derivative = np.dot(errors_derivative * loss_derivative, X)/X.shape[0]
+            derivative = np.dot(errors_derivative * loss_derivative, X) / X.shape[0]
 
             return derivative
 
-        _, n_features_ = X.shape
+        self.n_features_in_ = X.shape[1]
 
         minimize_result = minimize(
             training_loss,
-            x0=np.zeros(n_features_),  # np.random.normal(0, 1, n_features_)
+            x0=np.zeros(self.n_features_in_),  # np.random.normal(0, 1, n_features_)
             tol=1e-20,
-            jac=training_loss_derivative
+            jac=training_loss_derivative,
         )
 
         self.convergence_status_ = minimize_result.message
-        self.coefs_ = minimize_result.x
+        self.coef_ = minimize_result.x
         return self
 
     def predict(self, X):
@@ -226,8 +233,25 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         :return: Returns an array of predictions shape=(n_samples,)
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ["coefs_"])
-        return np.dot(X, self.coefs_)
+        check_is_fitted(self, ["coef_"])
+        return np.dot(X, self.coef_)
+
+    @property
+    def coefs_(self):
+        warn(
+            "Please use `coef_` instead of `coefs_`, `coefs_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.coef_
+
+    @property
+    def allowed_effects(self):
+        warn(
+            "Please use `_ALLOWED_EFFECTS` instead of `allowed_effects`,"
+            "`allowed_effects` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self._ALLOWED_EFFECTS
 
 
 class _FairClassifier(BaseEstimator, LinearClassifierMixin):

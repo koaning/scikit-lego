@@ -1,3 +1,5 @@
+from warnings import warn
+
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
@@ -37,7 +39,7 @@ class DictMapper(TransformerMixin, BaseEstimator):
             dtype=None,
             ensure_2d=True,
         )
-        self.dim_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         return self
 
     def transform(self, X):
@@ -54,7 +56,7 @@ class DictMapper(TransformerMixin, BaseEstimator):
             ``ValueError`` if the number of columns from ``X`` differs from the
             number of columns when fitting
         """
-        check_is_fitted(self, ["dim_"])
+        check_is_fitted(self, ["n_features_in_"])
         X = check_array(
             X,
             copy=True,
@@ -64,8 +66,16 @@ class DictMapper(TransformerMixin, BaseEstimator):
             ensure_2d=True,
         )
 
-        if X.shape[1] != self.dim_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError(
-                f"number of columns {X.shape[1]} does not match fit size {self.dim_}"
+                f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}"
             )
         return np.vectorize(self.mapper.get, otypes=[int])(X, self.default)
+
+    @property
+    def dim_(self):
+        warn(
+            "Please use `n_features_in_` instead of `dim_`, `dim_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_

@@ -16,7 +16,7 @@ from sklego.common import sliding_window
 class TimeGapSplit:
     """
     Provides train/test indices to split time series data samples.
-    This cross-validation object is a variation of TimeSeriesSplit with the following 
+    This cross-validation object is a variation of TimeSeriesSplit with the following
     differences:
 
     - The splits are made based on datetime duration, instead of number of rows.
@@ -643,14 +643,3 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # create a mapper to set every group to the right group_id
         mapper = dict(zip(df["index"], df["group"]))
         return np.vectorize(mapper.get)(groups)
-
-    def _method_is_fitted(self, X):
-        """
-        :param X: Array to use if the method is fitted
-        :return: True if fitted, else False
-        """
-        try:
-            self.cluster_method.predict(X[0:1, :])
-            return True
-        except NotFittedError:
-            return False
