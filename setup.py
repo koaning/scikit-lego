@@ -8,10 +8,10 @@ base_packages = [
     "pandas>=1.1.5",
     "patsy>=0.5.1",
     "Deprecated>=1.2.6",
-    "umap-learn>=0.4.6"
 ]
 cvxpy_packages = ["cvxpy>=1.1.8"]
-all_packages = cvxpy_packages
+umap_packages = ["umap-learn>=0.4.6"]
+all_packages = cvxpy_packages + umap_packages
 
 docs_packages = [
     "sphinx==4.5.0",
@@ -55,6 +55,7 @@ setup(
     extras_require={
         "base": base_packages,
         "cvxpy": cvxpy_packages,
+        "umap": umap_packages,
         "all": all_packages,
         "docs": docs_packages,
         "dev": dev_packages,

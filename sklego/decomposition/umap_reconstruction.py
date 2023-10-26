@@ -1,5 +1,11 @@
+try:
+    import umap
+except ImportError:
+    from sklego.notinstalled import NotInstalledPackage
+
+    umap = NotInstalledPackage("umap-learn")
+
 import numpy as np
-import umap
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
 
