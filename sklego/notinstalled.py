@@ -1,4 +1,7 @@
-KNOWN_PACKAGES = {"cvxpy": {"version": ">=1.0.24", "extra_name": "cvxpy"}}
+KNOWN_PACKAGES = {
+    "cvxpy": {"version": ">=1.0.24", "extra_name": "cvxpy"},
+    "patsy": {"version": ">=0.5.1", "extra_name": "patsy"},
+}
 
 
 class NotInstalledPackage:
