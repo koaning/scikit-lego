@@ -11,7 +11,8 @@ base_packages = [
 ]
 cvxpy_packages = ["cvxpy>=1.1.8"]
 patsy_packages = ["patsy>=0.5.1"]
-all_packages = cvxpy_packages
+formulaic_packages = ["formulaic>=0.6.0"]
+all_packages = cvxpy_packages + patsy_packages + formulaic_packages
 
 docs_packages = [
     "sphinx==4.5.0",
@@ -56,6 +57,7 @@ setup(
         "base": base_packages,
         "cvxpy": cvxpy_packages,
         "patsy": patsy_packages,
+        "formulaic": formulaic_packages,
         "all": all_packages,
         "docs": docs_packages,
         "dev": dev_packages,

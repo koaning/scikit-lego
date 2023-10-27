@@ -1,5 +1,6 @@
 KNOWN_PACKAGES = {
     "cvxpy": {"version": ">=1.0.24", "extra_name": "cvxpy"},
+    "formulaic": {"version": ">=0.6.0", "extra_name": "formulaic"},
     "patsy": {"version": ">=0.5.1", "extra_name": "patsy"},
 }
 

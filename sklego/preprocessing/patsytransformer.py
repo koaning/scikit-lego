@@ -6,10 +6,16 @@ except ImportError:
     patsy = NotInstalledPackage("patsy")
 
 import numpy as np
+from deprecated import deprecated
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 
+@deprecated(
+    version="0.6.17",
+    reason="Please use `sklego.preprocessing.FormulaicTransformer` instead. "
+    "This object will be removed from the preprocessing submodule in version 0.9.0.",
+)
 class PatsyTransformer(TransformerMixin, BaseEstimator):
     """
     The patsy transformer offers a method to select the right columns
