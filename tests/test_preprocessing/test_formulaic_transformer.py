@@ -1,4 +1,5 @@
 import pytest
+import joblib
 import numpy as np
 import pandas as pd
 from scipy.sparse import spmatrix
@@ -101,3 +102,38 @@ def test_misshape(df):
 
     with pytest.raises(ValueError):
         trf.transform(X_test)
+
+
+@pytest.mark.parametrize(
+    "return_type", ("numpy", "pandas")
+)
+@pytest.mark.parametrize(
+    "formula", (
+        "a + b - 1",
+        "a + np.log(a) + b - 1",
+        "a*b - 1",
+        "a + b + d",
+        "a + b + c + d",
+    )
+)
+def test_pickling(tmp_path, df, return_type, formula):
+
+    df_train, df_test = df[:4], df[4:]
+
+    X_train, y_train = df_train[["a", "b", "c", "d"]], df_train[["e"]].values.ravel()
+    X_test = df_test[["a", "b", "c", "d"]]
+
+    pipe = Pipeline(
+        [
+            ("design", FormulaicTransformer(formula=formula, return_type=return_type)),
+            ("scale", StandardScaler()),
+            ("model", LogisticRegression(solver="lbfgs")),
+        ]
+    )
+
+    _ = pipe.fit(X_train, y_train)
+
+    joblib.dump(pipe, tmp_path/"pipeline.pkl")
+    loaded_pipe = joblib.load(tmp_path/"pipeline.pkl")
+
+    assert loaded_pipe.predict(X_test).shape[0] == X_test.shape[0]
