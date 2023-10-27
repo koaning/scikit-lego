@@ -1,9 +1,21 @@
+try:
+    import patsy
+except ImportError:
+    from sklego.notinstalled import NotInstalledPackage
+
+    patsy = NotInstalledPackage("patsy")
+
 import numpy as np
-from patsy import dmatrix, build_design_matrices, PatsyError
+from deprecated import deprecated
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
 
+@deprecated(
+    version="0.6.17",
+    reason="Please use `sklego.preprocessing.FormulaicTransformer` instead. "
+    "This object will be removed from the preprocessing submodule in version 0.8.0.",
+)
 class PatsyTransformer(TransformerMixin, BaseEstimator):
     """
     The patsy transformer offers a method to select the right columns
@@ -20,7 +32,9 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
 
     def fit(self, X, y=None):
         """Fits the estimator"""
-        X_ = dmatrix(self.formula, X, NA_action="raise", return_type=self.return_type)
+        X_ = patsy.dmatrix(
+            self.formula, X, NA_action="raise", return_type=self.return_type
+        )
 
         # check the number of observations hasn't changed. This ought not to
         # be necessary given NA_action='raise' above but just to be safe
@@ -43,8 +57,8 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self, "design_info_")
         try:
-            return build_design_matrices(
+            return patsy.build_design_matrices(
                 [self.design_info_], X, return_type=self.return_type
             )[0]
-        except PatsyError as e:
+        except patsy.PatsyError as e:
             raise RuntimeError from e
