@@ -6,12 +6,13 @@ import sklego
 base_packages = [
     "scikit-learn>=1.0",
     "pandas>=1.1.5",
-    "patsy>=0.5.1",
     "Deprecated>=1.2.6",
 ]
 cvxpy_packages = ["cvxpy>=1.1.8"]
 umap_packages = ["umap-learn>=0.4.6"]
-all_packages = cvxpy_packages + umap_packages
+patsy_packages = ["patsy>=0.5.1"]
+formulaic_packages = ["formulaic>=0.6.0"]
+all_packages = cvxpy_packages + patsy_packages + formulaic_packages + umap_packages
 
 docs_packages = [
     "sphinx==4.5.0",
@@ -56,6 +57,8 @@ setup(
         "base": base_packages,
         "cvxpy": cvxpy_packages,
         "umap": umap_packages,
+        "patsy": patsy_packages,
+        "formulaic": formulaic_packages,
         "all": all_packages,
         "docs": docs_packages,
         "dev": dev_packages,
