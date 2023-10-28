@@ -6,11 +6,10 @@ except ImportError:
     cp = NotInstalledPackage("cvxpy")
 
 from abc import ABC, abstractmethod
+from warnings import warn
 
-import autograd.numpy as np
+import numpy as np
 import pandas as pd
-from autograd import grad
-from autograd.test_util import check_grads
 from deprecated.sphinx import deprecated
 from scipy.optimize import minimize
 from scipy.special._ufuncs import expit
@@ -61,9 +60,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         return self
 
     def _calc_wts(self, x_i):
-        distances = np.array(
-            [np.linalg.norm(self.X_[i, :] - x_i) for i in range(self.X_.shape[0])]
-        )
+        distances = np.linalg.norm(self.X_ - x_i, axis=1)
         weights = np.exp(-(distances**2) / self.sigma)
         if self.span:
             weights = weights * (distances <= np.quantile(distances, q=self.span))
@@ -78,9 +75,10 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["X_", "y_"])
-        results = np.zeros(X.shape[0])
-        for idx in range(X.shape[0]):
-            results[idx] = np.average(self.y_, weights=self._calc_wts(x_i=X[idx, :]))
+
+        results = np.stack(
+            [np.average(self.y_, weights=self._calc_wts(x_i=x_i)) for x_i in X]
+        )
         return results
 
 
@@ -117,7 +115,9 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         # Solve the problem.
         prob = cp.Problem(objective, constraints)
         prob.solve()
-        self.coefs_ = betas.value
+        self.coef_ = betas.value
+        self.n_features_in_ = X.shape[1]
+
         return self
 
     def predict(self, X):
@@ -128,31 +128,30 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         :return: Returns an array of predictions shape=(n_samples,)
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ["coefs_"])
-        return np.dot(X, self.coefs_)
+        check_is_fitted(self, ["coef_"])
+        return np.dot(X, self.coef_)
+
+    @property
+    def coefs_(self):
+        warn(
+            "Please use `coef_` instead of `coefs_`, `coefs_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.coef_
 
 
 class DeadZoneRegressor(BaseEstimator, RegressorMixin):
+    _ALLOWED_EFFECTS = ("linear", "quadratic", "constant")
+
     def __init__(
         self,
         threshold=0.3,
         relative=False,
         effect="linear",
-        n_iter=2000,
-        stepsize=0.01,
-        check_grad=False,
     ):
         self.threshold = threshold
         self.relative = relative
         self.effect = effect
-        self.n_iter = n_iter
-        self.stepsize = stepsize
-        self.check_grad = check_grad
-        self.allowed_effects = ("linear", "quadratic", "constant")
-        self.loss_log_ = None
-        self.wts_log_ = None
-        self.deriv_log_ = None
-        self.coefs_ = None
 
     def fit(self, X, y):
         """
@@ -163,43 +162,67 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         :return: Returns an instance of self.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        if self.effect not in self.allowed_effects:
-            raise ValueError(f"effect {self.effect} must be in {self.allowed_effects}")
+        if self.effect not in self._ALLOWED_EFFECTS:
+            raise ValueError(f"effect {self.effect} must be in {self._ALLOWED_EFFECTS}")
 
         def deadzone(errors):
-            if self.effect == "linear":
-                return np.where(errors > self.threshold, errors, np.zeros(errors.shape))
-            if self.effect == "quadratic":
-                return np.where(
-                    errors > self.threshold, errors**2, np.zeros(errors.shape)
-                )
+            if self.effect == "constant":
+                error_weight = errors.shape[0]
+            elif self.effect == "linear":
+                error_weight = errors
+            elif self.effect == "quadratic":
+                error_weight = errors**2
+
+            return np.where(errors > self.threshold, error_weight, 0.0)
 
         def training_loss(weights):
-            diff = np.abs(np.dot(X, weights) - y)
+            prediction = np.dot(X, weights)
+            errors = np.abs(prediction - y)
+
             if self.relative:
-                diff = diff / y
-            return np.mean(deadzone(diff))
+                errors /= np.abs(y)
 
-        n, k = X.shape
+            loss = np.mean(deadzone(errors))
+            return loss
 
-        # Build a function that returns gradients of training loss using autograd.
-        training_gradient_fun = grad(training_loss)
+        def deadzone_derivative(errors):
+            if self.effect == "constant":
+                error_weight = 0.0
+            elif self.effect == "linear":
+                error_weight = 1.0
+            elif self.effect == "quadratic":
+                error_weight = 2 * errors
 
-        # Check the gradients numerically, just to be safe.
-        weights = np.random.normal(0, 1, k)
-        if self.check_grad:
-            check_grads(training_loss, modes=["rev"])(weights)
+            return np.where(errors > self.threshold, error_weight, 0.0)
 
-        # Optimize weights using gradient descent.
-        self.loss_log_ = np.zeros(self.n_iter)
-        self.wts_log_ = np.zeros((self.n_iter, k))
-        self.deriv_log_ = np.zeros((self.n_iter, k))
-        for i in range(self.n_iter):
-            weights -= training_gradient_fun(weights) * self.stepsize
-            self.wts_log_[i, :] = weights.ravel()
-            self.loss_log_[i] = training_loss(weights)
-            self.deriv_log_[i, :] = training_gradient_fun(weights).ravel()
-        self.coefs_ = weights
+        def training_loss_derivative(weights):
+            prediction = np.dot(X, weights)
+            errors = np.abs(prediction - y)
+
+            if self.relative:
+                errors /= np.abs(y)
+
+            loss_derivative = deadzone_derivative(errors)
+            errors_derivative = np.sign(prediction - y)
+
+            if self.relative:
+                errors_derivative /= np.abs(y)
+
+            derivative = np.dot(errors_derivative * loss_derivative, X) / X.shape[0]
+
+            return derivative
+
+        self.n_features_in_ = X.shape[1]
+
+        minimize_result = minimize(
+            training_loss,
+            x0=np.zeros(self.n_features_in_),  # np.random.normal(0, 1, n_features_)
+            tol=1e-20,
+            jac=training_loss_derivative,
+        )
+
+        self.convergence_status_ = minimize_result.message
+        self.coef_ = minimize_result.x
         return self
 
     def predict(self, X):
@@ -210,8 +233,25 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         :return: Returns an array of predictions shape=(n_samples,)
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ["coefs_"])
-        return np.dot(X, self.coefs_)
+        check_is_fitted(self, ["coef_"])
+        return np.dot(X, self.coef_)
+
+    @property
+    def coefs_(self):
+        warn(
+            "Please use `coef_` instead of `coefs_`, `coefs_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.coef_
+
+    @property
+    def allowed_effects(self):
+        warn(
+            "Please use `_ALLOWED_EFFECTS` instead of `allowed_effects`,"
+            "`allowed_effects` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self._ALLOWED_EFFECTS
 
 
 class _FairClassifier(BaseEstimator, LinearClassifierMixin):

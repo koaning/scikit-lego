@@ -1,5 +1,6 @@
 import collections
 import hashlib
+from warnings import warn
 
 import numpy as np
 import pandas as pd
@@ -53,7 +54,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         else:
             check_X_y(X, y, estimator=self)
         self.X_hash_ = self._hash(X)
-        self.dim_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         return self
 
     @staticmethod
@@ -76,12 +77,12 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         It will dispatch to `self.transform_train` if X is the same as X passed to `fit`, otherwise, it will dispatch
         to `self.trainsform_test`
         """
-        check_is_fitted(self, ["X_hash_", "dim_"])
+        check_is_fitted(self, ["X_hash_", "n_features_in_"])
         check_array(X, estimator=self)
 
-        if X.shape[1] != self.dim_:
+        if X.shape[1] != self.n_features_in_:
             raise ValueError(
-                f"Unexpected input dimension {X.shape[1]}, expected {self.dim_}"
+                f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}"
             )
 
         if self._hash(X) == self.X_hash_:
@@ -96,6 +97,14 @@ class TrainOnlyTransformerMixin(TransformerMixin):
 
     def transform_test(self, X, y=None):
         return X
+
+    @property
+    def dim_(self):
+        warn(
+            "Please use `n_features_in_` instead of `dim_`, `dim_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_
 
 
 def as_list(val):
@@ -187,6 +196,5 @@ def sliding_window(sequence, window_size, step_size):
     [[1,2], [2,4], [4,5], [5]]
     """
     return (
-        sequence[pos : pos + window_size]
-        for pos in range(0, len(sequence), step_size)
+        sequence[pos : pos + window_size] for pos in range(0, len(sequence), step_size)
     )

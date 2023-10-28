@@ -12,6 +12,7 @@ __all__ = [
     "IdentityTransformer",
     "OutlierRemover",
     "DictMapper",
+    "FormulaicTransformer",
 ]
 
 from .intervalencoder import IntervalEncoder
@@ -24,3 +25,4 @@ from .columncapper import ColumnCapper
 from .identitytransformer import IdentityTransformer
 from .outlier_remover import OutlierRemover
 from .dictmapper import DictMapper
+from .formulaictransformer import FormulaicTransformer

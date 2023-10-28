@@ -29,7 +29,7 @@ def test_estimator_checks(test_fn):
 def test_shape_trained_model(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
     mod_no_intercept = ProbWeightRegression()
-    assert mod_no_intercept.fit(X, y).coefs_.shape == (X.shape[1],)
+    assert mod_no_intercept.fit(X, y).coef_.shape == (X.shape[1],)
     np.testing.assert_approx_equal(
-        mod_no_intercept.fit(X, y).coefs_.sum(), 1.0, significant=4
+        mod_no_intercept.fit(X, y).coef_.sum(), 1.0, significant=4
     )
