@@ -37,14 +37,15 @@ Install **scikit-lego**:
 
 Some functionality can only be used if certain dependencies are installed. This can be done by specifying the extra dependencies in square brackets after the package name.
 
-Currently supported extras are **cvxpy** and **all** (which installs all extras).
-
-You can specify these as follows:
+Currently supported extras are [**cvxpy**][cvxpy], [**formulaic**][formulaic], [**patsy**][patsy] and [**umap**][umap]. You can specify these as follows:
 
 === "pip"
 
     ```bash
     python -m pip install scikit-lego"[cvxpy]"
+    python -m pip install scikit-lego"[formulaic]"
+    python -m pip install scikit-lego"[patsy]"
+    python -m pip install scikit-lego"[umap]"
     python -m pip install scikit-lego"[all]"
     ```
 
@@ -55,5 +56,13 @@ You can specify these as follows:
     cd scikit-lego
 
     python -m pip install ".[cvxpy]"
+    python -m pip install ."[formulaic]"
+    python -m pip install ."[patsy]"
+    python -m pip install ."[umap]"
     python -m pip install ".[all]"
     ```
+
+[cvxpy]: https://www.cvxpy.org/
+[formulaic]: https://matthewwardrop.github.io/formulaic/
+[patsy]: https://patsy.readthedocs.io/en/latest/
+[umap]: https://umap-learn.readthedocs.io/en/latest/index.html
