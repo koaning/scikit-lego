@@ -1,3 +1,5 @@
+from warnings import warn
+
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
@@ -16,8 +18,12 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    shape_ : tuple[int,...]
-        The shape of the input data.
+    n_samples_ : int
+        The number of samples seen during `fit`.
+    n_features_in_ : int
+        The number of features seen during `fit`.
+    shape_ : tuple[int, int]
+        Deprecated, please use `n_samples_` and `n_features_in_` instead.
     """
 
     def __init__(self, check_X: bool = False):
@@ -40,7 +46,7 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
         """
         if self.check_X:
             X = check_array(X, copy=True, estimator=self)
-        self.shape_ = X.shape
+        self.n_samples_, self.n_features_in_ = X.shape
         return self
 
     def transform(self, X):
@@ -63,7 +69,14 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
         """
         if self.check_X:
             X = check_array(X, copy=True, estimator=self)
-        check_is_fitted(self, "shape_")
-        if X.shape[1] != self.shape_[1]:
-            raise ValueError(f"Wrong shape is passed to transform. Trained on {self.shape_[1]} cols got {X.shape[1]}")
+        check_is_fitted(self, "n_features_in_")
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(
+                f"Wrong shape is passed to transform. Trained on {self.n_features_in_} cols got {X.shape[1]}"
+            )
         return X
+
+    @property
+    def shape_(self):
+        """Returns the shape of the estimator."""
+        return (self.n_samples_, self.n_features_in_)

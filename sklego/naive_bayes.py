@@ -1,3 +1,5 @@
+from warnings import warn
+
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import BayesianGaussianMixture, GaussianMixture
@@ -21,8 +23,10 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         A dictionary of Gaussian Mixture Models, one for each class.
     classes_ : np.ndarray of shape (n_classes,)
         The classes seen during `fit`.
-    num_fit_cols_ : int
+    n_features_in_ : int
         The number of features seen during `fit`.
+    num_fit_cols_ : int
+        Deprecated, please use `n_features_in_` instead.
     """
 
     def __init__(
@@ -75,7 +79,7 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
 
         self.gmms_ = {}
         self.classes_ = unique_labels(y)
-        self.num_fit_cols_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         for c in self.classes_:
             subset_x, subset_y = X[y == c], y[y == c]
             self.gmms_[c] = [
@@ -111,7 +115,7 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         array-like of shape (n_samples,)
             The predicted data.
         """
-        check_is_fitted(self, ["gmms_", "classes_"])
+        check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
@@ -129,19 +133,33 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         array-like of shape (n_samples, n_classes)
             The predicted probabilities.
         """
-        check_is_fitted(self, ["gmms_", "classes_"])
+        check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        if self.num_fit_cols_ != X.shape[1]:
-            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.num_fit_cols_}")
+        if self.n_features_in_ != X.shape[1]:
+            raise ValueError(
+                f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}"
+            )
         check_is_fitted(self, ["gmms_", "classes_"])
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():
             class_idx = int(np.argwhere(self.classes_ == k))
             probs[:, class_idx] = np.array(
-                [m.score_samples(np.expand_dims(X[:, idx], 1)) for idx, m in enumerate(v)]
+                [
+                    m.score_samples(np.expand_dims(X[:, idx], 1))
+                    for idx, m in enumerate(v)
+                ]
             ).sum(axis=0)
         likelihood = np.exp(probs)
         return likelihood / likelihood.sum(axis=1).reshape(-1, 1)
+
+    @property
+    def num_fit_cols_(self):
+        warn(
+            "Please use `n_features_in_` instead of `num_fit_cols_`,"
+            "`num_fit_cols_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_
 
 
 class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
@@ -159,8 +177,10 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
         A dictionary of Gaussian Mixture Models, one for each class.
     classes_ : np.ndarray of shape (n_classes,)
         The classes seen during `fit`.
-    num_fit_cols_ : int
+    n_features_in_ : int
         The number of features seen during `fit`.
+    num_fit_cols_ : int
+        Deprecated, please use `n_features_in_` instead.
     """
 
     def __init__(
@@ -224,7 +244,7 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
 
         self.gmms_ = {}
         self.classes_ = unique_labels(y)
-        self.num_fit_cols_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         for c in self.classes_:
             subset_x, subset_y = X[y == c], y[y == c]
             self.gmms_[c] = [
@@ -265,7 +285,7 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
         array-like of shape (n_samples,)
             The predicted data.
         """
-        check_is_fitted(self, ["gmms_", "classes_", "num_fit_cols_"])
+        check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
@@ -283,16 +303,30 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
         array-like of shape (n_samples, n_classes)
             The predicted probabilities.
         """
-        check_is_fitted(self, ["gmms_", "classes_", "num_fit_cols_"])
+        check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        if self.num_fit_cols_ != X.shape[1]:
-            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.num_fit_cols_}")
+        if self.n_features_in_ != X.shape[1]:
+            raise ValueError(
+                f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}"
+            )
         check_is_fitted(self, ["gmms_", "classes_"])
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():
             class_idx = int(np.argwhere(self.classes_ == k))
             probs[:, class_idx] = np.array(
-                [m.score_samples(np.expand_dims(X[:, idx], 1)) for idx, m in enumerate(v)]
+                [
+                    m.score_samples(np.expand_dims(X[:, idx], 1))
+                    for idx, m in enumerate(v)
+                ]
             ).sum(axis=0)
         likelihood = np.exp(probs)
         return likelihood / likelihood.sum(axis=1).reshape(-1, 1)
+
+    @property
+    def num_fit_cols_(self):
+        warn(
+            "Please use `n_features_in_` instead of `num_fit_cols_`,"
+            "`num_fit_cols_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_

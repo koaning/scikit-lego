@@ -1,4 +1,9 @@
-KNOWN_PACKAGES = {"cvxpy": {"version": ">=1.0.24", "extra_name": "cvxpy"}}
+KNOWN_PACKAGES = {
+    "cvxpy": {"version": ">=1.0.24", "extra_name": "cvxpy"},
+    "umap-learn": {"version": ">=0.4.6", "extra_name": "umap"},
+    "formulaic": {"version": ">=0.6.0", "extra_name": "formulaic"},
+    "patsy": {"version": ">=0.5.1", "extra_name": "patsy"},
+}
 
 
 class NotInstalledPackage:
@@ -34,11 +39,14 @@ class NotInstalledPackage:
                 + f"`python -m pip install scikit-lego[{extra_name}]` or "
                 + "`python -m pip install scikit-lego[all]`. "
                 + "For more information, check the 'Dependency installs' section of the installation docs at "
-                + "https://scikit-lego.readthedocs.io/en/latest/install.html"
+                + "https://scikit-lego.netlify.app/install"
             )
             if extra_name
             else ""
         )
 
     def __getattr__(self, name):
-        raise ImportError(f"The package {self.package_name}{self.version} is not installed. " + self.pip_message)
+        raise ImportError(
+            f"The package {self.package_name}{self.version} is not installed. "
+            + self.pip_message
+        )

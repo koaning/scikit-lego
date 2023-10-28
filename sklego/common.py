@@ -1,5 +1,6 @@
 import collections
 import hashlib
+from warnings import warn
 
 import numpy as np
 import pandas as pd
@@ -26,8 +27,10 @@ class TrainOnlyTransformerMixin(TransformerMixin):
     ----------
     X_hash_ : hash
         The hash of the training data - used to determine whether to use `transform_train` or `transform_test`.
+    n_features_in_ : int
+        The number of features seen during `.fit()` in the training data.
     dim_ : int
-        The number of dimension seen furing `.fit()` in the training data.
+        Deprecated, use `n_features_in_` instead.
 
     Examples
     --------
@@ -55,7 +58,9 @@ class TrainOnlyTransformerMixin(TransformerMixin):
     """
 
     _HASHERS = {
-        pd.DataFrame: lambda X: hashlib.sha256(pd.util.hash_pandas_object(X, index=True).values).hexdigest(),
+        pd.DataFrame: lambda X: hashlib.sha256(
+            pd.util.hash_pandas_object(X, index=True).values
+        ).hexdigest(),
         np.ndarray: lambda X: hash(X.data.tobytes()),
         np.memmap: lambda X: hash(X.data.tobytes()),
     }
@@ -80,7 +85,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         else:
             check_X_y(X, y, estimator=self)
         self.X_hash_ = self._hash(X)
-        self.dim_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         return self
 
     @staticmethod
@@ -141,11 +146,13 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         ValueError
             If the input dimension does not match the training dimension.
         """
-        check_is_fitted(self, ["X_hash_", "dim_"])
+        check_is_fitted(self, ["X_hash_", "n_features_in_"])
         check_array(X, estimator=self)
 
-        if X.shape[1] != self.dim_:
-            raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.dim_}")
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(
+                f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}"
+            )
 
         if self._hash(X) == self.X_hash_:
             return self.transform_train(X)
@@ -169,7 +176,9 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         array-like of shape (n_samples, n_features)
             The transformed training data.
         """
-        raise NotImplementedError("Subclasses of `TrainOnlyTransformerMixin` should implement `transform_train` method")
+        raise NotImplementedError(
+            "Subclasses of `TrainOnlyTransformerMixin` should implement `transform_train` method"
+        )
 
     def transform_test(self, X, y=None):
         """Transform the test data.
@@ -190,6 +199,14 @@ class TrainOnlyTransformerMixin(TransformerMixin):
             The transformed test data or untransformed data if not implemented.
         """
         return X
+
+    @property
+    def dim_(self):
+        warn(
+            "Please use `n_features_in_` instead of `dim_`, `dim_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_
 
 
 def as_list(val):
@@ -258,7 +275,9 @@ def flatten(nested_iterable):
     ```
     """
     for el in nested_iterable:
-        if isinstance(el, collections.abc.Iterable) and not isinstance(el, (str, bytes)):
+        if isinstance(el, collections.abc.Iterable) and not isinstance(
+            el, (str, bytes)
+        ):
             yield from flatten(el)
         else:
             yield el
@@ -327,4 +346,6 @@ def sliding_window(sequence, window_size, step_size):
     # [[1, 2], [2, 4], [4, 5], [5]]
     ```
     """
-    return (sequence[pos : pos + window_size] for pos in range(0, len(sequence), step_size))
+    return (
+        sequence[pos : pos + window_size] for pos in range(0, len(sequence), step_size)
+    )

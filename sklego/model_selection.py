@@ -79,7 +79,9 @@ class TimeGapSplit:
             raise ValueError("Either train_duration or n_splits have to be defined")
 
         if (train_duration is not None) and (train_duration <= gap_duration):
-            raise ValueError("gap_duration is longer than train_duration, it should be shorter.")
+            raise ValueError(
+                "gap_duration is longer than train_duration, it should be shorter."
+            )
 
         if not date_serie.index.is_unique:
             raise ValueError("date_serie doesn't have a unique index")
@@ -130,7 +132,8 @@ class TimeGapSplit:
 
         if len(X) != len(X_index_df):
             raise AssertionError(
-                "X and X_index_df are not the same length, " "there must be some index missing in 'self.date_serie'"
+                "X and X_index_df are not the same length, "
+                "there must be some index missing in 'self.date_serie'"
             )
 
         date_min = X_index_df["__date__"].min()
@@ -138,12 +141,20 @@ class TimeGapSplit:
         date_length = X_index_df["__date__"].max() - X_index_df["__date__"].min()
 
         if (self.train_duration is None) and (self.n_splits is not None):
-            self.train_duration = date_length - (self.gap_duration + self.valid_duration * self.n_splits)
+            self.train_duration = date_length - (
+                self.gap_duration + self.valid_duration * self.n_splits
+            )
 
-        if (self.train_duration is not None) and (self.train_duration <= self.gap_duration):
-            raise ValueError("gap_duration is longer than train_duration, it should be shorter.")
+        if (self.train_duration is not None) and (
+            self.train_duration <= self.gap_duration
+        ):
+            raise ValueError(
+                "gap_duration is longer than train_duration, it should be shorter."
+            )
 
-        n_split_max = (date_length - self.train_duration - self.gap_duration) / self.valid_duration
+        n_split_max = (
+            date_length - self.train_duration - self.gap_duration
+        ) / self.valid_duration
         if self.n_splits:
             if n_split_max < self.n_splits:
                 raise ValueError(
@@ -163,17 +174,27 @@ class TimeGapSplit:
         else:
             time_shift = self.valid_duration
         while True:
-            if current_date + self.train_duration + time_shift + self.gap_duration > date_max:
+            if (
+                current_date + self.train_duration + time_shift + self.gap_duration
+                > date_max
+            ):
                 break
 
             X_train_df = X_index_df[
-                (X_index_df["__date__"] >= start_date) & (X_index_df["__date__"] < current_date + self.train_duration)
+                (X_index_df["__date__"] >= start_date)
+                & (X_index_df["__date__"] < current_date + self.train_duration)
             ]
             X_valid_df = X_index_df[
-                (X_index_df["__date__"] >= current_date + self.train_duration + self.gap_duration)
+                (
+                    X_index_df["__date__"]
+                    >= current_date + self.train_duration + self.gap_duration
+                )
                 & (
                     X_index_df["__date__"]
-                    < current_date + self.train_duration + self.valid_duration + self.gap_duration
+                    < current_date
+                    + self.train_duration
+                    + self.valid_duration
+                    + self.gap_duration
                 )
             ]
 
@@ -229,7 +250,8 @@ class TimeGapSplit:
                 {
                     "Start date": mindate,
                     "End date": maxdate,
-                    "Period": pd.to_datetime(maxdate, format="%Y%m%d") - pd.to_datetime(mindate, format="%Y%m%d"),
+                    "Period": pd.to_datetime(maxdate, format="%Y%m%d")
+                    - pd.to_datetime(mindate, format="%Y%m%d"),
                     "Unique days": len(dates.unique()),
                     "nbr samples": len(indices),
                 },
@@ -258,7 +280,9 @@ class KlusterFoldValidation:
 
     def __init__(self, cluster_method=None):
         if not isinstance(cluster_method, Clusterer):
-            raise ValueError("The KlusterFoldValidation only works on cluster methods with .fit_predict.")
+            raise ValueError(
+                "The KlusterFoldValidation only works on cluster methods with .fit_predict."
+            )
 
         self.cluster_method = cluster_method
         self.n_splits = None
@@ -290,7 +314,9 @@ class KlusterFoldValidation:
         self.n_splits = len(np.unique(clusters))
 
         if self.n_splits < 2:
-            raise ValueError(f"Clustering method resulted in {self.n_splits} cluster, too few for fold validation")
+            raise ValueError(
+                f"Clustering method resulted in {self.n_splits} cluster, too few for fold validation"
+            )
 
         for label in np.unique(clusters):
             yield (
@@ -372,12 +398,21 @@ class GroupTimeSeriesSplit(_BaseKFold):
             return (
                 self._grouped_df.sort_index()
                 .assign(group=lambda df: df["group"].astype(int))
-                .assign(obs_per_group=lambda df: df.groupby("group")["observations"].transform("sum"))
+                .assign(
+                    obs_per_group=lambda df: df.groupby("group")[
+                        "observations"
+                    ].transform("sum")
+                )
                 .assign(ideal_group_size=round(self._ideal_group_size))
-                .assign(diff_from_ideal_group_size=lambda df: df["obs_per_group"] - df["ideal_group_size"])
+                .assign(
+                    diff_from_ideal_group_size=lambda df: df["obs_per_group"]
+                    - df["ideal_group_size"]
+                )
             )
         except AttributeError:
-            raise AttributeError(".summary() only works after having ran" " .split(X, y, groups).")
+            raise AttributeError(
+                ".summary() only works after having ran" " .split(X, y, groups)."
+            )
 
     def split(self, X=None, y=None, groups=None):
         """Generate the train-test splits of all the folds
@@ -402,7 +437,10 @@ class GroupTimeSeriesSplit(_BaseKFold):
         n_groups = np.unique(groups).shape[0]
         if self.n_splits >= n_groups:
             raise ValueError(
-                ("n_splits({0}) must be less than the amount" " of unique groups({1}).").format(self.n_splits, n_groups)
+                (
+                    "n_splits({0}) must be less than the amount"
+                    " of unique groups({1})."
+                ).format(self.n_splits, n_groups)
             )
         return list(self._iter_test_indices(X, y, groups))
 
@@ -521,7 +559,9 @@ class GroupTimeSeriesSplit(_BaseKFold):
         )
 
         # set the ideal group_size and reduce it to 90% to have some leverage
-        self._ideal_group_size = np.sum(self._grouped_df["observations"]) / (self.n_splits + 1)
+        self._ideal_group_size = np.sum(self._grouped_df["observations"]) / (
+            self.n_splits + 1
+        )
         init_ideal_group_size = self._ideal_group_size * 0.9
 
         # initialize the index of the first split, to reduce the amount of possible index split options
@@ -581,12 +621,18 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # ideal_group_size = 100
         # group_sizes = [10,20,270]
         # diff_from_ideal_list = [-90, -80, 170]
-        diff_from_ideal_list = [sum(observations[: first_splits[0]]) - self._ideal_group_size]
+        diff_from_ideal_list = [
+            sum(observations[: first_splits[0]]) - self._ideal_group_size
+        ]
         for split in sliding_window(first_splits, window_size=2, step_size=1):
             try:
-                diff_from_ideal_list += [sum(observations[split[0] : split[1]]) - self._ideal_group_size]
+                diff_from_ideal_list += [
+                    sum(observations[split[0] : split[1]]) - self._ideal_group_size
+                ]
             except IndexError:
-                diff_from_ideal_list += [sum(observations[split[0] :]) - self._ideal_group_size]
+                diff_from_ideal_list += [
+                    sum(observations[split[0] :]) - self._ideal_group_size
+                ]
 
         # keep track of the minimum of the total difference from all groups to the ideal group size
         min_diff = sum([abs(diff) for diff in diff_from_ideal_list])
@@ -595,7 +641,9 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # loop through all possible split points and check whether a new split
         # has a less total difference from all groups to the ideal group size
         for prev_splits, new_splits in zip(splits_generator, splits_generator_shifted):
-            diff_from_ideal_list = self._calc_new_diffs(observations, diff_from_ideal_list, prev_splits, new_splits)
+            diff_from_ideal_list = self._calc_new_diffs(
+                observations, diff_from_ideal_list, prev_splits, new_splits
+            )
             new_diff = sum([abs(diff) for diff in diff_from_ideal_list])
 
             # if with the new split the difference is less than the current most optimal, save the new split
@@ -628,7 +676,10 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # new_index = (1,2,5)
         # prev_index = (1,2,4)
         # index_diffs = (0,0,1)
-        index_diffs = [new_index - prev_index for prev_index, new_index in zip(prev_splits, new_splits)]
+        index_diffs = [
+            new_index - prev_index
+            for prev_index, new_index in zip(prev_splits, new_splits)
+        ]
         new_diff_list = diff_list.copy()
 
         # calculate the effects of the index change to the groups
@@ -679,22 +730,3 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # create a mapper to set every group to the right group_id
         mapper = dict(zip(df["index"], df["group"]))
         return np.vectorize(mapper.get)(groups)
-
-    def _method_is_fitted(self, X):
-        """Check if the `cluster_method` is fitted
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Array to use if the method is fitted
-
-        Returns
-        -------
-        bool
-            True if fitted, else False
-        """
-        try:
-            self.cluster_method.predict(X[0:1, :])
-            return True
-        except NotFittedError:
-            return False

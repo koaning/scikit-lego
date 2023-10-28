@@ -12,12 +12,14 @@ __all__ = [
     "IdentityTransformer",
     "OutlierRemover",
     "DictMapper",
+    "FormulaicTransformer",
 ]
 
 from .columncapper import ColumnCapper
 from .dictmapper import DictMapper
 from .identitytransformer import IdentityTransformer
 from .intervalencoder import IntervalEncoder
+from .formulaictransformer import FormulaicTransformer
 from .outlier_remover import OutlierRemover
 from .pandastransformers import ColumnDropper, ColumnSelector, PandasTypeSelector
 from .patsytransformer import PatsyTransformer

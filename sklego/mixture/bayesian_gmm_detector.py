@@ -1,3 +1,5 @@
+from warnings import warn
+
 import numpy as np
 from scipy.optimize import minimize_scalar
 from scipy.stats import gaussian_kde
@@ -38,6 +40,8 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
         The threshold value used to determine if something is an outlier.
     """
 
+    _ALLOWED_METHODS = ("quantile", "stddev")
+
     def __init__(
         self,
         threshold=0.99,
@@ -62,7 +66,6 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
     ):
         self.threshold = threshold
         self.method = method
-        self.allowed_methods = ["quantile", "stddev"]
 
         self.n_components = n_components
         self.covariance_type = covariance_type
@@ -110,12 +113,20 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
 
-        if (self.method == "quantile") and ((self.threshold > 1) or (self.threshold < 0)):
-            raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1")
+        if (self.method == "quantile") and (
+            (self.threshold > 1) or (self.threshold < 0)
+        ):
+            raise ValueError(
+                f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1"
+            )
         if (self.method == "stddev") and (self.threshold < 0):
-            raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold ")
-        if self.method not in self.allowed_methods:
-            raise ValueError(f"Method not recognised. Method must be in {self.allowed_methods}")
+            raise ValueError(
+                f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold "
+            )
+        if self.method not in self._ALLOWED_METHODS:
+            raise ValueError(
+                f"Method not recognised. Method must be in {self._ALLOWED_METHODS}"
+            )
 
         self.gmm_ = BayesianGaussianMixture(
             n_components=self.n_components,
@@ -148,7 +159,9 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
             mean_likelihood = score_samples.mean()
             new_likelihoods = score_samples[score_samples < max_x_value]
             new_likelihoods_std = np.std(new_likelihoods - mean_likelihood)
-            self.likelihood_threshold_ = mean_likelihood - (self.threshold * new_likelihoods_std)
+            self.likelihood_threshold_ = mean_likelihood - (
+                self.threshold * new_likelihoods_std
+            )
 
         return self
 
@@ -182,3 +195,12 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
         predictions[predictions == 1] = -1
         predictions[predictions == 0] = 1
         return predictions
+
+    @property
+    def allowed_methods(self):
+        warn(
+            "Please use `_ALLOWED_METHODS` instead of `allowed_methods`,"
+            "`allowed_methods` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self._ALLOWED_METHODS

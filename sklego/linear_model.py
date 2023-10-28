@@ -6,11 +6,10 @@ except ImportError:
     cp = NotInstalledPackage("cvxpy")
 
 from abc import ABC, abstractmethod
+from warnings import warn
 
-import autograd.numpy as np
+import numpy as np
 import pandas as pd
-from autograd import grad
-from autograd.test_util import check_grads
 from deprecated.sphinx import deprecated
 from scipy.optimize import minimize
 from scipy.special._ufuncs import expit
@@ -19,7 +18,13 @@ from sklearn.linear_model._base import LinearClassifierMixin
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import check_X_y
-from sklearn.utils.validation import FLOAT_DTYPES, _check_sample_weight, check_array, check_is_fitted, column_or_1d
+from sklearn.utils.validation import (
+    FLOAT_DTYPES,
+    _check_sample_weight,
+    check_array,
+    check_is_fitted,
+    column_or_1d,
+)
 
 
 class LowessRegression(BaseEstimator, RegressorMixin):
@@ -75,7 +80,9 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         if self.span is not None:
             if not 0 <= self.span <= 1:
-                raise ValueError(f"Param `span` must be 0 <= span <= 1, got: {self.span}")
+                raise ValueError(
+                    f"Param `span` must be 0 <= span <= 1, got: {self.span}"
+                )
         if self.sigma < 0:
             raise ValueError(f"Param `sigma` must be >= 0, got: {self.sigma}")
         self.X_ = X
@@ -90,7 +97,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         If `self.span` is not None, then the weights are multiplied by
         `(distances <= np.quantile(distances, q=self.span))`.
         """
-        distances = np.array([np.linalg.norm(self.X_[i, :] - x_i) for i in range(self.X_.shape[0])])
+        distances = np.linalg.norm(self.X_ - x_i, axis=1)
         weights = np.exp(-(distances**2) / self.sigma)
         if self.span:
             weights = weights * (distances <= np.quantile(distances, q=self.span))
@@ -115,9 +122,10 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["X_", "y_"])
-        results = np.zeros(X.shape[0])
-        for idx in range(X.shape[0]):
-            results[idx] = np.average(self.y_, weights=self._calc_wts(x_i=X[idx, :]))
+
+        results = np.stack(
+            [np.average(self.y_, weights=self._calc_wts(x_i=x_i)) for x_i in X]
+        )
         return results
 
 
@@ -135,8 +143,12 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
 
     Attributes
     ----------
-    coefs_ : np.ndarray, shape (n_columns,)
+    n_features_in_ : int
+        The number of features seen during `fit`.
+    coef_ : np.ndarray, shape (n_columns,)
         The learned coefficients after fitting the model.
+    coefs_ : np.ndarray, shape (n_columns,)
+        Deprecated, please use `coef_` instead.
 
     !!! info
 
@@ -184,7 +196,9 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         # Solve the problem.
         prob = cp.Problem(objective, constraints)
         prob.solve()
-        self.coefs_ = betas.value
+        self.coef_ = betas.value
+        self.n_features_in_ = X.shape[1]
+
         return self
 
     def predict(self, X):
@@ -201,8 +215,16 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
             The predicted data.
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ["coefs_"])
-        return np.dot(X, self.coefs_)
+        check_is_fitted(self, ["coef_"])
+        return np.dot(X, self.coef_)
+
+    @property
+    def coefs_(self):
+        warn(
+            "Please use `coef_` instead of `coefs_`, `coefs_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.coef_
 
 
 class DeadZoneRegressor(BaseEstimator, RegressorMixin):
@@ -233,13 +255,14 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
     relative : bool, default=False
         If True, the threshold is relative to the target value. Namely the _dead zone effect_ is applied to the
         relative error between the predicted and target values.
-    effect : Literal["linear", "quadratic"], default="linear"
+    effect : Literal["linear", "quadratic", "constant"], default="linear"
         The type of dead zone effect to apply. It can be one of the following:
 
         - "linear": the errors within the threshold have no impact (their contribution is effectively zero), and errors
             outside the threshold are penalized linearly.
         - "quadratic": the errors within the threshold have no impact (their contribution is effectively zero), and
             errors outside the threshold are penalized quadratically (squared).
+        - "constant": the errors within the threshold have no impact, and errors outside the threshold are penalized with a constant value.
     n_iter : int, default=2000
         The number of iterations to run the gradient descent algorithm.
     stepsize : float, default=0.01
@@ -249,37 +272,23 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
 
     Attributes
     ----------
-    coefs_ : np.ndarray, shape (n_columns,)
+    coef_ : np.ndarray, shape (n_columns,)
         The learned coefficients after fitting the model.
-    loss_log_ : np.ndarray, shape (n_iter,)
-        A log of training losses recorded during the optimization process.
-    wts_log_ : np.ndarray, shape (n_iter, n_samples)
-        A log of weights for each feature recorded at each iteration of the optimization.
-    deriv_log_ : np.ndarray, shape (n_iter, n_samples)
-        A log of gradients of the training loss with respect to the weights recorded at each iteration of the
-        optimization.
+    coefs_ : np.ndarray, shape (n_columns,)
+        Deprecated, please use `coef_` instead.
     """
+
+    _ALLOWED_EFFECTS = ("linear", "quadratic", "constant")
 
     def __init__(
         self,
         threshold=0.3,
         relative=False,
         effect="linear",
-        n_iter=2000,
-        stepsize=0.01,
-        check_grad=False,
     ):
         self.threshold = threshold
         self.relative = relative
         self.effect = effect
-        self.n_iter = n_iter
-        self.stepsize = stepsize
-        self.check_grad = check_grad
-        self.allowed_effects = ("linear", "quadratic", "constant")
-        self.loss_log_ = None
-        self.wts_log_ = None
-        self.deriv_log_ = None
-        self.coefs_ = None
 
     def fit(self, X, y):
         """Fit the estimator on training data `X` and `y` by optimizing the loss function using gradient descent.
@@ -302,41 +311,67 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             If `effect` is not one of "linear", "quadratic" or "constant".
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        if self.effect not in self.allowed_effects:
-            raise ValueError(f"effect {self.effect} must be in {self.allowed_effects}")
+        if self.effect not in self._ALLOWED_EFFECTS:
+            raise ValueError(f"effect {self.effect} must be in {self._ALLOWED_EFFECTS}")
 
         def deadzone(errors):
-            if self.effect == "linear":
-                return np.where(errors > self.threshold, errors, np.zeros(errors.shape))
-            if self.effect == "quadratic":
-                return np.where(errors > self.threshold, errors**2, np.zeros(errors.shape))
+            if self.effect == "constant":
+                error_weight = errors.shape[0]
+            elif self.effect == "linear":
+                error_weight = errors
+            elif self.effect == "quadratic":
+                error_weight = errors**2
+
+            return np.where(errors > self.threshold, error_weight, 0.0)
 
         def training_loss(weights):
-            diff = np.abs(np.dot(X, weights) - y)
+            prediction = np.dot(X, weights)
+            errors = np.abs(prediction - y)
+
             if self.relative:
-                diff = diff / y
-            return np.mean(deadzone(diff))
+                errors /= np.abs(y)
 
-        n, k = X.shape
+            loss = np.mean(deadzone(errors))
+            return loss
 
-        # Build a function that returns gradients of training loss using autograd.
-        training_gradient_fun = grad(training_loss)
+        def deadzone_derivative(errors):
+            if self.effect == "constant":
+                error_weight = 0.0
+            elif self.effect == "linear":
+                error_weight = 1.0
+            elif self.effect == "quadratic":
+                error_weight = 2 * errors
 
-        # Check the gradients numerically, just to be safe.
-        weights = np.random.normal(0, 1, k)
-        if self.check_grad:
-            check_grads(training_loss, modes=["rev"])(weights)
+            return np.where(errors > self.threshold, error_weight, 0.0)
 
-        # Optimize weights using gradient descent.
-        self.loss_log_ = np.zeros(self.n_iter)
-        self.wts_log_ = np.zeros((self.n_iter, k))
-        self.deriv_log_ = np.zeros((self.n_iter, k))
-        for i in range(self.n_iter):
-            weights -= training_gradient_fun(weights) * self.stepsize
-            self.wts_log_[i, :] = weights.ravel()
-            self.loss_log_[i] = training_loss(weights)
-            self.deriv_log_[i, :] = training_gradient_fun(weights).ravel()
-        self.coefs_ = weights
+        def training_loss_derivative(weights):
+            prediction = np.dot(X, weights)
+            errors = np.abs(prediction - y)
+
+            if self.relative:
+                errors /= np.abs(y)
+
+            loss_derivative = deadzone_derivative(errors)
+            errors_derivative = np.sign(prediction - y)
+
+            if self.relative:
+                errors_derivative /= np.abs(y)
+
+            derivative = np.dot(errors_derivative * loss_derivative, X) / X.shape[0]
+
+            return derivative
+
+        self.n_features_in_ = X.shape[1]
+
+        minimize_result = minimize(
+            training_loss,
+            x0=np.zeros(self.n_features_in_),  # np.random.normal(0, 1, n_features_)
+            tol=1e-20,
+            jac=training_loss_derivative,
+        )
+
+        self.convergence_status_ = minimize_result.message
+        self.coef_ = minimize_result.x
         return self
 
     def predict(self, X):
@@ -353,8 +388,25 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
             The predicted data.
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ["coefs_"])
-        return np.dot(X, self.coefs_)
+        check_is_fitted(self, ["coef_"])
+        return np.dot(X, self.coef_)
+
+    @property
+    def coefs_(self):
+        warn(
+            "Please use `coef_` instead of `coefs_`, `coefs_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.coef_
+
+    @property
+    def allowed_effects(self):
+        warn(
+            "Please use `_ALLOWED_EFFECTS` instead of `allowed_effects`,"
+            "`allowed_effects` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self._ALLOWED_EFFECTS
 
 
 class _FairClassifier(BaseEstimator, LinearClassifierMixin):
@@ -439,11 +491,15 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             If `penalty` is not one of "l1" or "none".
         """
         if self.penalty not in ["l1", "none"]:
-            raise ValueError(f"penalty should be either 'l1' or 'none', got {self.penalty}")
+            raise ValueError(
+                f"penalty should be either 'l1' or 'none', got {self.penalty}"
+            )
 
         self.sensitive_col_idx_ = self.sensitive_cols
         if isinstance(X, pd.DataFrame):
-            self.sensitive_col_idx_ = [i for i, name in enumerate(X.columns) if name in self.sensitive_cols]
+            self.sensitive_col_idx_ = [
+                i for i, name in enumerate(X.columns) if name in self.sensitive_cols
+            ]
         X, y = check_X_y(X, y, accept_large_sparse=False)
 
         sensitive = X[:, self.sensitive_col_idx_]
@@ -466,7 +522,9 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         return self
 
     def constraints(self, y_hat, y_true, sensitive, n_obs):
-        raise NotImplementedError("subclasses of `_FairClassifier` should implement constraints")
+        raise NotImplementedError(
+            "subclasses of `_FairClassifier` should implement constraints"
+        )
 
     def _solve(self, sensitive, X, y):
         """Solve the optimization problem for the fair classifier."""
@@ -476,7 +534,9 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
 
         log_likelihood = cp.sum(
             cp.multiply(y, y_hat)
-            - cp.log_sum_exp(cp.hstack([np.zeros((n_obs, 1)), cp.reshape(y_hat, (n_obs, 1))]), axis=1)
+            - cp.log_sum_exp(
+                cp.hstack([np.zeros((n_obs, 1)), cp.reshape(y_hat, (n_obs, 1))]), axis=1
+            )
         )
         if self.penalty == "l1":
             log_likelihood -= cp.sum((1 / self.C) * cp.norm(theta[1:]))
@@ -575,8 +635,12 @@ class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
     """
 
     def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
-        multiclass_meta = {"ovr": OneVsRestClassifier, "ovo": OneVsOneClassifier}[multi_class]
-        return multiclass_meta(_DemographicParityClassifier(*args, **kwargs), n_jobs=n_jobs)
+        multiclass_meta = {"ovr": OneVsRestClassifier, "ovo": OneVsOneClassifier}[
+            multi_class
+        ]
+        return multiclass_meta(
+            _DemographicParityClassifier(*args, **kwargs), n_jobs=n_jobs
+        )
 
 
 @deprecated(
@@ -674,8 +738,12 @@ class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
     """
 
     def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
-        multiclass_meta = {"ovr": OneVsRestClassifier, "ovo": OneVsOneClassifier}[multi_class]
-        return multiclass_meta(_EqualOpportunityClassifier(*args, **kwargs), n_jobs=n_jobs)
+        multiclass_meta = {"ovr": OneVsRestClassifier, "ovo": OneVsOneClassifier}[
+            multi_class
+        ]
+        return multiclass_meta(
+            _EqualOpportunityClassifier(*args, **kwargs), n_jobs=n_jobs
+        )
 
 
 class _EqualOpportunityClassifier(_FairClassifier):
@@ -706,7 +774,10 @@ class _EqualOpportunityClassifier(_FairClassifier):
             n_obs = len(y_true[y_true == self.positive_target])
             dec_boundary_cov = (
                 y_hat[y_true == self.positive_target]
-                @ (sensitive[y_true == self.positive_target] - np.mean(sensitive, axis=0))
+                @ (
+                    sensitive[y_true == self.positive_target]
+                    - np.mean(sensitive, axis=0)
+                )
                 / n_obs
             )
             return [cp.abs(dec_boundary_cov) <= self.covariance_threshold]
@@ -771,7 +842,10 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         self.copy_X = copy_X
         self.positive = positive
         if method not in ("SLSQP", "TNC", "L-BFGS-B"):
-            raise ValueError(f'method should be one of "SLSQP", "TNC", "L-BFGS-B", ' f"got {method} instead")
+            raise ValueError(
+                f'method should be one of "SLSQP", "TNC", "L-BFGS-B", '
+                f"got {method} instead"
+            )
         self.method = method
 
     @abstractmethod
@@ -797,12 +871,15 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         ...
 
     def _regularized_loss(self, params):
-        return +self.alpha * self.l1_ratio * np.sum(np.abs(params)) + 0.5 * self.alpha * (1 - self.l1_ratio) * np.sum(
-            params**2
-        )
+        return +self.alpha * self.l1_ratio * np.sum(
+            np.abs(params)
+        ) + 0.5 * self.alpha * (1 - self.l1_ratio) * np.sum(params**2)
 
     def _regularized_grad_loss(self, params):
-        return +self.alpha * self.l1_ratio * np.sign(params) + self.alpha * (1 - self.l1_ratio) * params
+        return (
+            +self.alpha * self.l1_ratio * np.sign(params)
+            + self.alpha * (1 - self.l1_ratio) * params
+        )
 
     def fit(self, X, y, sample_weight=None):
         """Fit the linear model on training data `X` and `y` by optimizing the loss function using gradient descent.
@@ -824,7 +901,11 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         X_, grad_loss, loss = self._prepare_inputs(X, sample_weight, y)
 
         d = X_.shape[1] - self.n_features_in_  # This is either zero or one.
-        bounds = self.n_features_in_ * [(0, np.inf)] + d * [(-np.inf, np.inf)] if self.positive else None
+        bounds = (
+            self.n_features_in_ * [(0, np.inf)] + d * [(-np.inf, np.inf)]
+            if self.positive
+            else None
+        )
         minimize_result = minimize(
             loss,
             x0=np.zeros(self.n_features_in_ + d),
@@ -985,7 +1066,11 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
 
         def grad_imbalanced_loss(params):
             return (
-                -(sample_weight * np.where(X @ params > y, self.overestimation_punishment_factor, 1) * (y - X @ params))
+                -(
+                    sample_weight
+                    * np.where(X @ params > y, self.overestimation_punishment_factor, 1)
+                    * (y - X @ params)
+                )
                 @ X
                 / X.shape[0]
             ) + self._regularized_grad_loss(params)
@@ -1089,12 +1174,18 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
     def _get_objective(self, X, y, sample_weight):
         def quantile_loss(params):
             return np.mean(
-                sample_weight * np.where(X @ params < y, self.quantile, 1 - self.quantile) * np.abs(y - X @ params)
+                sample_weight
+                * np.where(X @ params < y, self.quantile, 1 - self.quantile)
+                * np.abs(y - X @ params)
             ) + self._regularized_loss(params)
 
         def grad_quantile_loss(params):
             return (
-                -(sample_weight * np.where(X @ params < y, self.quantile, 1 - self.quantile) * np.sign(y - X @ params))
+                -(
+                    sample_weight
+                    * np.where(X @ params < y, self.quantile, 1 - self.quantile)
+                    * np.sign(y - X @ params)
+                )
                 @ X
                 / X.shape[0]
             ) + self._regularized_grad_loss(params)
@@ -1211,4 +1302,6 @@ class LADRegression(QuantileRegression):
         positive=False,
         method="SLSQP",
     ):
-        super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, method, quantile=0.5)
+        super().__init__(
+            alpha, l1_ratio, fit_intercept, copy_X, positive, method, quantile=0.5
+        )

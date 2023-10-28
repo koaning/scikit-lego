@@ -5,6 +5,8 @@ except ImportError:
 
     cp = NotInstalledPackage("cvxpy")
 
+from warnings import warn
+
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array, check_X_y
@@ -39,7 +41,9 @@ def _mk_monotonic_average(xs, ys, intervals, method="increasing", **kwargs):
     elif method == "decreasing":
         constraints = [betas[i + 1] <= 0 for i in range(betas.shape[0] - 1)]
     else:
-        raise ValueError(f"method must be either `increasing` or `decreasing`, got: {method}")
+        raise ValueError(
+            f"method must be either `increasing` or `decreasing`, got: {method}"
+        )
     prob = cp.Problem(objective, constraints)
     prob.solve()
     return betas.value.cumsum()
@@ -47,6 +51,7 @@ def _mk_monotonic_average(xs, ys, intervals, method="increasing", **kwargs):
 
 def _mk_average(xs, ys, intervals, method="average", span=1, **kwargs):
     """Creates smoothed averages of `ys` at the intervals given by `intervals`.
+
     Parameters
     ----------
     xs : array-like of shape (n_samples,)
@@ -106,9 +111,13 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         The quantiles that are used to cut the interval.
     heights_ : np.ndarray of shape (n_features, n_chunks)
         The heights of the quantiles that are used to cut the interval.
-    num_cols_ : int
+    n_features_in_ : int
         Number of features seen during `fit`.
+    num_cols_ : int
+        Deprecated, please use `n_features_in_` instead.
     """
+
+    _ALLOWED_METHODS = ("average", "normal", "increasing", "decreasing")
 
     def __init__(self, n_chunks=10, span=1, method="normal"):
         self.span = span
@@ -137,15 +146,21 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
             - If `n_chunks` is not a positive integer.
             - If `span` is not between 0 and 1.
         """
-        allowed_methods = ["average", "normal", "increasing", "decreasing"]
-        if self.method not in allowed_methods:
-            raise ValueError(f"`method` must be in {allowed_methods}, got `{self.method}`")
+
+        if self.method not in self._ALLOWED_METHODS:
+            raise ValueError(
+                f"`method` must be in {self._ALLOWED_METHODS}, got `{self.method}`"
+            )
         if self.n_chunks <= 0:
             raise ValueError(f"`n_chunks` must be >= 1, received {self.n_chunks}")
         if self.span > 1.0:
-            raise ValueError(f"Error, we expect 0 <= span <= 1, received span={self.span}")
+            raise ValueError(
+                f"Error, we expect 0 <= span <= 1, received span={self.span}"
+            )
         if self.span < 0.0:
-            raise ValueError(f"Error, we expect 0 <= span <= 1, received span={self.span}")
+            raise ValueError(
+                f"Error, we expect 0 <= span <= 1, received span={self.span}"
+            )
 
         # these two matrices will have shape (columns, quantiles)
         # quantiles indicate where the interval split occurs
@@ -153,12 +168,18 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         self.quantiles_ = np.zeros((X.shape[1], self.n_chunks))
         # heights indicate what heights these intervals will have
         self.heights_ = np.zeros((X.shape[1], self.n_chunks))
-        self.num_cols_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
 
-        average_func = _mk_average if self.method in ["average", "normal"] else _mk_monotonic_average
+        average_func = (
+            _mk_average
+            if self.method in ["average", "normal"]
+            else _mk_monotonic_average
+        )
 
         for col in range(X.shape[1]):
-            self.quantiles_[col, :] = np.quantile(X[:, col], q=np.linspace(0, 1, self.n_chunks))
+            self.quantiles_[col, :] = np.quantile(
+                X[:, col], q=np.linspace(0, 1, self.n_chunks)
+            )
             self.heights_[col, :] = average_func(
                 X[:, col],
                 y,
@@ -186,11 +207,32 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
         ValueError
             If the number of columns from `X` differs from the number of columns when fitting.
         """
-        check_is_fitted(self, ["quantiles_", "heights_", "num_cols_"])
+        check_is_fitted(self, ["quantiles_", "heights_", "n_features_in_"])
         X = check_array(X, estimator=self)
-        if X.shape[1] != self.num_cols_:
-            raise ValueError(f"fitted on {self.num_cols_} features but received {X.shape[1]}")
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(
+                f"fitted on {self.n_features_in_} features but received {X.shape[1]}"
+            )
         transformed = np.zeros(X.shape)
         for col in range(transformed.shape[1]):
-            transformed[:, col] = np.interp(X[:, col], self.quantiles_[col, :], self.heights_[col, :])
+            transformed[:, col] = np.interp(
+                X[:, col], self.quantiles_[col, :], self.heights_[col, :]
+            )
         return transformed
+
+    @property
+    def num_cols_(self):
+        warn(
+            "Please use `n_features_in_` instead of `num_cols_`, `num_cols_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_
+
+    @property
+    def allowed_methods(self):
+        warn(
+            "Please use `_ALLOWED_METHODS` instead of `allowed_methods`,"
+            "`allowed_methods` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self._ALLOWED_METHODS
