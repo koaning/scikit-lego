@@ -116,8 +116,6 @@ nav:
     - Home: index.md
     - Installation: installation.md
     - Contribution: contribution.md
-    - RStudio: rstudio.md
-    - This: this.md
   - User guide:
     - Datasets: user-guide/datasets.md
     - Linear Models: user-guide/linear-models.md
@@ -130,6 +128,7 @@ nav:
     - Cross Validation: user-guide/cross-validation.md
     - Debug Pipeline: user-guide/debug-pipeline.md
     - Pandas Pipelines: user-guide/pandas-pipelines.md
+    - RStudio: rstudio.md
   - API Reference:
     - Base: api/base.md
     - Common: api/common.md
@@ -146,3 +145,4 @@ nav:
     - Pandas Utils: api/pandas-utils.md
     - Pipeline: api/pipeline.md
     - Preprocessing: api/preprocessing.md
+  - This: this.md
