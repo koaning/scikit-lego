@@ -19,25 +19,26 @@ class TimeGapSplit:
     This cross-validation object is a variation of TimeSeriesSplit with the following  differences:
 
     - The splits are made based on datetime duration, instead of number of rows.
-    - The user specifies the validation durations and either training_duration or n_splits.
-    - The user can specify a 'gap' duration that is added after the training split and before the validation split.
+    - The user specifies the `valid_duration` and either `train_duration` or `n_splits`.
+    - The user can specify a `gap_duration` that is added after the training split and before the validation split.
 
     The 3 duration parameters can be used to really replicate how the model is going to be used in production in batch
     learning.
 
-    Each validation fold doesn't overlap. The entire 'window' moves by 1 'valid_duration'
-    until there is not enough data.
+    Each validation fold doesn't overlap. The entire `window` moves by 1 `valid_duration` until there is not enough
+    data.
 
-    If this would lead to more splits then specified with 'n_splits', the 'window' moves by
-    the 'validation_duration' times the fraction of possible splits and requested splits:
+    If this would lead to more splits then specified with `n_splits`, the `window` moves by `valid_duration` times the
+    fraction of possible splits and requested splits:
 
-    - n_possible_splits = (total_length - train_duration-gap_duration) // valid_duration
-    - time_shift = valid_duration * n_possible_splits / n_slits
+    - `n_possible_splits = (total_length - train_duration-gap_duration) // valid_duration`
+    - `time_shift = valid_duration * n_possible_splits / n_slits`
+
     so the CV spans the whole dataset.
 
-    If 'train_duration' is not passed but 'n_splits' is, the training duration is increased to:
+    If `train_duration` is not passed but `n_splits` is, the training duration is increased to:
 
-        train_duration = total_length - (gap_duration + valid_duration * n_splits)
+    `train_duration = total_length - (gap_duration + valid_duration * n_splits)`
 
     such that the shifting the entire window by one validation duration spans the whole training set.
 
@@ -349,15 +350,15 @@ class GroupTimeSeriesSplit(_BaseKFold):
     """Sliding window time series split.
 
     Create `n_splits` folds with an as equally possible size through a smart variant of a brute force search.
-    Groups parameter in .split() method should be filled with the time groups (e.g. years)
+    Groups parameter in `.split()` method should be filled with the time groups (e.g. years)
 
-    If n_splits is 3 ("*" = train, "x" = test)::
+    If `n_splits` is 3 ("*" = train, "x" = test):
 
-    |-----------------------|
-    | * * * x x x - - - - - |
-    | - - - * * * x x x - - |
-    | - - - - - - * * * x x |
-    |-----------------------|
+    ```console
+    * * * x x x - - - - -
+    - - - * * * x x x - -
+    - - - - - - * * * x x
+    ```
 
     Parameters
     ----------
@@ -411,14 +412,14 @@ class GroupTimeSeriesSplit(_BaseKFold):
             )
         except AttributeError:
             raise AttributeError(
-                ".summary() only works after having ran" " .split(X, y, groups)."
+                ".summary() only works after having ran .split(X, y, groups)."
             )
 
     def split(self, X=None, y=None, groups=None):
         """Generate the train-test splits of all the folds
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         X : array-like of shape (n_samples, n_features), default=None
             Data to split.
         y : array-like of shape (n_samples,), default=None
@@ -447,8 +448,8 @@ class GroupTimeSeriesSplit(_BaseKFold):
     def get_n_splits(self, X=None, y=None, groups=None):
         """Get the amount of splits
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         X : array-like of shape (n_samples, n_features), default=None
             Ignored, present for compatibility.
         y : array-like of shape (n_samples,), default=None
@@ -468,7 +469,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         over one minute.
 
         Parameters
-        -----------
+        ----------
         groups : array-like of shape (n_samples,)
             Groups to check for unique groups and n_splits.
 
@@ -504,8 +505,8 @@ class GroupTimeSeriesSplit(_BaseKFold):
     def _iter_test_indices(self, X=None, y=None, groups=None):
         """Calculate the optimal division of groups into folds so that every fold is as equally large as possible.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         X : array-like of shape (n_samples, n_features), default=None
             Ignored, present for compatibility.
         y : array-like of shape (n_samples,), default=None
@@ -532,8 +533,8 @@ class GroupTimeSeriesSplit(_BaseKFold):
         """Calculate an approximate first and last split point to reduce the amount of options during a brute force
         search.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         X : array-like of shape (n_samples, n_features), default=None
             Ignored, present for compatibility.
         y : array-like of shape (n_samples,), default=None
