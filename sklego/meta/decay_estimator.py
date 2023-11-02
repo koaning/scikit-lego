@@ -22,7 +22,7 @@ class DecayEstimator(BaseEstimator):
 
         To change such behaviour, set `check_input` to `True`.
 
-        Remark that if the check is skipped, then `y` should have a `shape` attrbute, which is
+        Remark that if the check is skipped, then `y` should have a `.shape` attrbute, which is
         used to extract the number of samples in training data, and compute the weights.
 
     The DecayEstimator will use exponential decay to weight the parameters.
