@@ -46,7 +46,7 @@ class LinearDecay:
             raise ValueError("`min_value` must be less than or equal to `max_value`")
 
         n_samples = y.shape[0]
-        return np.linspace(self.min_value, self.max_value, n_samples)
+        return np.linspace(self.min_value, self.max_value, n_samples + 1)[1:]
 
 
 class ExponentialDecay:
@@ -203,10 +203,7 @@ class StepWiseDecay:
             n_steps = self.n_steps
             step_width = (self.max_value - self.min_value) / n_steps
 
-        return (
-            self.max_value
-            - (np.arange(n_samples, 0, -1) // self.step_size) * step_width
-        )
+        return self.max_value - (np.arange(n_samples, 0, -1) // step_size) * step_width
 
 
 class SigmoidDecay:
