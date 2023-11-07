@@ -643,3 +643,105 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # create a mapper to set every group to the right group_id
         mapper = dict(zip(df["index"], df["group"]))
         return np.vectorize(mapper.get)(groups)
+
+
+class WithoutLiersCV:
+    """A custom cross-validation splitter that filters out data points labeled as anomalies during the splitting process
+    to exclude them from the training sets.
+
+    The anomaly label is specified by the `anomalous_label` parameter. Data points with this label will be excluded
+    during the splitting process from the training sets, but will be included in the test sets.
+
+    Parameters
+    ----------
+    cv : CV Splitter instance
+        The base cross-validation splitter used to split the data. It must have a `split` method that returns
+        a generator of (train_index, test_index) tuples.
+    anomalous_label : int, default=-1
+        The label used to identify anomalous data points in the target labels.
+        Data points with this label will be excluded during the splitting process from the training sets.
+
+    Example
+    -------
+    ```py
+    import numpy as np
+    from sklearn.model_selection import KFold
+    from sklego.model_selection import WithoutLiersCV
+
+    np.random.seed(1)
+    X = np.random.randn(100, 3)
+    y = np.random.randn(100) > 1.5  # 7% of the data is labeled as anomalous
+
+    cv = WithoutLiersCV(
+        cv=KFold(n_splits=3),
+        anomalous_label=1
+    )
+
+    for train_index, test_index in cv.split(X, y):
+        print(f"Train samples: {len(train_index)}", f"Test samples: {len(test_index)}", sep="\n")
+
+    '''
+    Train samples: 62
+    Test samples: 34
+    Train samples: 60
+    Test samples: 33
+    Train samples: 64
+    Test samples: 33
+    '''
+    ```
+
+    Note
+    ----
+    The `WithoutLiersCV` class is designed to work in conjunction with standard cross-validation techniques and
+    evaluate anomaly detection estimators that do not work well with outliers in the training dataset.
+    Such class of estimators are typically trained on inliers only, and therefore, the training set should not
+    contain any outliers
+    (cf. [Novelty Detection](https://scikit-learn.org/stable/modules/outlier_detection.html#novelty-detection)).
+    """
+
+    def __init__(self, cv, anomalous_label=-1):
+        self.cv = cv
+        self.anomalous_label = anomalous_label
+
+    def split(self, X, y, groups=None):
+        """Generate indices to split data into training and test set, excluding data points with the specified
+        anomalous label from the training set.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data to be split.
+        y : array-like of shape (n_samples,)
+            The target variable with anomalous labels to be excluded from the training set.
+        groups : array-like | None, default=None
+            Group labels for the samples, used for group-based cross-validation.
+
+        Yields
+        ------
+        train_index : array
+            An array of indices representing the training set without anomalous data points.
+        test_index : array
+            An array of indices representing the test set, including anomalous data points.
+        """
+        for train_index, test_index in self.cv.split(X, y, groups):
+            inliner_index = np.where(y[train_index] != self.anomalous_label)[0]
+            yield train_index[inliner_index], test_index
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        """Return the number of splitting iterations in the cross-validator.
+
+        Parameters
+        ----------
+        X : array-like | None, default=None
+            The input data to be split. May be ignored by some cross-validation methods.
+        y : array-like | None, default=None
+            The target labels corresponding to the input data. May be ignored by some cross-validation methods.
+        groups : array-like | None, default=None
+            Group labels for the samples. May be ignored by some cross-validation methods.
+
+        Returns
+        -------
+        n_splits : int
+            The number of splitting iterations in the cross-validator.
+        """
+        return self.cv.get_n_splits(X, y, groups)
