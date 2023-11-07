@@ -58,7 +58,7 @@ def test_decay_weight(mod, is_clf, decay_func, decay_kwargs):
 
     mod = DecayEstimator(mod, decay_func=decay_func, **decay_kwargs).fit(X, y)
 
-    # assert np.logical_and(mod.weights_ >= 0, mod.weights_ <= 1).all()
+    assert np.logical_and(mod.weights_ >= 0, mod.weights_ <= 1).all()
     assert np.all(mod.weights_[:-1] <= mod.weights_[1:])
 
 
