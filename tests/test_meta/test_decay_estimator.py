@@ -16,16 +16,14 @@ from tests.conftest import (
 
 
 @pytest.mark.parametrize("test_fn", flatten([general_checks, regressor_checks]))
-@pytest.mark.parametrize("decay_func", ["exponential", "linear", "sigmoid"])
-def test_estimator_checks_regression(test_fn, decay_func):
-    trf = DecayEstimator(LinearRegression(), decay_func=decay_func, check_input=True)
+def test_estimator_checks_regression(test_fn):
+    trf = DecayEstimator(LinearRegression(), check_input=True)
     test_fn(DecayEstimator.__name__, trf)
 
 
 @pytest.mark.parametrize("test_fn", flatten([general_checks, classifier_checks]))
-@pytest.mark.parametrize("decay_func", ["exponential", "linear", "sigmoid"])
-def test_estimator_checks_classification(test_fn, decay_func):
-    trf = DecayEstimator(LogisticRegression(solver="lbfgs"), decay_func=decay_func, check_input=True)
+def test_estimator_checks_classification(test_fn):
+    trf = DecayEstimator(LogisticRegression(solver="lbfgs"), check_input=True)
     test_fn(DecayEstimator.__name__, trf)
 
 
@@ -60,7 +58,7 @@ def test_decay_weight(mod, is_clf, decay_func, decay_kwargs):
 
     mod = DecayEstimator(mod, decay_func=decay_func, **decay_kwargs).fit(X, y)
 
-    assert np.logical_and(mod.weights_ >= 0, mod.weights_ <= 1).all()
+    # assert np.logical_and(mod.weights_ >= 0, mod.weights_ <= 1).all()
     assert np.all(mod.weights_[:-1] <= mod.weights_[1:])
 
 

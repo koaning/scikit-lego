@@ -24,6 +24,9 @@ class LinearDecay:
     """
 
     def __init__(self, min_value=0.0, max_value=1.0):
+        if min_value > max_value:
+            raise ValueError("`min_value` must be less than or equal to `max_value`")
+
         self.min_value = min_value
         self.max_value = max_value
 
@@ -42,9 +45,6 @@ class LinearDecay:
         np.ndarray, shape=(n_samples,)
             The decay values.
         """
-        if self.min_value > self.max_value:
-            raise ValueError("`min_value` must be less than or equal to `max_value`")
-
         n_samples = y.shape[0]
         return np.linspace(self.min_value, self.max_value, n_samples + 1)[1:]
 
@@ -70,6 +70,11 @@ class ExponentialDecay:
     """
 
     def __init__(self, decay_rate=0.999):
+        if decay_rate <= 0 or decay_rate >= 1:
+            raise ValueError(
+                f"`decay_rate` must be between 0. and 1., found {decay_rate}"
+            )
+
         self.decay_rate = decay_rate
 
     def __call__(self, X, y):
@@ -87,11 +92,6 @@ class ExponentialDecay:
         np.ndarray, shape=(n_samples,)
             The decay values.
         """
-        if self.decay_rate <= 0 or self.decay_rate >= 1:
-            raise ValueError(
-                f"`decay_rate` must be between 0. and 1., found {self.decay_rate}"
-            )
-
         n_samples = y.shape[0]
         return self.decay_rate ** np.arange(n_samples, 0, -1)
 
@@ -140,6 +140,29 @@ class StepWiseDecay:
     """
 
     def __init__(self, n_steps=None, step_size=None, min_value=0.0, max_value=1.0):
+        if min_value > max_value:
+            raise ValueError("`min_value` must be less than or equal to `max_value`")
+
+        if step_size is None and n_steps is None:
+            raise ValueError("Either `step_size` or `n_steps` must be provided")
+
+        elif step_size is not None and n_steps is not None:
+            raise ValueError("Only one of `step_size` or `n_steps` must be provided")
+
+        elif step_size is not None and n_steps is None:
+            if not isinstance(step_size, int):
+                raise TypeError("`step_size` must be an integer")
+
+            if step_size <= 0:
+                raise ValueError("`step_size` must be greater than 0")
+
+        elif step_size is None and n_steps is not None:
+            if not isinstance(n_steps, int):
+                raise TypeError("`n_steps` must be an integer")
+
+            if n_steps <= 0:
+                raise ValueError("`n_steps` must be greater than 0")
+
         self.n_steps = n_steps
         self.step_size = step_size
         self.min_value = min_value
@@ -160,48 +183,24 @@ class StepWiseDecay:
         np.ndarray, shape=(n_samples,)
             The decay values.
         """
-        if self.min_value > self.max_value:
-            raise ValueError("`min_value` must be less than or equal to `max_value`")
 
         n_samples = y.shape[0]
 
-        if self.step_size is None and self.n_steps is None:
-            raise ValueError("Either `step_size` or `n_steps` must be provided")
+        if self.step_size is not None and self.step_size > n_samples:
+            raise ValueError(
+                "`step_size` must be less than or equal to the number of samples"
+            )
 
-        elif self.step_size is not None and self.n_steps is not None:
-            raise ValueError("Only one of `step_size` or `n_steps` must be provided")
+        if self.n_steps is not None and self.n_steps > n_samples:
+            raise ValueError(
+                "`n_steps` must be less than or equal to the number of samples"
+            )
 
-        elif self.step_size is not None and self.n_steps is None:
-            if not isinstance(self.step_size, int):
-                raise TypeError("`step_size` must be an integer")
-
-            if self.step_size <= 0:
-                raise ValueError("`step_size` must be greater than 0")
-
-            if self.step_size > n_samples:
-                raise ValueError(
-                    "`step_size` must be less than or equal to the number of samples"
-                )
-
-            step_size = self.step_size
-            n_steps = n_samples // self.step_size
-            step_width = (self.max_value - self.min_value) / n_steps
-
-        elif self.step_size is None and self.n_steps is not None:
-            if not isinstance(self.n_steps, int):
-                raise TypeError("`n_steps` must be an integer")
-
-            if self.n_steps <= 0:
-                raise ValueError("`n_steps` must be greater than 0")
-
-            if self.n_steps > n_samples:
-                raise ValueError(
-                    "`n_steps` must be less than or equal to the number of samples"
-                )
-
-            step_size = n_samples // self.n_steps
-            n_steps = self.n_steps
-            step_width = (self.max_value - self.min_value) / n_steps
+        n_steps = (
+            n_samples // self.step_size if self.step_size is not None else self.n_steps
+        )
+        step_size = n_samples // n_steps
+        step_width = (self.max_value - self.min_value) / n_steps
 
         return self.max_value - (np.arange(n_samples, 0, -1) // step_size) * step_width
 
@@ -229,10 +228,16 @@ class SigmoidDecay:
     ------
     ValueError
         - If `min_value` is greater than `max_value`.
-        - If `growth_rate` is not between 0 and 1.
+        - If `growth_rate` is specified and not between 0 and 1.
     """
 
     def __init__(self, growth_rate=None, min_value=0.0, max_value=1.0):
+        if min_value > max_value:
+            raise ValueError("`min_value` must be less than or equal to `max_value`")
+
+        if growth_rate is not None and (growth_rate <= 0 or growth_rate >= 1):
+            raise ValueError("`growth_rate` must be between 0. and 1.")
+
         self.growth_rate = growth_rate
         self.min_value = min_value
         self.max_value = max_value
@@ -252,14 +257,6 @@ class SigmoidDecay:
         np.ndarray, shape=(n_samples,)
             The decay values.
         """
-        if self.min_value > self.max_value:
-            raise ValueError("`min_value` must be less than or equal to `max_value`")
-
-        if self.growth_rate is not None and (
-            self.growth_rate <= 0 or self.growth_rate >= 1
-        ):
-            raise ValueError("`growth_rate` must be between 0. and 1.")
-
         n_samples = y.shape[0]
         growth_rate = self.growth_rate or 10 / n_samples
 
