@@ -4,21 +4,56 @@ import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils import check_X_y
 from sklearn.utils.validation import (
-    check_is_fitted,
-    check_array,
-    check_random_state,
     FLOAT_DTYPES,
+    check_array,
+    check_is_fitted,
+    check_random_state,
 )
 
 
 class RandomRegressor(BaseEstimator, RegressorMixin):
-    """
-    A RandomRegressor makes random predictions only based on the "y"
-    value that is seen. The goal is that such a regressor can be used
-    for benchmarking. It should be easily beatable.
+    """A `RandomRegressor` makes random predictions only based on the `y` value that is seen.
 
-    :param str strategy: how we want to select random values, can be "uniform" or "normal"
-    :param int seed: the seed value, default: 42
+    The goal is that such a regressor can be used for benchmarking. It _should be_ easily beatable.
+
+    Parameters
+    ----------
+    strategy : Literal["uniform", "normal"], default="uniform"
+        How we want to select random values, either "uniform" or "normal"
+    random_state : int | None, default=None
+        The seed value used for the random number generator.
+
+    Attributes
+    ----------
+    min_ : float
+        The minimum value of `y` seen during `fit`.
+    max_ : float
+        The maximum value of `y` seen during `fit`.
+    mu_ : float
+        The mean value of `y` seen during `fit`.
+    sigma_ : float
+        The standard deviation of `y` seen during `fit`.
+    n_features_in_ : int
+        The number of features seen during `fit`.
+    dim_ : int
+        Deprecated, please use `n_features_in_` instead.
+
+    Examples
+    --------
+    ```py
+    from sklego.dummy import RandomRegressor
+    from sklearn.datasets import make_regression
+
+    X, y = make_regression(n_samples=10, n_features=2, random_state=42)
+
+    RandomRegressor(strategy="uniform", random_state=123).fit(X, y).predict(X).round(2)
+    # array([ 57.63, -66.05, -83.92,  13.88,  64.56, -24.77, 143.33,  54.12,
+    #     -7.34, -34.11])
+
+    RandomRegressor(strategy="normal", random_state=123).fit(X, y).predict(X).round(2)
+    # array([-128.45,   78.05,    7.23, -170.15,  -78.18,  142.9 , -261.39,
+    #     -63.34,  104.68, -106.75])
+    ```
     """
 
     _ALLOWED_STRATEGIES = ("uniform", "normal")
@@ -50,11 +85,18 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X):
-        """
-        Predict new data by making random guesses.
+        """Predict new data by generating random guesses following the given `strategy` based on the `y` statistics seen
+        during `fit`.
 
-        :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :return: array, shape=(n_samples,) the predicted data
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted data.
         """
         rs = check_random_state(self.random_state)
         check_is_fitted(self, ["n_features_in_", "min_", "max_", "mu_", "sigma_"])
