@@ -15,14 +15,14 @@ __all__ = [
     "FormulaicTransformer",
 ]
 
-from .intervalencoder import IntervalEncoder
-from .randomadder import RandomAdder
-from .patsytransformer import PatsyTransformer
-from .pandastransformers import ColumnSelector, PandasTypeSelector, ColumnDropper
-from .projections import InformationFilter, OrthogonalTransformer
-from .repeatingbasis import RepeatingBasisFunction
 from .columncapper import ColumnCapper
-from .identitytransformer import IdentityTransformer
-from .outlier_remover import OutlierRemover
 from .dictmapper import DictMapper
+from .identitytransformer import IdentityTransformer
+from .intervalencoder import IntervalEncoder
 from .formulaictransformer import FormulaicTransformer
+from .outlier_remover import OutlierRemover
+from .pandastransformers import ColumnDropper, ColumnSelector, PandasTypeSelector
+from .patsytransformer import PatsyTransformer
+from .projections import InformationFilter, OrthogonalTransformer
+from .randomadder import RandomAdder
+from .repeatingbasis import RepeatingBasisFunction

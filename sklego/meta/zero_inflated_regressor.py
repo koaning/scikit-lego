@@ -1,15 +1,14 @@
-from inspect import signature
 import logging
+from inspect import signature
 
 import numpy as np
-from sklearn.base import BaseEstimator, RegressorMixin, clone, is_regressor, is_classifier
-from sklearn.utils.validation import check_is_fitted, check_X_y, check_array
+from sklearn.base import BaseEstimator, RegressorMixin, clone, is_classifier, is_regressor
 from sklearn.exceptions import NotFittedError
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
 class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
-    """
-    A meta regressor for zero-inflated datasets, i.e. the targets contain a lot of zeroes.
+    """A meta regressor for zero-inflated datasets, i.e. the targets contain a lot of zeroes.
 
     `ZeroInflatedRegressor` consists of a classifier and a regressor.
 
@@ -24,54 +23,64 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
 
     Parameters
     ----------
-    classifier : Any, scikit-learn classifier
+    classifier : scikit-learn compatible classifier
         A classifier that answers the question "Should the output be zero?".
+    regressor : scikit-learn compatible regressor
+        A regressor for predicting the target. Its prediction is only used if `classifier` says that the output is
+        non-zero.
 
-    regressor : Any, scikit-learn regressor
-        A regressor for predicting the target. Its prediction is only used if `classifier` says that the output is non-zero.
+    Attributes
+    ----------
+    classifier_ : scikit-learn compatible classifier
+        The fitted classifier.
+    regressor_ : scikit-learn compatible regressor
+        The fitted regressor.
 
     Examples
     --------
-    >>> import numpy as np
-    >>> from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
-    >>> np.random.seed(0)
-    >>> X = np.random.randn(10000, 4)
-    >>> y = ((X[:, 0]>0) & (X[:, 1]>0)) * np.abs(X[:, 2] * X[:, 3]**2)
-    >>> z = ZeroInflatedRegressor(
-    ... classifier=ExtraTreesClassifier(random_state=0),
-    ... regressor=ExtraTreesRegressor(random_state=0)
-    ... )
-    >>> z.fit(X, y)
-    ZeroInflatedRegressor(classifier=ExtraTreesClassifier(random_state=0),
-                          regressor=ExtraTreesRegressor(random_state=0))
-    >>> z.predict(X)[:5]
-    array([4.91483294, 0.        , 0.        , 0.04941909, 0.        ])
+    ```py
+    import numpy as np
+    from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
+    from sklego.meta import ZeroInflatedRegressor
+
+    np.random.seed(0)
+    X = np.random.randn(10000, 4)
+    y = ((X[:, 0]>0) & (X[:, 1]>0)) * np.abs(X[:, 2] * X[:, 3]**2)
+    model = ZeroInflatedRegressor(
+        classifier=ExtraTreesClassifier(random_state=0),
+        regressor=ExtraTreesRegressor(random_state=0)
+        )
+
+    model.fit(X, y)
+    # ZeroInflatedRegressor(classifier=ExtraTreesClassifier(random_state=0),
+    #                       regressor=ExtraTreesRegressor(random_state=0))
+
+    model.predict(X)[:5]
+    # array([4.91483294, 0.        , 0.        , 0.04941909, 0.        ])
+    ```
     """
 
     def __init__(self, classifier, regressor) -> None:
-        """Initialize."""
         self.classifier = classifier
         self.regressor = regressor
 
     def fit(self, X, y, sample_weight=None):
-        """
-        Fit the model.
+        """Fit the underlying classifier and regressor using `X` and `y` as training data. The regressor is only trained
+        on examples where the target is non-zero.
 
         Parameters
         ----------
-        X : np.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features )
             The training data.
-
-        y : np.ndarray, 1-dimensional
+        y : array-like of shape (n_samples,)
             The target values.
-
-        sample_weight : Optional[np.array], default=None
+        sample_weight : array-like of shape (n_samples, ), default=None
             Individual weights for each sample.
 
         Returns
         -------
-        ZeroInflatedRegressor
-            Fitted regressor.
+        self : ZeroInflatedRegressor
+            The fitted estimator.
 
         Raises
         ------
@@ -82,7 +91,8 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
         self._check_n_features(X, reset=True)
         if not is_classifier(self.classifier):
             raise ValueError(
-                f"`classifier` has to be a classifier. Received instance of {type(self.classifier)} instead.")
+                f"`classifier` has to be a classifier. Received instance of {type(self.classifier)} instead."
+            )
         if not is_regressor(self.regressor):
             raise ValueError(f"`regressor` has to be a regressor. Received instance of {type(self.regressor)} instead.")
 
@@ -111,7 +121,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
                     self.regressor_.fit(
                         X[non_zero_indices],
                         y[non_zero_indices],
-                        sample_weight=sample_weight[non_zero_indices] if sample_weight is not None else None
+                        sample_weight=sample_weight[non_zero_indices] if sample_weight is not None else None,
                     )
                 else:
                     logging.warning("Regressor ignores sample_weight.")
@@ -128,17 +138,17 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X):
-        """
-        Get predictions.
+        """Predict target values for `X` using fitted estimator by first asking the classifier if the output should be
+        zero. If yes, output zero. Otherwise, ask the regressor for its prediction and output it.
 
         Parameters
         ----------
-        X : np.ndarray, shape (n_samples, n_features)
-            Samples to get predictions of.
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
 
         Returns
         -------
-        y : np.ndarray, shape (n_samples,)
+        array-like of shape (n_samples,)
             The predicted values.
         """
         check_is_fitted(self)

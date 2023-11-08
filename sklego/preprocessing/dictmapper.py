@@ -7,12 +7,22 @@ from sklearn.utils.validation import check_is_fitted
 
 
 class DictMapper(TransformerMixin, BaseEstimator):
-    """
-    Map the values of values of columns according to the input dictionary,
-    fall back to the default if the key is not present in the dictionary.
+    """The `DictMapper` transformer maps the values of columns according to the input `mapper` dictionary, fall back to
+    the `default` value if the key is not present in the dictionary.
 
-    :param mapper: The dictionary containing the mapping of the values
-    :param default: The value to fall back to if the value is not in the mapper
+    Parameters
+    ----------
+    mapper : dict[..., int]
+        The dictionary containing the mapping of the values.
+    default : int
+        The value to fall back to if the value is not in the mapper.
+
+    Attributes
+    ----------
+    n_features_in_ : int
+        Number of features seen during `fit`.
+    dim_ : int
+        Deprecated, please use `n_features_in_` instead.
     """
 
     def __init__(self, mapper, default):
@@ -20,16 +30,19 @@ class DictMapper(TransformerMixin, BaseEstimator):
         self.default = default
 
     def fit(self, X, y=None):
-        """
-        Checks the input dataframe and records the shape of it
+        """Checks the input data and records the number of features.
 
-        :type X: pandas.DataFrame or numpy.ndarray
-        :param X: The column(s) from which the mapping will be applied
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to fit.
+        y : array-like of shape (n_samples,), default=None
+            Ignored, present for compatibility.
 
-        :param y: Ignored.
-
-        :rtype: sklego.preprocessing.DictMapper
-        :returns: The fitted object.
+        Returns
+        -------
+        self : DictMapper
+            The fitted transformer.
         """
         X = check_array(
             X,
@@ -43,18 +56,22 @@ class DictMapper(TransformerMixin, BaseEstimator):
         return self
 
     def transform(self, X):
-        """
-        Performs the mapping on the column(s) of ``X``.
+        """Performs the mapping on the column(s) of `X`.
 
-        :type X: pandas.DataFrame or numpy.ndarray
-        :param X: The column(s) for which the mapping will be applied.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data for which the mapping will be applied.
 
-        :rtype: numpy.ndarray
-        :returns: ``X`` values with the mapping applied
+        Returns
+        -------
+        np.ndarray of shape (n_samples, n_features)
+            The data with the mapping applied.
 
-        :raises:
-            ``ValueError`` if the number of columns from ``X`` differs from the
-            number of columns when fitting
+        Raises
+        ------
+        ValueError
+            If the number of columns from `X` differs from the number of columns when fitting.
         """
         check_is_fitted(self, ["n_features_in_"])
         X = check_array(

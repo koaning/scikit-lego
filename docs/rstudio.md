@@ -86,7 +86,7 @@ cv <- grid(
 cv$fit(X, y)
 ```
 
-You'll note that we're using `list` and `as.integer` here. For details on why, check out this [documentation page][reticulate-calling-python].
+You'll note that we're using `list` and `as.integer` here. For details on why, check out this [documentation page]().
 
 We'll need to do some parsing of the `cv_results_` to properly get these into a tidyverse dataframe.
 
@@ -141,5 +141,4 @@ But you can certainly combine the tools from scikit-lego with your tools in R.
 [reticulate]: https://github.com/rstudio/reticulate
 [reticulate-install]: https://rstudio.github.io/reticulate/articles/versions.html
 [reticulate-package]: https://rstudio.github.io/reticulate/articles/python_packages.html
-[reticulate-calling-python]: https://rstudio.github.io/reticulate/articles/calling_python.html#lists-tuples-and-dictionaries
 [python-engine]: https://rstudio.github.io/reticulate/articles/r_markdown.html
