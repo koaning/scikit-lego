@@ -90,7 +90,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
 
     @staticmethod
     def _hash(X):
-        """Calculate a hash of X based on its type. Hashers are defined in TrainOnlyMixin.HASHERS.
+        """Calculate a hash of X based on its type. Hashers are defined in TrainOnlyMixin._HASHERS.
 
         Supported types are:
 
@@ -118,7 +118,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         except KeyError:
             raise ValueError(
                 f"Unknown datatype {type(X)}, "
-                f"`TrainOnlyTransformerMixin` only supports {TrainOnlyTransformerMixin.HASHERS.keys()}"
+                f"`TrainOnlyTransformerMixin` only supports: {set(TrainOnlyTransformerMixin._HASHERS.keys())}"
             )
         else:
             return hasher(X)
