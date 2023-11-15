@@ -7,7 +7,6 @@ from sklego.pandas_utils import (
     log_step,
     log_step_extra,
     add_lags,
-    _add_lagged_pandas_columns,
     _add_lagged_numpy_columns,
 )
 

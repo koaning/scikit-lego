@@ -7,6 +7,7 @@ base_packages = [
     "scikit-learn>=1.0",
     "pandas>=1.1.5",
     "Deprecated>=1.2.6",
+    "dataframe-api-compat>=0.1.26",
 ]
 cvxpy_packages = ["cvxpy>=1.1.8"]
 umap_packages = ["umap-learn>=0.4.6"]
@@ -30,6 +31,7 @@ test_packages = all_packages + [  # we need extras packages for their tests
     "pytest-cov>=2.6.1",
     "pytest-mock>=1.6.3",
     "pre-commit>=1.18.3",
+    "polars>=0.19.13",
 ]
 util_packages = [
     "matplotlib>=3.0.2",

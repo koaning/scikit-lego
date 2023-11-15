@@ -3,7 +3,6 @@ import inspect
 from functools import partial, wraps
 
 import numpy as np
-import pandas as pd
 from scipy.ndimage import shift
 
 from sklego.common import as_list
@@ -252,21 +251,14 @@ def add_lags(X, cols, lags, drop_na=True):
     if not all(isinstance(x, int) for x in lags):
         raise ValueError("lags must be a list of type: " + str(int))
 
-    # The keys of the allowed_inputs dict contain the allowed
-    # types, and the values contain the associated handlers
-    allowed_inputs = {
-        pd.core.frame.DataFrame: _add_lagged_pandas_columns,
-        np.ndarray: _add_lagged_numpy_columns,
-    }
-
     # Choose the correct handler based on the input class
-    for allowed_input, handler in allowed_inputs.items():
-        if isinstance(X, allowed_input):
-            return handler(X, cols, lags, drop_na)
+    if isinstance(X, np.ndarray):
+        return _add_lagged_numpy_columns(X, cols, lags, drop_na)
+    elif hasattr(X, "__dataframe_consortium_standard__"):
+        return _add_lagged_dataframe_columns(X, cols, lags, drop_na)
 
     # Otherwise, raise a ValueError
-    allowed_input_names = list(allowed_inputs.keys())
-    raise ValueError("X type should be one of:", allowed_input_names)
+    raise ValueError("X type should be a numpy.ndarray, or implement __dataframe_consortium_standard__")
 
 
 def _add_lagged_numpy_columns(X, cols, lags, drop_na):
@@ -315,7 +307,7 @@ def _add_lagged_numpy_columns(X, cols, lags, drop_na):
     return answer
 
 
-def _add_lagged_pandas_columns(df, cols, lags, drop_na):
+def _add_lagged_dataframe_columns(df, cols, lags, drop_na):
     """Append a lag columns.
 
     Parameters
@@ -334,20 +326,20 @@ def _add_lagged_pandas_columns(df, cols, lags, drop_na):
     pd.DataFrame
         Dataframe with concatenated lagged cols.
     """
+    df = df.__dataframe_consortium_standard__(api_version="2023.11-beta")
 
     cols = as_list(cols)
 
-    # Indexes are not supported as pandas column names may be
-    # integers themselves, introducing unexpected behaviour
-    if not all([col in df.columns.values for col in cols]):
+    # Columns need to be selected by name
+    if not all([col in df.column_names for col in cols]):
         raise KeyError("The column does not exist")
 
-    combos = (df[col].shift(-lag).rename(col + str(lag)) for col in cols for lag in lags)
+    combos = [df.col(col).shift(-lag).rename(col + str(lag)) for col in cols for lag in lags]
 
-    answer = pd.concat([df, *combos], axis=1)
+    answer = df.assign(*combos)
 
-    # Remove rows that contain NA values when drop_na is truthy
+    # Remove rows that contain null values
     if drop_na:
-        answer = answer.dropna()
+        answer = answer.drop_nulls()
 
-    return answer
+    return answer.dataframe

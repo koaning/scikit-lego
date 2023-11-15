@@ -9,7 +9,6 @@ from abc import ABC, abstractmethod
 from warnings import warn
 
 import numpy as np
-import pandas as pd
 from deprecated.sphinx import deprecated
 from scipy.optimize import minimize
 from scipy.special._ufuncs import expit
@@ -496,9 +495,9 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             )
 
         self.sensitive_col_idx_ = self.sensitive_cols
-        if isinstance(X, pd.DataFrame):
+        if hasattr(X, '__dataframe__'):
             self.sensitive_col_idx_ = [
-                i for i, name in enumerate(X.columns) if name in self.sensitive_cols
+                i for i, name in enumerate(X.__dataframe__().column_names()) if name in self.sensitive_cols
             ]
         X, y = check_X_y(X, y, accept_large_sparse=False)
 
