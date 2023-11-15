@@ -7,6 +7,7 @@ from sklego.pandas_utils import (
     log_step,
     log_step_extra,
     add_lags,
+    _add_lagged_dataframe_columns,
     _add_lagged_numpy_columns,
 )
 
@@ -28,7 +29,11 @@ def test_add_lags_wrong_inputs(test_df):
     invalid_lags = ["1", "2"]
     with pytest.raises(ValueError, match="lags must be a list of type: ?"):
         add_lags(test_df, ["X1"], invalid_lags)
-    with pytest.raises(ValueError, match="X type should be one of: ?"):
+    with pytest.raises(
+        ValueError,
+        match="X type should be a numpy.ndarray, or implement "
+        "__dataframe_consortium_standard__",
+    ):
         add_lags(invalid_df, ["X1"], 1)
 
 
@@ -44,9 +49,9 @@ def test_add_lags_correct_X(test_X):
     assert (add_lags(test_X, [0, 1], [1, 2]) == expected).all()
 
 
-def test_add_lagged_pandas_columns(test_df):
+def test_add_lagged_dataframe_columns(test_df):
     with pytest.raises(KeyError, match="The column does not exist"):
-        _add_lagged_pandas_columns(test_df, ["last_name"], 1, True)
+        _add_lagged_dataframe_columns(test_df, ["last_name"], 1, True)
 
 
 def test_add_lagged_numpy_columns(test_X):
