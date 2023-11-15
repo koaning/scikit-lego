@@ -2,6 +2,7 @@ import itertools as it
 
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.base import BaseEstimator
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
@@ -39,6 +40,14 @@ def test_hash_pandas():
 
     assert len(hashes) == len(set(hashes))
 
+def test_hash_invalid():
+    """Tests whether the hash function raises on non-supported class"""
+    with pytest.raises(
+        ValueError,
+        match="Unknown datatype <class 'dict'>, `TrainOnlyTransformerMixin` only "
+        "supports",
+    ):
+        TrainOnlyTransformerMixin._hash({'a': [1, 1, 2], 'b': [4, 5, 6]})
 
 def test_bare_trainonlytransformer(random_xy_dataset_regr):
     """Tests whether the trainonlytransformer will only transform train when used directly"""
