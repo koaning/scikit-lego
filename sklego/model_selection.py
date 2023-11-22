@@ -12,6 +12,7 @@ from sklearn.utils.validation import indexable
 from sklego.base import Clusterer
 from sklego.common import sliding_window
 
+from sklego.pandas_utils import try_convert_to_standard_compliant_column
 
 class TimeGapSplit:
     r"""Provides train/test indices to split time series data samples.
@@ -87,6 +88,7 @@ class TimeGapSplit:
         if not date_serie.index.is_unique:
             raise ValueError("date_serie doesn't have a unique index")
 
+        # self.date_serie = try_convert_to_standard_compliant_column(date_serie)
         self.date_serie = date_serie.copy()
         self.date_serie = self.date_serie.rename("__date__")
         self.train_duration = train_duration
@@ -105,8 +107,12 @@ class TimeGapSplit:
         X : pd.DataFrame
             Dataframe with the data to split
         """
+        print('in _join_date_and_x')
         X_index_df = pd.DataFrame(range(len(X)), columns=["np_index"], index=X.index)
+        print('X_index_df:\n', X_index_df)
+        print('self.date_serie:\n', self.date_serie)
         X_index_df = X_index_df.join(self.date_serie)
+        print('X_index_df:\n', X_index_df)
 
         return X_index_df
 
@@ -128,8 +134,11 @@ class TimeGapSplit:
             Train and test indices of the same fold.
         """
 
+        print('X:\n', X)
         X_index_df = self._join_date_and_x(X)
+        print('X_index_df:\n', X_index_df)
         X_index_df = X_index_df.sort_values("__date__", ascending=True)
+        print('X_index_df:\n', X_index_df)
 
         if len(X) != len(X_index_df):
             raise AssertionError(
