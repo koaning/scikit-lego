@@ -326,7 +326,7 @@ def _add_lagged_dataframe_columns(df, cols, lags, drop_na):
     pd.DataFrame
         Dataframe with concatenated lagged cols.
     """
-    df = convert_to_standard_compliant_dataframe(df)
+    df = try_convert_to_standard_compliant_dataframe(df)
 
     cols = as_list(cols)
 
@@ -344,7 +344,7 @@ def _add_lagged_dataframe_columns(df, cols, lags, drop_na):
 
     return answer.dataframe
 
-def convert_to_standard_compliant_dataframe(df):
+def try_convert_to_standard_compliant_dataframe(df):
     if hasattr(df, '__dataframe_consortium_standard__'):
         return df.__dataframe_consortium_standard__(api_version='2023.11-beta')
     try:
@@ -363,8 +363,4 @@ def convert_to_standard_compliant_dataframe(df):
         if isinstance(df, pl.DataFrame):
             from dataframe_api_compat.polars_standard import convert_to_standard_compliant_dataframe
             return convert_to_standard_compliant_dataframe(df)
-    raise TypeError(
-        "Unexpected dataframe object. "
-        "Expected pandas, Polars, or a dataframe that implements the dataframe consortium standard.\n"
-        "Got: ", type(df)
-    ) 
+    return df

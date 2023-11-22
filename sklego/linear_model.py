@@ -25,6 +25,8 @@ from sklearn.utils.validation import (
     column_or_1d,
 )
 
+from sklego.pandas_utils import try_convert_to_standard_compliant_dataframe
+
 
 class LowessRegression(BaseEstimator, RegressorMixin):
     """`LowessRegression` estimator: LOWESS (Locally Weighted Scatterplot Smoothing) is a type of
@@ -495,10 +497,13 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             )
 
         self.sensitive_col_idx_ = self.sensitive_cols
-        if hasattr(X, '__dataframe__'):
+
+        X = try_convert_to_standard_compliant_dataframe(X)
+        if hasattr(X, '__dataframe_namespace__'):
             self.sensitive_col_idx_ = [
-                i for i, name in enumerate(X.__dataframe__().column_names()) if name in self.sensitive_cols
+                i for i, name in enumerate(X.column_names) if name in self.sensitive_cols
             ]
+            X = X.dataframe
         X, y = check_X_y(X, y, accept_large_sparse=False)
 
         sensitive = X[:, self.sensitive_col_idx_]

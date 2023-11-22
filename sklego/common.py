@@ -8,6 +8,7 @@ from sklearn.base import TransformerMixin
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
+
 class TrainOnlyTransformerMixin(TransformerMixin):
     """Mixin class for transformers that can handle training and test data differently.
 
@@ -58,9 +59,9 @@ class TrainOnlyTransformerMixin(TransformerMixin):
     """
 
     _HASHERS = {
-        pd.DataFrame: lambda X: hashlib.sha256(
-            pd.util.hash_pandas_object(X, index=True).values
-        ).hexdigest(),
+        '__dataframe_namespace__': lambda X: hash(
+            X.to_array().data.tobytes()
+        ),
         np.ndarray: lambda X: hash(X.data.tobytes()),
         np.memmap: lambda X: hash(X.data.tobytes()),
     }
@@ -113,6 +114,12 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         ValueError
             If the type of `X` is not supported.
         """
+        from sklego.pandas_utils import try_convert_to_standard_compliant_dataframe
+        X = try_convert_to_standard_compliant_dataframe(X)
+        if hasattr(X, '__dataframe_namespace__'):
+            hasher = TrainOnlyTransformerMixin._HASHERS['__dataframe_namespace__']
+            X = X.persist()
+            return hasher(X)
         try:
             hasher = TrainOnlyTransformerMixin._HASHERS[type(X)]
         except KeyError:
