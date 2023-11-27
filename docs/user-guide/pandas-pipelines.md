@@ -124,4 +124,4 @@ For example, if we want to log some arbitrary message and the number of unique c
 
 [log-step-api]: /api/pandas_pipeline#sklego.pandas_utils.log_step
 [log-step-extra-api]: /api/pandas_pipeline#sklego.pandas_utils.log_step_extra
-[method-chaining]: https://tomaugspurger.github.io/method-chaining
+[method-chaining]: https://tomaugspurger.net/posts/method-chaining/

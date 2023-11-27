@@ -113,6 +113,10 @@ extra_javascript:
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
+validation:
+  absolute_links: ignore
+  unrecognized_links: ignore
+
 nav:
   - Home:
     - Home: index.md
@@ -148,3 +152,6 @@ nav:
     - Pipeline: api/pipeline.md
     - Preprocessing: api/preprocessing.md
   - This: this.md
+
+not_in_nav: |
+  _static
