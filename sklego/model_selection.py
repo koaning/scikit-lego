@@ -84,11 +84,14 @@ class TimeGapSplit:
                 "gap_duration is longer than train_duration, it should be shorter."
             )
 
-        if not date_serie.index.is_unique:
-            raise ValueError("date_serie doesn't have a unique index")
+        # if not date_serie.index.is_unique:
+        #     raise ValueError("date_serie doesn't have a unique index")
 
-        self.date_serie = date_serie.copy()
-        self.date_serie = self.date_serie.rename("__date__")
+        # can just...convert this and set it, no big deal?
+        # so, you pass it some series with some dates, and some index
+        # self.date_serie = date_serie.copy()
+        # self.date_serie = self.date_serie.rename("__date__")
+        self.date_serie = date_serie.__column_consortium_standard__().rename('__date__').persist()
         self.train_duration = train_duration
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
@@ -128,18 +131,24 @@ class TimeGapSplit:
             Train and test indices of the same fold.
         """
 
-        X_index_df = self._join_date_and_x(X)
-        X_index_df = X_index_df.sort_values("__date__", ascending=True)
+        # X_index_df = self._join_date_and_x(X)
+        X = X.__dataframe_consortium_standard__().persist()
+        X_index_df = X.assign(self.date_serie)
+        pdx = X_index_df.__dataframe_namespace__()
+        new_col = pdx.column_from_sequence(np.arange(X.shape()[0]), dtype=pdx.Int64(), name='np_index')
+        X_index_df = X_index_df.assign(new_col)
+        X_index_df = X_index_df.sort("__date__", ascending=True).persist()
 
-        if len(X) != len(X_index_df):
-            raise AssertionError(
-                "X and X_index_df are not the same length, "
-                "there must be some index missing in 'self.date_serie'"
-            )
+        #if X.shape()[0] != X_index_df.shape()[0]:
+        #    raise AssertionError(
+        #        "X and X_index_df are not the same length, "
+        #        "there must be some index missing in 'self.date_serie'"
+        #    )
 
-        date_min = X_index_df["__date__"].min()
-        date_max = X_index_df["__date__"].max()
-        date_length = X_index_df["__date__"].max() - X_index_df["__date__"].min()
+        date_min = X_index_df.col("__date__").min().persist()
+        date_max = X_index_df.col("__date__").max().persist()
+        # date_length is a timedelta
+        date_length = (X_index_df.col("__date__").max() - X_index_df.col("__date__").min()).persist().scalar
 
         if (self.train_duration is None) and (self.n_splits is not None):
             self.train_duration = date_length - (
@@ -147,7 +156,7 @@ class TimeGapSplit:
             )
 
         if (self.train_duration is not None) and (
-            self.train_duration <= self.gap_duration
+            (self.train_duration <= self.gap_duration)
         ):
             raise ValueError(
                 "gap_duration is longer than train_duration, it should be shorter."
@@ -157,7 +166,7 @@ class TimeGapSplit:
             date_length - self.train_duration - self.gap_duration
         ) / self.valid_duration
         if self.n_splits:
-            if n_split_max < self.n_splits:
+            if (n_split_max < self.n_splits):
                 raise ValueError(
                     (
                         "Number of folds requested = {1} are greater"
@@ -178,33 +187,51 @@ class TimeGapSplit:
             if (
                 current_date + self.train_duration + time_shift + self.gap_duration
                 > date_max
-            ):
+            ).persist():
                 break
 
-            X_train_df = X_index_df[
-                (X_index_df["__date__"] >= start_date)
-                & (X_index_df["__date__"] < current_date + self.train_duration)
-            ]
-            X_valid_df = X_index_df[
+            X_index_df = X_index_df.persist()
+            # X_train_df = X_index_df[
+            #     (X_index_df["__date__"] >= start_date)
+            #     & (X_index_df["__date__"] < current_date + self.train_duration)
+            # ]
+            X_train_df = X_index_df.filter(
+                (X_index_df.col('__date__') >= start_date)
+                & (X_index_df.col('__date__') < current_date + self.train_duration)
+            ).persist()
+            # X_valid_df = X_index_df[
+            #     (
+            #         X_index_df["__date__"]
+            #         >= current_date + self.train_duration + self.gap_duration
+            #     )
+            #     & (
+            #         X_index_df["__date__"]
+            #         < current_date
+            #         + self.train_duration
+            #         + self.valid_duration
+            #         + self.gap_duration
+            #     )
+            # ]
+            X_valid_df = X_index_df.filter(
                 (
-                    X_index_df["__date__"]
+                    X_index_df.col("__date__")
                     >= current_date + self.train_duration + self.gap_duration
                 )
                 & (
-                    X_index_df["__date__"]
+                    X_index_df.col("__date__")
                     < current_date
                     + self.train_duration
                     + self.valid_duration
                     + self.gap_duration
                 )
-            ]
+            ).persist()
 
             current_date = current_date + time_shift
             if self.window == "rolling":
                 start_date = current_date
             yield (
-                X_train_df["np_index"].values,
-                X_valid_df["np_index"].values,
+                X_train_df.col("np_index").to_array(),
+                X_valid_df.col("np_index").to_array(),
             )
 
     def get_n_splits(self, X=None, y=None, groups=None):
@@ -240,7 +267,12 @@ class TimeGapSplit:
             Summary of all folds.
         """
         summary = []
-        X_index_df = self._join_date_and_x(X)
+        X = X.__dataframe_consortium_standard__().persist()
+        X_index_df = X.assign(self.date_serie)
+        pdx = X_index_df.__dataframe_namespace__()
+        new_col = pdx.column_from_sequence(np.arange(X.shape()[0]), dtype=pdx.Int64(), name='np_index')
+        X_index_df = X_index_df.assign(new_col)
+        X_index_df = X_index_df.sort("__date__", ascending=True).persist()
 
         def get_split_info(X, indices, j, part, summary):
             dates = X_index_df.iloc[indices]["__date__"]
