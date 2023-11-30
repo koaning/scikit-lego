@@ -108,8 +108,12 @@ class TimeGapSplit:
         X : pd.DataFrame
             Dataframe with the data to split
         """
-        X_index_df = pd.DataFrame(range(len(X)), columns=["np_index"], index=X.index)
-        X_index_df = X_index_df.join(self.date_serie)
+        X = X.__dataframe_consortium_standard__().persist()
+        X_index_df = X.assign(self.date_serie)
+        pdx = X_index_df.__dataframe_namespace__()
+        new_col = pdx.column_from_sequence(np.arange(X.shape()[0]), dtype=pdx.Int64(), name='np_index')
+        X_index_df = X_index_df.assign(new_col)
+        X_index_df = X_index_df.sort("__date__", ascending=True)
 
         return X_index_df
 
@@ -131,26 +135,14 @@ class TimeGapSplit:
             Train and test indices of the same fold.
         """
 
-        # X_index_df = self._join_date_and_x(X)
-        X = X.__dataframe_consortium_standard__().persist()
-        X_index_df = X.assign(self.date_serie)
-        pdx = X_index_df.__dataframe_namespace__()
-        new_col = pdx.column_from_sequence(np.arange(X.shape()[0]), dtype=pdx.Int64(), name='np_index')
-        X_index_df = X_index_df.assign(new_col)
-        X_index_df = X_index_df.sort("__date__", ascending=True).persist()
+        X_index_df = self._join_date_and_x(X).persist()
 
-        #if X.shape()[0] != X_index_df.shape()[0]:
-        #    raise AssertionError(
-        #        "X and X_index_df are not the same length, "
-        #        "there must be some index missing in 'self.date_serie'"
-        #    )
-
-        date_min = X_index_df.col("__date__").min().persist()
-        date_max = X_index_df.col("__date__").max().persist()
-        # date_length is a timedelta
+        date_min = X_index_df.col("__date__").min().persist().scalar
+        date_max = X_index_df.col("__date__").max().persist().scalar
         date_length = (X_index_df.col("__date__").max() - X_index_df.col("__date__").min()).persist().scalar
 
         if (self.train_duration is None) and (self.n_splits is not None):
+            # should ideally create a Standard scalar?
             self.train_duration = date_length - (
                 self.gap_duration + self.valid_duration * self.n_splits
             )
@@ -187,31 +179,14 @@ class TimeGapSplit:
             if (
                 current_date + self.train_duration + time_shift + self.gap_duration
                 > date_max
-            ).persist():
+            ):
                 break
 
             X_index_df = X_index_df.persist()
-            # X_train_df = X_index_df[
-            #     (X_index_df["__date__"] >= start_date)
-            #     & (X_index_df["__date__"] < current_date + self.train_duration)
-            # ]
             X_train_df = X_index_df.filter(
                 (X_index_df.col('__date__') >= start_date)
                 & (X_index_df.col('__date__') < current_date + self.train_duration)
             ).persist()
-            # X_valid_df = X_index_df[
-            #     (
-            #         X_index_df["__date__"]
-            #         >= current_date + self.train_duration + self.gap_duration
-            #     )
-            #     & (
-            #         X_index_df["__date__"]
-            #         < current_date
-            #         + self.train_duration
-            #         + self.valid_duration
-            #         + self.gap_duration
-            #     )
-            # ]
             X_valid_df = X_index_df.filter(
                 (
                     X_index_df.col("__date__")
