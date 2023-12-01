@@ -1,8 +1,11 @@
 import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator
-from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
-from ._decay_utils import LinearDecay, ExponentialDecay, StepWiseDecay, SigmoidDecay
+from sklearn.utils.validation import (
+    check_is_fitted,
+    check_X_y,
+    FLOAT_DTYPES,
+)
 
 
 class DecayEstimator(BaseEstimator):
@@ -11,12 +14,14 @@ class DecayEstimator(BaseEstimator):
 
     This meta estimator will only work for estimators that allow a `sample_weights` argument in their `.fit()` method.
     The meta estimator `.fit()` method computes the weights to pass to the estimator's `.fit()` method.
+    """Morphs an estimator such that the training weights can be adapted to ensure that points that are far away have
+    less weight.
 
-    !!! warning
-        It is up to the user to sort the dataset appropriately.
+    This meta estimator will only work for estimators that allow a `sample_weights` argument in their `.fit()` method.
+    The meta estimator `.fit()` method computes the weights to pass to the estimator's `.fit()` method.
 
-    !!! warning
-        By default all the checks on the inputs `X` and `y` are delegated to the wrapped estimator.
+    .. warning:: By default all the checks on the inputs `X` and `y` are delegated to the wrapped estimator.
+
         To change such behaviour, set `check_input` to `True`.
         Remark that if the check is skipped, then `y` should have a `shape` attribute, which is
         used to extract the number of samples in training data, and compute the weights.
@@ -80,6 +85,7 @@ class DecayEstimator(BaseEstimator):
 
     def fit(self, X, y):
         """Fit the underlying estimator on the training data `X` and `y` using the calculated sample weights.
+        """Fit the underlying estimator on the training data `X` and `y` using the calculated sample weights.
 
         Parameters
         ----------
@@ -128,7 +134,17 @@ class DecayEstimator(BaseEstimator):
 
     def predict(self, X):
         """Predict target values for `X` using trained underlying estimator.
+        """Predict target values for `X` using trained underlying estimator.
 
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted values.
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -146,5 +162,6 @@ class DecayEstimator(BaseEstimator):
         return self.estimator_.predict(X)
 
     def score(self, X, y):
+        """Alias for `.score()` method of the underlying estimator."""
         """Alias for `.score()` method of the underlying estimator."""
         return self.estimator_.score(X, y)

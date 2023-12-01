@@ -1,4 +1,5 @@
 from deprecated import deprecated
+
 from .grouped_predictor import GroupedPredictor
 
 

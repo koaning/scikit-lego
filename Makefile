@@ -24,8 +24,8 @@ precommit:
 	pre-commit run
 
 docs:
-	rm -rf doc/.ipynb_checkpoints
-	sphinx-build -a -E doc docs
+	pip install -e ".[docs]"
+	mkdocs serve
 
 docs-deploy: docs
 	netlify deploy --dir=docs --prod
@@ -34,7 +34,6 @@ clean:
 	rm -rf .pytest_cache
 	rm -rf build
 	rm -rf dist
-	rm -rf docs
 	rm -rf scikit_lego.egg-info
 	rm -rf .ipynb_checkpoints
 	rm -rf .coverage*

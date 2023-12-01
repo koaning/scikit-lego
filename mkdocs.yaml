@@ -1,0 +1,157 @@
+# Project information
+site_name: scikit-lego
+# site_description: tbd
+# site_url: tbd
+
+# Repository information
+repo_name: koaning/scikit-lego
+repo_url: https://github.com/koaning/scikit-lego
+edit_uri: edit/main/docs/
+
+# Configuration
+watch:
+  - sklego
+
+exclude_docs: |
+  Makefile
+  README.md
+
+use_directory_urls: true
+theme:
+  name: material
+  logo: _static/logo.png
+  favicon: _static/logo.png
+  font:
+    text: Ubuntu
+    code: Ubuntu Mono
+  highlightjs: true
+  hljs_languages:
+    - bash
+    - python
+    - r
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - navigation.footer
+    - navigation.top
+    - navigation.tracking
+
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
+    - content.tabs.link
+
+    - search.suggest
+    - search.highlight
+    - search.share
+
+    - toc.follow
+
+# Plugins
+plugins:
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            docstring_section_style: table # table, list or spacy
+            filters:
+            - "!^_"  # Hide semi-private functions and methods
+            - "!^__"  # Hide private functions and methods
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - codehilite
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: squidfunk
+      repo: mkdocs-material
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - pymdownx.snippets
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+validation:
+  absolute_links: ignore
+  unrecognized_links: ignore
+
+nav:
+  - Home:
+    - Home: index.md
+    - Installation: installation.md
+    - Contribution: contribution.md
+  - User guide:
+    - Datasets: user-guide/datasets.md
+    - Linear Models: user-guide/linear-models.md
+    - Mixture Methods: user-guide/mixture-methods.md
+    - Naive Bayes: user-guide/naive-bayes.md
+    - Meta Models: user-guide/meta-models.md
+    - Fairness: user-guide/fairness.md
+    - Outliers: user-guide/outliers.md
+    - Preprocessing: user-guide/preprocessing.md
+    - Cross Validation: user-guide/cross-validation.md
+    - Debug Pipeline: user-guide/debug-pipeline.md
+    - Pandas Pipelines: user-guide/pandas-pipelines.md
+    - RStudio: rstudio.md
+  - API Reference:
+    - Base: api/base.md
+    - Common: api/common.md
+    - Datasets: api/datasets.md
+    - Decomposition: api/decomposition.md
+    - Dummy: api/dummy.md
+    - Linear Model: api/linear-model.md
+    - Meta: api/meta.md
+    - Metrics: api/metrics.md
+    - Mixture: api/mixture.md
+    - Model Selection: api/model-selection.md
+    - Naive Bayes: api/naive-bayes.md
+    - Neighbors: api/neighbors.md
+    - Pandas Utils: api/pandas-utils.md
+    - Pipeline: api/pipeline.md
+    - Preprocessing: api/preprocessing.md
+  - This: this.md
+
+not_in_nav: |
+  _static

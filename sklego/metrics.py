@@ -1,24 +1,35 @@
-import numpy as np
 import warnings
-
 from typing import Callable
+
+import numpy as np
 
 
 def correlation_score(column):
-    """
-    The correlation score can score how well the estimator predictions correlate with a given column.
+    """The correlation score can score how well the estimator predictions correlate with a given column.
+
     This is especially useful to use in situations where "fairness" is a theme.
 
-    `correlation_score` takes a column on which to calculate the correlation and returns a metric function
+    `correlation_score` takes a column on which to calculate the correlation and returns a metric function.
 
-    Usage:
-    `correlation_score('gender')(clf, X, y)`
+    Parameters
+    ----------
+    column : str | int
+        Name of the column (when X is a dataframe) or the index of the column (when X is a numpy array) to score
+        against.
 
-
-    :param column: Name of the column (when X is a dataframe) or the index of the column (when X is a numpy array).
-    :return:
-        A function which calculates the negative correlation between estimator.predict(X) and X[column]
+    Returns
+    -------
+    Callable[..., float]
+        A function which calculates the _negative_ correlation between `estimator.predict(X)` and `X[column]`
         (in gridsearch, larger is better and we want to typically punish correlation).
+
+    Examples
+    --------
+    ```py
+    from sklego.metrics import correlation_score
+    ...
+    correlation_score('gender')(clf, X, y)
+    ```
     """
 
     def correlation_metric(estimator, X, y_true=None):
@@ -30,34 +41,42 @@ def correlation_score(column):
 
 
 def p_percent_score(sensitive_column, positive_target=1):
-    r"""
-    The p_percent score calculates the ratio between the probability of a positive outcome
-    given the sensitive attribute (column) being true and the same probability given the
-    sensitive attribute being false.
+    r"""The p_percent score calculates the ratio between the probability of a positive outcome given the sensitive
+    attribute (column) being true and the same probability given the sensitive attribute being false.
 
-    .. math::
-        \min \left(\frac{P(\hat{y}=1 | z=1)}{P(\hat{y}=1 | z=0)}, \frac{P(\hat{y}=1 | z=0)}{P(\hat{y}=1 | z=1)}\right)
+    $$\min \left(\frac{P(\hat{y}=1 | z=1)}{P(\hat{y}=1 | z=0)}, \frac{P(\hat{y}=1 | z=0)}{P(\hat{y}=1 | z=1)}\right)$$
 
     This is especially useful to use in situations where "fairness" is a theme.
 
-    Usage:
-    `p_percent_score('gender')(clf, X, y)`
+    Parameters
+    ----------
+    sensitive_column : str | int
+        Name of the column containing the binary sensitive attribute (when X is a dataframe) or the index of the column
+        (when X is a numpy array).
+    positive_target : int, default=1
+        The name of the class which is associated with a positive outcome
 
-    source:
-    - M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
+    Returns
+    -------
+    Callable[..., float]
+        A function which calculates the p percent score for z = column
 
-    :param sensitive_column:
-        Name of the column containing the binary sensitive attribute (when X is a dataframe)
-        or the index of the column (when X is a numpy array).
-    :param positive_target: The name of the class which is associated with a positive outcome
-    :return: a function (clf, X, y_true) -> float that calculates the p percent score for z = column
+    Examples
+    --------
+    ```py
+    from sklego.metrics import p_percent_score
+    ...
+    p_percent_score('gender')(clf, X, y)
+    ```
+
+    Source
+    ------
+    M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
     """
 
     def impl(estimator, X, y_true=None):
         """Remember: X is the thing going *in* to your pipeline."""
-        sensitive_col = (
-            X[:, sensitive_column] if isinstance(X, np.ndarray) else X[sensitive_column]
-        )
+        sensitive_col = X[:, sensitive_column] if isinstance(X, np.ndarray) else X[sensitive_column]
 
         if not np.all((sensitive_col == 0) | (sensitive_col == 1)):
             raise ValueError(
@@ -94,35 +113,44 @@ def p_percent_score(sensitive_column, positive_target=1):
 
 
 def equal_opportunity_score(sensitive_column, positive_target=1):
-    r"""
-    The equality opportunity score calculates the ratio between the probability of a **true positive** outcome
-    given the sensitive attribute (column) being true and the same probability given the
-    sensitive attribute being false.
+    r"""The equality opportunity score calculates the ratio between the probability of a **true positive** outcome
+    given the sensitive attribute (column) being true and the same probability given the sensitive attribute being
+    false.
 
-    .. math::
-        \min \left(\frac{P(\hat{y}=1 | z=1, y=1)}{P(\hat{y}=1 | z=0, y=1)},
-        \frac{P(\hat{y}=1 | z=0, y=1)}{P(\hat{y}=1 | z=1, y=1)}\right)
+    $$\min \left(\frac{P(\hat{y}=1 | z=1, y=1)}{P(\hat{y}=1 | z=0, y=1)},
+    \frac{P(\hat{y}=1 | z=0, y=1)}{P(\hat{y}=1 | z=1, y=1)}\right)$$
 
     This is especially useful to use in situations where "fairness" is a theme.
 
-    Usage:
-    `equal_opportunity_score('gender')(clf, X, y)`
+    Parameters
+    ----------
+    sensitive_column : str | int
+        Name of the column containing the binary sensitive attribute (when X is a dataframe) or the index of the column
+        (when X is a numpy array).
+    positive_target: int, default=1
+        The name of the class which is associated with a positive outcome
 
-    Source:
-    - M. Hardt, E. Price and N. Srebro (2016), Equality of Opportunity in Supervised Learning
+    Returns
+    -------
+    Callable[..., float]
+        A function which calculates the equal opportunity score for z = column
 
-    :param sensitive_column:
-        Name of the column containing the binary sensitive attribute (when X is a dataframe)
-        or the index of the column (when X is a numpy array).
-    :param positive_target: The name of the class which is associated with a positive outcome
-    :return: a function (clf, X, y_true) -> float that calculates the equal opportunity score for z = column
+    Examples
+    --------
+    ```py
+    from sklego.metrics import equal_opportunity_score
+    ...
+    equal_opportunity_score('gender')(clf, X, y)
+    ```
+
+    Source
+    ------
+    M. Hardt, E. Price and N. Srebro (2016), Equality of Opportunity in Supervised Learning
     """
 
     def impl(estimator, X, y_true):
         """Remember: X is the thing going *in* to your pipeline."""
-        sensitive_col = (
-            X[:, sensitive_column] if isinstance(X, np.ndarray) else X[sensitive_column]
-        )
+        sensitive_col = X[:, sensitive_column] if isinstance(X, np.ndarray) else X[sensitive_column]
 
         if not np.all((sensitive_col == 0) | (sensitive_col == 1)):
             raise ValueError(
@@ -159,23 +187,37 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
 
 
 def subset_score(subset_picker: Callable, score: Callable, **kwargs):
-    r"""
-    Returns a method that applies the passed score only to a specific subset. The subset picker
-    is a method that is passed the corresponding X and y_true and returns a one-dimensional
-    boolean vector where every element corresponds to a row in the data. Only the elements
-    with a True value are taken into account for the passed score, representing a filter.
+    """Return a method that applies the passed score only to a specific subset.
 
-    This allows users to have an easy approach to measuring metrics over different slices of
-    the population which can give insights into the model performance, either specifically for
-    fairness or in general.
+    The subset picker is a method that is passed the corresponding `X` and `y_true` and returns a one-dimensional
+    boolean vector where every element corresponds to a row in the data.
 
-    Usage:
-    `subset_score(lambda X, y_true: X['column'] == 'A', accuracy_score)(clf, X, y)`
+    Only the elements with a True value are taken into account for the passed score, representing a filter.
 
-    :param subset_picker: Method that returns a boolean mask that is used for slicing the samples
-    :param score: The score that needs to be applied to the subset
-    :param kwargs: Additional keyword arguments to pass to score
-    :return: a function that calculates the passed score for the subset
+    This allows users to have an easy approach to measuring metrics over different slices of the population which can
+    give insights into the model performance, either specifically for fairness or in general.
+
+    Parameters
+    ----------
+    subset_picker : Callable
+        Method that returns a boolean mask that is used for slicing the samples
+    score : Callable[..., T]
+        The score that needs to be applied to the subset
+    kwargs : dict
+        Additional keyword arguments to pass to score
+
+    Returns
+    -------
+    Callable[..., T]
+        A function which calculates the passed score for the subset
+
+    Examples
+    --------
+    ```py
+    from sklego.metrics import subset_score
+    ...
+    subset_score(lambda X, y_true: X['column'] == 'A', accuracy_score)(clf, X, y)
+    ```
     """
 
     def sliced_metric(estimator, X, y_true=None):

@@ -15,24 +15,40 @@ from scipy.optimize import minimize
 from scipy.special._ufuncs import expit
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.linear_model._base import LinearClassifierMixin
-from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
+from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import check_X_y
 from sklearn.utils.validation import (
-    _check_sample_weight,
-    check_is_fitted,
-    check_array,
     FLOAT_DTYPES,
+    _check_sample_weight,
+    check_array,
+    check_is_fitted,
     column_or_1d,
 )
 
 
 class LowessRegression(BaseEstimator, RegressorMixin):
-    """
-    Does LowessRegression. Note that this *can* get expensive to predict.
+    """`LowessRegression` estimator: LOWESS (Locally Weighted Scatterplot Smoothing) is a type of
+    [local regression](https://en.wikipedia.org/wiki/Local_regression).
 
-    :param sigma: float, how wide we will smooth the data
-    :param span: float, what percentage of the data is to be used. Defaults to using all data.
+    !!! warning
+        This model *can* get expensive to predict.
+        In fact the prediction step needs to compute the distance between each sample to predict `x_i` with all the
+        training samples.
+
+    Parameters
+    ----------
+    sigma : float, default=1.0
+        The bandwidth parameter that determines the width of the smoothing.
+    span : float | None, default=None
+        The fraction of data points to consider during smoothing.
+
+    Attributes
+    ----------
+    X_ : np.ndarray of shape (n_samples, n_features)
+        The training data.
+    y_ : np.ndarray of shape (n_samples,)
+        The target (training) values.
     """
 
     def __init__(self, sigma=1, span=None):
@@ -40,12 +56,26 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         self.span = span
 
     def fit(self, X, y):
-        """
-        Fit the model using X, y as training data.
+        """Fit the estimator on training data `X` and `y` by storing them in `self.X_` and `self.y_`, and
+        validating the parameters.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :param y: array-like, shape=(n_samples, ) training data.
-        :return: Returns an instance of self.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            The training data.
+        y : array-like of shape (n_samples,)
+            The target values.
+
+        Returns
+        -------
+        self : LowessRegression
+            The fitted estimator.
+
+        Raises
+        ------
+        ValueError
+            - If `span` is not between 0 and 1.
+            - If `sigma` is negative.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         if self.span is not None:
@@ -60,6 +90,13 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         return self
 
     def _calc_wts(self, x_i):
+        """Calculate the weights for a single point `x_i` using the training data `self.X_` and the parameters
+        `self.sigma` and `self.span`. The weights are calculated as `np.exp(-(distances**2) / self.sigma)`,
+        where distances are the distances between `x_i` and all the training samples.
+
+        If `self.span` is not None, then the weights are multiplied by
+        `(distances <= np.quantile(distances, q=self.span))`.
+        """
         distances = np.linalg.norm(self.X_ - x_i, axis=1)
         weights = np.exp(-(distances**2) / self.sigma)
         if self.span:
@@ -67,11 +104,21 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         return weights
 
     def predict(self, X):
-        """
-        Predict using the LowessRegression.
+        """Predict target values for `X` using fitted estimator. This process is expensive because it needs to compute
+        the distance between each sample `x_i` with all the training samples.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :return: Returns an array of predictions shape=(n_samples,)
+        Then it calculates the weights for **each sample** `x_i` as `np.exp(-(distances**2) / self.sigma)` and finally
+        it computes the weighted average of the `y` values weighted by these weights.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted values.
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["X_", "y_"])
@@ -83,25 +130,59 @@ class LowessRegression(BaseEstimator, RegressorMixin):
 
 
 class ProbWeightRegression(BaseEstimator, RegressorMixin):
-    """
-    This regressor assumes that all input signals in `X` need to be reweighted
-    with weights that sum up to one in order to predict `y`. This can be very useful
-    in combination with `sklego.meta.EstimatorTransformer` because it allows you
-    to construct an ensemble.
+    """`ProbWeightRegression` assumes that all input signals in `X` need to be reweighted with weights that sum up to
+    one in order to predict `y`.
 
-    :param non_negative: boolean, default=True, setting that forces all weights to be >= 0
+    This can be very useful in combination with `sklego.meta.EstimatorTransformer` because it allows to construct
+    an ensemble.
+
+    Parameters
+    ----------
+    non_negative : bool, default=True
+        If True, forces all weights to be non-negative.
+
+    Attributes
+    ----------
+    n_features_in_ : int
+        The number of features seen during `fit`.
+    coef_ : np.ndarray, shape (n_columns,)
+        The learned coefficients after fitting the model.
+    coefs_ : np.ndarray, shape (n_columns,)
+        Deprecated, please use `coef_` instead.
+
+    !!! info
+
+        This model requires [`cvxpy`](https://www.cvxpy.org/) to be installed. If you don't have it installed, you can
+        install it with:
+
+        ```bash
+        pip install cvxpy
+        # or pip install scikit-lego"[cvxpy]"
+        ```
     """
 
     def __init__(self, non_negative=True):
         self.non_negative = non_negative
 
     def fit(self, X, y):
-        """
-        Fit the model using X, y as training data.
+        r"""Fit the estimator on training data `X` and `y` by solving the following convex optimization problem:
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :param y: array-like, shape=(n_samples, ) training data.
-        :return: Returns an instance of self.
+        $$\begin{array}{ll}{\operatorname{minimize}} & {\sum_{i=1}^{N}\left(\mathbf{x}_{i}
+        \boldsymbol{\beta}-y_{i}\right)^{2}} \\
+        {\text { subject to }} & {\sum_{j=1}^{p} \beta_{j}=1} \\
+        {(\text{If non_negative=True})} & {\beta_{j} \geq 0, \quad j=1, \ldots, p} \end{array}$$
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            The training data.
+        y : array-like of shape (n_samples,)
+            The target values.
+
+        Returns
+        -------
+        self : ProbWeightRegression
+            The fitted estimator.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
 
@@ -121,11 +202,17 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X):
-        """
-        Predict using ProbWeightRegression.
+        """Predict target values for `X` using fitted estimator by multiplying `X` with the learned coefficients.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :return: Returns an array of predictions shape=(n_samples,)
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted data.
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["coef_"])
@@ -141,6 +228,56 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
 
 
 class DeadZoneRegressor(BaseEstimator, RegressorMixin):
+    r"""The `DeadZoneRegressor` estimator implements a regression model that incorporates a _dead zone effect_ for
+    improving the robustness of regression predictions.
+
+    The dead zone effect allows the model to reduce the impact of small errors in the training data on the regression
+    results, which can be particularly useful when dealing with noisy or unreliable data.
+
+    The estimator minimizes the following loss function using gradient descent:
+
+    $$\frac{1}{n} \sum_{i=1}^{n} \text{deadzone}\left(\left|X_i \cdot w - y_i\right|\right)$$
+
+    where:
+
+    $$\text{deadzone}(e) =
+    \begin{cases}
+    e & \text{if } e > \text{threshold} \text{ and effect="linear"} \\
+    e^2 & \text{if } e > \text{threshold} \text{ and effect="quadratic"} \\
+    0 & \text{otherwise}
+    \end{cases}
+    $$
+
+    Parameters
+    ----------
+    threshold : float, default=0.3
+        The threshold value for the dead zone effect.
+    relative : bool, default=False
+        If True, the threshold is relative to the target value. Namely the _dead zone effect_ is applied to the
+        relative error between the predicted and target values.
+    effect : Literal["linear", "quadratic", "constant"], default="linear"
+        The type of dead zone effect to apply. It can be one of the following:
+
+        - "linear": the errors within the threshold have no impact (their contribution is effectively zero), and errors
+            outside the threshold are penalized linearly.
+        - "quadratic": the errors within the threshold have no impact (their contribution is effectively zero), and
+            errors outside the threshold are penalized quadratically (squared).
+        - "constant": the errors within the threshold have no impact, and errors outside the threshold are penalized with a constant value.
+    n_iter : int, default=2000
+        The number of iterations to run the gradient descent algorithm.
+    stepsize : float, default=0.01
+        The step size for the gradient descent algorithm.
+    check_grad : bool, default=False
+        If True, check the gradients numerically, _just to be safe_.
+
+    Attributes
+    ----------
+    coef_ : np.ndarray, shape (n_columns,)
+        The learned coefficients after fitting the model.
+    coefs_ : np.ndarray, shape (n_columns,)
+        Deprecated, please use `coef_` instead.
+    """
+
     _ALLOWED_EFFECTS = ("linear", "quadratic", "constant")
 
     def __init__(
@@ -154,12 +291,24 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         self.effect = effect
 
     def fit(self, X, y):
-        """
-        Fit the model using X, y as training data.
+        """Fit the estimator on training data `X` and `y` by optimizing the loss function using gradient descent.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :param y: array-like, shape=(n_samples, ) training data.
-        :return: Returns an instance of self.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            The training data.
+        y : array-like of shape (n_samples,)
+            The target values.
+
+        Returns
+        -------
+        self : DeadZoneRegressor
+            The fitted estimator.
+
+        Raises
+        ------
+        ValueError
+            If `effect` is not one of "linear", "quadratic" or "constant".
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         if self.effect not in self._ALLOWED_EFFECTS:
@@ -226,11 +375,17 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         return self
 
     def predict(self, X):
-        """
-        Predict using DeadZoneRegressor.
+        """Predict target values for `X` using fitted estimator by multiplying `X` with the learned coefficients.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :return: Returns an array of predictions shape=(n_samples,)
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted data.
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["coef_"])
@@ -255,6 +410,48 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
 
 
 class _FairClassifier(BaseEstimator, LinearClassifierMixin):
+    """Base class for fair classifiers that address sensitive attribute fairness.
+
+    This base class provides a foundation for fair classifiers that aim to mitigate bias and discrimination by taking
+    into account sensitive attributes during the classification process.
+
+    This estimator works by solving a constrained optimization problem that maximizes the log-likelihood of the
+    training data while satisfying fairness constraints.
+
+    !!! warning
+        The classification problem should be a binary one.
+
+    Parameters
+    ----------
+    sensitive_cols : List[str] | List[int] | None, default=None
+        A list of column names or column indexes in the input data that represent sensitive attributes.
+    C : float, default=1.0
+        Inverse of regularization strength; must be a positive float. Smaller values specify stronger regularization.
+    penalty : Literal["l1", "none"], default="l1"
+        The type of penalty to apply to the model. "l1" applies L1 regularization, while "none" disables regularization.
+    fit_intercept : bool, default=True
+        Whether or not to fit an intercept term. If True, an intercept term is added to the model.
+    max_iter : int, default=100
+        Maximum number of iterations for the solver.
+    train_sensitive_cols : bool, default=False
+        Whether or not to include sensitive columns during training. If False, sensitive columns are removed from the
+        input data during training.
+
+    Attributes
+    ----------
+    sensitive_col_idx_ : array
+        Indices of columns in the input data that correspond to sensitive attributes.
+    classes_ : array-like of shape (n_classes,)
+        The classes seen at `fit`.
+
+    Note
+    ----
+    Subclasses of `_FairClassifier` should implement the `constraints` method to specify fairness constraints.
+    This class primarily handles the logistic regression optimization and preprocessing steps.
+
+    `_FairClassifier` should not be used directly; it serves as a base class for fair classification models.
+    """
+
     def __init__(
         self,
         sensitive_cols=None,
@@ -272,6 +469,27 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         self.C = C
 
     def fit(self, X, y):
+        """Fit the estimator on training data `X` and `y`.
+
+        It handles preprocessing and optimization.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            The training data.
+        y : array-like of shape (n_samples,)
+            The target values.
+
+        Returns
+        -------
+        self : _FairClassifier
+            The fitted estimator.
+
+        Raises
+        ------
+        ValueError
+            If `penalty` is not one of "l1" or "none".
+        """
         if self.penalty not in ["l1", "none"]:
             raise ValueError(
                 f"penalty should be either 'l1' or 'none', got {self.penalty}"
@@ -305,10 +523,11 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
 
     def constraints(self, y_hat, y_true, sensitive, n_obs):
         raise NotImplementedError(
-            "subclasses of _FairClassifier should implement constraints"
+            "subclasses of `_FairClassifier` should implement constraints"
         )
 
     def _solve(self, sensitive, X, y):
+        """Solve the optimization problem for the fair classifier."""
         n_obs, n_features = X.shape
         theta = cp.Variable(n_features)
         y_hat = X @ theta
@@ -340,6 +559,20 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             self.intercept_ = np.array([0.0])
 
     def predict_proba(self, X):
+        """Predict class probabilities for `X`.
+
+        This method predicts class probabilities for input data `X`.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples, 2)
+            The predicted class probabilities for each data point.
+        """
         decision = self.decision_function(X)
         decision_2d = np.c_[-decision, decision]
         return expit(decision_2d)
@@ -357,41 +590,48 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
 
 
 class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
-    r"""
-    A logistic regression classifier which can be constrained on demographic parity (p% score).
+    r"""`DemographicParityClassifier` is a logistic regression classifier which can be constrained on demographic
+    parity (p% score).
 
-    Minimizes the Log loss while constraining the correlation between the specified `sensitive_cols` and the
+    It minimizes the log loss while constraining the correlation between the specified `sensitive_cols` and the
     distance to the decision boundary of the classifier.
 
-    Only works for binary classification problems
+    !!! warning
+        This classifier only works for binary classification problems.
 
-    .. math::
-        \begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i},
+    $$\begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i},
         \boldsymbol{\theta}\right) \\
-        {\text { subject to }} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right) d
-        \boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
+        {\text { subject to }} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
+        d_\boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
         {} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
-        d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}
+        d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}$$
 
-    Source:
-    - M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
+    Parameters
+    ----------
+    covariance_threshold : float | None
+        The maximum allowed covariance between the sensitive attributes and the distance to the decision boundary.
+        If set to None, no fairness constraint is enforced.
+    sensitive_cols : List[str] | List[int] | None, default=None
+        List of sensitive column names (if X is a dataframe) or a list of column indices (if X is a numpy array).
+    C : float, default=1.0
+        Inverse of regularization strength; must be a positive float. Like in support vector machines, smaller values
+        specify stronger regularization.
+    penalty : Literal["l1", "none"], default="l1"
+        Used to specify the norm used in the penalization.
+    fit_intercept : bool, default=True
+        Whether or not a constant term (a.k.a. bias or intercept) should be added to the decision function.
+    max_iter : int, default=100
+        Maximum number of iterations taken for the solvers to converge.
+    train_sensitive_cols : bool, default=False
+        Indicates whether the model should use the sensitive columns in the fit step.
+    multi_class : Literal["ovr", "ovo"], default="ovr"
+        The method to use for multiclass predictions.
+    n_jobs : int | None, default=1
+        The amount of parallel jobs that should be used to fit the model.
 
-    :param covariance_threshold:
-        The maximum allowed covariance between the sensitive attributes and the distance to the
-        decision boundary. If set to None, no fairness constraint is enforced
-    :param sensitive_cols:
-        List of sensitive column names(when X is a dataframe)
-        or a list of column indices when X is a numpy array.
-    :param C:
-        Inverse of regularization strength; must be a positive float.
-        Like in support vector machines, smaller values specify stronger regularization.
-    :param penalty: Used to specify the norm used in the penalization. Expects 'none' or 'l1'
-    :param fit_intercept: Specifies if a constant (a.k.a. bias or intercept) should be added to the decision function.
-    :param max_iter: Maximum number of iterations taken for the solvers to converge.
-    :param train_sensitive_cols: Indicates whether the model should use the sensitive columns in the fit step.
-    :param multi_class: The method to use for multiclass predictions
-    :param n_jobs: The amount of parallel jobs that should be used to fit multiclass models
-
+    Source
+    ------
+    M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
     """
 
     def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
@@ -413,6 +653,15 @@ class FairClassifier(DemographicParityClassifier):
 
 
 class _DemographicParityClassifier(_FairClassifier):
+    r"""Classifier for Demographic Parity fairness constraint.
+
+    This classifier extends the `_FairClassifier` and adds a Demographic Parity fairness constraint.
+    Demographic Parity ensures that the probability of a positive outcome is the same for all groups defined by
+    sensitive attributes.
+
+    The class implements Demographic Parity fairness constraint to the `_FairClassifier` optimization problem.
+    """
+
     def __init__(
         self,
         covariance_threshold,
@@ -435,6 +684,7 @@ class _DemographicParityClassifier(_FairClassifier):
         self.covariance_threshold = covariance_threshold
 
     def constraints(self, y_hat, y_true, sensitive, n_obs):
+        """Implement the Demographic Parity fairness constraint."""
         if self.covariance_threshold is not None:
             dec_boundary_cov = y_hat @ (sensitive - np.mean(sensitive, axis=0)) / n_obs
             return [cp.abs(dec_boundary_cov) <= self.covariance_threshold]
@@ -443,42 +693,48 @@ class _DemographicParityClassifier(_FairClassifier):
 
 
 class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
-    r"""
-    A logistic regression classifier which can be constrained on equal opportunity score.
+    r"""`EqualOpportunityClassifier` is a logistic regression classifier which can be constrained on equal opportunity
+    score.
 
-    Minimizes the Log loss while constraining the correlation between the specified `sensitive_cols` and the
+    It minimizes the log loss while constraining the correlation between the specified `sensitive_cols` and the
     distance to the decision boundary of the classifier for those examples that have a y_true of 1.
 
-    Only works for binary classification problems
+    !!! warning
+        This classifier only works for binary classification problems.
 
-    .. math::
-       \begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i},
+    $$\begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i},
         \boldsymbol{\theta}\right) \\
-        {\text { subject to }} & {\frac{1}{POS} \sum_{i=1}^{POS}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right) d
-        \boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
+        {\text { subject to }} & {\frac{1}{POS} \sum_{i=1}^{POS}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
+        d_\boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
         {} & {\frac{1}{POS} \sum_{i=1}^{POS}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
-        d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}
+        d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}$$
 
-    where POS is the subset of the population where y_true = 1
+    where POS is the subset of the population where $\text{y_true} = 1$
 
-
-    :param covariance_threshold:
-        The maximum allowed covariance between the sensitive attributes and the distance to the
-        decision boundary. If set to None, no fairness constraint is enforced
-    :param positive_target: The name of the class which is associated with a positive outcome
-    :param sensitive_cols:
-        List of sensitive column names(when X is a dataframe)
-        or a list of column indices when X is a numpy array.
-    :param C:
-        Inverse of regularization strength; must be a positive float.
-        Like in support vector machines, smaller values specify stronger regularization.
-    :param penalty: Used to specify the norm used in the penalization. Expects 'none' or 'l1'
-    :param fit_intercept: Specifies if a constant (a.k.a. bias or intercept) should be added to the decision function.
-    :param max_iter: Maximum number of iterations taken for the solvers to converge.
-    :param train_sensitive_cols: Indicates whether the model should use the sensitive columns in the fit step.
-    :param multi_class: The method to use for multiclass predictions
-    :param n_jobs: The amount of parallel jobs that should be used to fit multiclass models
-
+    Parameters
+    ----------
+    covariance_threshold : float | None
+        The maximum allowed covariance between the sensitive attributes and the distance to the decision boundary.
+        If set to None, no fairness constraint is enforced.
+    positive_target : int
+        The name of the class which is associated with a positive outcome
+    sensitive_cols : List[str] | List[int] | None, default=None
+        List of sensitive column names (if X is a dataframe) or a list of column indices (if X is a numpy array).
+    C : float, default=1.0
+        Inverse of regularization strength; must be a positive float. Like in support vector machines, smaller values
+        specify stronger regularization.
+    penalty : Literal["l1", "none"], default="l1"
+        Used to specify the norm used in the penalization.
+    fit_intercept : bool, default=True
+        Whether or not a constant term (a.k.a. bias or intercept) should be added to the decision function.
+    max_iter : int, default=100
+        Maximum number of iterations taken for the solvers to converge.
+    train_sensitive_cols : bool, default=False
+        Indicates whether the model should use the sensitive columns in the fit step.
+    multi_class : Literal["ovr", "ovo"], default="ovr"
+        The method to use for multiclass predictions.
+    n_jobs : int | None, default=1
+        The amount of parallel jobs that should be used to fit the model.
     """
 
     def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
@@ -530,46 +786,45 @@ class _EqualOpportunityClassifier(_FairClassifier):
 
 
 class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
-    """
-    Base class for regressors relying on scipy's minimize method. Derive a class from this one and give it the function to be minimized.
+    """Abstract base class for regressors relying on Scipy's
+    [minimize method](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html) to minimize a
+    (custom) loss function.
+
+    Derive a class from this one and give it the function to be minimized. The derived class should implement the
+    `_get_objective` method, which should return the loss function and its gradient.
+
+    !!! info
+        This implementation uses
+        [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html).
 
     Parameters
     ----------
     alpha : float, default=0.0
-        Constant that multiplies the penalty terms. Defaults to 1.0.
-
+        Constant that multiplies the penalty terms.
     l1_ratio : float, default=0.0
-        The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``. For
-        ``l1_ratio = 0`` the penalty is an L2 penalty. ``For l1_ratio = 1`` it
-        is an L1 penalty.  For ``0 < l1_ratio < 1``, the penalty is a
-        combination of L1 and L2.
+        The ElasticNet mixing parameter, with `0 <= l1_ratio <= 1`:
 
+        - `l1_ratio = 0` is equivalent to an L2 penalty.
+        - `l1_ratio = 1` is equivalent to an L1 penalty.
+        - `0 < l1_ratio < 1` is the combination of L1 and L2.
     fit_intercept : bool, default=True
-        Whether to calculate the intercept for this model. If set
-        to False, no intercept will be used in calculations
+        Whether to calculate the intercept for this model. If set to False, no intercept will be used in calculations
         (i.e. data is expected to be centered).
-
     copy_X : bool, default=True
-        If True, X will be copied; else, it may be overwritten.
-
+        If True, `X` will be copied; else, it may be overwritten.
     positive : bool, default=False
         When set to True, forces the coefficients to be positive.
-
-    method : str, default="SLSQP"
-        Type of solver. Should be one of "SLSQP", "TNC", "L-BFGS-B".
+    method : Literal["SLSQP", "TNC", "L-BFGS-B"], default="SLSQP"
+        Type of solver to use for optimization.
 
     Attributes
     ----------
-    coef_ : np.array of shape (n_features,)
+    coef_ : np.ndarray of shape (n_features,)
         Estimated coefficients of the model.
-
     intercept_ : float
-        Independent term in the linear model. Set to 0.0 if fit_intercept = False.
-
-    Notes
-    -----
-    This implementation uses scipy.optimize.minimize, see
-    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html.
+        Independent term in the linear model. Set to 0.0 if `fit_intercept = False`.
+    n_features_in_ : int
+        Number of features seen during `fit`.
     """
 
     def __init__(
@@ -595,28 +850,25 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
 
     @abstractmethod
     def _get_objective(self, X, y, sample_weight):
-        """
-        Produce the loss function to be minimized, and its gradient to speed up computations.
+        """Produce the loss function to be minimized, and its gradient to speed up computations.
 
         Parameters
         ----------
-        X : np.array of shape (n_samples, n_features)
+        X : np.ndarray of shape (n_samples, n_features)
             The training data.
-
-        y : np.array, 1-dimensional
+        y : np.ndarray of shape (n_samples,)
             The target values.
-
-        sample_weight : Optional[np.array], default=None
+        sample_weight : np.ndarray of shape (n_samples,) | None, default=None
             Individual weights for each sample.
 
         Returns
         -------
-        loss : Callable[[np.array], float]
+        loss : Callable[[np.ndarray], float]
             The loss function to be minimized.
-
-        grad_loss : Callable[[np.array], np.array]
+        grad_loss : Callable[[np.ndarray], np.ndarray]
             The gradient of the loss function. Speeds up finding the minimum.
         """
+        ...
 
     def _regularized_loss(self, params):
         return +self.alpha * self.l1_ratio * np.sum(
@@ -630,23 +882,21 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         )
 
     def fit(self, X, y, sample_weight=None):
-        """
-        Fit the model using the chosen algorithm.
+        """Fit the linear model on training data `X` and `y` by optimizing the loss function using gradient descent.
 
         Parameters
         ----------
-        X : np.array of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features )
             The training data.
-
-        y : np.array, 1-dimensional
+        y : array-like of shape (n_samples,)
             The target values.
-
-        sample_weight : Optional[np.array], default=None
+        sample_weight : array-like of shape (n_samples,) | None, default=None
             Individual weights for each sample.
 
         Returns
         -------
-        Fitted regressor.
+        self : BaseScipyMinimizeRegressor
+            Fitted linear model.
         """
         X_, grad_loss, loss = self._prepare_inputs(X, sample_weight, y)
 
@@ -677,6 +927,11 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         return self
 
     def _prepare_inputs(self, X, sample_weight, y):
+        """Prepare the inputs for the optimization problem.
+
+        This method is called by `fit` to prepare the inputs for the optimization problem. It adds an intercept column
+        to `X` if `fit_intercept=True`, and returns the loss function and its gradient.
+        """
         X, y = check_X_y(X, y, y_numeric=True)
         sample_weight = _check_sample_weight(sample_weight, X)
         self.n_features_in_ = X.shape[1]
@@ -694,18 +949,17 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         return X_, grad_loss, loss
 
     def predict(self, X):
-        """
-        Predict using the linear model.
+        """Predict target values for `X` using fitted linear model by multiplying `X` with the learned coefficients.
 
         Parameters
         ----------
-        X : np.array, shape (n_samples, n_features)
-            Samples to get predictions of.
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
 
         Returns
         -------
-        y : np.array, shape (n_samples,)
-            The predicted values.
+        array-like of shape (n_samples,)
+            The predicted data.
         """
         check_is_fitted(self)
         X = check_array(X)
@@ -714,76 +968,79 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
 
 
 class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
-    r"""
-    Linear regression where overestimating is `overestimation_punishment_factor` times worse than underestimating.
+    r"""Linear regression where overestimating is `overestimation_punishment_factor` times worse than underestimating.
 
-    A value of `overestimation_punishment_factor=5` implies that overestimations by the model are penalized with a factor of 5
-    while underestimations have a default factor of 1. The formula optimized for is
+    A value of `overestimation_punishment_factor=5` implies that overestimations by the model are penalized with a
+    factor of 5 while underestimations have a default factor of 1. The formula optimized for is
 
-    .. math::
-        \frac{1}{2 N} \|s \circ (y - Xw) \|_2^2 + \alpha \cdot l_1 \cdot\|w\|_1 + \frac{\alpha}{2} \cdot (1-l_1)\cdot \|w\|_2^2
+    $$\frac{1}{2 N} \|s \circ (y - Xw) \|_2^2 + \alpha \cdot l_1 \cdot\|w\|_1 + \frac{\alpha}{2} \cdot (1-l_1)\cdot
+    \|w\|_2^2$$
 
-    where `circ` is component-wise multiplication and s is a vector with value overestimation_punishment_factor if y - Xw < 0, else 1.
+    where $\circ$ is component-wise multiplication and
 
-    ImbalancedLinearRegression fits a linear model to minimize the residual sum of squares between
-    the observed targets in the dataset, and the targets predicted by the linear approximation.
+    $$ s = \begin{cases}
+    \text{overestimation_punishment_factor} & \text{if } y - Xw < 0 \\
+    1 & \text{otherwise}
+    \end{cases}
+    $$
+
+    `ImbalancedLinearRegression` fits a linear model to minimize the residual sum of squares between the observed
+    targets in the dataset, and the targets predicted by the linear approximation.
     Compared to normal linear regression, this approach allows for a different treatment of over or under estimations.
+
+    !!! info
+        This implementation uses
+        [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html).
 
     Parameters
     ----------
     alpha : float, default=0.0
-        Constant that multiplies the penalty terms. Defaults to 1.0.
-
+        Constant that multiplies the penalty terms.
     l1_ratio : float, default=0.0
-        The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``. For
-        ``l1_ratio = 0`` the penalty is an L2 penalty. ``For l1_ratio = 1`` it
-        is an L1 penalty.  For ``0 < l1_ratio < 1``, the penalty is a
-        combination of L1 and L2.
+        The ElasticNet mixing parameter, with `0 <= l1_ratio <= 1`:
 
+        - `l1_ratio = 0` is equivalent to an L2 penalty.
+        - `l1_ratio = 1` is equivalent to an L1 penalty.
+        - `0 < l1_ratio < 1` is the combination of L1 and L2.
     fit_intercept : bool, default=True
-        Whether to calculate the intercept for this model. If set
-        to False, no intercept will be used in calculations
+        Whether to calculate the intercept for this model. If set to False, no intercept will be used in calculations
         (i.e. data is expected to be centered).
-
     copy_X : bool, default=True
-        If True, X will be copied; else, it may be overwritten.
-
+        If True, `X` will be copied; else, it may be overwritten.
     positive : bool, default=False
         When set to True, forces the coefficients to be positive.
-
-    method : str, default="SLSQP"
-        Type of solver. Should be one of "SLSQP", "TNC", "L-BFGS-B".
-
-    overestimation_punishment_factor : float, default=1
+    method : Literal["SLSQP", "TNC", "L-BFGS-B"], default="SLSQP"
+        Type of solver to use for optimization.
+    overestimation_punishment_factor : float, default=1.0
         Factor to punish overestimations more (if the value is larger than 1) or less (if the value is between 0 and 1).
 
     Attributes
     ----------
-    coef_ : np.array of shape (n_features,)
+    coef_ : np.ndarray of shape (n_features,)
         Estimated coefficients of the model.
-
     intercept_ : float
-        Independent term in the linear model. Set to 0.0 if fit_intercept = False.
-
-    Notes
-    -----
-    This implementation uses scipy.optimize.minimize, see
-    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html.
+        Independent term in the linear model. Set to 0.0 if `fit_intercept = False`.
+    n_features_in_ : int
+        Number of features seen during `fit`.
 
     Examples
     --------
-    >>> import numpy as np
-    >>> np.random.seed(0)
-    >>> X = np.random.randn(100, 4)
-    >>> y = X @ np.array([1, 2, 3, 4]) + 2*np.random.randn(100)
-    >>> over_bad = ImbalancedLinearRegression(overestimation_punishment_factor=50).fit(X, y)
-    >>> over_bad.coef_
-    array([0.36267036, 1.39526844, 3.4247146 , 3.93679175])
+    ```py
+    import numpy as np
+    from sklego.linear_model import ImbalancedLinearRegression
 
-    >>> under_bad = ImbalancedLinearRegression(overestimation_punishment_factor=0.01).fit(X, y)
-    >>> under_bad.coef_
-    array([0.73519586, 1.28698197, 2.61362614, 4.35989806])
+    np.random.seed(0)
+    X = np.random.randn(100, 4)
+    y = X @ np.array([1, 2, 3, 4]) + 2*np.random.randn(100)
 
+    over_bad = ImbalancedLinearRegression(overestimation_punishment_factor=50).fit(X, y)
+    over_bad.coef_
+    # array([0.36267036, 1.39526844, 3.4247146 , 3.93679175])
+
+    under_bad = ImbalancedLinearRegression(overestimation_punishment_factor=0.01).fit(X, y)
+    under_bad.coef_
+    # array([0.73519586, 1.28698197, 2.61362614, 4.35989806])
+    ```
     """
 
     def __init__(
@@ -822,71 +1079,83 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
 
 
 class QuantileRegression(BaseScipyMinimizeRegressor):
-    """
-    Compute Quantile Regression. This can be used for computing confidence intervals of linear regressions.
+    r"""Compute quantile regression. This can be used for computing confidence intervals of linear regressions.
+
     `QuantileRegression` fits a linear model to minimize a weighted residual sum of absolute deviations between
     the observed targets in the dataset and the targets predicted by the linear approximation, i.e.
-        1 / (2 * n_samples) * switch * ||y - Xw||_1
-        + alpha * l1_ratio * ||w||_1
-        + 0.5 * alpha * (1 - l1_ratio) * ||w||_2 ** 2
-    where switch is a vector with value `quantile` if y - Xw < 0, else `1 - quantile`. The regressor defaults to
-    `LADRegression` for its default value of `quantile=0.5`.
+
+    $$\frac{\text{switch} \cdot ||y - Xw||_1}{2 N} + \alpha \cdot l_1 \cdot ||w||_1
+        + \frac{\alpha}{2} \cdot (1 - l_1) \cdot ||w||^2_2$$
+
+    where
+
+    $$\text{switch} = \begin{cases}
+    \text{quantile} & \text{if } y - Xw < 0 \\
+    1-\text{quantile} & \text{otherwise}
+    \end{cases}$$
+
+    The regressor defaults to `LADRegression` for its default value of `quantile=0.5`.
+
     Compared to linear regression, this approach is robust to outliers.
+
+    !!! info
+        This implementation uses
+        [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html).
+
     Parameters
     ----------
     alpha : float, default=0.0
         Constant that multiplies the penalty terms.
-
     l1_ratio : float, default=0.0
-        The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``. For
-        ``l1_ratio = 0`` the penalty is an L2 penalty. ``For l1_ratio = 1`` it
-        is an L1 penalty.  For ``0 < l1_ratio < 1``, the penalty is a
-        combination of L1 and L2.
+        The ElasticNet mixing parameter, with `0 <= l1_ratio <= 1`:
 
+        - `l1_ratio = 0` is equivalent to an L2 penalty.
+        - `l1_ratio = 1` is equivalent to an L1 penalty.
+        - `0 < l1_ratio < 1` is the combination of L1 and L2.
     fit_intercept : bool, default=True
-        Whether to calculate the intercept for this model. If set
-        to False, no intercept will be used in calculations
+        Whether to calculate the intercept for this model. If set to False, no intercept will be used in calculations
         (i.e. data is expected to be centered).
-
     copy_X : bool, default=True
-        If True, X will be copied; else, it may be overwritten.
-
+        If True, `X` will be copied; else, it may be overwritten.
     positive : bool, default=False
         When set to True, forces the coefficients to be positive.
+    method : Literal["SLSQP", "TNC", "L-BFGS-B"], default="SLSQP"
+        Type of solver to use for optimization.
+    quantile : float, default=0.5
+        The line output by the model will have a share of approximately `quantile` data points under it. It  should
+        be a value between 0 and 1.
 
-    method : str, default="SLSQP"
-        Type of solver. Should be one of "SLSQP", "TNC", "L-BFGS-B".
-
-    quantile : float, between 0 and 1, default=0.5
-        The line output by the model will have a share of approximately `quantile` data points under it.
-        A value of `quantile=1` outputs a line that is above each data point, for example. `quantile=0.5` corresponds to LADRegression.
+        A value of `quantile=1` outputs a line that is above each data point, for example.
+        `quantile=0.5` corresponds to LADRegression.
 
     Attributes
     ----------
     coef_ : np.ndarray of shape (n_features,)
         Estimated coefficients of the model.
     intercept_ : float
-        Independent term in the linear model. Set to 0.0 if fit_intercept = False.
-    Notes
-    -----
-    This implementation uses scipy.optimize.minimize, see
-    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html.
+        Independent term in the linear model. Set to 0.0 if `fit_intercept = False`.
+    n_features_in_ : int
+        Number of features seen during `fit`.
+
     Examples
     --------
-    >>> import numpy as np
-    >>> np.random.seed(0)
-    >>> X = np.random.randn(100, 4)
-    >>> y = X @ np.array([1, 2, 3, 4])
-    >>> l = QuantileRegression().fit(X, y)
-    >>> l.coef_
-    array([1., 2., 3., 4.])
-    >>> import numpy as np
-    >>> np.random.seed(0)
-    >>> X = np.random.randn(100, 4)
-    >>> y = X @ np.array([-1, 2, -3, 4])
-    >>> l = QuantileRegression(quantile=0.8).fit(X, y)
-    >>> l.coef_
-    array([-1.,  2., -3.,  4.])
+    ```py
+    import numpy as np
+    from sklego.linear_model import QuantileRegression
+
+    np.random.seed(0)
+    X = np.random.randn(100, 4)
+    y = X @ np.array([1, 2, 3, 4])
+
+    model = QuantileRegression().fit(X, y)
+    model.coef_
+    # array([1., 2., 3., 4.])
+
+    y = X @ np.array([-1, 2, -3, 4])
+    model = QuantileRegression(quantile=0.8).fit(X, y)
+    model.coef_
+    # array([-1.,  2., -3.,  4.])
+    ```
     """
 
     def __init__(
@@ -899,7 +1168,6 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
         method="SLSQP",
         quantile=0.5,
     ):
-        """Initialize."""
         super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, method)
         self.quantile = quantile
 
@@ -925,19 +1193,26 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
         return quantile_loss, grad_quantile_loss
 
     def fit(self, X, y, sample_weight=None):
-        """
-        Fit the model using the SLSQP algorithm.
+        """Fit the estimator on training data `X` and `y` by minimizing the quantile loss function.
+
         Parameters
         ----------
-        X : np.ndarray of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features)
             The training data.
-        y : np.ndarray, 1-dimensional
+        y : array-like of shape (n_samples,)
             The target values.
-        sample_weight : Optional[np.ndarray], default=None
+        sample_weight : array-like of shape (n_samples,) | None, default=None
             Individual weights for each sample.
+
         Returns
         -------
-        Fitted regressor.
+        self : QuantileRegression
+            The fitted estimator.
+
+        Raises
+        ------
+        ValueError
+            If `quantile` is not between 0 and 1.
         """
         if 0 <= self.quantile <= 1:
             super().fit(X, y, sample_weight)
@@ -948,75 +1223,74 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
 
 
 class LADRegression(QuantileRegression):
-    r"""
-    Least absolute deviation Regression.
+    r"""Least absolute deviation Regression.
 
-    LADRegression fits a linear model to minimize the residual sum of absolute deviations between
-    the observed targets in the dataset, and the targets predicted by the linear approximation, i.e.
+    `LADRegression` fits a linear model to minimize the residual sum of absolute deviations between the observed targets
+    in the dataset, and the targets predicted by the linear approximation, i.e.
 
-    .. math::
-        \frac{1}{N}\|y - Xw \|_1 + \alpha \cdot l_1 \cdot\|w\|_1 + \frac{\alpha}{2} \cdot (1-l_1)\cdot \|w\|_2^2
+    $$\frac{1}{N}\|y - Xw \|_1 + \alpha \cdot l_1 \cdot\|w\|_1 + \frac{\alpha}{2} \cdot (1-l_1)\cdot \|w\|^2_2$$
 
-    Compared to linear regression, this approach is robust to outliers. You can even
-    optimize for the lowest MAPE (Mean Average Percentage Error), if you pass in np.abs(1/y_train) for the
-    sample_weight keyword when fitting the regressor.
+    Compared to linear regression, this approach is robust to outliers. You can even optimize for the lowest MAPE
+    (Mean Average Percentage Error), by providing `sample_weight=np.abs(1/y_train)` when fitting the regressor.
+
+    !!! info
+        This implementation uses
+        [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html).
 
     Parameters
     ----------
     alpha : float, default=0.0
-        Constant that multiplies the penalty terms. Defaults to 1.0.
-
+        Constant that multiplies the penalty terms.
     l1_ratio : float, default=0.0
-        The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``. For
-        ``l1_ratio = 0`` the penalty is an L2 penalty. ``For l1_ratio = 1`` it
-        is an L1 penalty.  For ``0 < l1_ratio < 1``, the penalty is a
-        combination of L1 and L2.
+        The ElasticNet mixing parameter, with `0 <= l1_ratio <= 1`:
 
+        - `l1_ratio = 0` is equivalent to an L2 penalty.
+        - `l1_ratio = 1` is equivalent to an L1 penalty.
+        - `0 < l1_ratio < 1` is the combination of L1 and L2.
     fit_intercept : bool, default=True
-        Whether to calculate the intercept for this model. If set
-        to False, no intercept will be used in calculations
+        Whether to calculate the intercept for this model. If set to False, no intercept will be used in calculations
         (i.e. data is expected to be centered).
-
     copy_X : bool, default=True
-        If True, X will be copied; else, it may be overwritten.
-
+        If True, `X` will be copied; else, it may be overwritten.
     positive : bool, default=False
         When set to True, forces the coefficients to be positive.
+    method : Literal["SLSQP", "TNC", "L-BFGS-B"], default="SLSQP"
+        Type of solver to use for optimization.
+    quantile : float, default=0.5
+        The line output by the model will have a share of approximately `quantile` data points under it. It  should
+        be a value between 0 and 1.
 
-    method : str, default="SLSQP"
-        Type of solver. Should be one of "SLSQP", "TNC", "L-BFGS-B".
+        A value of `quantile=1` outputs a line that is above each data point, for example.
+        `quantile=0.5` corresponds to LADRegression.
 
     Attributes
     ----------
-    coef_ : np.array of shape (n_features,)
+    coef_ : np.ndarray of shape (n_features,)
         Estimated coefficients of the model.
-
     intercept_ : float
-        Independent term in the linear model. Set to 0.0 if fit_intercept = False.
-
-    Notes
-    -----
-    This implementation uses scipy.optimize.minimize, see
-    https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html.
+        Independent term in the linear model. Set to 0.0 if `fit_intercept = False`.
+    n_features_in_ : int
+        Number of features seen during `fit`.
 
     Examples
     --------
-    >>> import numpy as np
-    >>> np.random.seed(0)
-    >>> X = np.random.randn(100, 4)
-    >>> y = X @ np.array([1, 2, 3, 4])
-    >>> l = LADRegression().fit(X, y)
-    >>> l.coef_
-    array([1., 2., 3., 4.])
+    ```py
+    import numpy as np
+    from sklego.linear_model import LADRegression
 
-    >>> import numpy as np
-    >>> np.random.seed(0)
-    >>> X = np.random.randn(100, 4)
-    >>> y = X @ np.array([-1, 2, -3, 4])
-    >>> l = LADRegression(positive=True).fit(X, y)
-    >>> l.coef_
-    array([7.39575926e-18, 1.42423304e+00, 2.80467827e-17, 4.29789588e+00])
+    np.random.seed(0)
+    X = np.random.randn(100, 4)
+    y = X @ np.array([1, 2, 3, 4])
 
+    model = LADRegression().fit(X, y)
+    model.coef_
+    # array([1., 2., 3., 4.])
+
+    y = X @ np.array([-1, 2, -3, 4])
+    model = LADRegression(positive=True).fit(X, y)
+    model.coef_
+    # array([7.39575926e-18, 1.42423304e+00, 2.80467827e-17, 4.29789588e+00])
+    ```
     """
 
     def __init__(
@@ -1028,7 +1302,6 @@ class LADRegression(QuantileRegression):
         positive=False,
         method="SLSQP",
     ):
-        """Initialize."""
         super().__init__(
             alpha, l1_ratio, fit_intercept, copy_X, positive, method, quantile=0.5
         )
