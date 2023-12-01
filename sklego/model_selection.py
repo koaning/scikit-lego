@@ -1,5 +1,5 @@
 import numbers
-from datetime import timedelta
+from datetime import timedelta, datetime
 from itertools import combinations
 from warnings import warn
 
@@ -241,40 +241,41 @@ class TimeGapSplit:
         pd.DataFrame
             Summary of all folds.
         """
-        summary = []
-        X = X.__dataframe_consortium_standard__().persist()
-        X_index_df = X.assign(self.date_serie)
+        summary = {
+            'Start date': [],
+            'End date': [],
+            'Period': [],
+            'Unique days': [],
+            'nbr samples': [],
+            'name': [],
+        }
+        X_index_df = self._join_date_and_x(X).persist()
         pdx = X_index_df.__dataframe_namespace__()
-        new_col = pdx.column_from_sequence(np.arange(X.shape()[0]), dtype=pdx.Int64(), name='np_index')
-        X_index_df = X_index_df.assign(new_col)
-        X_index_df = X_index_df.sort("__date__", ascending=True).persist()
 
-        def get_split_info(X, indices, j, part, summary):
-            dates = X_index_df.iloc[indices]["__date__"]
-            mindate = dates.min()
-            maxdate = dates.max()
+        def update_split_info(X, indices, j, part, summary):
+            dates = X_index_df.get_rows(indices).col("__date__").persist()
+            mindate = dates.min().persist().scalar
+            maxdate = dates.max().persist().scalar
 
-            s = pd.Series(
-                {
-                    "Start date": mindate,
-                    "End date": maxdate,
-                    "Period": pd.to_datetime(maxdate, format="%Y%m%d")
-                    - pd.to_datetime(mindate, format="%Y%m%d"),
-                    "Unique days": len(dates.unique()),
-                    "nbr samples": len(indices),
-                },
-                name=(j, part),
-            )
-            summary.append(s)
-            return summary
+            summary['Start date'].append(mindate)
+            summary['End date'].append(maxdate)
+            summary['Period'].append(datetime.strptime("%Y%m%d", maxdate) - datetime.strptime("%Y%m%d", mindate))
+            summary['Unique days'].append(len(dates.unique()))
+            summary['nbr samples'].append(len(indices))
+            summary['name'].append(f'{j}_{part}')
 
         j = 0
         for i in self.split(X):
-            summary = get_split_info(X, i[0], j, "train", summary)
-            summary = get_split_info(X, i[1], j, "valid", summary)
+            update_split_info(X, pdx.column_from_1d_array(i[0]), j, "train", summary)
+            update_split_info(X, pdx.column_from_1d_array(i[1]), j, "valid", summary)
             j = j + 1
-
-        return pd.DataFrame(summary)
+        
+        return pdx.dataframe_from_dict(
+            {
+                key: pdx.column_from_sequence(value)
+                for key, value in summary.items()
+            }
+        ).dataframe
 
 
 class KlusterFoldValidation:
