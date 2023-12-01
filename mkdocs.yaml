@@ -139,6 +139,7 @@ nav:
     - Base: api/base.md
     - Common: api/common.md
     - Datasets: api/datasets.md
+    - Decay Functions: api/decay-functions.md
     - Decomposition: api/decomposition.md
     - Dummy: api/dummy.md
     - Linear Model: api/linear-model.md

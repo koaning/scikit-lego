@@ -1,11 +1,8 @@
 import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator
-from sklearn.utils.validation import (
-    check_is_fitted,
-    check_X_y,
-    FLOAT_DTYPES,
-)
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
+from ._decay_utils import linear_decay, exponential_decay, stepwise_decay, sigmoid_decay
 
 
 class DecayEstimator(BaseEstimator):
@@ -14,14 +11,12 @@ class DecayEstimator(BaseEstimator):
 
     This meta estimator will only work for estimators that allow a `sample_weights` argument in their `.fit()` method.
     The meta estimator `.fit()` method computes the weights to pass to the estimator's `.fit()` method.
-    """Morphs an estimator such that the training weights can be adapted to ensure that points that are far away have
-    less weight.
 
-    This meta estimator will only work for estimators that allow a `sample_weights` argument in their `.fit()` method.
-    The meta estimator `.fit()` method computes the weights to pass to the estimator's `.fit()` method.
+    !!! warning
+        It is up to the user to sort the dataset appropriately.
 
-    .. warning:: By default all the checks on the inputs `X` and `y` are delegated to the wrapped estimator.
-
+    !!! warning
+        By default all the checks on the inputs `X` and `y` are delegated to the wrapped estimator.
         To change such behaviour, set `check_input` to `True`.
         Remark that if the check is skipped, then `y` should have a `shape` attribute, which is
         used to extract the number of samples in training data, and compute the weights.
@@ -30,7 +25,7 @@ class DecayEstimator(BaseEstimator):
     ----------
     model : scikit-learn compatible estimator
         The estimator to be wrapped.
-    decay_func : Literal["linear", "exponential", "stepwise", "sigmoid"] |
+    decay_func : Literal["linear", "exponential", "stepwise", "sigmoid"] | \
             Callable[[np.ndarray, np.ndarray, ...], np.ndarray], default="exponential"
         The decay function to use. Available built-in decay functions are:
 
@@ -55,13 +50,39 @@ class DecayEstimator(BaseEstimator):
         The weights used to train the estimator.
     classes_ : array-like of shape (n_classes,)
         The classes labels. Only present if the wrapped estimator is a classifier.
+
+    Examples
+    --------
+    ```py
+    from sklearn.linear_model import LinearRegression
+    from sklego.meta import DecayEstimator
+
+    decay_estimator = DecayEstimator(
+        model=LinearRegression(),
+        decay_func="linear",
+        min_value=0.1,
+        max_value=0.9
+        )
+
+    X, y = ...
+
+    # Fit the DecayEstimator on the data, this will compute the weights
+    # and pass them to the wrapped estimator
+    _ = decay_estimator.fit(X, y)
+
+    # At prediction time, the weights are not used
+    predictions = decay_estimator.predict(X)
+
+    # The weights are stored in the `weights_` attribute
+    weights = decay_estimator.weights_
+    ```
     """
 
     _ALLOWED_DECAYS = {
-        "linear": LinearDecay,
-        "exponential": ExponentialDecay,
-        "stepwise": StepWiseDecay,
-        "sigmoid": SigmoidDecay,
+        "linear": linear_decay,
+        "exponential": exponential_decay,
+        "stepwise": stepwise_decay,
+        "sigmoid": sigmoid_decay,
     }
 
     def __init__(
@@ -85,7 +106,6 @@ class DecayEstimator(BaseEstimator):
 
     def fit(self, X, y):
         """Fit the underlying estimator on the training data `X` and `y` using the calculated sample weights.
-        """Fit the underlying estimator on the training data `X` and `y` using the calculated sample weights.
 
         Parameters
         ----------
@@ -106,18 +126,15 @@ class DecayEstimator(BaseEstimator):
             )
 
         if self.decay_func in self._ALLOWED_DECAYS.keys():
-            self.weights_ = self._ALLOWED_DECAYS[self.decay_func](**self.decay_kwargs)(
-                X, y
-            )
-
+            self.decay_func_ = self._ALLOWED_DECAYS[self.decay_func]
         elif callable(self.decay_func):
-            self.weights_ = self.decay_func(X, y, **self.decay_kwargs)
-
+            self.decay_func_ = self.decay_func
         else:
             raise ValueError(
                 f"`decay_func` should be one of {self._ALLOWED_DECAYS.keys()} or a callable"
             )
 
+        self.weights_ = self.decay_func_(X, y, **self.decay_kwargs)
         self.estimator_ = clone(self.model)
 
         try:
@@ -134,17 +151,7 @@ class DecayEstimator(BaseEstimator):
 
     def predict(self, X):
         """Predict target values for `X` using trained underlying estimator.
-        """Predict target values for `X` using trained underlying estimator.
 
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            The data to predict.
-
-        Returns
-        -------
-        array-like of shape (n_samples,)
-            The predicted values.
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
@@ -162,6 +169,5 @@ class DecayEstimator(BaseEstimator):
         return self.estimator_.predict(X)
 
     def score(self, X, y):
-        """Alias for `.score()` method of the underlying estimator."""
         """Alias for `.score()` method of the underlying estimator."""
         return self.estimator_.score(X, y)

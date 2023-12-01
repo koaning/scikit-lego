@@ -3,7 +3,7 @@ from contextlib import nullcontext as does_not_raise
 import pytest
 import numpy as np
 
-from sklego.meta._decay_utils import LinearDecay, ExponentialDecay, StepWiseDecay, SigmoidDecay
+from sklego.meta._decay_utils import linear_decay, exponential_decay, stepwise_decay, sigmoid_decay
 
 
 @pytest.mark.parametrize(
@@ -19,7 +19,7 @@ def test_linear_decay(kwargs, context):
     X, y = np.random.randn(100, 10), np.random.randn(100)
 
     with context:
-        weights = LinearDecay(**kwargs)(X, y)
+        weights = linear_decay(X, y, **kwargs)
         assert np.all(weights[:-1] <= weights[1:])
 
 
@@ -37,7 +37,7 @@ def test_exponential_decay(kwargs, context):
     X, y = np.random.randn(100, 10), np.random.randn(100)
 
     with context:
-        weights = ExponentialDecay(**kwargs)(X, y)
+        weights = exponential_decay(X, y, **kwargs)
         assert np.all(weights[:-1] <= weights[1:])
 
 @pytest.mark.parametrize(
@@ -62,7 +62,7 @@ def test_stepwise_decay(kwargs, context):
     X, y = np.random.randn(100, 10), np.random.randn(100)
 
     with context:
-        weights = StepWiseDecay(**kwargs)(X, y)
+        weights = stepwise_decay(X, y, **kwargs)
         assert np.all(weights[:-1] <= weights[1:])
 
 
@@ -81,5 +81,5 @@ def test_sigmoid_decay(kwargs, context):
     X, y = np.random.randn(100, 10), np.random.randn(100)
 
     with context:
-        weights = SigmoidDecay(**kwargs)(X, y)
+        weights = sigmoid_decay(X, y, **kwargs)
         assert np.all(weights[:-1] <= weights[1:])
