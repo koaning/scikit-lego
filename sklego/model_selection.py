@@ -108,10 +108,10 @@ class TimeGapSplit:
         X : pd.DataFrame
             Dataframe with the data to split
         """
-        X = X.__dataframe_consortium_standard__().persist()
+        X = X.__dataframe_consortium_standard__()
         X_index_df = X.assign(self.date_serie)
         pdx = X_index_df.__dataframe_namespace__()
-        new_col = pdx.column_from_sequence(np.arange(X.shape()[0]), dtype=pdx.Int64(), name='np_index')
+        new_col = pdx.column_from_sequence(np.arange(len(self.date_serie)), dtype=pdx.Int64(), name='np_index')
         X_index_df = X_index_df.assign(new_col)
         X_index_df = X_index_df.sort("__date__", ascending=True)
 
