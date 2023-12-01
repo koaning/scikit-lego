@@ -256,25 +256,25 @@ class TimeGapSplit:
             dates = X_index_df.get_rows(indices).col("__date__").persist()
             mindate = dates.min().persist().scalar
             maxdate = dates.max().persist().scalar
+            n_unique = dates.n_unique().persist().scalar
 
             summary['Start date'].append(mindate)
             summary['End date'].append(maxdate)
-            summary['Period'].append(datetime.strptime("%Y%m%d", maxdate) - datetime.strptime("%Y%m%d", mindate))
-            summary['Unique days'].append(len(dates.unique()))
+            summary['Period'].append(maxdate - mindate)
+            summary['Unique days'].append(n_unique)
             summary['nbr samples'].append(len(indices))
             summary['name'].append(f'{j}_{part}')
 
         j = 0
         for i in self.split(X):
-            update_split_info(X, pdx.column_from_1d_array(i[0]), j, "train", summary)
-            update_split_info(X, pdx.column_from_1d_array(i[1]), j, "valid", summary)
+            update_split_info(X, pdx.column_from_1d_array(i[0]).persist(), j, "train", summary)
+            update_split_info(X, pdx.column_from_1d_array(i[1]).persist(), j, "valid", summary)
             j = j + 1
         
-        return pdx.dataframe_from_dict(
-            {
-                key: pdx.column_from_sequence(value)
+        return pdx.dataframe_from_columns(
+            *[pdx.column_from_sequence(value, dtype=None, name=key).persist()
                 for key, value in summary.items()
-            }
+            ]
         ).dataframe
 
 
