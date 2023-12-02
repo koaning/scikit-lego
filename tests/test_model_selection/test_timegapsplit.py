@@ -168,4 +168,4 @@ def test_timegapsplit_summary():
 
     summary = cv.summary(X_train)
 
-    assert summary.shape == (12, 5)
+    assert summary.shape == (12, 6)
