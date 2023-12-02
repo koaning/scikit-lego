@@ -85,10 +85,6 @@ class TimeGapSplit:
                 "gap_duration is longer than train_duration, it should be shorter."
             )
 
-        # if not date_serie.index.is_unique:
-        #     raise ValueError("date_serie doesn't have a unique index")
-
-        # shouldn't need persisting...column can be created eager
         self.date_serie = date_serie.__column_consortium_standard__().rename('__date__')
         self.train_duration = train_duration
         self.valid_duration = valid_duration
@@ -109,7 +105,7 @@ class TimeGapSplit:
         X = X.__dataframe_consortium_standard__()
         X_index_df = X.assign(self.date_serie)
         pdx = X_index_df.__dataframe_namespace__()
-        new_col = pdx.column_from_sequence(np.arange(len(self.date_serie)), dtype=pdx.Int64(), name='np_index')
+        new_col = pdx.column_from_sequence(np.arange(len(self.date_serie)), name='np_index')
         X_index_df = X_index_df.assign(new_col)
         X_index_df = X_index_df.sort("__date__", ascending=True)
 
@@ -132,7 +128,6 @@ class TimeGapSplit:
         tuple[np.ndarray, np.ndarray]
             Train and test indices of the same fold.
         """
-        # this is the only persist that should be necessary
         X_index_df = self._join_date_and_x(X).persist()
 
         date_min = X_index_df.col("__date__").min().scalar

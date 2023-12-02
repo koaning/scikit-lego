@@ -22,16 +22,6 @@ y_train = train["y"]
 
 
 def test_timegapsplit():
-    # so the idea is:
-    # you use df['date'] to determine...what do you determine?
-    # it just has dates
-    # then, X_train and y_train have the same length, and you
-    # use the dates to determine the split
-    # so, how else to do this...
-    # might...need a join? but, they are the same length...
-    # we know this.
-    # in polars, this will require a join, right?
-    # unless we say "trust me bro, they are the same length"
     cv = TimeGapSplit(
         date_serie=df["date"],
         train_duration=timedelta(days=5),
