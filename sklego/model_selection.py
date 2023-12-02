@@ -1,5 +1,5 @@
 import numbers
-from datetime import timedelta, datetime
+from datetime import timedelta
 from itertools import combinations
 from warnings import warn
 
@@ -106,8 +106,6 @@ class TimeGapSplit:
         pdx = X_index_df.__dataframe_namespace__()
         new_col = pdx.column_from_sequence(np.arange(len(self.date_serie)), name='np_index')
         X_index_df = X_index_df.assign(new_col)
-        X_index_df = X_index_df.sort("__date__", ascending=True)
-
         return X_index_df
 
     def split(self, X, y=None, groups=None):
@@ -128,10 +126,11 @@ class TimeGapSplit:
             Train and test indices of the same fold.
         """
         X_index_df = self._join_date_and_x(X).persist()
+        X_index_df = X_index_df.sort("__date__", ascending=True)
 
         date_min = X_index_df.col("__date__").min().scalar
         date_max = X_index_df.col("__date__").max().scalar
-        date_length = (X_index_df.col("__date__").max() - X_index_df.col("__date__").min())
+        date_length = date_max - date_min
 
         if (self.train_duration is None) and (self.n_splits is not None):
             self.train_duration = date_length - (
@@ -139,7 +138,7 @@ class TimeGapSplit:
             )
 
         if (self.train_duration is not None) and (
-            (self.train_duration <= self.gap_duration)
+            self.train_duration <= self.gap_duration
         ):
             raise ValueError(
                 "gap_duration is longer than train_duration, it should be shorter."
@@ -149,7 +148,7 @@ class TimeGapSplit:
             date_length - self.train_duration - self.gap_duration
         ) / self.valid_duration
         if self.n_splits:
-            if (n_split_max < self.n_splits):
+            if n_split_max < self.n_splits:
                 raise ValueError(
                     (
                         "Number of folds requested = {1} are greater"
