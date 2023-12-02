@@ -253,13 +253,14 @@ def add_lags(X, cols, lags, drop_na=True):
         raise ValueError("lags must be a list of type: " + str(int))
 
     # Choose the correct handler based on the input class
+    X = try_convert_to_standard_compliant_dataframe(X)
     if isinstance(X, np.ndarray):
         return _add_lagged_numpy_columns(X, cols, lags, drop_na)
-    elif hasattr(X, "__dataframe_consortium_standard__"):
+    elif hasattr(X, "__dataframe_namespace__"):
         return _add_lagged_dataframe_columns(X, cols, lags, drop_na)
 
     # Otherwise, raise a ValueError
-    raise ValueError("X type should be a numpy.ndarray, or implement __dataframe_consortium_standard__")
+    raise ValueError("X type should be a numpy.ndarray, or be convertible to a DataFrame API compliant dataframe")
 
 
 def _add_lagged_numpy_columns(X, cols, lags, drop_na):

@@ -31,8 +31,8 @@ def test_add_lags_wrong_inputs(test_df):
         add_lags(test_df, ["X1"], invalid_lags)
     with pytest.raises(
         ValueError,
-        match="X type should be a numpy.ndarray, or implement "
-        "__dataframe_consortium_standard__",
+        match="X type should be a numpy.ndarray, or be convertible "
+        "to a DataFrame API compliant dataframe",
     ):
         add_lags(invalid_df, ["X1"], 1)
 
