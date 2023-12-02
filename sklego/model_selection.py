@@ -89,7 +89,7 @@ class TimeGapSplit:
         #     raise ValueError("date_serie doesn't have a unique index")
 
         # shouldn't need persisting...column can be created eager
-        self.date_serie = date_serie.__column_consortium_standard__().rename('__date__').persist()
+        self.date_serie = date_serie.__column_consortium_standard__().rename('__date__')
         self.train_duration = train_duration
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
@@ -135,9 +135,9 @@ class TimeGapSplit:
         # this is the only persist that should be necessary
         X_index_df = self._join_date_and_x(X).persist()
 
-        date_min = X_index_df.col("__date__").min().persist().scalar
-        date_max = X_index_df.col("__date__").max().persist().scalar
-        date_length = (X_index_df.col("__date__").max() - X_index_df.col("__date__").min()).persist().scalar
+        date_min = X_index_df.col("__date__").min().scalar
+        date_max = X_index_df.col("__date__").max().scalar
+        date_length = (X_index_df.col("__date__").max() - X_index_df.col("__date__").min())
 
         if (self.train_duration is None) and (self.n_splits is not None):
             self.train_duration = date_length - (
@@ -182,7 +182,7 @@ class TimeGapSplit:
             X_train_df = X_index_df.filter(
                 (X_index_df.col('__date__') >= start_date)
                 & (X_index_df.col('__date__') < current_date + self.train_duration)
-            ).persist()
+            )
             X_valid_df = X_index_df.filter(
                 (
                     X_index_df.col("__date__")
@@ -195,7 +195,7 @@ class TimeGapSplit:
                     + self.valid_duration
                     + self.gap_duration
                 )
-            ).persist()
+            )
 
             current_date = current_date + time_shift
             if self.window == "rolling":
@@ -249,10 +249,10 @@ class TimeGapSplit:
         pdx = X_index_df.__dataframe_namespace__()
 
         def update_split_info(X, indices, j, part, summary):
-            dates = X_index_df.get_rows(indices).col("__date__").persist()
-            mindate = dates.min().persist().scalar
-            maxdate = dates.max().persist().scalar
-            n_unique = dates.n_unique().persist().scalar
+            dates = X_index_df.get_rows(indices).col("__date__")
+            mindate = dates.min().scalar
+            maxdate = dates.max().scalar
+            n_unique = dates.n_unique().scalar
 
             summary['Start date'].append(mindate)
             summary['End date'].append(maxdate)
@@ -263,12 +263,12 @@ class TimeGapSplit:
 
         j = 0
         for i in self.split(X):
-            update_split_info(X, pdx.column_from_1d_array(i[0]).persist(), j, "train", summary)
-            update_split_info(X, pdx.column_from_1d_array(i[1]).persist(), j, "valid", summary)
+            update_split_info(X, pdx.column_from_1d_array(i[0]), j, "train", summary)
+            update_split_info(X, pdx.column_from_1d_array(i[1]), j, "valid", summary)
             j = j + 1
         
         return pdx.dataframe_from_columns(
-            *[pdx.column_from_sequence(value, dtype=None, name=key).persist()
+            *[pdx.column_from_sequence(value, name=key)
                 for key, value in summary.items()
             ]
         ).dataframe
