@@ -11,8 +11,7 @@ from sklearn.utils.validation import indexable
 
 from sklego.base import Clusterer
 from sklego.common import sliding_window
-
-from sklego.pandas_utils import try_convert_to_standard_compliant_column
+from sklego.dataframe_agnostic_utils import try_convert_to_standard_compliant_dataframe, try_convert_to_standard_compliant_column
 
 class TimeGapSplit:
     r"""Provides train/test indices to split time series data samples.
@@ -85,7 +84,7 @@ class TimeGapSplit:
                 "gap_duration is longer than train_duration, it should be shorter."
             )
 
-        self.date_serie = date_serie.__column_consortium_standard__().rename('__date__')
+        self.date_serie = try_convert_to_standard_compliant_column(date_serie).rename('__date__')
         self.train_duration = train_duration
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
@@ -102,7 +101,7 @@ class TimeGapSplit:
         X : pd.DataFrame
             Dataframe with the data to split
         """
-        X = X.__dataframe_consortium_standard__()
+        X = try_convert_to_standard_compliant_dataframe(X)
         X_index_df = X.assign(self.date_serie)
         pdx = X_index_df.__dataframe_namespace__()
         new_col = pdx.column_from_sequence(np.arange(len(self.date_serie)), name='np_index')
