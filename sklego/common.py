@@ -5,6 +5,7 @@ import numpy as np
 from sklearn.base import TransformerMixin
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
+from sklego.dataframe_agnostic_utils import try_convert_to_standard_compliant_dataframe
 
 
 class TrainOnlyTransformerMixin(TransformerMixin):
@@ -112,7 +113,6 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         ValueError
             If the type of `X` is not supported.
         """
-        from sklego.pandas_utils import try_convert_to_standard_compliant_dataframe
         X = try_convert_to_standard_compliant_dataframe(X)
         if hasattr(X, '__dataframe_namespace__'):
             hasher = TrainOnlyTransformerMixin._HASHERS['__dataframe_namespace__']
