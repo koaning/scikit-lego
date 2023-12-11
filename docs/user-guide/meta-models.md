@@ -396,4 +396,4 @@ The `OutlierClassifier` can be combined with any classification model in the `St
 [standard-scaler-api]: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
 [stacking-classifier-api]: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.StackingClassifier.html#sklearn.ensemble.StackingClassifier
 [dummy-regressor-api]: https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html
-[imb-learn]: https://imbalanced-learn.readthedocs.io/en/stable/
+[imb-learn]: https://imbalanced-learn.org/stable/
