@@ -19,7 +19,7 @@ precommit:
 docs:
 	mkdocs serve
 
-docs-deploy: docs
+docs-deploy:
 	mkdocs gh-deploy
 
 clean:
