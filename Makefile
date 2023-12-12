@@ -28,7 +28,7 @@ docs:
 	mkdocs serve
 
 docs-deploy: docs
-	netlify deploy --dir=docs --prod
+	mkdocs gh-deploy
 
 clean:
 	rm -rf .pytest_cache
