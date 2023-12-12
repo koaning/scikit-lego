@@ -9,26 +9,18 @@ install:
 	pip install -e ".[dev]"
 	pre-commit install
 
-doctest:
-	python -m doctest -v sklego/*.py
-
-test-notebooks:
-	pytest --nbval-lax doc/*.ipynb
-
-test: doctest
+test:
 	pytest --disable-warnings --cov=sklego
 	rm -rf .coverage*
-	pytest --nbval-lax doc/*.ipynb
 
 precommit:
 	pre-commit run
 
 docs:
-	pip install -e ".[docs]"
 	mkdocs serve
 
-docs-deploy: docs
-	netlify deploy --dir=docs --prod
+docs-deploy:
+	mkdocs gh-deploy
 
 clean:
 	rm -rf .pytest_cache
