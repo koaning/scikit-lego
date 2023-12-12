@@ -3,40 +3,42 @@ import pandas as pd
 from sklearn import clone
 from sklearn.base import BaseEstimator, is_classifier
 from sklearn.utils.metaestimators import available_if
-from sklearn.utils.validation import (
-    check_is_fitted,
-    check_array,
-)
+from sklearn.utils.validation import check_array, check_is_fitted
 
 from sklego.common import as_list, expanding_list
-from ._grouped_utils import relative_shrinkage, constant_shrinkage, min_n_obs_shrinkage
-from ._grouped_utils import _split_groups_and_values
+
+from ._grouped_utils import _split_groups_and_values, constant_shrinkage, min_n_obs_shrinkage, relative_shrinkage
 
 
 class GroupedPredictor(BaseEstimator):
-    """
-    Construct an estimator per data group. Splits data by values of a
-    single column and fits one estimator per such column.
+    """Construct an estimator per data group. Splits data by values of a single column and fits one estimator per such
+    column.
 
-    :param estimator: the model/pipeline to be applied per group
-    :param groups: the column(s) of the matrix/dataframe to select as a grouping parameter set
-    :param shrinkage: How to perform shrinkage.
-                      None: No shrinkage (default)
-                      {"constant", "min_n_obs", "relative"} or a callable
-                      * constant: shrunk prediction for a level is weighted average of its prediction and its
-                                  parents prediction
-                      * min_n_obs: shrunk prediction is the prediction for the smallest group with at least
-                                   n observations in it
-                      * relative: each group-level is weight according to its size
-                      * function: a function that takes a list of group lengths and returns an array of the
-                                  same size with the weights for each group
-    :param use_global_model: With shrinkage: whether to have a model over the entire input as first group
-                             Without shrinkage: whether or not to fall back to a general model in case the group
-                             parameter is not found during `.predict()`
-    :param check_X: Whether to validate X to be non-empty 2D array of finite values and attempt to cast X to float.
-                    If disabled, the model/pipeline is expected to handle e.g. missing,
-                    non-numeric, or non-finite values.
-    :param **shrinkage_kwargs: keyword arguments to the shrinkage function
+    Parameters
+    ----------
+    estimator : scikit-learn compatible estimator/pipeline
+        The estimator/pipeline to be applied per group.
+    groups : int | str | List[int] | List[str]
+        The column(s) of the array/dataframe to select as a grouping parameter set.
+    shrinkage : Literal["constant", "min_n_obs", "relative"] | Callable | None, default=None
+        How to perform shrinkage:
+
+        - `None`: No shrinkage (default)
+        - `"constant"`: shrunk prediction for a level is weighted average of its prediction and its parents prediction
+        - `"min_n_obs"`: shrunk prediction is the prediction for the smallest group with at least n observations in it
+        - `"relative"`: each group-level is weight according to its size
+        - `Callable`: a function that takes a list of group lengths and returns an array of the same size with the
+            weights for each group
+    use_global_model : bool, default=True
+
+        - With shrinkage: whether to have a model over the entire input as first group
+        - Without shrinkage: whether or not to fall back to a general model in case the group parameter is not found
+            during `.predict()`
+    check_X : bool, default=True
+        Whether to validate `X` to be non-empty 2D array of finite values and attempt to cast `X` to float.
+        If disabled, the model/pipeline is expected to handle e.g. missing, non-numeric, or non-finite values.
+    **shrinkage_kwargs : dict
+        Keyword arguments to the shrinkage function
     """
 
     # Number of features in value df can be 0, e.g. for dummy models
@@ -61,14 +63,8 @@ class GroupedPredictor(BaseEstimator):
         self.check_X = check_X
 
     def __set_shrinkage_function(self):
-        if (
-            self.shrinkage
-            and len(as_list(self.groups)) == 1
-            and not self.use_global_model
-        ):
-            raise ValueError(
-                "Cannot do shrinkage with a single group if use_global_model is False"
-            )
+        if self.shrinkage and len(as_list(self.groups)) == 1 and not self.use_global_model:
+            raise ValueError("Cannot do shrinkage with a single group if use_global_model is False")
 
         if isinstance(self.shrinkage, str):
             # Predefined shrinkage functions
@@ -89,9 +85,7 @@ class GroupedPredictor(BaseEstimator):
             self.__check_shrinkage_func()
             self.shrinkage_function_ = self.shrinkage
         else:
-            raise ValueError(
-                "Invalid shrinkage specified. Should be either None (no shrinkage), str or callable."
-            )
+            raise ValueError("Invalid shrinkage specified. Should be either None (no shrinkage), str or callable.")
 
     def __check_shrinkage_func(self):
         """Validate the shrinkage function if a function is specified"""
@@ -100,18 +94,12 @@ class GroupedPredictor(BaseEstimator):
         try:
             result = self.shrinkage(group_lengths)
         except Exception as e:
-            raise ValueError(
-                f"Caught an exception while checking the shrinkage function: {str(e)}"
-            ) from e
+            raise ValueError(f"Caught an exception while checking the shrinkage function: {str(e)}") from e
         else:
             if not isinstance(result, np.ndarray):
-                raise ValueError(
-                    f"shrinkage_function({group_lengths}) should return an np.ndarray"
-                )
+                raise ValueError(f"shrinkage_function({group_lengths}) should return an np.ndarray")
             if result.shape != expected_shape:
-                raise ValueError(
-                    f"shrinkage_function({group_lengths}).shape should be {expected_shape}"
-                )
+                raise ValueError(f"shrinkage_function({group_lengths}).shape should be {expected_shape}")
 
     def __get_shrinkage_factor(self, X_group):
         """Get for all complete groups an array of shrinkages"""
@@ -119,16 +107,11 @@ class GroupedPredictor(BaseEstimator):
         counts = X_group.groupby(group_colnames).size()
 
         # Groups that are split on all
-        most_granular_groups = [
-            grp for grp in self.groups_ if len(as_list(grp)) == len(group_colnames)
-        ]
+        most_granular_groups = [grp for grp in self.groups_ if len(as_list(grp)) == len(group_colnames)]
 
         # For each hierarchy level in each most granular group, get the number of observations
         hierarchical_counts = {
-            granular_group: [
-                counts[tuple(subgroup)].sum()
-                for subgroup in expanding_list(granular_group, tuple)
-            ]
+            granular_group: [counts[tuple(subgroup)].sum() for subgroup in expanding_list(granular_group, tuple)]
             for granular_group in most_granular_groups
         }
 
@@ -139,19 +122,19 @@ class GroupedPredictor(BaseEstimator):
         }
 
         # Make sure that the factors sum to one
-        shrinkage_factors = {
-            group: value / value.sum() for group, value in shrinkage_factors.items()
-        }
+        shrinkage_factors = {group: value / value.sum() for group, value in shrinkage_factors.items()}
 
         return shrinkage_factors
 
     def __fit_single_group(self, group, X, y=None):
+        """Fit estimator to the given group."""
         try:
             return clone(self.estimator).fit(X, y)
         except Exception as e:
             raise type(e)(f"Exception for group {group}: {e}")
 
     def __fit_grouped_estimator(self, X_group, X_value, y=None, columns=None):
+        """Fit an estimator to each group"""
         # Reset indices such that they are the same in X and y
         if not columns:
             columns = X_group.columns.tolist()
@@ -174,8 +157,7 @@ class GroupedPredictor(BaseEstimator):
             }
         else:
             grouped_estimators = {
-                group: self.__fit_single_group(group, X_value[indices, :])
-                for group, indices in group_indices.items()
+                group: self.__fit_single_group(group, X_value[indices, :]) for group, indices in group_indices.items()
             }
 
         return grouped_estimators
@@ -185,11 +167,7 @@ class GroupedPredictor(BaseEstimator):
 
         for grouping_colnames in self.group_colnames_hierarchical_:
             # Fit a grouped estimator to each (sub)group hierarchically
-            estimators.update(
-                self.__fit_grouped_estimator(
-                    X_group, X_value, y, columns=grouping_colnames
-                )
-            )
+            estimators.update(self.__fit_grouped_estimator(X_group, X_value, y, columns=grouping_colnames))
 
         return estimators
 
@@ -211,14 +189,25 @@ class GroupedPredictor(BaseEstimator):
         return X_group
 
     def fit(self, X, y=None):
-        """
-        Fit the model using X, y as training data. Will also learn the groups that exist within the dataset.
+        """Fit one estimator for each group of training data `X` and `y`.
 
-        :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :param y: array-like, shape=(n_samples,) training data.
-        :return: Returns an instance of self.
-        """
+        Will also learn the groups that exist within the dataset.
 
+        If `use_global_model=True` a fallback estimator will be fitted on the entire dataset in case a group is not
+        found during `.predict()`.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : array-like of shape (n_samples,), default=None
+            Target values.
+
+        Returns
+        -------
+        self : GroupedPredictor
+            The fitted estimator.
+        """
         X_group, X_value = _split_groups_and_values(
             X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
@@ -256,20 +245,14 @@ class GroupedPredictor(BaseEstimator):
         # DataFrame with predictions for each hierarchy level, per row. Missing groups errors are thrown here.
         hierarchical_predictions = pd.concat(
             [
-                pd.Series(
-                    self.__predict_groups(
-                        X_group, X_value, level_columns, method=method
-                    )
-                )
+                pd.Series(self.__predict_groups(X_group, X_value, level_columns, method=method))
                 for level_columns in self.group_colnames_hierarchical_
             ],
             axis=1,
         )
 
         # This is a Series with values the tuples of hierarchical grouping
-        prediction_groups = pd.Series(
-            [tuple(_) for _ in X_group.itertuples(index=False)]
-        )
+        prediction_groups = pd.Series([tuple(_) for _ in X_group.itertuples(index=False)])
 
         # This is a Series of arrays
         shrinkage_factors = prediction_groups.map(self.shrinkage_factors_)
@@ -338,13 +321,20 @@ class GroupedPredictor(BaseEstimator):
         )
 
     def predict(self, X):
-        """
-        Predict on new data.
+        """Predict target values on new data `X` by predicting on each group. If a group is not found during
+        `.predict()` and `use_global_model=True` the fallback estimator will be used. If `use_global_model=False` a
+        `ValueError` will be raised.
 
-        :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :return: array, shape=(n_samples,) the predicted data
-        """
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Data to predict.
 
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            Predicted target values.
+        """
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         X_group, X_value = _split_groups_and_values(
@@ -361,13 +351,21 @@ class GroupedPredictor(BaseEstimator):
     # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
     @available_if(lambda self: hasattr(self.estimator, "predict_proba"))
     def predict_proba(self, X):
-        """
-        Predict probabilities on new data.
+        """Predict probabilities on new data `X`.
 
-        :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :return: array, shape=(n_samples, n_classes) the predicted data
-        """
+        !!! warning
+            Available only if the underlying estimator implements `.predict_proba()` method.
 
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples, n_classes)
+            Predicted probabilities per class.
+        """
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         X_group, X_value = _split_groups_and_values(
@@ -386,13 +384,23 @@ class GroupedPredictor(BaseEstimator):
     # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
     @available_if(lambda self: hasattr(self.estimator, "decision_function"))
     def decision_function(self, X):
-        """
-        Evaluate the decision function for the samples in X.
+        """Predict confidence scores for samples in `X`.
 
-        :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :return: the decision function of the sample for each class in the model.
-        """
+        !!! warning
+            Available only if the underlying estimator implements `.decision_function()` method.
 
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,) or (n_samples, n_classes)
+            Confidence scores per (n_samples, n_classes) combination.
+            In the binary case, confidence score for self.classes_[1] where > 0 means this class would be
+            predicted.
+        """
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         X_group, X_value = _split_groups_and_values(

@@ -14,46 +14,57 @@ from sklego.common import sliding_window
 
 
 class TimeGapSplit:
-    """
-    Provides train/test indices to split time series data samples.
-    This cross-validation object is a variation of TimeSeriesSplit with the following
-    differences:
+    r"""Provides train/test indices to split time series data samples.
+
+    This cross-validation object is a variation of TimeSeriesSplit with the following  differences:
 
     - The splits are made based on datetime duration, instead of number of rows.
-    - The user specifies the validation durations and either training_duration or n_splits.
-    - The user can specify a 'gap' duration that is added after the training split and before the validation split.
+    - The user specifies the `valid_duration` and either `train_duration` or `n_splits`.
+    - The user can specify a `gap_duration` that is added after the training split and before the validation split.
 
-    The 3 duration parameters can be used to really replicate how the model is going to
-    be used in production in batch learning.
+    The 3 duration parameters can be used to really replicate how the model is going to be used in production in batch
+    learning.
 
-    Each validation fold doesn't overlap. The entire 'window' moves by 1 'valid_duration'
-    until there is not enough data.
+    Each validation fold doesn't overlap. The entire `window` moves by 1 `valid_duration` until there is not enough
+    data.
 
-    If this would lead to more splits then specified with 'n_splits', the 'window' moves by
-    the 'validation_duration' times the fraction of possible splits and requested splits:
+    If this would lead to more splits then specified with `n_splits`, the `window` moves by `valid_duration` times the
+    fraction of possible splits and requested splits:
 
-    - n_possible_splits = (total_length - train_duration-gap_duration) // valid_duration
-    - time_shift = valid_duration * n_possible_splits / n_slits
+    - `n_possible_splits = (total_length - train_duration-gap_duration) // valid_duration`
+    - `time_shift = valid_duration * n_possible_splits / n_slits`
+
     so the CV spans the whole dataset.
 
-    If 'train_duration' is not passed but 'n_splits' is, the training duration is increased to:
+    If `train_duration` is not passed but `n_splits` is, the training duration is increased to:
 
-        train_duration = total_length - (gap_duration + valid_duration * n_splits)
+    `train_duration = total_length - (gap_duration + valid_duration * n_splits)`
 
     such that the shifting the entire window by one validation duration spans the whole training set.
 
-    :param pandas.Series date_serie: series with the date, that should have all the indices of X used in the split() method.
-    :param datetime.timedelta train_duration: historical training data.
-    :param datetime.timedelta valid_duration: retraining period.
-    :param datetime.timedelta gap_duration: forward looking window of the target.
-        The period of the forward looking window necessary to create your target variable.
+    Parameters
+    ----------
+    date_serie : pd.Series
+        Series with the date, that should have all the indices of X used in the split() method.
+    valid_duration : datetime.timedelta
+        Retraining period.
+    train_duration : datetime.timedelta | None, default=None
+        Historical training data.
+    gap_duration : datetime.timedelta, default=timedelta(0)
+        Forward looking window of the target. The period of the forward looking window necessary to create your target
+        variable.
+
         This period is dropped at the end of your training folds due to lack of recent data.
+
         In production you would have not been able to create the target for that period, and you would have drop it from
         the training data.
-    :param int n_splits: number of splits.
-    :param string window: either 'rolling' or 'expanding'.
-        'rolling' window has fixed size and is shifted entirely.
-        'expanding' left side of window is fixed, right border increases each fold.
+    n_splits : int | None, default=None
+        Number of splits.
+    window : Literal["rolling", "expanding"], default="rolling"
+        Type of moving window to use.
+
+        - `"rolling"` window has fixed size and is shifted entirely.
+        - `"expanding"` left side of window is fixed, right border increases each fold.
     """
 
     def __init__(
@@ -85,11 +96,14 @@ class TimeGapSplit:
         self.window = window
 
     def _join_date_and_x(self, X):
-        """
-        Make a DataFrame indexed by the pandas index (the same as date_series) with date column joined with that index
-        and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of sklearn.
+        """Creates a DataFrame indexed by the pandas index (the same as `date_serie`) with date column joined with that
+        index and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of
+        sklearn.
 
-        :param pandas.DataFrame X: Dataframe with the data to split
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Dataframe with the data to split
         """
         X_index_df = pd.DataFrame(range(len(X)), columns=["np_index"], index=X.index)
         X_index_df = X_index_df.join(self.date_serie)
@@ -97,12 +111,21 @@ class TimeGapSplit:
         return X_index_df
 
     def split(self, X, y=None, groups=None):
-        """
-        Generate indices to split data into training and test set.
+        """Generate indices to split data into training and test set.
 
-        :param pandas.DataFrame X: Dataframe with the data to split
-        :param y: Always ignored, exists for compatibility
-        :param groups: Always ignored, exists for compatibility
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Dataframe with the data to split.
+        y : array-like | None, default=None
+            Ignored, present for compatibility.
+        groups : array-like | None, default=None
+            Ignored, present for compatibility.
+
+        Yields
+        -------
+        tuple[np.ndarray, np.ndarray]
+            Train and test indices of the same fold.
         """
 
         X_index_df = self._join_date_and_x(X)
@@ -185,18 +208,36 @@ class TimeGapSplit:
             )
 
     def get_n_splits(self, X=None, y=None, groups=None):
-        """Gets the number of splits
+        """Get the number of splits
 
-        :return: amount of n_splits
-        :rtype: int
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Dataframe with the data to split.
+        y : array-like | None, default=None
+            Ignored, present for compatibility.
+        groups : array-like | None, default=None
+            Ignored, present for compatibility.
+
+        Returns
+        -------
+        int
+            Number of splits.
         """
         return sum(1 for x in self.split(X, y, groups))
 
     def summary(self, X):
-        """Describes all folds
+        """Describe all folds.
 
-        :param pandas.DataFrame X: Dataframe with the data to split
-        :returns: ``pd.DataFrame`` summary of all folds
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Dataframe with the data to split.
+
+        Returns
+        -------
+        pd.DataFrame
+            Summary of all folds.
         """
         summary = []
         X_index_df = self._join_date_and_x(X)
@@ -230,12 +271,12 @@ class TimeGapSplit:
 
 
 class KlusterFoldValidation:
-    """
-    KlusterFold cross validator
+    """KlusterFold cross validator. Create folds based on provided cluster method
 
-    - Create folds based on provided cluster method
-
-    :param cluster_method: Clustering method with fit_predict attribute
+    Parameters
+    ----------
+    cluster_method : Clusterer
+        Clustering method to use for the fold validation.
     """
 
     def __init__(self, cluster_method=None):
@@ -248,12 +289,21 @@ class KlusterFoldValidation:
         self.n_splits = None
 
     def split(self, X, y=None, groups=None):
-        """
-        Generator to iterate over the indices
+        """Generate indices to split data into training and test set.
 
-        :param X: Array to split on
-        :param y: Always ignored, exists for compatibility
-        :param groups: Always ignored, exists for compatibility
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Array to split on.
+        y : array-like of shape (n_samples,) | None, default=None
+            Ignored, present for compatibility.
+        groups : array-like of shape (n_samples,) | None, default=None
+            Ignored, present for compatibility.
+
+        Yields
+        -------
+        tuple[np.ndarray, np.ndarray]
+            Train and test indices of the same fold.
         """
 
         X = check_array(X)
@@ -276,10 +326,19 @@ class KlusterFoldValidation:
             )
 
     def _method_is_fitted(self, X):
+        """Check if the `cluster_method` is fitted
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Array to use if the method is fitted
+
+        Returns
+        -------
+        bool
+            True if fitted, else False
         """
-        :param X: Array to use if the method is fitted
-        :return: True if fitted, else False
-        """
+
         try:
             self.cluster_method.predict(X[0:1, :])
             return True
@@ -288,22 +347,23 @@ class KlusterFoldValidation:
 
 
 class GroupTimeSeriesSplit(_BaseKFold):
-    """
-    Sliding window time series split
+    """Sliding window time series split.
 
-    Create n_splits folds with an as equally possible size through a smart variant of a brute
-    force search. Groups parameter in .split() should be filled with the time groups (e.g. years)
+    Create `n_splits` folds with an as equally possible size through a smart variant of a brute force search.
+    Groups parameter in `.split()` method should be filled with the time groups (e.g. years)
 
-    If n_splits is 3 ("*" = train, "x" = test)::
+    If `n_splits` is 3 ("*" = train, "x" = test):
 
-    |-----------------------|
-    | * * * x x x - - - - - |
-    | - - - * * * x x x - - |
-    | - - - - - - * * * x x |
-    |-----------------------|
+    ```console
+    * * * x x x - - - - -
+    - - - * * * x x x - -
+    - - - - - - * * * x x
+    ```
 
-    :param n_splits: the amount of train-test combinations.
-    :type n_splits: int
+    Parameters
+    ----------
+    n_splits : int
+        Amount of (train, test) splits to generate.
     """
 
     # table above inspired by sktime
@@ -326,14 +386,14 @@ class GroupTimeSeriesSplit(_BaseKFold):
         self.n_splits = n_splits
 
     def summary(self):
-        """
-        Generates a pd.DataFrame which displays the groups splits
-        and extra statistics about it.
-        Can only be run after having applied the .split() method to
-        the GroupTimeSeriesSplit instance.
+        """Describe all folds in a pd.DataFrame which displays the groups splits and extra statistics about it.
 
-        :return: a pd.DataFrame with info about where the splits were made
-        :rtype: pd.DataFrame
+        Can only be run after having applied the `.split()` method to the `GroupTimeSeriesSplit` instance.
+
+        Returns
+        -------
+        pd.DataFrame
+            Summary of all folds.
         """
         try:
             return (
@@ -352,24 +412,25 @@ class GroupTimeSeriesSplit(_BaseKFold):
             )
         except AttributeError:
             raise AttributeError(
-                ".summary() only works after having ran" " .split(X, y, groups)."
+                ".summary() only works after having ran .split(X, y, groups)."
             )
 
     def split(self, X=None, y=None, groups=None):
-        """Returns the train-test splits of all the folds
+        """Generate the train-test splits of all the folds
 
-        :param X: array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples
-            and `n_features` is the number of features, defaults to None
-        :type X: np.array, optional
-        :param y: array-like of shape (n_samples,)
-            The target variable for supervised learning problems, defaults to None
-        :type y: np.array, optional
-        :param groups: Group labels for the samples used while splitting the dataset
-            into train/test set, defaults to None
-        :type groups: np.array
-        :return: the indices of the train and test splits
-        :rtype: List[np.array]
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features), default=None
+            Data to split.
+        y : array-like of shape (n_samples,), default=None
+            The target variable for supervised learning problems.
+        groups : array-like of shape (n_samples,), default=None
+            Group labels for the samples used while splitting the dataset into train/test set,
+
+        Returns
+        -------
+        List[np.ndarray]
+            List containing train-test split indices of each fold.
         """
         if groups is None:
             raise ValueError("Groups cannot be None")
@@ -387,24 +448,35 @@ class GroupTimeSeriesSplit(_BaseKFold):
     def get_n_splits(self, X=None, y=None, groups=None):
         """Get the amount of splits
 
-        :param X: Always ignored, exists for compatibality, defaults to None
-        :type X: Object, optional
-        :param y: Always ignored, exists for compatibality, defaults to None
-        :type y: Object, optional
-        :param groups: Always ignored, exists for compatibality, defaults to None
-        :type groups: Object, optional
-        :return: amount of n_splits
-        :rtype: int
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features), default=None
+            Ignored, present for compatibility.
+        y : array-like of shape (n_samples,), default=None
+            Ignored, present for compatibility.
+        groups : array-like of shape (n_samples,), default=None
+            Ignored, present for compatibility.
+
+        Returns
+        -------
+        int
+            Amount of splits.
         """
         return self.n_splits
 
     def _check_for_long_estimated_runtime(self, groups):
-        """
-        Checks for combinations of n_splits and unique groups and raises UserWarning
-        if runtime is expected to take over one minute
+        """Check for combinations of n_splits and unique groups and raises `UserWarning` if runtime is expected to take
+        over one minute.
 
-        :param groups: array of the groups
-        :type groups: np.array
+        Parameters
+        ----------
+        groups : array-like of shape (n_samples,)
+            Groups to check for unique groups and n_splits.
+
+        Raises
+        ------
+        UserWarning
+            If runtime is expected to take over one minute.
         """
         unique_groups = len(set(groups))
         warning = (
@@ -431,16 +503,21 @@ class GroupTimeSeriesSplit(_BaseKFold):
             )
 
     def _iter_test_indices(self, X=None, y=None, groups=None):
-        """
-        Calculates the optimal division of groups into folds so that every fold is as
-        equally large as possible
+        """Calculate the optimal division of groups into folds so that every fold is as equally large as possible.
 
-        :param X: Always ignored, exists for compatibility.
-        :param y: Always ignored, exists for compatibility.
-        :param groups: array with groups
-        :type groups: np.array
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features), default=None
+            Ignored, present for compatibility.
+        y : array-like of shape (n_samples,), default=None
+            Ignored, present for compatibility.
+        groups : array-like of shape (n_samples,), default=None
+            Array with groups.
 
-        :yields: two numpy arrays -> train indices and test indices of the same fold
+        Yields
+        ------
+        tuple[np.ndarray, np.ndarray]
+            Train and test indices of the same fold.
         """
         self._check_for_long_estimated_runtime(groups)
         (
@@ -453,17 +530,22 @@ class GroupTimeSeriesSplit(_BaseKFold):
             yield np.where(groups == i)[0], np.where(groups == i + 1)[0]
 
     def _calc_first_and_last_split_index(self, X=None, y=None, groups=None):
-        """
-        Calculates an approximate first and last split point to reduce the amount
-        of options during a brute force search.
+        """Calculate an approximate first and last split point to reduce the amount of options during a brute force
+        search.
 
-        :param X: Always ignored, exists for compatibility.
-        :param y: Always ignored, exists for compatibility.
-        :param groups: array with groups
-        :type groups: np.array
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features), default=None
+            Ignored, present for compatibility.
+        y : array-like of shape (n_samples,), default=None
+            Ignored, present for compatibility.
+        groups : array-like of shape (n_samples,), default=None
+            Array with groups.
 
-        :return: approximate index of first and approx. index of last split
-        :rtype: tuple
+        Returns
+        -------
+        tuple[int, int]
+            Approximate first and last split indexes.
         """
 
         # get the counts (=amount of rows) for each group
@@ -508,12 +590,13 @@ class GroupTimeSeriesSplit(_BaseKFold):
         return first_split_index, last_split_index
 
     def _get_split_indices(self):
-        """
-        Calculates for each possible splits the total absolute different of the groups
-        to the ideal group size and saves the split with the least absolute difference.
+        """Calculate for each possible splits the total absolute different of the groups to the ideal group size and
+        saves the split with the least absolute difference.
 
-        :return: indices of the best split points
-        :rtype: tuple
+        Returns
+        -------
+        int
+            Index of the best split point.
         """
         # set the index range to search possible splits for
         index_range = range(self._first_split_index, self._last_split_index)
@@ -535,8 +618,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # create a new generator that starts from the beginning again
         splits_generator = combinations(index_range, self.n_splits)
 
-        # generate a list, with for every group the difference between them and the ideal group size
-        # e.g.
+        # generate a list, with for every group the difference between them and the ideal group size, e.g.
         # ideal_group_size = 100
         # group_sizes = [10,20,270]
         # diff_from_ideal_list = [-90, -80, 170]
@@ -565,8 +647,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
             )
             new_diff = sum([abs(diff) for diff in diff_from_ideal_list])
 
-            # if with the new split the difference is less than the current most optimal, save the
-            # new split
+            # if with the new split the difference is less than the current most optimal, save the new split
             if new_diff < min_diff:
                 min_diff = new_diff
                 best_splits = new_splits
@@ -574,20 +655,23 @@ class GroupTimeSeriesSplit(_BaseKFold):
 
     @staticmethod
     def _calc_new_diffs(values, diff_list, prev_splits, new_splits):
-        """Calculates the new group size differences compared to the optimal group size
+        """Calculate the new group size differences compared to the optimal group size.
 
-        :param values: list of values
-        :type values: list
-        :param diff_list: list of values with for each index split its difference
-            from the optimal group size
-        :type diff_list: list
-        :param prev_splits: the indices of the previous splits, excluding index 0 and the last index
-        :type prev_splits: tuple
-        :param new_splits: the indices of the new splits, excluding index 0 and the last index
-        :type new_splits: tuple
+        Parameters
+        ----------
+        values : list
+            List of values.
+        diff_list : list
+            List of values with for each index split its difference from the optimal group size.
+        prev_splits : tuple
+            Indices of the previous splits, excluding index 0 and the last index.
+        new_splits : tuple
+            Indices of the new splits, excluding index 0 and the last index.
 
-        :return: updated diff_list
-        :rtype: list
+        Returns
+        -------
+        list
+            List of values with for each index split its difference from the optimal group size.
         """
         # calculate which indices have changed, e.g.:
         # new_index = (1,2,5)
@@ -621,15 +705,19 @@ class GroupTimeSeriesSplit(_BaseKFold):
         return new_diff_list
 
     def _regroup(self, groups):
-        """
-        Specifies in which group every observation belongs
+        """Specify in which group every observation belongs.
 
-        :param groups: original groups in array
-        :type: groups: np.array
+        Parameters
+        ----------
+        groups : array-like of shape (n_samples,)
+            Array with original groups.
 
-        :return: indices for the train and test splits of each fold
-        :rtype: np.array
+        Returns
+        -------
+        np.ndarray
+            Indices for the train and test splits of each fold
         """
+
         df = self._grouped_df.copy().reset_index()
         # set each unique group to the right group_id to group them into folds
         df.loc[: self._best_splits[0], "group"] = 0
