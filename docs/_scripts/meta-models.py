@@ -265,7 +265,7 @@ from sklego.meta import GroupedPredictor, DecayEstimator
 mod1 = (GroupedPredictor(DummyRegressor(), groups=["m"])
         .fit(df[["m"]], df["yt"]))
 
-mod2 = (GroupedPredictor(DecayEstimator(DummyRegressor(), decay=0.9), groups=["m"])
+mod2 = (GroupedPredictor(DecayEstimator(DummyRegressor(), decay_func="exponential", decay_rate=0.9), groups=["m"])
         .fit(df[["index", "m"]], df["yt"]))
 
 plt.figure(figsize=(12, 3))
@@ -278,6 +278,29 @@ plt.legend();
 plt.savefig(_static_path / "decay-model.png")
 plt.clf()
 
+
+# --8<-- [start:decay-functions]
+from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay 
+
+fig = plt.figure(figsize=(12, 6))
+
+for i, name, func, kwargs in zip(
+    range(1, 5),
+    ("exponential", "linear", "sigmoid", "stepwise"),
+    (exponential_decay, linear_decay, sigmoid_decay, stepwise_decay),
+    ({"decay_rate": 0.995}, {"min_value": 0.1}, {}, {"n_steps": 8})
+    ):
+
+    ax = fig.add_subplot(2, 2, i)
+    x, y = None, np.arange(1000)
+    ax.plot(func(x,y, **kwargs))
+    ax.set_title(f'decay_func="{name}"')
+
+plt.tight_layout()
+# --8<-- [end:decay-functions]
+
+plt.savefig(_static_path / "decay-functions.png")
+plt.clf()
 
 # --8<-- [start:make-blobs]
 import numpy as np

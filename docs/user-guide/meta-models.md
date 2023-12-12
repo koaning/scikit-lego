@@ -198,6 +198,43 @@ We will create two models on this dataset. One model calculates the average valu
 
 The decay parameter has a lot of influence on the effect of the model but one can clearly see that we shift focus to the more recent data.
 
+### Decay Functions
+
+scikit-lego provides a set of decay functions that can be used to decay the importance of older data. The default decay function used in `DecayEstimator` is the `exponential_decay` function (`decay_func="exponential"`).
+
+Out of the box there are four decay functions available:
+
+![decay-functions](/_static/meta-models/decay-functions.png)
+
+??? example "Code for plotting the decay functions"
+    ```py
+    --8<-- "docs/_scripts/meta-models.py:decay-functions"
+    ```
+
+The arguments of these functions can be passed along to the `DecayEstimator` class as keyword arguments:
+  
+```py
+DecayEstimator(..., decay_func="linear", min_value=0.5)
+```
+
+To see which keyword arguments are available for each decay function, please refer to the [Decay Functions API section][decay-functions]:
+
+Notice that passing a string to refer to the built-in decays is just a convenience.
+
+Therefore it is also possible to create a custom decay function and pass it along to the `DecayEstimator` class, **as long as** the first two arguments of the function are `X` and `y` and the return shape is the same as `y`:
+
+```py title="Custom decay function"
+def custom_decay(X, y, alpha, beta, gamma):
+    """My custom decay function where the magic happens"""
+    ...
+    return decay_values
+
+DecayEstimator(...,
+    decay_func=custom_decay,
+    alpha=some_alpha, beta=some_beta, gamma=some_gamma
+)
+```
+
 ## Confusion Balancer
 
 !!! warning "Disclaimer"
@@ -350,7 +387,8 @@ The `OutlierClassifier` can be combined with any classification model in the `St
 [thresholder-api]: /api/meta#sklego.meta.thresholder.Thresholder
 [grouped-predictor-api]: /api/meta#sklego.meta.grouped_predictor.GroupedPredictor
 [grouped-transformer-api]: /api/meta#sklego.meta.grouped_transformer.GroupedTransformer
-[decay-api]: /api/meta#sklego.meta.decay.DecayEstimator
+[decay-api]: /api/meta#sklego.meta.decay_estimator.DecayEstimator
+[decay-functions]: /api/decay-functions
 [confusion-balancer-api]: /api/meta#sklego.meta.confusion_balancer.ConfusionBalancer
 [zero-inflated-api]: /api/meta#sklego.meta.zero_inflated_regressor.ZeroInflatedRegressor
 [outlier-classifier-api]: /api/meta#sklego.meta.outlier_classifier.OutlierClassifier
@@ -358,4 +396,4 @@ The `OutlierClassifier` can be combined with any classification model in the `St
 [standard-scaler-api]: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
 [stacking-classifier-api]: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.StackingClassifier.html#sklearn.ensemble.StackingClassifier
 [dummy-regressor-api]: https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html
-[imb-learn]: https://imbalanced-learn.readthedocs.io/en/stable/
+[imb-learn]: https://imbalanced-learn.org/stable/
