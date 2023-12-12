@@ -60,6 +60,7 @@ plugins:
       handlers:
         python:
           options:
+            show_symbol_type_toc: true
             docstring_style: numpy
             docstring_section_style: table # table, list or spacy
             filters:
