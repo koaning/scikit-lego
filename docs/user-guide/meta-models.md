@@ -98,9 +98,8 @@ The goal of the [GroupedPredictor][grouped-predictor-api] is to allow us to spli
 
 The image below demonstrates what will happen.
 
-<p align="center">
-  <img src="../_static/meta-models/grouped-df.png" />
-</p>
+![grouped](../_static/meta-models/grouped-df.png)
+
 
 We train 5 models in total because the model will also train a fallback automatically (you can turn this off via `use_fallback=False`).
 
@@ -124,9 +123,7 @@ We could go a step further and train a [DummyRegressor][dummy-regressor-api] per
 
 The code below works similar as the previous example but one difference is that the grouped model does not receive a dataframe but a numpy array.
 
-<p align="center">
-  <img src="../_static/meta-models/grouped-np.png" />
-</p>
+![dummy](../_static/meta-models/grouped-np.png)
 
 Note that we're also grouping over more than one column here.
 The code that does this is listed below.
