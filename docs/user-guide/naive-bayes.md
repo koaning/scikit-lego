@@ -2,9 +2,7 @@
 
 Naive Bayes models are flexible and interpretable. In scikit-lego we've added support for a Gaussian Mixture variant of the algorithm.
 
-<p align="center">
-  <img src="../_static/naive-bayes/naive-bayes.png" />
-</p>
+![naive bayes sketch](../_static/naive-bayes/naive-bayes.png)
 
 An example of the usage of algorithm can be found below.
 

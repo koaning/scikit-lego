@@ -1,7 +1,7 @@
 # Contribution
 
 <p align="center">
-  <img src="/_static/contribution/contribute.png" />
+  <img src="../_static/contribution/contribute.png" />
 </p>
 
 This project started because we saw people rewrite the same transformers and estimators at clients over and over again.
