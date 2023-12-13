@@ -241,7 +241,7 @@ The results of the grid search are shown below. Note that the logistic regressio
     ```py
     --8<-- "docs/_scripts/fairness.py:demographic-parity-grid-results"
     ```
-![demographic-parity-grid-results](/_static/fairness/demographic-parity-grid-results.png)
+![demographic-parity-grid-results](../_static/fairness/demographic-parity-grid-results.png)
 
 ## Equal opportunity
 
@@ -267,7 +267,7 @@ where POS is the subset of the population where `y_true = positive_target`.
     ```py
     --8<-- "docs/_scripts/fairness.py:equal-opportunity-grid-results"
     ```
-![equal-opportunity-grid-results](/_static/fairness/equal-opportunity-grid-results.png)
+![equal-opportunity-grid-results](../_static/fairness/equal-opportunity-grid-results.png)
 
 [^1]: M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
 [^2]: M. Hardt, E. Price and N. Srebro (2016), Equality of Opportunity in Supervised Learning

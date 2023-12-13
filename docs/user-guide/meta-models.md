@@ -37,7 +37,7 @@ With this cross validation trained, we'll make a chart to show the effect of cha
 --8<-- "docs/_scripts/meta-models.py:threshold-chart"
 ```
 
-![skewed-data](/_static/meta-models/threshold-chart.png)
+![skewed-data](../_static/meta-models/threshold-chart.png)
 
 Increasing the threshold will increase the precision but as expected this is at the cost of recall (and accuracy).
 
@@ -285,7 +285,7 @@ We'll perform an optimistic demonstration below.
 --8<-- "docs/_scripts/meta-models.py:confusion-balancer"
 ```
 
-![confusion-balancer](/_static/meta-models/confusion-balancer-results.png)
+![confusion-balancer](../_static/meta-models/confusion-balancer-results.png)
 
 ??? example "Code to generate the plot"
     ```py
