@@ -38,7 +38,7 @@ Loads the abalone dataset where the goal is to predict the gender of the creatur
 --8<-- "docs/_scripts/datasets.py:plot-abalone"
 ```
 
-![abalone](/_static/datasets/abalone.png)
+![abalone](../_static/datasets/abalone.png)
 
 ## Arrests
 
@@ -58,7 +58,7 @@ The goal is to predict whether or not the arrestee was released with a summons w
 --8<-- "docs/_scripts/datasets.py:plot-arrests"
 ```
 
-![arrests](/_static/datasets/arrests.png)
+![arrests](../_static/datasets/arrests.png)
 
 ## Chickens
 
@@ -78,7 +78,7 @@ There were four groups on chicks on different protein diets.
 --8<-- "docs/_scripts/datasets.py:plot-chicken"
 ```
 
-![chickens](/_static/datasets/chicken.png)
+![chickens](../_static/datasets/chicken.png)
 
 ## Hearts
 
@@ -99,7 +99,7 @@ This implementation loads the Cleveland dataset of the research which is the onl
 --8<-- "docs/_scripts/datasets.py:plot-hearts"
 ```
 
-![hearts](/_static/datasets/hearts.png)
+![hearts](../_static/datasets/hearts.png)
 
 ## Heroes
 
@@ -119,7 +119,7 @@ Note that the pandas dataset returns more information.
 --8<-- "docs/_scripts/datasets.py:plot-heroes"
 ```
 
-![heroes](/_static/datasets/heroes.png)
+![heroes](../_static/datasets/heroes.png)
 
 ## Penguins
 
@@ -140,7 +140,7 @@ The goal of the dataset is to predict which species of penguin a penguin belongs
 --8<-- "docs/_scripts/datasets.py:plot-penguins"
 ```
 
-![penguins](/_static/datasets/penguins.png)
+![penguins](../_static/datasets/penguins.png)
 
 ## Creditcard frauds
 
@@ -179,7 +179,7 @@ The dataset is highly unbalanced, the positive class (frauds) account for 0.172%
 --8<-- "docs/_scripts/datasets.py:plot-creditcards"
 ```
 
-![creditcards](/_static/datasets/creditcards.png)
+![creditcards](../_static/datasets/creditcards.png)
 
 ## Simpleseries
 
@@ -195,7 +195,7 @@ Generate a *very simple* timeseries dataset to play with. The generator assumes 
 --8<-- "docs/_scripts/datasets.py:plot-ts"
 ```
 
-![timeseries](/_static/datasets/timeseries.png)
+![timeseries](../_static/datasets/timeseries.png)
 
 [abalone-api]: /api/datasets#sklego.datasets.load_abalone
 [arrests-api]: /api/datasets#sklego.datasets.load_arrests

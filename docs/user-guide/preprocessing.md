@@ -12,7 +12,7 @@ One solution to this problem is to turn the model into a transformer. To convert
 
 Let's demonstrate one example. Below we describe how to create a pipeline with two models that each see the same dataset. Note that the output of this pipeline is still only a transformer pipeline.
 
-![estimator-transformer1](/_static/preprocessing/estimator-transformer-1.png)
+![estimator-transformer1](../_static/preprocessing/estimator-transformer-1.png)
 
 ```py
 --8<-- "docs/_scripts/preprocessing.py:estimator-transformer-1"
@@ -32,7 +32,7 @@ array([[1.84239085, 1.8381264 ],
 
 Here's another example that works a little bit differently. Here we have two models that each see different data.
 
-![estimator-transformer2](/_static/preprocessing/estimator-transformer-2.png)
+![estimator-transformer2](../_static/preprocessing/estimator-transformer-2.png)
 
 ```py
 --8<-- "docs/_scripts/preprocessing.py:estimator-transformer-2"
@@ -52,13 +52,13 @@ array([[1.3810049 , 1.96265338],
 
 Transformers in scikit-learn typically do not add features. They replace them. Take `PCA` for example.
 
-![identity1](/_static/preprocessing/identity-transformer-1.png)
+![identity1](../_static/preprocessing/identity-transformer-1.png)
 
 The new dataset that comes out $X^{\text{new}}$ would no longer have columns ${x_1,...,x_4}$ but would instead replace them with ${x_{\text{PCA}_1}, x_{\text{PCA}_2}}$.
 
 If we rethink the pipeline a little bit we might not have to loose the original data.
 
-![identity2](/_static/preprocessing/identity-transformer-2.png)
+![identity2](../_static/preprocessing/identity-transformer-2.png)
 
 If you don't want to loose data, you can make use of a `FeatureUnion` and a [`IdentityTransformer`][id-transformer-api].
 
@@ -94,7 +94,7 @@ Some models are great at interpolation but less good at extrapolation.
 
 One way to potentially circumvent this problem is by capping extreme values that occur in the dataset $X$.
 
-![column-capping](/_static/preprocessing/column-capper.png)
+![column-capping](../_static/preprocessing/column-capper.png)
 
 Let's demonstrate how [`ColumnCapper`][column-capper-api] works in a few examples below.
 
@@ -187,7 +187,7 @@ Let's make some random data to start with. We have input data `day`, `day_of_yea
 --8<-- "docs/_scripts/preprocessing.py:rbf-data"
 ```
 
-![rbf-data](/_static/preprocessing/rbf-data.png)
+![rbf-data](../_static/preprocessing/rbf-data.png)
 
 Let's now create repeating basis functions based on `day_of_year`:
 
@@ -201,7 +201,7 @@ Now let's plot our transformed features:
 --8<-- "docs/_scripts/preprocessing.py:rbf-plot"
 ```
 
-![rbf-plot](/_static/preprocessing/rbf-plot.png)
+![rbf-plot](../_static/preprocessing/rbf-plot.png)
 
 The `day_of_year` feature has been replaced with `N_PERIODS` repeating basis functions.
 These are bell curves that are equidistant over the 1-365 range. Each curve captures the information of *being close to* a particular `day_of_year`.
@@ -218,7 +218,7 @@ Let's use these features below in a regression.
 --8<-- "docs/_scripts/preprocessing.py:rbf-regr"
 ```
 
-![rbf-regr](/_static/preprocessing/rbf-regr.png)
+![rbf-regr](../_static/preprocessing/rbf-regr.png)
 
 Note that you can make this approach even more powerful for timeseries by choosing to ignore the far away past.
 
@@ -232,7 +232,7 @@ Sometimes a linear regression doesn't entirely do what you'd like. Take this pat
 --8<-- "docs/_scripts/preprocessing.py:interval-encoder-1"
 ```
 
-![interval-encoder-1](/_static/preprocessing/interval-encoder-1.png)
+![interval-encoder-1](../_static/preprocessing/interval-encoder-1.png)
 
 What we could do though, is preprocess the data such that it *can* be passed to a linear regression. We could construct intervals in the `x` values, smooth with regards to `y` and interpolate in between. You can see a demo of this below using the [`IntervalEncoder`][interval-encoder-api] from sklego.
 
@@ -240,7 +240,7 @@ What we could do though, is preprocess the data such that it *can* be passed to 
 --8<-- "docs/_scripts/preprocessing.py:interval-encoder-2"
 ```
 
-![interval-encoder-2](/_static/preprocessing/interval-encoder-2.png)
+![interval-encoder-2](../_static/preprocessing/interval-encoder-2.png)
 
 Note that we extrapolate using the estimates of the intervals at the edges. This ensures that we can make predictions out of sample.
 
@@ -248,7 +248,7 @@ Note that we extrapolate using the estimates of the intervals at the edges. This
 --8<-- "docs/_scripts/preprocessing.py:interval-encoder-3"
 ```
 
-![interval-encoder-3](/_static/preprocessing/interval-encoder-3.png)
+![interval-encoder-3](../_static/preprocessing/interval-encoder-3.png)
 
 ### Monotonic Encoding
 
@@ -266,7 +266,7 @@ Now that this is in there, let's first show the behavior of the `method="average
 --8<-- "docs/_scripts/preprocessing.py:monotonic-2"
 ```
 
-![monotonic-2](/_static/preprocessing/monotonic-2.png)
+![monotonic-2](../_static/preprocessing/monotonic-2.png)
 
 Now let's see what occurs when we add a constraint that enforces the feature to only be `method="increasing"` or `method="decreasing"`.
 
@@ -274,7 +274,7 @@ Now let's see what occurs when we add a constraint that enforces the feature to 
 --8<-- "docs/_scripts/preprocessing.py:monotonic-3"
 ```
 
-![monotonic-3](/_static/preprocessing/monotonic-3.png)
+![monotonic-3](../_static/preprocessing/monotonic-3.png)
 
 If these features are now passed to a model that supports monotonicity constraints then we can build models with guarantees.
 

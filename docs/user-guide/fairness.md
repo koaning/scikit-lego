@@ -6,7 +6,7 @@ Scikit learn (pre version 1.2) came with the boston housing dataset. We can make
 --8<-- "docs/_scripts/fairness.py:predict-boston-simple"
 ```
 
-![boston-simple](/_static/fairness/predict-boston-simple.png)
+![boston-simple](../_static/fairness/predict-boston-simple.png)
 
 We could stop our research here if we think that our MSE is _good enough_ but this would be _dangerous_. To find out why, we should look at the variables that are being used in our model.
 
@@ -107,7 +107,7 @@ It does this by projecting all vectors away such that the remaining dataset is o
 The [`InformationFilter`][filter-information-api] uses a variant of the [Gram–Schmidt process][gram–schmidt-process] to filter information out of the dataset. We can make it visual in two dimensions;
 
 <p align="center">
-  <img src="/_static/fairness/projections.png" />
+  <img src="../_static/fairness/projections.png" />
 </p>
 
 To explain what occurs in higher dimensions we need to resort to maths. Take a training matrix $X$ that contains columns $x_1, ..., x_k$.
@@ -159,7 +159,7 @@ We can see that the coefficients of the three models are indeed different.
     ```py
     --8<-- "docs/_scripts/fairness.py:original-situation"
     ```
-![original-situation](/_static/fairness/original-situation.png)
+![original-situation](../_static/fairness/original-situation.png)
 
 #### 2. Drop two columns
 
@@ -167,7 +167,7 @@ We can see that the coefficients of the three models are indeed different.
     ```py
     --8<-- "docs/_scripts/fairness.py:drop-two"
     ```
-![drop-two](/_static/fairness/drop-two.png)
+![drop-two](../_static/fairness/drop-two.png)
 
 #### 3. Use the Information Filter
 
@@ -175,7 +175,7 @@ We can see that the coefficients of the three models are indeed different.
     ```py
     --8<-- "docs/_scripts/fairness.py:use-info-filter"
     ```
-![use-info-filter](/_static/fairness/use-info-filter.png)
+![use-info-filter](../_static/fairness/use-info-filter.png)
 
 There definitely is a balance between fairness and model accuracy. Which model you'll use depends on the world you want to create by applying your model.
 
@@ -241,7 +241,7 @@ The results of the grid search are shown below. Note that the logistic regressio
     ```py
     --8<-- "docs/_scripts/fairness.py:demographic-parity-grid-results"
     ```
-![demographic-parity-grid-results](/_static/fairness/demographic-parity-grid-results.png)
+![demographic-parity-grid-results](../_static/fairness/demographic-parity-grid-results.png)
 
 ## Equal opportunity
 
@@ -267,7 +267,7 @@ where POS is the subset of the population where `y_true = positive_target`.
     ```py
     --8<-- "docs/_scripts/fairness.py:equal-opportunity-grid-results"
     ```
-![equal-opportunity-grid-results](/_static/fairness/equal-opportunity-grid-results.png)
+![equal-opportunity-grid-results](../_static/fairness/equal-opportunity-grid-results.png)
 
 [^1]: M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
 [^2]: M. Hardt, E. Price and N. Srebro (2016), Equality of Opportunity in Supervised Learning

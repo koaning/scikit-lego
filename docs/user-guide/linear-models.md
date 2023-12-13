@@ -20,24 +20,24 @@ Lowess stands for LOcally WEighted Scatterplot Smoothing and has historically be
     --8<-- "docs/_scripts/linear-models.py:plot-lowess"
     ```
 
-![lowess](/_static/linear-models/lowess.png)
+![lowess](../_static/linear-models/lowess.png)
 
 The line does not look linear but that's because internally, during prediction, many weighted linear regressions are happening. The gif below demonstrates how the data is being weighted when we would make a prediction.
 
-![lowess-rolling](/_static/linear-models/lowess-rolling.gif)
+![lowess-rolling](../_static/linear-models/lowess-rolling.gif)
 
 ### Details on `sigma`
 
 We'll also show two different prediction outcomes depending on the hyperparameter `sigma`:
 
-![lowess-rolling-01](/_static/linear-models/lowess-rolling-01.gif)
+![lowess-rolling-01](../_static/linear-models/lowess-rolling-01.gif)
 
-![lowess-rolling-001](/_static/linear-models/lowess-rolling-001.gif)
+![lowess-rolling-001](../_static/linear-models/lowess-rolling-001.gif)
 
 You may be tempted now to think that a lower sigma always has a better fit, but you need to be careful here.
 The data might have gaps and larger sigma values will be able to properly regularize.
 
-![lowess-two-predictions](/_static/linear-models/lowess-two-predictions.gif)
+![lowess-two-predictions](../_static/linear-models/lowess-two-predictions.gif)
 
 Note that this regression also works in higher dimensions but the main downside of this approach is that it is _really slow_ when making predictions.
 
@@ -52,11 +52,11 @@ away.
 
 The effect of the `span` parameter on the weights can be seen below:
 
-![grid-span-sigma-02](/_static/linear-models/grid-span-sigma-01.png)
+![grid-span-sigma-02](../_static/linear-models/grid-span-sigma-01.png)
 
 This will also effect the predictions.
 
-![grid-span-sigma-01](/_static/linear-models/grid-span-sigma-02.png)
+![grid-span-sigma-01](../_static/linear-models/grid-span-sigma-02.png)
 
 You may need to squint your eyes a bit to see it, but lower spans cause more jiggles and less smooth curves.
 
@@ -119,7 +119,7 @@ Imagine that you have a dataset with some outliers.
 --8<-- "docs/_scripts/linear-models.py:lad-data"
 ```
 
-![lad-01](/_static/linear-models/lad-data.png)
+![lad-01](../_static/linear-models/lad-data.png)
 
 A simple linear regression will not do a good job since it is distracted by the outliers. That is because it optimizes the mean squared error
 
@@ -135,7 +135,7 @@ Hence, linear regression does the following:
 --8<-- "docs/_scripts/linear-models.py:lr-fit"
 ```
 
-![lad-02](/_static/linear-models/lr-fit.png)
+![lad-02](../_static/linear-models/lr-fit.png)
 
 By changing the loss function to the mean absolute deviation
 
@@ -151,7 +151,7 @@ Here an example of [LADRegression][lad-api] in action:
 --8<-- "docs/_scripts/linear-models.py:lad-fit"
 ```
 
-![lad-03](/_static/linear-models/lad-fit.png)
+![lad-03](../_static/linear-models/lad-fit.png)
 
 ### See also
 
@@ -172,7 +172,7 @@ then around 80% of the data is between these two lines.
 --8<-- "docs/_scripts/linear-models.py:quantile-fit"
 ```
 
-![quantile](/_static/linear-models/quantile-fit.png)
+![quantile](../_static/linear-models/quantile-fit.png)
 
 [lowess-api]: /api/linear-model#sklego.linear_model.LowessRegression
 [prob-weight-api]: /api/linear-model#sklego.linear_model.ProbWeightRegression

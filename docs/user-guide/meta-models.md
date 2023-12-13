@@ -18,7 +18,7 @@ We demonstrate how that works below. First we'll import the necessary libraries 
 --8<-- "docs/_scripts/meta-models.py:skewed-data"
 ```
 
-![skewed-data](/_static/meta-models/skewed-data.png)
+![skewed-data](../_static/meta-models/skewed-data.png)
 
 Next we'll make a cross validation pipeline to try out this thresholder.
 
@@ -37,7 +37,7 @@ With this cross validation trained, we'll make a chart to show the effect of cha
 --8<-- "docs/_scripts/meta-models.py:threshold-chart"
 ```
 
-![skewed-data](/_static/meta-models/threshold-chart.png)
+![skewed-data](../_static/meta-models/threshold-chart.png)
 
 Increasing the threshold will increase the precision but as expected this is at the cost of recall (and accuracy).
 
@@ -59,7 +59,7 @@ Wall time: 917 ms
 ## Grouped Prediction
 
 <p align="center">
-  <img src="/_static/meta-models/grouped-model.png" />
+  <img src="../_static/meta-models/grouped-model.png" />
 </p>
 
 To help explain what it can do we'll consider three methods to predict the chicken weight.
@@ -86,7 +86,7 @@ First we start with a baseline. We'll use a linear regression and add dummies fo
 --8<-- "docs/_scripts/meta-models.py:baseline-model"
 ```
 
-![baseline-model](/_static/meta-models/baseline-model.png)
+![baseline-model](../_static/meta-models/baseline-model.png)
 
 Because the model is linear the dummy variable causes the intercept to change but leaves the gradient untouched. This might not be what we want from a model.
 
@@ -98,9 +98,8 @@ The goal of the [GroupedPredictor][grouped-predictor-api] is to allow us to spli
 
 The image below demonstrates what will happen.
 
-<p align="center">
-  <img src="/_static/meta-models/grouped-df.png" />
-</p>
+![grouped](../_static/meta-models/grouped-df.png)
+
 
 We train 5 models in total because the model will also train a fallback automatically (you can turn this off via `use_fallback=False`).
 
@@ -114,7 +113,7 @@ Applying this model to the dataframe is easy.
 --8<-- "docs/_scripts/meta-models.py:grouped-model"
 ```
 
-![grouped-model](/_static/meta-models/grouped-model.png)
+![grouped-model](../_static/meta-models/grouped-model.png)
 
 Such model looks a bit better.
 
@@ -124,9 +123,7 @@ We could go a step further and train a [DummyRegressor][dummy-regressor-api] per
 
 The code below works similar as the previous example but one difference is that the grouped model does not receive a dataframe but a numpy array.
 
-<p align="center">
-  <img src="/_static/meta-models/grouped-np.png" />
-</p>
+![dummy](../_static/meta-models/grouped-np.png)
 
 Note that we're also grouping over more than one column here.
 The code that does this is listed below.
@@ -135,7 +132,7 @@ The code that does this is listed below.
 --8<-- "docs/_scripts/meta-models.py:grouped-dummy-model"
 ```
 
-![grouped-dummy-model](/_static/meta-models/grouped-dummy-model.png)
+![grouped-dummy-model](../_static/meta-models/grouped-dummy-model.png)
 
 Note that these predictions seems to yield the lowest error but take it with a grain of salt since these errors are only based on the train set.
 
@@ -157,7 +154,7 @@ In these scenarios the [`GroupedTransformer`][grouped-transformer-api] can help 
 --8<-- "docs/_scripts/meta-models.py:grouped-transform"
 ```
 
-![grouped-dummy-model](/_static/meta-models/grouped-transform.png)
+![grouped-dummy-model](../_static/meta-models/grouped-transform.png)
 
 ??? example "Code for plotting the transformed data"
     ```py
@@ -186,7 +183,7 @@ we'll demonstrate how it works by applying it on a simulated timeseries problem.
 --8<-- "docs/_scripts/meta-models.py:ts-data"
 ```
 
-![ts-data](/_static/meta-models/ts-data.png)
+![ts-data](../_static/meta-models/ts-data.png)
 
 We will create two models on this dataset. One model calculates the average value per month in our timeseries and the other does the same thing but will decay the importance of making accurate predictions for the far history.
 
@@ -194,7 +191,7 @@ We will create two models on this dataset. One model calculates the average valu
 --8<-- "docs/_scripts/meta-models.py:decay-model"
 ```
 
-![decay-model](/_static/meta-models/decay-model.png)
+![decay-model](../_static/meta-models/decay-model.png)
 
 The decay parameter has a lot of influence on the effect of the model but one can clearly see that we shift focus to the more recent data.
 
@@ -204,7 +201,7 @@ scikit-lego provides a set of decay functions that can be used to decay the impo
 
 Out of the box there are four decay functions available:
 
-![decay-functions](/_static/meta-models/decay-functions.png)
+![decay-functions](../_static/meta-models/decay-functions.png)
 
 ??? example "Code for plotting the decay functions"
     ```py
@@ -212,7 +209,7 @@ Out of the box there are four decay functions available:
     ```
 
 The arguments of these functions can be passed along to the `DecayEstimator` class as keyword arguments:
-  
+
 ```py
 DecayEstimator(..., decay_func="linear", min_value=0.5)
 ```
@@ -247,7 +244,7 @@ We added the [`ConfusionBalancer`][confusion-balancer-api] as experimental featu
     --8<-- "docs/_scripts/meta-models.py:make-blobs"
     ```
 
-![make-blobs](/_static/meta-models/make-blobs.png)
+![make-blobs](../_static/meta-models/make-blobs.png)
 
 Let's take this dataset and train a simple classifier against it.
 
@@ -288,7 +285,7 @@ We'll perform an optimistic demonstration below.
 --8<-- "docs/_scripts/meta-models.py:confusion-balancer"
 ```
 
-![confusion-balancer](/_static/meta-models/confusion-balancer-results.png)
+![confusion-balancer](../_static/meta-models/confusion-balancer-results.png)
 
 ??? example "Code to generate the plot"
     ```py
