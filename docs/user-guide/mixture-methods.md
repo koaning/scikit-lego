@@ -14,7 +14,7 @@ Below is some example code of how you might use a [GMMClassifier][gmm-classifier
 --8<-- "docs/_scripts/mixture-methods.py:gmm-classifier"
 ```
 
-![gmm-classifier](/_static/mixture-methods/gmm-classifier.png)
+![gmm-classifier](../_static/mixture-methods/gmm-classifier.png)
 
 ## Outlier Detection
 
@@ -26,7 +26,7 @@ Note that the [GMMOutlierDetector][gmm-outlier-detector-api] generates predictio
 --8<-- "docs/_scripts/mixture-methods.py:gmm-outlier-detector"
 ```
 
-![gmm-outlier-detector](/_static/mixture-methods/gmm-outlier-detector.png)
+![gmm-outlier-detector](../_static/mixture-methods/gmm-outlier-detector.png)
 
 Remark that with a GMM there are multiple ways to select outliers. Instead of selection points that are beyond the likely quantile threshold one can also specify the number of standard deviations away from the most likely standard deviations a given point it.
 
@@ -35,7 +35,7 @@ Remark that with a GMM there are multiple ways to select outliers. Instead of se
     --8<-- "docs/_scripts/mixture-methods.py:gmm-outlier-multi-threshold"
     ```
 
-![gmm-outlier-multi-threshold](/_static/mixture-methods/gmm-outlier-multi-threshold.png)
+![gmm-outlier-multi-threshold](../_static/mixture-methods/gmm-outlier-multi-threshold.png)
 
 ### Detection Details
 
@@ -49,7 +49,7 @@ threshold.
     !!! note
         This setting allows you to be much more picky in selecting than the `"quantile"` one since this method allows you to be more exclusive than the `"quantile"` method with threshold equal to one.
 
-![outlier-mixture-threshold](/_static/mixture-methods/outlier-mixture-threshold.png)
+![outlier-mixture-threshold](../_static/mixture-methods/outlier-mixture-threshold.png)
 
 As a sidenote: this image was generated with some dummy data, but its code can be found below:
 

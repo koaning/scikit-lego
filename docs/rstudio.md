@@ -110,7 +110,7 @@ ggplot(data=cv_df) +
 ```
 
 <p align="center">
-  <img src="/_static/rstudio/Rplot1.png" />
+  <img src="../_static/rstudio/Rplot1.png" />
 </p>
 
 ```r
@@ -123,7 +123,7 @@ ggplot(data=cv_df) +
 ```
 
 <p align="center">
-  <img src="/_static/rstudio/Rplot2.png" />
+  <img src="../_static/rstudio/Rplot2.png" />
 </p>
 
 ## Important

@@ -3,7 +3,7 @@
 Naive Bayes models are flexible and interpretable. In scikit-lego we've added support for a Gaussian Mixture variant of the algorithm.
 
 <p align="center">
-  <img src="/_static/naive-bayes/naive-bayes.png" />
+  <img src="../_static/naive-bayes/naive-bayes.png" />
 </p>
 
 An example of the usage of algorithm can be found below.
@@ -16,7 +16,7 @@ Let's first import the dependencies and create some data. This code will create 
 --8<-- "docs/_scripts/naive-bayes.py:simulated-data"
 ```
 
-![simulated-data](/_static/naive-bayes/simulated-data.png)
+![simulated-data](../_static/naive-bayes/simulated-data.png)
 
 Note that this dataset would be hard to classify directly if we would be using a standard Gaussian Naive Bayes algorithm since the orange class is multipeaked over two clusters.
 
@@ -26,7 +26,7 @@ To demonstrate this we'll run our [`GaussianMixtureNB`][gaussian-mix-nb-api] alg
 --8<-- "docs/_scripts/naive-bayes.py:model-results"
 ```
 
-![results](/_static/naive-bayes/model-results.png)
+![results](../_static/naive-bayes/model-results.png)
 
 Note that the second plot fits the original much better.
 
@@ -37,6 +37,6 @@ We can even zoom in on this second algorithm by having it sample what it believe
     --8<-- "docs/_scripts/naive-bayes.py:model-density"
     ```
 
-![density](/_static/naive-bayes/model-density.png)
+![density](../_static/naive-bayes/model-density.png)
 
 [gaussian-mix-nb-api]: /api/naive-bayes#sklego.naive_bayes.GaussianMixtureNB

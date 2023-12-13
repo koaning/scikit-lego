@@ -7,7 +7,7 @@ If you're interested in more algorithms we might recommend you have a look at [p
 
 The scikit-learn ecosystem offers many tools for dimensionality reduction. Two popular variants are [PCA][pca-api] and [UMAP][umap-api]. What is nice about both of these methods is that they can reduce the data but also apply the inverse operation.
 
-![decomposition](/_static/outliers/decomposition.png)
+![decomposition](../_static/outliers/decomposition.png)
 
 This is similar to what an autoencoder might do. But let's now say that we have a dataset $X$ and that we're happy with our dimensionality reduction technique.
 In this situation there's a balance between reduction of data and loss of information.
@@ -29,7 +29,7 @@ Let's start with PCA methods to decompose and reconstruct the data, wrapped in t
 --8<-- "docs/_scripts/outliers.py:pca-outlier"
 ```
 
-![pca-outlier](/_static/outliers/pca-outlier.png)
+![pca-outlier](../_static/outliers/pca-outlier.png)
 
 ### UMAP Demonstration
 
@@ -39,7 +39,7 @@ Let's now do the same with UMAP, wrapped in the class [`UMAPOutlierDetection`][u
 --8<-- "docs/_scripts/outliers.py:umap-outlier"
 ```
 
-![umap-outlier](/_static/outliers/umap-outlier.png)
+![umap-outlier](../_static/outliers/umap-outlier.png)
 
 One thing to keep in mind here: UMAP is _a lot slower_.
 
@@ -61,7 +61,7 @@ We've also got a few outlier detection techniques that are density based approac
 --8<-- "docs/_scripts/outliers.py:gmm-outlier"
 ```
 
-![gmm-outlier](/_static/outliers/gmm-outlier.png)
+![gmm-outlier](../_static/outliers/gmm-outlier.png)
 
 ### [BayesianGMMOutlierDetector][bayesian-gmm-outlier-api] Demonstration
 
@@ -69,7 +69,7 @@ We've also got a few outlier detection techniques that are density based approac
 --8<-- "docs/_scripts/outliers.py:bayesian-gmm-outlier"
 ```
 
-![bayesian-gmm-outlier](/_static/outliers/bayesian-gmm-outlier.png)
+![bayesian-gmm-outlier](../_static/outliers/bayesian-gmm-outlier.png)
 
 Note that for these density based approaches the threshold needs to be interpreted differently. If you're interested, you can find more information [here](/user-guide/mixture-methods#detection-details).
 
@@ -89,7 +89,7 @@ Note that in order to be complaint to the scikit-learn API we require that the `
 --8<-- "docs/_scripts/outliers.py:regr-outlier"
 ```
 
-![regr-outlier](/_static/outliers/regr-outlier.png)
+![regr-outlier](../_static/outliers/regr-outlier.png)
 
 [pca-outlier-api]: /api/decomposition#sklego.decomposition.pca_reconstruction.PCAOutlierDetection
 [umap-outlier-api]: /api/decomposition#sklego.decomposition.umap_reconstruction.UMAPOutlierDetection.md

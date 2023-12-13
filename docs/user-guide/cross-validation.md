@@ -27,13 +27,13 @@ Let's make some random data to start with, and next define a plotting function.
 --8<-- "docs/_scripts/cross-validation.py:example-1"
 ```
 
-![example-1](/_static/cross-validation/example-1.png)
+![example-1](../_static/cross-validation/example-1.png)
 
 ```py title="Example 2"
 --8<-- "docs/_scripts/cross-validation.py:example-2"
 ```
 
-![example-2](/_static/cross-validation/example-2.png)
+![example-2](../_static/cross-validation/example-2.png)
 
 `window="expanding"` is the closest to scikit-learn implementation:
 
@@ -41,7 +41,7 @@ Let's make some random data to start with, and next define a plotting function.
 --8<-- "docs/_scripts/cross-validation.py:example-3"
 ```
 
-![example-3](/_static/cross-validation/example-3.png)
+![example-3](../_static/cross-validation/example-3.png)
 
 If `train_duration` is not passed the training duration is the maximum without overlapping validation folds:
 
@@ -49,7 +49,7 @@ If `train_duration` is not passed the training duration is the maximum without o
 --8<-- "docs/_scripts/cross-validation.py:example-4"
 ```
 
-![example-4](/_static/cross-validation/example-4.png)
+![example-4](../_static/cross-validation/example-4.png)
 
 If train and valid duration would lead to unwanted amounts of splits n_splits can set a maximal amount of splits
 
@@ -57,7 +57,7 @@ If train and valid duration would lead to unwanted amounts of splits n_splits ca
 --8<-- "docs/_scripts/cross-validation.py:example-5"
 ```
 
-![example-5](/_static/cross-validation/example-5.png)
+![example-5](../_static/cross-validation/example-5.png)
 
 ```py title="Summary"
 --8<-- "docs/_scripts/cross-validation.py:summary"
@@ -109,7 +109,7 @@ Train = [2004, 2004, 2004, 2004, 2004]
 Test = [2005, 2005, 2006, 2006, 2007]
 ```
 
-![grp-ts-split](/_static/cross-validation/group-time-series-split.png)
+![grp-ts-split](../_static/cross-validation/group-time-series-split.png)
 
 As you can see above `GroupTimeSeriesSplit` keeps the order of the time chronological and makes sure that the same time value won't appear in both the train and test set of the same fold.
 
