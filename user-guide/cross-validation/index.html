@@ -1484,7 +1484,7 @@
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">plot_cv</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="example-1" src="/_static/cross-validation/example-1.png" /></p>
+<p><img alt="example-1" src="../../_static/cross-validation/example-1.png" /></p>
 <div class="language-py highlight"><span class="filename">Example 2</span><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">cv</span> <span class="o">=</span> <span class="n">TimeGapSplit</span><span class="p">(</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">date_serie</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">],</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">train_duration</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
@@ -1494,7 +1494,7 @@
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">plot_cv</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="example-2" src="/_static/cross-validation/example-2.png" /></p>
+<p><img alt="example-2" src="../../_static/cross-validation/example-2.png" /></p>
 <p><code>window="expanding"</code> is the closest to scikit-learn implementation:</p>
 <div class="language-py highlight"><span class="filename">Example 3</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">cv</span> <span class="o">=</span> <span class="n">TimeGapSplit</span><span class="p">(</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">date_serie</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">],</span>
@@ -1506,7 +1506,7 @@
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">plot_cv</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="example-3" src="/_static/cross-validation/example-3.png" /></p>
+<p><img alt="example-3" src="../../_static/cross-validation/example-3.png" /></p>
 <p>If <code>train_duration</code> is not passed the training duration is the maximum without overlapping validation folds:</p>
 <div class="language-py highlight"><span class="filename">Example 4</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">cv</span> <span class="o">=</span> <span class="n">TimeGapSplit</span><span class="p">(</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">date_serie</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">],</span>
@@ -1518,7 +1518,7 @@
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
 </span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">plot_cv</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="example-4" src="/_static/cross-validation/example-4.png" /></p>
+<p><img alt="example-4" src="../../_static/cross-validation/example-4.png" /></p>
 <p>If train and valid duration would lead to unwanted amounts of splits n_splits can set a maximal amount of splits</p>
 <div class="language-py highlight"><span class="filename">Example 5</span><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">cv</span> <span class="o">=</span> <span class="n">TimeGapSplit</span><span class="p">(</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">date_serie</span><span class="o">=</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">],</span>
@@ -1530,7 +1530,7 @@
 </span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
 </span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">plot_cv</span><span class="p">(</span><span class="n">cv</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="example-5" src="/_static/cross-validation/example-5.png" /></p>
+<p><img alt="example-5" src="../../_static/cross-validation/example-5.png" /></p>
 <div class="language-py highlight"><span class="filename">Summary</span><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">cv</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </span></code></pre></div>
 <table>
@@ -1699,7 +1699,7 @@ This makes a normal kfold split impractical as you cannot specify a certain time
 </span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="go">Train = [2004, 2004, 2004, 2004, 2004]</span>
 </span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="go">Test = [2005, 2005, 2006, 2006, 2007]</span>
 </span></code></pre></div>
-<p><img alt="grp-ts-split" src="/_static/cross-validation/group-time-series-split.png" /></p>
+<p><img alt="grp-ts-split" src="../../_static/cross-validation/group-time-series-split.png" /></p>
 <p>As you can see above <code>GroupTimeSeriesSplit</code> keeps the order of the time chronological and makes sure that the same time value won't appear in both the train and test set of the same fold.</p>
 <p><code>GroupTimeSeriesSplit</code> also has the <code>.summary()</code> method, in which is shown which time values are grouped together. Because of the chronological order the train and test folds need to be, the amount of <code>groups</code> is always <code>n_splits</code> + 1. (see the four folds in the image above with <code>Kfold=3</code>)</p>
 <div class="language-py highlight"><span class="filename">Summary</span><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">cv</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>

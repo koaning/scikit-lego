@@ -1542,7 +1542,7 @@
 </span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;actual&quot;</span><span class="p">)</span>
 </span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;plot that suggests it&#39;s not bad&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="boston-simple" src="/_static/fairness/predict-boston-simple.png" /></p>
+<p><img alt="boston-simple" src="../../_static/fairness/predict-boston-simple.png" /></p>
 <p>We could stop our research here if we think that our MSE is <em>good enough</em> but this would be <em>dangerous</em>. To find out why, we should look at the variables that are being used in our model.</p>
 <div class="language-py highlight"><span class="filename">Boston housing dataset</span><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">print</span><span class="p">(</span><span class="n">load_boston</span><span class="p">()[</span><span class="s2">&quot;DESCR&quot;</span><span class="p">][:</span><span class="mi">1233</span><span class="p">])</span>
 </span></code></pre></div>
@@ -1665,7 +1665,7 @@ and a binary protected attribute <span class="arithmatex">\(z\)</span>, this con
 <h4 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h4>
 <p>The <a href="/api/preprocessing#sklego.preprocessing.projections.InformationFilter"><code>InformationFilter</code></a> uses a variant of the <a href="https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process">Gram–Schmidt process</a> to filter information out of the dataset. We can make it visual in two dimensions;</p>
 <p align="center">
-  <img src="/_static/fairness/projections.png" />
+  <img src="../_static/fairness/projections.png" />
 </p>
 
 <p>To explain what occurs in higher dimensions we need to resort to maths. Take a training matrix <span class="arithmatex">\(X\)</span> that contains columns <span class="arithmatex">\(x_1, ..., x_k\)</span>.</p>
@@ -1981,7 +1981,7 @@ v_k &amp; = x_k - \frac{x_k v_1}{v_1 v_1} - \frac{x_k' v_2}{v_2 v_2}
 </span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fairness Proxy&quot;</span><span class="p">);</span>
 </span></code></pre></div>
 </details>
-<p><img alt="original-situation" src="/_static/fairness/original-situation.png" /></p>
+<p><img alt="original-situation" src="../../_static/fairness/original-situation.png" /></p>
 <h4 id="2-drop-two-columns">2. Drop two columns<a class="headerlink" href="#2-drop-two-columns" title="Permanent link">&para;</a></h4>
 <details class="example">
 <summary>Code to generate the plot</summary>
@@ -2001,7 +2001,7 @@ v_k &amp; = x_k - \frac{x_k v_1}{v_1 v_1} - \frac{x_k' v_2}{v_2 v_2}
 </span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fairness Proxy&quot;</span><span class="p">);</span>
 </span></code></pre></div>
 </details>
-<p><img alt="drop-two" src="/_static/fairness/drop-two.png" /></p>
+<p><img alt="drop-two" src="../../_static/fairness/drop-two.png" /></p>
 <h4 id="3-use-the-information-filter">3. Use the Information Filter<a class="headerlink" href="#3-use-the-information-filter" title="Permanent link">&para;</a></h4>
 <details class="example">
 <summary>Code to generate the plot</summary>
@@ -2021,7 +2021,7 @@ v_k &amp; = x_k - \frac{x_k v_1}{v_1 v_1} - \frac{x_k' v_2}{v_2 v_2}
 </span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fairness Proxy&quot;</span><span class="p">);</span>
 </span></code></pre></div>
 </details>
-<p><img alt="use-info-filter" src="/_static/fairness/use-info-filter.png" /></p>
+<p><img alt="use-info-filter" src="../../_static/fairness/use-info-filter.png" /></p>
 <p>There definitely is a balance between fairness and model accuracy. Which model you'll use depends on the world you want to create by applying your model.</p>
 <p>Note that you can combine models here to make an ensemble too. You can also use the difference between the first and last model as a proxy for bias.</p>
 <h2 id="model-constraints">Model constraints<a class="headerlink" href="#model-constraints" title="Permanent link">&para;</a></h2>

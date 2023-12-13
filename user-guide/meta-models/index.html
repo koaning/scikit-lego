@@ -1606,7 +1606,7 @@
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_blobs</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">centers</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)],</span> <span class="n">cluster_std</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
 </span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="skewed-data" src="/_static/meta-models/skewed-data.png" /></p>
+<p><img alt="skewed-data" src="../../_static/meta-models/skewed-data.png" /></p>
 <p>Next we'll make a cross validation pipeline to try out this thresholder.</p>
 <div class="language-py highlight"><span class="filename">Cross validation pipeline</span><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># %%time</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
@@ -1673,7 +1673,7 @@
 </span></code></pre></div>
 <h2 id="grouped-prediction">Grouped Prediction<a class="headerlink" href="#grouped-prediction" title="Permanent link">&para;</a></h2>
 <p align="center">
-  <img src="/_static/meta-models/grouped-model.png" />
+  <img src="../_static/meta-models/grouped-model.png" />
 </p>
 
 <p>To help explain what it can do we'll consider three methods to predict the chicken weight.</p>
@@ -1733,14 +1733,14 @@ There were four groups on chicks on different protein diets.</p>
 </span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>
 </span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="n">plot_model</span><span class="p">(</span><span class="n">pipe</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="baseline-model" src="/_static/meta-models/baseline-model.png" /></p>
+<p><img alt="baseline-model" src="../../_static/meta-models/baseline-model.png" /></p>
 <p>Because the model is linear the dummy variable causes the intercept to change but leaves the gradient untouched. This might not be what we want from a model.</p>
 <p>So let's see how the grouped model can address this.</p>
 <h3 id="model-2-linear-regression-in-groupedpredictor">Model 2: Linear Regression in GroupedPredictor<a class="headerlink" href="#model-2-linear-regression-in-groupedpredictor" title="Permanent link">&para;</a></h3>
 <p>The goal of the <a href="/api/meta#sklego.meta.grouped_predictor.GroupedPredictor">GroupedPredictor</a> is to allow us to split up our data.</p>
 <p>The image below demonstrates what will happen.</p>
 <p align="center">
-  <img src="/_static/meta-models/grouped-df.png" />
+  <img src="../_static/meta-models/grouped-df.png" />
 </p>
 
 <p>We train 5 models in total because the model will also train a fallback automatically (you can turn this off via <code>use_fallback=False</code>).</p>
@@ -1751,13 +1751,13 @@ There were four groups on chicks on different protein diets.</p>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">mod</span> <span class="o">=</span> <span class="n">GroupedPredictor</span><span class="p">(</span><span class="n">LinearRegression</span><span class="p">(),</span> <span class="n">groups</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;diet&quot;</span><span class="p">])</span>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">plot_model</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="grouped-model" src="/_static/meta-models/grouped-model.png" /></p>
+<p><img alt="grouped-model" src="../../_static/meta-models/grouped-model.png" /></p>
 <p>Such model looks a bit better.</p>
 <h3 id="model-3-dummy-regression-in-groupedestimation">Model 3: Dummy Regression in GroupedEstimation<a class="headerlink" href="#model-3-dummy-regression-in-groupedestimation" title="Permanent link">&para;</a></h3>
 <p>We could go a step further and train a <a href="https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html">DummyRegressor</a> per diet per timestep.</p>
 <p>The code below works similar as the previous example but one difference is that the grouped model does not receive a dataframe but a numpy array.</p>
 <p align="center">
-  <img src="/_static/meta-models/grouped-np.png" />
+  <img src="../_static/meta-models/grouped-np.png" />
 </p>
 
 <p>Note that we're also grouping over more than one column here.
@@ -1782,7 +1782,7 @@ The code that does this is listed below.</p>
 </span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>
 </span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="n">plot_model</span><span class="p">(</span><span class="n">pipe</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="grouped-dummy-model" src="/_static/meta-models/grouped-dummy-model.png" /></p>
+<p><img alt="grouped-dummy-model" src="../../_static/meta-models/grouped-dummy-model.png" /></p>
 <p>Note that these predictions seems to yield the lowest error but take it with a grain of salt since these errors are only based on the train set.</p>
 <h2 id="grouped-transformation">Grouped Transformation<a class="headerlink" href="#grouped-transformation" title="Permanent link">&para;</a></h2>
 <p>We can apply grouped prediction on estimators that have a <code>.predict()</code> implemented but we're also able to do something similar for transformers, like <code>StandardScaler</code>.</p>
@@ -1847,7 +1847,7 @@ The code that does this is listed below.</p>
 </span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df_penguins</span><span class="p">)</span>
 </span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="grouped-dummy-model" src="/_static/meta-models/grouped-transform.png" /></p>
+<p><img alt="grouped-dummy-model" src="../../_static/meta-models/grouped-transform.png" /></p>
 <details class="example">
 <summary>Code for plotting the transformed data</summary>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -1889,7 +1889,7 @@ The code that does this is listed below.</p>
 </span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 </span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">make_simpleseries</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">));</span>
 </span></code></pre></div>
-<p><img alt="ts-data" src="/_static/meta-models/ts-data.png" /></p>
+<p><img alt="ts-data" src="../../_static/meta-models/ts-data.png" /></p>
 <p>We will create two models on this dataset. One model calculates the average value per month in our timeseries and the other does the same thing but will decay the importance of making accurate predictions for the far history.</p>
 <div class="language-py highlight"><span class="filename">DecayEstimator</span><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">from</span> <span class="nn">sklearn.dummy</span> <span class="kn">import</span> <span class="n">DummyRegressor</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">from</span> <span class="nn">sklego.meta</span> <span class="kn">import</span> <span class="n">GroupedPredictor</span><span class="p">,</span> <span class="n">DecayEstimator</span>
@@ -1906,12 +1906,12 @@ The code that does this is listed below.</p>
 </span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mod2</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="s2">&quot;m&quot;</span><span class="p">]]),</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;decayed&quot;</span><span class="p">)</span>
 </span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
 </span></code></pre></div>
-<p><img alt="decay-model" src="/_static/meta-models/decay-model.png" /></p>
+<p><img alt="decay-model" src="../../_static/meta-models/decay-model.png" /></p>
 <p>The decay parameter has a lot of influence on the effect of the model but one can clearly see that we shift focus to the more recent data.</p>
 <h3 id="decay-functions">Decay Functions<a class="headerlink" href="#decay-functions" title="Permanent link">&para;</a></h3>
 <p>scikit-lego provides a set of decay functions that can be used to decay the importance of older data. The default decay function used in <code>DecayEstimator</code> is the <code>exponential_decay</code> function (<code>decay_func="exponential"</code>).</p>
 <p>Out of the box there are four decay functions available:</p>
-<p><img alt="decay-functions" src="/_static/meta-models/decay-functions.png" /></p>
+<p><img alt="decay-functions" src="../../_static/meta-models/decay-functions.png" /></p>
 <details class="example">
 <summary>Code for plotting the decay functions</summary>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span> <span class="nn">sklego.meta._decay_utils</span> <span class="kn">import</span> <span class="n">exponential_decay</span><span class="p">,</span> <span class="n">linear_decay</span><span class="p">,</span> <span class="n">sigmoid_decay</span><span class="p">,</span> <span class="n">stepwise_decay</span> 
@@ -1977,7 +1977,7 @@ The code that does this is listed below.</p>
 </span><span id="__span-18-18"><a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">);</span>
 </span></code></pre></div>
 </details>
-<p><img alt="make-blobs" src="/_static/meta-models/make-blobs.png" /></p>
+<p><img alt="make-blobs" src="../../_static/meta-models/make-blobs.png" /></p>
 <p>Let's take this dataset and train a simple classifier against it.</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">confusion_matrix</span>
 </span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>

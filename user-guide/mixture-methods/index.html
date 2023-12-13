@@ -1376,7 +1376,7 @@
 </span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">U</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">U</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">U</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;classifier boundary&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="gmm-classifier" src="/_static/mixture-methods/gmm-classifier.png" /></p>
+<p><img alt="gmm-classifier" src="../../_static/mixture-methods/gmm-classifier.png" /></p>
 <h2 id="outlier-detection">Outlier Detection<a class="headerlink" href="#outlier-detection" title="Permanent link">&para;</a></h2>
 <p>Below is some example code of how you might use a GMM from sklego to do outlier detection.</p>
 <p>Note that the <a href="/api/mixture#sklego.mixture.gmm_outlier_detector.GMMOutlierDetector">GMMOutlierDetector</a> generates prediction values that are either -1 (outlier) or +1 (normal).</p>
@@ -1404,7 +1404,7 @@
 </span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">U</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">U</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">U</span><span class="p">),</span> <span class="n">s</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;outlier selection&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="gmm-outlier-detector" src="/_static/mixture-methods/gmm-outlier-detector.png" /></p>
+<p><img alt="gmm-outlier-detector" src="../../_static/mixture-methods/gmm-outlier-detector.png" /></p>
 <p>Remark that with a GMM there are multiple ways to select outliers. Instead of selection points that are beyond the likely quantile threshold one can also specify the number of standard deviations away from the most likely standard deviations a given point it.</p>
 <details class="example">
 <summary>Different thresholds</summary>
@@ -1416,7 +1416,7 @@
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;outlier sigma=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">);</span>
 </span></code></pre></div>
 </details>
-<p><img alt="gmm-outlier-multi-threshold" src="/_static/mixture-methods/gmm-outlier-multi-threshold.png" /></p>
+<p><img alt="gmm-outlier-multi-threshold" src="../../_static/mixture-methods/gmm-outlier-multi-threshold.png" /></p>
 <h3 id="detection-details">Detection Details<a class="headerlink" href="#detection-details" title="Permanent link">&para;</a></h3>
 <p>The outlier detection methods that we use are based on the likelihoods that come out of the estimated Gaussian Mixture.</p>
 <p>Depending on the setting you choose we have a different method for determining if a point is inside or outside the
@@ -1427,7 +1427,7 @@ threshold.</p>
     !!! note
         This setting allows you to be much more picky in selecting than the <code>"quantile"</code> one since this method allows you to be more exclusive than the <code>"quantile"</code> method with threshold equal to one.</li>
 </ol>
-<p><img alt="outlier-mixture-threshold" src="/_static/mixture-methods/outlier-mixture-threshold.png" /></p>
+<p><img alt="outlier-mixture-threshold" src="../../_static/mixture-methods/outlier-mixture-threshold.png" /></p>
 <p>As a sidenote: this image was generated with some dummy data, but its code can be found below:</p>
 <div class="admonition example">
 <p class="admonition-title">Code for plot generation</p>

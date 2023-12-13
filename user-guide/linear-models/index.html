@@ -1669,16 +1669,16 @@
 </span><span id="__span-2-213"><a id="__codelineno-2-213" name="__codelineno-2-213" href="#__codelineno-2-213"></a><span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
 </span></code></pre></div>
 </details>
-<p><img alt="lowess" src="/_static/linear-models/lowess.png" /></p>
+<p><img alt="lowess" src="../../_static/linear-models/lowess.png" /></p>
 <p>The line does not look linear but that's because internally, during prediction, many weighted linear regressions are happening. The gif below demonstrates how the data is being weighted when we would make a prediction.</p>
-<p><img alt="lowess-rolling" src="/_static/linear-models/lowess-rolling.gif" /></p>
+<p><img alt="lowess-rolling" src="../../_static/linear-models/lowess-rolling.gif" /></p>
 <h3 id="details-on-sigma">Details on <code>sigma</code><a class="headerlink" href="#details-on-sigma" title="Permanent link">&para;</a></h3>
 <p>We'll also show two different prediction outcomes depending on the hyperparameter <code>sigma</code>:</p>
-<p><img alt="lowess-rolling-01" src="/_static/linear-models/lowess-rolling-01.gif" /></p>
-<p><img alt="lowess-rolling-001" src="/_static/linear-models/lowess-rolling-001.gif" /></p>
+<p><img alt="lowess-rolling-01" src="../../_static/linear-models/lowess-rolling-01.gif" /></p>
+<p><img alt="lowess-rolling-001" src="../../_static/linear-models/lowess-rolling-001.gif" /></p>
 <p>You may be tempted now to think that a lower sigma always has a better fit, but you need to be careful here.
 The data might have gaps and larger sigma values will be able to properly regularize.</p>
-<p><img alt="lowess-two-predictions" src="/_static/linear-models/lowess-two-predictions.gif" /></p>
+<p><img alt="lowess-two-predictions" src="../../_static/linear-models/lowess-two-predictions.gif" /></p>
 <p>Note that this regression also works in higher dimensions but the main downside of this approach is that it is <em>really slow</em> when making predictions.</p>
 <p>If you want to get advanced there's also a hyperparameter <code>span</code> but you'll really need to know what you're doing.
 It was added for completeness but the authors of this package have yet to find a proper usecase for it.</p>
@@ -1687,9 +1687,9 @@ It was added for completeness but the authors of this package have yet to find a
 Technically without a <code>span</code> you are still using all the data in your dataset, albeit with small weights if they are far
 away.</p>
 <p>The effect of the <code>span</code> parameter on the weights can be seen below:</p>
-<p><img alt="grid-span-sigma-02" src="/_static/linear-models/grid-span-sigma-01.png" /></p>
+<p><img alt="grid-span-sigma-02" src="../../_static/linear-models/grid-span-sigma-01.png" /></p>
 <p>This will also effect the predictions.</p>
-<p><img alt="grid-span-sigma-01" src="/_static/linear-models/grid-span-sigma-02.png" /></p>
+<p><img alt="grid-span-sigma-01" src="../../_static/linear-models/grid-span-sigma-02.png" /></p>
 <p>You may need to squint your eyes a bit to see it, but lower spans cause more jiggles and less smooth curves.</p>
 <h2 id="probweightregression">ProbWeightRegression<a class="headerlink" href="#probweightregression" title="Permanent link">&para;</a></h2>
 <blockquote>
@@ -1861,7 +1861,7 @@ away.</p>
 </span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 </span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="lad-01" src="/_static/linear-models/lad-data.png" /></p>
+<p><img alt="lad-01" src="../../_static/linear-models/lad-data.png" /></p>
 <p>A simple linear regression will not do a good job since it is distracted by the outliers. That is because it optimizes the mean squared error</p>
 <div class="arithmatex">\[ \sum_i \left(y_i-\textrm{model}(x_i)\right)^2 \]</div>
 <p>which penalizes a few large errors more than many tiny errors. For example, if <span class="arithmatex">\(y-\text{model}(x) = 4\)</span> for some single observation, the MSE here is 16. If there are two observations with <span class="arithmatex">\(y_1 - \text{model}(x_1) = 2\)</span> and <span class="arithmatex">\(y_2 - \text{model}(x_2) = 2\)</span>, the MSE is 8 in total, which is less than for one larger error.</p>
@@ -1875,7 +1875,7 @@ away.</p>
 </span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="lad-02" src="/_static/linear-models/lr-fit.png" /></p>
+<p><img alt="lad-02" src="../../_static/linear-models/lr-fit.png" /></p>
 <p>By changing the loss function to the mean absolute deviation</p>
 <div class="arithmatex">\[ \sum_i \left|y_i-\textrm{model}(x_i)\right|\enspace\]</div>
 <p>we can let the model put the same focus on each error.</p>
@@ -1891,7 +1891,7 @@ away.</p>
 </span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LinearRegression</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">);</span>
 </span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">LADRegression</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="s2">&quot;g&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="lad-03" src="/_static/linear-models/lad-fit.png" /></p>
+<p><img alt="lad-03" src="../../_static/linear-models/lad-fit.png" /></p>
 <h3 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h3>
 <p>scikit-learn tackles this problem by offering a variety of <a href="https://scikit-learn.org/stable/auto_examples/linear_model/plot_robust_fit.html">robust regressors</a>. Many of them use an indirect approach to reduce the effect of outliers. <a href="https://en.wikipedia.org/wiki/Random_sample_consensus">RANSAC</a>, for example, samples random points from the dataset until it consists of all inliers.</p>
 <p>The closest thing to LADRegression that scikit-learn offers is the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.HuberRegressor.html">HuberRegressor</a> with a loss function that is partly a squared and partly an absolute error. However, it is more complicated and requires hyperparameter tuning to unleash its full potential.</p>
@@ -1917,7 +1917,7 @@ away.</p>
 </span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">lad</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
 </span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">q_10</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">q_90</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.33</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;orange&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="quantile" src="/_static/linear-models/quantile-fit.png" /></p>
+<p><img alt="quantile" src="../../_static/linear-models/quantile-fit.png" /></p>
 
 
 

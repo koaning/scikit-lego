@@ -1300,7 +1300,7 @@
 <h1 id="naive-bayes">Naive Bayes<a class="headerlink" href="#naive-bayes" title="Permanent link">&para;</a></h1>
 <p>Naive Bayes models are flexible and interpretable. In scikit-lego we've added support for a Gaussian Mixture variant of the algorithm.</p>
 <p align="center">
-  <img src="/_static/naive-bayes/naive-bayes.png" />
+  <img src="../_static/naive-bayes/naive-bayes.png" />
 </p>
 
 <p>An example of the usage of algorithm can be found below.</p>
@@ -1329,7 +1329,7 @@
 </span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X2</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;simulated dataset&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="simulated-data" src="/_static/naive-bayes/simulated-data.png" /></p>
+<p><img alt="simulated-data" src="../../_static/naive-bayes/simulated-data.png" /></p>
 <p>Note that this dataset would be hard to classify directly if we would be using a standard Gaussian Naive Bayes algorithm since the orange class is multipeaked over two clusters.</p>
 <p>To demonstrate this we'll run our <a href="/api/naive-bayes#sklego.naive_bayes.GaussianMixtureNB"><code>GaussianMixtureNB</code></a> algorithm with one or two gaussians that the mixture is allowed to find.</p>
 <div class="language-py highlight"><span class="filename">GaussianMixtureNB model</span><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">sklego.naive_bayes</span> <span class="kn">import</span> <span class="n">GaussianMixtureNB</span>
@@ -1350,7 +1350,7 @@
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">pred</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
 </span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;predict k=</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="results" src="/_static/naive-bayes/model-results.png" /></p>
+<p><img alt="results" src="../../_static/naive-bayes/model-results.png" /></p>
 <p>Note that the second plot fits the original much better.</p>
 <p>We can even zoom in on this second algorithm by having it sample what it believes is the distribution on each column.</p>
 <details class="example">
@@ -1373,7 +1373,7 @@
 </span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;model 2 - column 2 density&quot;</span><span class="p">);</span>
 </span></code></pre></div>
 </details>
-<p><img alt="density" src="/_static/naive-bayes/model-density.png" /></p>
+<p><img alt="density" src="../../_static/naive-bayes/model-density.png" /></p>
 
 
 

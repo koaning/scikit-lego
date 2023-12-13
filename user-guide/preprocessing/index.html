@@ -1520,7 +1520,7 @@
 <p>One solution to this problem is to turn the model into a transformer. To convert a model to become a transformer you can use the <a href="/api/meta#sklego.meta.estimator_transformer.EstimatorTransformer"><code>EstimatorTransformer</code></a> from the <a href="/api/meta"><code>meta</code></a> module.</p>
 <h3 id="example-1">Example 1<a class="headerlink" href="#example-1" title="Permanent link">&para;</a></h3>
 <p>Let's demonstrate one example. Below we describe how to create a pipeline with two models that each see the same dataset. Note that the output of this pipeline is still only a transformer pipeline.</p>
-<p><img alt="estimator-transformer1" src="/_static/preprocessing/estimator-transformer-1.png" /></p>
+<p><img alt="estimator-transformer1" src="../../_static/preprocessing/estimator-transformer-1.png" /></p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
@@ -1556,7 +1556,7 @@
 </span></code></pre></div>
 <h3 id="example-2">Example 2<a class="headerlink" href="#example-2" title="Permanent link">&para;</a></h3>
 <p>Here's another example that works a little bit differently. Here we have two models that each see different data.</p>
-<p><img alt="estimator-transformer2" src="/_static/preprocessing/estimator-transformer-2.png" /></p>
+<p><img alt="estimator-transformer2" src="../../_static/preprocessing/estimator-transformer-2.png" /></p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="p">(</span><span class="s2">&quot;grab_columns&quot;</span><span class="p">,</span> <span class="n">ColumnSelector</span><span class="p">([</span><span class="s2">&quot;x1&quot;</span><span class="p">,</span> <span class="s2">&quot;x2&quot;</span><span class="p">])),</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="p">(</span><span class="s2">&quot;ml_features&quot;</span><span class="p">,</span> <span class="n">FeatureUnion</span><span class="p">([</span>
@@ -1583,10 +1583,10 @@
 </span></code></pre></div>
 <h2 id="concatenating-pipelines">Concatenating Pipelines<a class="headerlink" href="#concatenating-pipelines" title="Permanent link">&para;</a></h2>
 <p>Transformers in scikit-learn typically do not add features. They replace them. Take <code>PCA</code> for example.</p>
-<p><img alt="identity1" src="/_static/preprocessing/identity-transformer-1.png" /></p>
+<p><img alt="identity1" src="../../_static/preprocessing/identity-transformer-1.png" /></p>
 <p>The new dataset that comes out <span class="arithmatex">\(X^{\text{new}}\)</span> would no longer have columns <span class="arithmatex">\({x_1,...,x_4}\)</span> but would instead replace them with <span class="arithmatex">\({x_{\text{PCA}_1}, x_{\text{PCA}_2}}\)</span>.</p>
 <p>If we rethink the pipeline a little bit we might not have to loose the original data.</p>
-<p><img alt="identity2" src="/_static/preprocessing/identity-transformer-2.png" /></p>
+<p><img alt="identity2" src="../../_static/preprocessing/identity-transformer-2.png" /></p>
 <p>If you don't want to loose data, you can make use of a <code>FeatureUnion</code> and a <a href="/api/preprocessing#sklego.preprocessing.identitytransformer.IdentityTransformer"><code>IdentityTransformer</code></a>.</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
@@ -1624,7 +1624,7 @@
 <h2 id="column-capping">Column Capping<a class="headerlink" href="#column-capping" title="Permanent link">&para;</a></h2>
 <p>Some models are great at interpolation but less good at extrapolation.</p>
 <p>One way to potentially circumvent this problem is by capping extreme values that occur in the dataset <span class="arithmatex">\(X\)</span>.</p>
-<p><img alt="column-capping" src="/_static/preprocessing/column-capper.png" /></p>
+<p><img alt="column-capping" src="../../_static/preprocessing/column-capper.png" /></p>
 <p>Let's demonstrate how <a href="/api/preprocessing#sklego.preprocessing.columncapper.ColumnCapper"><code>ColumnCapper</code></a> works in a few examples below.</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span> <span class="nn">sklego.preprocessing</span> <span class="kn">import</span> <span class="n">ColumnCapper</span>
@@ -1740,7 +1740,7 @@ to <a href="https://patsy.readthedocs.io/en/latest/formulas.html">formulas</a> d
 </span><span id="__span-16-22"><a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a><span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
 </span><span id="__span-16-23"><a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">],</span> <span class="n">y</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="rbf-data" src="/_static/preprocessing/rbf-data.png" /></p>
+<p><img alt="rbf-data" src="../../_static/preprocessing/rbf-data.png" /></p>
 <p>Let's now create repeating basis functions based on <code>day_of_year</code>:</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">from</span> <span class="nn">sklego.preprocessing</span> <span class="kn">import</span> <span class="n">RepeatingBasisFunction</span>
 </span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
@@ -1760,7 +1760,7 @@ to <a href="https://patsy.readthedocs.io/en/latest/formulas.html">formulas</a> d
 </span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Xt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
 </span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">],</span> <span class="n">Xt</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span>
 </span></code></pre></div>
-<p><img alt="rbf-plot" src="/_static/preprocessing/rbf-plot.png" /></p>
+<p><img alt="rbf-plot" src="../../_static/preprocessing/rbf-plot.png" /></p>
 <p>The <code>day_of_year</code> feature has been replaced with <code>N_PERIODS</code> repeating basis functions.
 These are bell curves that are equidistant over the 1-365 range. Each curve captures the information of <em>being close to</em> a particular <code>day_of_year</code>.</p>
 <p>For example, the curve in the top row captures how close a day is to new year's day. It peaks on day 1 with a value of 1 and smoothly drops at an equal rate in December and in the rest of January.</p>
@@ -1774,7 +1774,7 @@ These are bell curves that are equidistant over the 1-365 range. Each curve capt
 </span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="s2">&quot;day&quot;</span><span class="p">],</span> <span class="n">LinearRegression</span><span class="p">()</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xt</span><span class="p">),</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
 </span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;pretty fly for a linear regression&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="rbf-regr" src="/_static/preprocessing/rbf-regr.png" /></p>
+<p><img alt="rbf-regr" src="../../_static/preprocessing/rbf-regr.png" /></p>
 <p>Note that you can make this approach even more powerful for timeseries by choosing to ignore the far away past.</p>
 <p>To explore this idea we've also implemented a <code>DecayEstimator</code>. For more information see the <a href="/user-guide/meta#decayed-estimation">section on meta estimators</a> for this.</p>
 <h2 id="interval-encoders">Interval Encoders<a class="headerlink" href="#interval-encoders" title="Permanent link">&para;</a></h2>
@@ -1794,7 +1794,7 @@ These are bell curves that are equidistant over the 1-365 range. Each curve capt
 </span><span id="__span-20-13"><a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">pred_ys</span><span class="p">)</span>
 </span><span id="__span-20-14"><a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;not really the right pattern&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="interval-encoder-1" src="/_static/preprocessing/interval-encoder-1.png" /></p>
+<p><img alt="interval-encoder-1" src="../../_static/preprocessing/interval-encoder-1.png" /></p>
 <p>What we could do though, is preprocess the data such that it <em>can</em> be passed to a linear regression. We could construct intervals in the <code>x</code> values, smooth with regards to <code>y</code> and interpolate in between. You can see a demo of this below using the <a href="/api/preprocessing#sklego.preprocessing.intervalencoder.IntervalEncoder"><code>IntervalEncoder</code></a> from sklego.</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="kn">from</span> <span class="nn">sklego.preprocessing</span> <span class="kn">import</span> <span class="n">IntervalEncoder</span>
 </span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>
@@ -1807,7 +1807,7 @@ These are bell curves that are equidistant over the 1-365 range. Each curve capt
 </span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">fs</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xs</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
 </span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;span=</span><span class="si">{</span><span class="n">sigma</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="interval-encoder-2" src="/_static/preprocessing/interval-encoder-2.png" /></p>
+<p><img alt="interval-encoder-2" src="../../_static/preprocessing/interval-encoder-2.png" /></p>
 <p>Note that we extrapolate using the estimates of the intervals at the edges. This ensures that we can make predictions out of sample.</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="kn">from</span> <span class="nn">sklego.preprocessing</span> <span class="kn">import</span> <span class="n">IntervalEncoder</span>
 </span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>
@@ -1821,7 +1821,7 @@ These are bell curves that are equidistant over the 1-365 range. Each curve capt
 </span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs_extra</span><span class="p">,</span> <span class="n">fs</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">xs_extra</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
 </span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;span=</span><span class="si">{</span><span class="n">sigma</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="interval-encoder-3" src="/_static/preprocessing/interval-encoder-3.png" /></p>
+<p><img alt="interval-encoder-3" src="../../_static/preprocessing/interval-encoder-3.png" /></p>
 <h3 id="monotonic-encoding">Monotonic Encoding<a class="headerlink" href="#monotonic-encoding" title="Permanent link">&para;</a></h3>
 <p>At the moment this feature is useful because it allows us to encode non-linear relationships. The real power of this approach is that we might apply constraints. We could create features that are strictly monotonic. When such features are passed to a model that respects these constraints then we might prevent artificial stupidity because we can force domain knowledge to be taken into account.</p>
 <p>Let's first define a function that helps us generate multiple datasets.</p>
@@ -1843,7 +1843,7 @@ These are bell curves that are equidistant over the 1-365 range. Each curve capt
 </span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">y</span><span class="p">);</span>
 </span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">encoder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="monotonic-2" src="/_static/preprocessing/monotonic-2.png" /></p>
+<p><img alt="monotonic-2" src="../../_static/preprocessing/monotonic-2.png" /></p>
 <p>Now let's see what occurs when we add a constraint that enforces the feature to only be <code>method="increasing"</code> or <code>method="decreasing"</code>.</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
 </span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
@@ -1857,7 +1857,7 @@ These are bell curves that are equidistant over the 1-365 range. Each curve capt
 </span><span id="__span-25-10"><a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">y</span><span class="p">);</span>
 </span><span id="__span-25-11"><a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">encoder</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="monotonic-3" src="/_static/preprocessing/monotonic-3.png" /></p>
+<p><img alt="monotonic-3" src="../../_static/preprocessing/monotonic-3.png" /></p>
 <p>If these features are now passed to a model that supports monotonicity constraints then we can build models with guarantees.</p>
 
 

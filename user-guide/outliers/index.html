@@ -1482,7 +1482,7 @@
 If you're interested in more algorithms we might recommend you have a look at <a href="https://pyod.readthedocs.io/en/latest/">pyod</a> too. That said, we'll demonstrate a few approaches here.</p>
 <h2 id="decomposition-based-detection">Decomposition Based Detection<a class="headerlink" href="#decomposition-based-detection" title="Permanent link">&para;</a></h2>
 <p>The scikit-learn ecosystem offers many tools for dimensionality reduction. Two popular variants are <a href="https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html">PCA</a> and <a href="https://umap-learn.readthedocs.io/en/latest/api.html#umap">UMAP</a>. What is nice about both of these methods is that they can reduce the data but also apply the inverse operation.</p>
-<p><img alt="decomposition" src="/_static/outliers/decomposition.png" /></p>
+<p><img alt="decomposition" src="../../_static/outliers/decomposition.png" /></p>
 <p>This is similar to what an autoencoder might do. But let's now say that we have a dataset <span class="arithmatex">\(X\)</span> and that we're happy with our dimensionality reduction technique.
 In this situation there's a balance between reduction of data and loss of information.</p>
 <p>Suppose that we have a datapoint <span class="arithmatex">\(x_{\text{orig}}\)</span> we pass through our transformer after which we try to reconstruct it again. If <span class="arithmatex">\(x_{\text{orig}}\)</span> differs a lot from <span class="arithmatex">\(x_{\text{reconstruct}}\)</span> then we may have a good candidate to investigate as an outlier.</p>
@@ -1521,13 +1521,13 @@ In this situation there's a balance between reduction of data and loss of inform
 <div class="language-py highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span> <span class="nn">sklego.decomposition</span> <span class="kn">import</span> <span class="n">PCAOutlierDetection</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">plot_model</span><span class="p">(</span><span class="n">PCAOutlierDetection</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="pca-outlier" src="/_static/outliers/pca-outlier.png" /></p>
+<p><img alt="pca-outlier" src="../../_static/outliers/pca-outlier.png" /></p>
 <h3 id="umap-demonstration">UMAP Demonstration<a class="headerlink" href="#umap-demonstration" title="Permanent link">&para;</a></h3>
 <p>Let's now do the same with UMAP, wrapped in the class <a href="/api/decomposition#sklego.decomposition.umap_reconstruction.UMAPOutlierDetection.md"><code>UMAPOutlierDetection</code></a>.</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">sklego.decomposition</span> <span class="kn">import</span> <span class="n">UMAPOutlierDetection</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">plot_model</span><span class="p">(</span><span class="n">UMAPOutlierDetection</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 </span></code></pre></div>
-<p><img alt="umap-outlier" src="/_static/outliers/umap-outlier.png" /></p>
+<p><img alt="umap-outlier" src="../../_static/outliers/umap-outlier.png" /></p>
 <p>One thing to keep in mind here: UMAP is <em>a lot slower</em>.</p>
 <h3 id="interpretation-of-hyperparams">Interpretation of Hyperparams<a class="headerlink" href="#interpretation-of-hyperparams" title="Permanent link">&para;</a></h3>
 <p>Both methods have a <code>n_components</code> and <code>threshold</code> parameter. The former tells the underlying transformer how many components to reduce to while the latter tells the model when to consider a reconstruction error "too big" for a datapoint not to be an outlier.</p>
@@ -1547,7 +1547,7 @@ In this situation there's a balance between reduction of data and loss of inform
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">parallel_coordinates</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">class_column</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;outlier shown via parallel coordinates&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="gmm-outlier" src="/_static/outliers/gmm-outlier.png" /></p>
+<p><img alt="gmm-outlier" src="../../_static/outliers/gmm-outlier.png" /></p>
 <h3 id="bayesiangmmoutlierdetector-demonstration"><a href="/api/mixture#sklego.mixture.bayesian_gmm_detector.BayesianGMMOutlierDetector">BayesianGMMOutlierDetector</a> Demonstration<a class="headerlink" href="#bayesiangmmoutlierdetector-demonstration" title="Permanent link">&para;</a></h3>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">sklego.mixture</span> <span class="kn">import</span> <span class="n">BayesianGMMOutlierDetector</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
@@ -1560,7 +1560,7 @@ In this situation there's a balance between reduction of data and loss of inform
 </span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">parallel_coordinates</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">class_column</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
 </span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;outlier shown via parallel coordinates&quot;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="bayesian-gmm-outlier" src="/_static/outliers/bayesian-gmm-outlier.png" /></p>
+<p><img alt="bayesian-gmm-outlier" src="../../_static/outliers/bayesian-gmm-outlier.png" /></p>
 <p>Note that for these density based approaches the threshold needs to be interpreted differently. If you're interested, you can find more information <a href="/user-guide/mixture-methods#detection-details">here</a>.</p>
 <h2 id="model-based-outlier-detection">Model Based Outlier Detection<a class="headerlink" href="#model-based-outlier-detection" title="Permanent link">&para;</a></h2>
 <p>Suppose that you've got an accurate model. Then you could argue that when a datapoint disagrees with your model that it might be an outlier.</p>
@@ -1589,7 +1589,7 @@ In this situation there's a balance between reduction of data and loss of inform
 </span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="n">mod</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 </span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">mod</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm_r&#39;</span><span class="p">);</span>
 </span></code></pre></div>
-<p><img alt="regr-outlier" src="/_static/outliers/regr-outlier.png" /></p>
+<p><img alt="regr-outlier" src="../../_static/outliers/regr-outlier.png" /></p>
 
 
 
