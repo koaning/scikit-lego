@@ -1739,10 +1739,7 @@ There were four groups on chicks on different protein diets.</p>
 <h3 id="model-2-linear-regression-in-groupedpredictor">Model 2: Linear Regression in GroupedPredictor<a class="headerlink" href="#model-2-linear-regression-in-groupedpredictor" title="Permanent link">&para;</a></h3>
 <p>The goal of the <a href="/api/meta#sklego.meta.grouped_predictor.GroupedPredictor">GroupedPredictor</a> is to allow us to split up our data.</p>
 <p>The image below demonstrates what will happen.</p>
-<p align="center">
-  <img src="../_static/meta-models/grouped-df.png" />
-</p>
-
+<p><img alt="grouped" src="../../_static/meta-models/grouped-df.png" /></p>
 <p>We train 5 models in total because the model will also train a fallback automatically (you can turn this off via <code>use_fallback=False</code>).</p>
 <p>The idea behind the fallback is that we can predict something if there is a group at prediction time which is unseen during training.</p>
 <p>Each model will accept features that are in <code>X</code> that are not part of the grouping variables. In this case each group will model based on the <code>time</code> since <code>weight</code> is what we're trying to predict.</p>
@@ -1756,10 +1753,7 @@ There were four groups on chicks on different protein diets.</p>
 <h3 id="model-3-dummy-regression-in-groupedestimation">Model 3: Dummy Regression in GroupedEstimation<a class="headerlink" href="#model-3-dummy-regression-in-groupedestimation" title="Permanent link">&para;</a></h3>
 <p>We could go a step further and train a <a href="https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html">DummyRegressor</a> per diet per timestep.</p>
 <p>The code below works similar as the previous example but one difference is that the grouped model does not receive a dataframe but a numpy array.</p>
-<p align="center">
-  <img src="../_static/meta-models/grouped-np.png" />
-</p>
-
+<p><img alt="dummy" src="../../_static/meta-models/grouped-np.png" /></p>
 <p>Note that we're also grouping over more than one column here.
 The code that does this is listed below.</p>
 <div class="language-py highlight"><span class="filename">GroupedEstimator with DummyRegressor</span><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">from</span> <span class="nn">sklearn.dummy</span> <span class="kn">import</span> <span class="n">DummyRegressor</span>
