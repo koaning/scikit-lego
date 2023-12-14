@@ -1637,7 +1637,7 @@
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a> <span class="p">[[</span><span class="s2">&quot;mean_test_precision&quot;</span><span class="p">,</span> <span class="s2">&quot;mean_test_recall&quot;</span><span class="p">,</span> <span class="s2">&quot;mean_test_accuracy&quot;</span><span class="p">]]</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a> <span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">6</span><span class="p">)));</span>
 </span></code></pre></div>
-<p><img alt="skewed-data" src="/_static/meta-models/threshold-chart.png" /></p>
+<p><img alt="skewed-data" src="../../_static/meta-models/threshold-chart.png" /></p>
 <p>Increasing the threshold will increase the precision but as expected this is at the cost of recall (and accuracy).</p>
 <h3 id="saving-compute">Saving Compute<a class="headerlink" href="#saving-compute" title="Permanent link">&para;</a></h3>
 <p>Technically, you may not need to refit the underlying model that the <a href="/api/meta#sklego.meta.thresholder.Thresholder"><code>Thresholder</code></a> model wraps around.</p>
@@ -2026,7 +2026,7 @@ The code that does this is listed below.</p>
 </span><span id="__span-22-19"><a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a><span class="p">)</span>
 </span><span id="__span-22-20"><a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a><span class="n">grid</span>
 </span></code></pre></div>
-<p><img alt="confusion-balancer" src="/_static/meta-models/confusion-balancer-results.png" /></p>
+<p><img alt="confusion-balancer" src="../../_static/meta-models/confusion-balancer-results.png" /></p>
 <details class="example">
 <summary>Code to generate the plot</summary>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">cv_results_</span><span class="p">)</span>
