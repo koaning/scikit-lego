@@ -1,5 +1,7 @@
 # Project information
 site_name: scikit-lego
+# site_description: tbd
+# site_url: tbd
 
 # Repository information
 repo_name: koaning/scikit-lego
@@ -10,7 +12,9 @@ edit_uri: edit/main/docs/
 watch:
   - sklego
 
-docs_dir: mkdocs
+exclude_docs: |
+  Makefile
+  README.md
 
 use_directory_urls: true
 theme:
@@ -48,7 +52,7 @@ theme:
     - search.share
 
     - toc.follow
-  
+
 # Plugins
 plugins:
   - autorefs
@@ -56,6 +60,7 @@ plugins:
       handlers:
         python:
           options:
+            show_symbol_type_toc: true
             docstring_style: numpy
             docstring_section_style: table # table, list or spacy
             filters:
@@ -109,12 +114,33 @@ extra_javascript:
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
+validation:
+  absolute_links: ignore
+  unrecognized_links: ignore
+
 nav:
-  - Home: index.md
+  - Home:
+    - Home: index.md
+    - Installation: installation.md
+    - Contribution: contribution.md
+  - User guide:
+    - Datasets: user-guide/datasets.md
+    - Linear Models: user-guide/linear-models.md
+    - Mixture Methods: user-guide/mixture-methods.md
+    - Naive Bayes: user-guide/naive-bayes.md
+    - Meta Models: user-guide/meta-models.md
+    - Fairness: user-guide/fairness.md
+    - Outliers: user-guide/outliers.md
+    - Preprocessing: user-guide/preprocessing.md
+    - Cross Validation: user-guide/cross-validation.md
+    - Debug Pipeline: user-guide/debug-pipeline.md
+    - Pandas Pipelines: user-guide/pandas-pipelines.md
+    - RStudio: rstudio.md
   - API Reference:
     - Base: api/base.md
     - Common: api/common.md
     - Datasets: api/datasets.md
+    - Decay Functions: api/decay-functions.md
     - Decomposition: api/decomposition.md
     - Dummy: api/dummy.md
     - Linear Model: api/linear-model.md
@@ -127,3 +153,7 @@ nav:
     - Pandas Utils: api/pandas-utils.md
     - Pipeline: api/pipeline.md
     - Preprocessing: api/preprocessing.md
+  - This: this.md
+
+not_in_nav: |
+  _static

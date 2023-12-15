@@ -1,6 +1,6 @@
-sphinx==1.8.5
-sphinx_rtd_theme==0.4.3
-nbsphinx==0.4.2
-recommonmark==0.6.0
-jupyterlab-pygments==0.1.1
-pygments==2.15.0
+mkdocs==1.5.3
+mkdocs-autorefs==0.5.0
+mkdocs-material==9.4.5
+mkdocs-material-extensions==1.2
+mkdocstrings==0.23.0
+mkdocstrings-python==1.7.3

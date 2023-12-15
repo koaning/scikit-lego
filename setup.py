@@ -16,11 +16,12 @@ formulaic_packages = ["formulaic>=0.6.0"]
 all_packages = cvxpy_packages + patsy_packages + formulaic_packages + umap_packages
 
 docs_packages = [
-    "sphinx==4.5.0",
-    "sphinx_rtd_theme==1.0.0",
-    "nbsphinx==0.8.8",
-    "recommonmark==0.7.1",
-    "numpydoc",
+    "mkdocs>=1.5.3",
+    "mkdocs-autorefs>=0.5.0",
+    "mkdocs-material>=9.4.5",
+    "mkdocs-material-extensions>=1.2",
+    "mkdocstrings>=0.23.0",
+    "mkdocstrings-python>=1.7.3",
 ]
 test_packages = all_packages + [  # we need extras packages for their tests
     "flake8>=3.6.0",

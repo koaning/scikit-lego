@@ -9,32 +9,23 @@ install:
 	pip install -e ".[dev]"
 	pre-commit install
 
-doctest:
-	python -m doctest -v sklego/*.py
-
-test-notebooks:
-	pytest --nbval-lax doc/*.ipynb
-
-test: doctest
+test:
 	pytest --disable-warnings --cov=sklego
 	rm -rf .coverage*
-	pytest --nbval-lax doc/*.ipynb
 
 precommit:
 	pre-commit run
 
 docs:
-	rm -rf doc/.ipynb_checkpoints
-	sphinx-build -a -E doc docs
+	mkdocs serve
 
-docs-deploy: docs
-	netlify deploy --dir=docs --prod
+docs-deploy:
+	mkdocs gh-deploy
 
 clean:
 	rm -rf .pytest_cache
 	rm -rf build
 	rm -rf dist
-	rm -rf docs
 	rm -rf scikit_lego.egg-info
 	rm -rf .ipynb_checkpoints
 	rm -rf .coverage*

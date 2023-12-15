@@ -28,31 +28,45 @@ def test_estimator_checks_classification(test_fn):
 
 
 @pytest.mark.parametrize(
-    "mod", flatten([LinearRegression(), Ridge(), DecisionTreeRegressor()])
+    "mod, is_clf",
+    [
+        (LinearRegression(), False),
+        (Ridge(), False),
+        (DecisionTreeRegressor(), False),
+        (DecisionTreeClassifier(), True),
+        (LogisticRegression(solver="lbfgs"), True),
+    ]
 )
-def test_decay_weight_regr(mod):
-    X, y = np.random.normal(0, 1, (100, 100)), np.random.normal(0, 1, (100,))
-    mod = DecayEstimator(mod, decay=0.95).fit(X, y)
-    assert mod.weights_[0] == pytest.approx(0.95**100, abs=0.001)
-
-
 @pytest.mark.parametrize(
-    "mod", flatten([DecisionTreeClassifier(), LogisticRegression(solver="lbfgs")])
+    "decay_func, decay_kwargs",
+    [
+        ("exponential", {"decay_rate": 0.999}),
+        ("exponential", {"decay_rate": 0.99}),
+        ("linear", {"min_value": 0.0, "max_value": 1.0}),
+        ("linear", {"min_value": 0.5, "max_value": 1.0}),
+        ("sigmoid", {"growth_rate": 0.1}),
+        ("sigmoid", {"growth_rate": None}),
+        ("stepwise", {"n_steps": 10}),
+        ("stepwise", {"step_size": 2}),
+    ]
 )
-def test_decay_weight_clf(mod):
-    X, y = (
-        np.random.normal(0, 1, (100, 100)),
-        (np.random.normal(0, 1, (100,)) < 0).astype(int),
-    )
-    mod = DecayEstimator(mod, decay=0.95).fit(X, y)
-    assert mod.weights_[0] == pytest.approx(0.95**100, abs=0.001)
+def test_decay_weight(mod, is_clf, decay_func, decay_kwargs):
+    X, y = np.random.normal(0, 1, (100, 100)), np.random.normal(0, 1, (100,))
+
+    if is_clf:
+        y = (y < 0).astype(int)
+
+    mod = DecayEstimator(mod, decay_func=decay_func, **decay_kwargs).fit(X, y)
+
+    assert np.logical_and(mod.weights_ >= 0, mod.weights_ <= 1).all()
+    assert np.all(mod.weights_[:-1] <= mod.weights_[1:])
 
 
 @pytest.mark.parametrize("mod", flatten([KNeighborsClassifier()]))
 def test_throw_warning(mod):
     X, y = np.random.normal(0, 1, (100, 100)), np.random.normal(0, 1, (100,)) < 0
     with pytest.raises(TypeError) as e:
-        DecayEstimator(mod, decay=0.95).fit(X, y)
+        DecayEstimator(mod, decay_rate=0.95).fit(X, y)
         assert "sample_weight" in str(e)
         assert type(mod).__name__ in str(e)
 
