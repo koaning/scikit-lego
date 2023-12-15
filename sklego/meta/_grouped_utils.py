@@ -7,6 +7,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import _ensure_no_complex_data
 
 from sklego.common import as_list
+from sklego.dataframe_agnostic_utils import try_convert_to_standard_compliant_dataframe
 
 
 def constant_shrinkage(group_sizes: list, alpha: float) -> np.ndarray:
@@ -45,21 +46,25 @@ def _split_groups_and_values(
     _shape_check(X, min_value_cols)
 
     try:
-        if isinstance(X, pd.DataFrame):
-            X_group = X.loc[:, as_list(groups)]
-            X_value = X.drop(columns=groups).values
-        else:
+        try:
+            X = try_convert_to_standard_compliant_dataframe(X, strict=True).persist()
+        except TypeError:
             X_group = pd.DataFrame(X[:, as_list(groups)])
             pos_indexes = range(X.shape[1])
             X_value = np.delete(X, [pos_indexes[g] for g in as_list(groups)], axis=1)
-    except (KeyError, IndexError):
-        raise ValueError(f"Could not drop groups {groups} from columns of X")
+        else:
+            X_group = X.select(*as_list(groups))
+            X_value = X.drop_columns(*as_list(groups)).to_array()
+    except (KeyError, IndexError, TypeError) as exc:
+        raise ValueError(f"Could not drop groups {groups} from columns of X") from exc
 
     X_group = _check_grouping_columns(X_group, **kwargs)
 
     if check_X:
         X_value = check_array(X_value, **kwargs)
 
+    if hasattr(X_group, '__dataframe_namespace__'):
+        X_group = X_group.dataframe
     return X_group, X_value
 
 
@@ -82,13 +87,24 @@ def _shape_check(X, min_value_cols):
 def _check_grouping_columns(X_group, **kwargs) -> pd.DataFrame:
     """Do basic checks on grouping columns"""
     # Do regular checks on numeric columns
-    X_group_num = X_group.select_dtypes(include="number")
-    if X_group_num.shape[1]:
-        check_array(X_group_num, **kwargs)
+    if not hasattr(X_group, '__dataframe_namespace__'):
+        X_group = try_convert_to_standard_compliant_dataframe(X_group).persist()
+    pdx = X_group.__dataframe_namespace__()
+    X_group_num = X_group.select(
+        *[col.name for col in X_group.iter_columns()
+        if pdx.is_dtype(col, 'numeric')]
+    )
+    if len(X_group_num.column_names):
+        check_array(X_group_num.to_array(), **kwargs)
 
     # Only check missingness in object columns
-    if X_group.select_dtypes(exclude="number").isnull().any(axis=None):
+    if (
+        X_group.select(
+            *[col.name for col in X_group.iter_columns()
+            if not pdx.is_dtype(col, 'number')]
+        ).is_null().to_array().any()
+    ):
         raise ValueError("X has NaN values")
 
     # The grouping part we always want as a DataFrame with range index
-    return X_group.reset_index(drop=True)
+    return X_group.dataframe
