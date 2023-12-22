@@ -3,7 +3,8 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "scikit-lego"
+name = "sklego"
+dist-name = "scikit-lego"
 version = "0.7.0"
 description="A collection of lego bricks for scikit-learn pipelines"
 
