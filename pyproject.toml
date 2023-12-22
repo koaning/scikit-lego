@@ -21,9 +21,10 @@ maintainers = [
 ]
 
 dependencies = [
-    "scikit-learn>=1.0",
-    "pandas>=1.1.5",
     "Deprecated>=1.2.6",
+    "numpy",
+    "pandas>=1.1.5",
+    "scikit-learn>=1.0",
     "importlib-metadata >= 1.0; python_version < '3.8'",
 ]
 
