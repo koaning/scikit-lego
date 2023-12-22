@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: [
           # "3.6", Unsupported on ubuntu-latest (22.04)
           # "3.7", Long series of scikit-learn failures
@@ -18,7 +18,7 @@ jobs:
           "3.9",
           "3.10",
           "3.11",
-          # "3.12", # Numba still not available for Python 3.12: https://github.com/numba/numba/issues/9197
+          # "3.12", # Numba not available for Python 3.12: https://github.com/numba/numba/issues/9197
         ]
     runs-on: ${{ matrix.os }}
     steps:
