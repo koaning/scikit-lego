@@ -1,10 +1,5 @@
 .PHONY: docs
 
-flake:
-	flake8 sklego
-	flake8 tests
-	flake8 setup.py
-
 install:
 	pip install -e ".[dev]"
 	pre-commit install
@@ -23,17 +18,13 @@ docs-deploy:
 	mkdocs gh-deploy
 
 clean:
-	rm -rf .pytest_cache
-	rm -rf build
-	rm -rf dist
-	rm -rf scikit_lego.egg-info
-	rm -rf .ipynb_checkpoints
-	rm -rf .coverage*
+	rm -rf .pytest_cache build dist scikit_lego.egg-info .ipynb_checkpoints .coverage* .mypy_cache .ruff_cache
 
-black:
-	black sklego tests setup.py
+lint:
+	ruff check sklego tests setup.py --fix
+	ruff format sklego tests setup.py
 
-check: flake precommit test clean
+check: precommit test clean
 
 pypi: clean
 	python setup.py sdist
