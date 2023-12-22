@@ -47,7 +47,6 @@ issue-tracker = "https://github.com/koaning/scikit-lego/issues"
 documentation = "https://koaning.github.io/scikit-lego/"
 
 [project.optional-dependencies]
-
 cvxpy = ["cvxpy>=1.1.8"]
 formulaic = ["formulaic>=0.6.0"]
 patsy = ["patsy>=0.5.1"]
@@ -72,7 +71,6 @@ test = [
     "pytest-mock>=1.6.3",
     "pre-commit>=1.18.3",
     "ruff>=0.1.6",
-    "hatch",
 ]
 
 utils = [

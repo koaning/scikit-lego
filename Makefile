@@ -1,7 +1,7 @@
 .PHONY: docs
 
 install:
-	pip install -e ".[dev]"
+	python -m pip install -e ".[dev]"
 	pre-commit install
 
 test:
@@ -24,7 +24,7 @@ lint:
 	ruff check sklego tests setup.py --fix
 	ruff format sklego tests setup.py
 
-check: precommit test clean
+check: lint precommit test clean
 
 pypi: clean
 	python setup.py sdist

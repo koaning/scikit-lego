@@ -13,9 +13,10 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
         pre-release-dependencies: ["--pre", ""]
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout source code
+      uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -27,4 +28,4 @@ jobs:
     - name: Test with pytest
       run: |
         pip install -e ".[test]"
-        pytest
+        pytest -n 2 tests
