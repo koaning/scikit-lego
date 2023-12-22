@@ -71,9 +71,7 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         :return: Returns an instance of self.
         """
         if self.strategy not in self._ALLOWED_STRATEGIES:
-            raise ValueError(
-                f"strategy {self.strategy} is not in {self._ALLOWED_STRATEGIES}"
-            )
+            raise ValueError(f"strategy {self.strategy} is not in {self._ALLOWED_STRATEGIES}")
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         self.n_features_in_ = X.shape[1]
 
@@ -103,9 +101,7 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
 
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if X.shape[1] != self.n_features_in_:
-            raise ValueError(
-                f"Unexpected input dimension {X.shape[1]}, expected {self.dim_}"
-            )
+            raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.dim_}")
 
         if self.strategy == "normal":
             return rs.normal(self.mu_, self.sigma_, X.shape[0])

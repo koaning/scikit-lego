@@ -11,7 +11,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: [
+          # "3.6", Unsupported on ubuntu-latest (22.04)
+          # "3.7",
+          "3.8",
+          "3.9",
+          "3.10",
+          "3.11",
+          # "3.12", # Numba still not available for Python 3.12: https://github.com/numba/numba/issues/9197
+        ]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout source code

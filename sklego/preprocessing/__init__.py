@@ -15,14 +15,14 @@ __all__ = [
     "FormulaicTransformer",
 ]
 
-from .columncapper import ColumnCapper
-from .dictmapper import DictMapper
-from .identitytransformer import IdentityTransformer
-from .intervalencoder import IntervalEncoder
-from .formulaictransformer import FormulaicTransformer
-from .outlier_remover import OutlierRemover
-from .pandastransformers import ColumnDropper, ColumnSelector, PandasTypeSelector
-from .patsytransformer import PatsyTransformer
-from .projections import InformationFilter, OrthogonalTransformer
-from .randomadder import RandomAdder
-from .repeatingbasis import RepeatingBasisFunction
+from sklego.preprocessing.columncapper import ColumnCapper
+from sklego.preprocessing.dictmapper import DictMapper
+from sklego.preprocessing.formulaictransformer import FormulaicTransformer
+from sklego.preprocessing.identitytransformer import IdentityTransformer
+from sklego.preprocessing.intervalencoder import IntervalEncoder
+from sklego.preprocessing.outlier_remover import OutlierRemover
+from sklego.preprocessing.pandastransformers import ColumnDropper, ColumnSelector, PandasTypeSelector
+from sklego.preprocessing.patsytransformer import PatsyTransformer
+from sklego.preprocessing.projections import InformationFilter, OrthogonalTransformer
+from sklego.preprocessing.randomadder import RandomAdder
+from sklego.preprocessing.repeatingbasis import RepeatingBasisFunction

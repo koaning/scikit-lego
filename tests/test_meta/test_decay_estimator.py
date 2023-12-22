@@ -1,16 +1,15 @@
-import pytest
 import numpy as np
+import pytest
+from sklearn.base import is_classifier, is_regressor
+from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import LinearRegression, Ridge, LogisticRegression
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.base import is_regressor, is_classifier
-
 
 from sklego.common import flatten
 from sklego.meta import DecayEstimator
 from tests.conftest import (
-    general_checks,
     classifier_checks,
+    general_checks,
     regressor_checks,
 )
 
@@ -35,7 +34,7 @@ def test_estimator_checks_classification(test_fn):
         (DecisionTreeRegressor(), False),
         (DecisionTreeClassifier(), True),
         (LogisticRegression(solver="lbfgs"), True),
-    ]
+    ],
 )
 @pytest.mark.parametrize(
     "decay_func, decay_kwargs",
@@ -48,7 +47,7 @@ def test_estimator_checks_classification(test_fn):
         ("sigmoid", {"growth_rate": None}),
         ("stepwise", {"n_steps": 10}),
         ("stepwise", {"step_size": 2}),
-    ]
+    ],
 )
 def test_decay_weight(mod, is_clf, decay_func, decay_kwargs):
     X, y = np.random.normal(0, 1, (100, 100)), np.random.normal(0, 1, (100,))

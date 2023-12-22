@@ -1,7 +1,8 @@
 import warnings
 
-import pytest
 import numpy as np
+import pytest
+
 try:
     from cvxpy import SolverError
 except ImportError:
@@ -11,19 +12,15 @@ from sklearn.linear_model import LogisticRegression
 from sklego.common import flatten
 from sklego.linear_model import DemographicParityClassifier, FairClassifier
 from sklego.metrics import p_percent_score
-from tests.conftest import general_checks, classifier_checks, select_tests, nonmeta_checks
+from tests.conftest import classifier_checks, general_checks, nonmeta_checks, select_tests
 
 
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
         flatten([general_checks, nonmeta_checks, classifier_checks]),
-        exclude=[
-            "check_sample_weights_invariance",
-            "check_sample_weights_list",
-            "check_sample_weights_pandas_series"
-        ]
-    )
+        exclude=["check_sample_weights_invariance", "check_sample_weights_list", "check_sample_weights_pandas_series"],
+    ),
 )
 @pytest.mark.cvxpy
 def test_standard_checks(test_fn):
@@ -62,9 +59,7 @@ def _test_same(dataset):
         n_jobs=None,
         l1_ratio=None,
     )
-    fair = DemographicParityClassifier(
-        covariance_threshold=None, sensitive_cols=sensitive_cols, penalty="none"
-    )
+    fair = DemographicParityClassifier(covariance_threshold=None, sensitive_cols=sensitive_cols, penalty="none")
     try:
         fair.fit(X, y)
     except SolverError:
@@ -104,9 +99,7 @@ def test_regularization(sensitive_classification_dataset):
 
     prev_theta_norm = np.inf
     for C in [1, 0.5, 0.2, 0.1]:
-        fair = DemographicParityClassifier(
-            covariance_threshold=None, sensitive_cols=["x1"], C=C
-        ).fit(X, y)
+        fair = DemographicParityClassifier(covariance_threshold=None, sensitive_cols=["x1"], C=C).fit(X, y)
         theta_norm = np.abs(np.sum(fair.estimators_[0].coef_))
         assert theta_norm < prev_theta_norm
         prev_theta_norm = theta_norm

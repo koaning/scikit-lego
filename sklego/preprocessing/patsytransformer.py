@@ -54,9 +54,7 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
         self : PatsyTransformer
             The fitted transformer.
         """
-        X_ = patsy.dmatrix(
-            self.formula, X, NA_action="raise", return_type=self.return_type
-        )
+        X_ = patsy.dmatrix(self.formula, X, NA_action="raise", return_type=self.return_type)
 
         # check the number of observations hasn't changed. This ought not to
         # be necessary given NA_action='raise' above but just to be safe
@@ -86,8 +84,6 @@ class PatsyTransformer(TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self, "design_info_")
         try:
-            return patsy.build_design_matrices(
-                [self.design_info_], X, return_type=self.return_type
-            )[0]
+            return patsy.build_design_matrices([self.design_info_], X, return_type=self.return_type)[0]
         except patsy.PatsyError as e:
             raise RuntimeError from e

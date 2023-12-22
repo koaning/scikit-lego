@@ -1,10 +1,9 @@
-import pytest
 import numpy as np
 import pandas as pd
-
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
+import pytest
 from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 from sklego.preprocessing import PatsyTransformer
 

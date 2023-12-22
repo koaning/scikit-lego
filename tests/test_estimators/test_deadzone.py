@@ -1,5 +1,5 @@
-import pytest
 import numpy as np
+import pytest
 
 from sklego.linear_model import DeadZoneRegressor
 from sklego.testing import check_shape_remains_same_regressor
@@ -23,6 +23,7 @@ def mod(request):
 def test_deadzone(test_fn):
     regr = DeadZoneRegressor()
     test_fn(DeadZoneRegressor.__name__, regr)
+
 
 def test_values_uniform(dataset, mod):
     if mod.effect == "constant":

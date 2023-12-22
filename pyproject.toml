@@ -28,13 +28,10 @@ dependencies = [
 
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
@@ -47,7 +44,7 @@ issue-tracker = "https://github.com/koaning/scikit-lego/issues"
 documentation = "https://koaning.github.io/scikit-lego/"
 
 [project.optional-dependencies]
-cvxpy = ["cvxpy>=1.1.8"]
+cvxpy = ["osqp==0.6.1", "cvxpy>=1.1.8"]
 formulaic = ["formulaic>=0.6.0"]
 patsy = ["patsy>=0.5.1"]
 umap = ["umap-learn>=0.4.6"]
@@ -79,7 +76,7 @@ utils = [
     "jupyterlab>=0.35.4",
 ]
 
-dev = ["scikit-lego[all,test,utils,docs]"]
+dev = ["scikit-lego[all,test,docs]"]
 
 [tool.setuptools.packages.find]
 include = ["sklego*"]

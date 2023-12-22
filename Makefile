@@ -21,8 +21,8 @@ clean:
 	rm -rf .pytest_cache build dist scikit_lego.egg-info .ipynb_checkpoints .coverage* .mypy_cache .ruff_cache
 
 lint:
-	ruff check sklego tests setup.py --fix
-	ruff format sklego tests setup.py
+	ruff format sklego tests
+	ruff check sklego tests --fix
 
 check: lint precommit test clean
 

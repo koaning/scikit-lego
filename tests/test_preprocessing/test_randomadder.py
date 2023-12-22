@@ -4,9 +4,7 @@ from sklearn.model_selection import train_test_split
 
 from sklego.common import flatten
 from sklego.preprocessing import RandomAdder
-
-
-from tests.conftest import select_tests, transformer_checks, nonmeta_checks, general_checks
+from tests.conftest import general_checks, nonmeta_checks, select_tests, transformer_checks
 
 
 @pytest.mark.parametrize(
@@ -19,9 +17,9 @@ from tests.conftest import select_tests, transformer_checks, nonmeta_checks, gen
             "check_transformer_data_not_an_array",
             "check_transformer_general",
             "check_sample_weights_list",
-            "check_sample_weights_pandas_series"
-        ]
-    )
+            "check_sample_weights_pandas_series",
+        ],
+    ),
 )
 def test_estimator_checks(test_fn):
     adder = RandomAdder()

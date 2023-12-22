@@ -1,17 +1,15 @@
-import pytest
 import warnings
 
-import pandas as pd
 import numpy as np
-
+import pandas as pd
+import pytest
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import accuracy_score
-from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import GridSearchCV
-
-from sklego.preprocessing import ColumnSelector
+from sklearn.pipeline import make_pipeline
 
 from sklego.metrics import subset_score
+from sklego.preprocessing import ColumnSelector
 
 
 class DisabledCV:
@@ -89,9 +87,7 @@ def test_wrong_subset_dimensions_raise_value_error(slicing_classification_datase
 
 def test_subset_score_pipeline(slicing_classification_dataset):
     X, y = slicing_classification_dataset
-    model = make_pipeline(
-        ColumnSelector("x1"), DummyClassifier(strategy="constant", constant=1)
-    ).fit(X, y)
+    model = make_pipeline(ColumnSelector("x1"), DummyClassifier(strategy="constant", constant=1)).fit(X, y)
 
     accuracy_x1_0 = subset_score(lambda X, y_true: X["x1"] == 0, accuracy_score)
     assert accuracy_x1_0(estimator=model, X=X, y_true=y) == 0.25
@@ -106,9 +102,7 @@ def test_subset_score_gridsearch(slicing_classification_dataset):
     accuracy_x1_0 = subset_score(lambda X, y_true: X["x1"] == 0, accuracy_score)
 
     cv = DisabledCV()
-    search = GridSearchCV(
-        estimator=pipeline, param_grid=param_grid, scoring=accuracy_x1_0, cv=cv
-    )
+    search = GridSearchCV(estimator=pipeline, param_grid=param_grid, scoring=accuracy_x1_0, cv=cv)
 
     X, y = slicing_classification_dataset
     search.fit(X, y)

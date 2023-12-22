@@ -58,9 +58,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
     """
 
     _HASHERS = {
-        pd.DataFrame: lambda X: hashlib.sha256(
-            pd.util.hash_pandas_object(X, index=True).values
-        ).hexdigest(),
+        pd.DataFrame: lambda X: hashlib.sha256(pd.util.hash_pandas_object(X, index=True).values).hexdigest(),
         np.ndarray: lambda X: hash(X.data.tobytes()),
         np.memmap: lambda X: hash(X.data.tobytes()),
     }
@@ -150,9 +148,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         check_array(X, estimator=self)
 
         if X.shape[1] != self.n_features_in_:
-            raise ValueError(
-                f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}"
-            )
+            raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}")
 
         if self._hash(X) == self.X_hash_:
             return self.transform_train(X)
@@ -176,9 +172,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         array-like of shape (n_samples, n_features)
             The transformed training data.
         """
-        raise NotImplementedError(
-            "Subclasses of `TrainOnlyTransformerMixin` should implement `transform_train` method"
-        )
+        raise NotImplementedError("Subclasses of `TrainOnlyTransformerMixin` should implement `transform_train` method")
 
     def transform_test(self, X, y=None):
         """Transform the test data.
@@ -275,9 +269,7 @@ def flatten(nested_iterable):
     ```
     """
     for el in nested_iterable:
-        if isinstance(el, collections.abc.Iterable) and not isinstance(
-            el, (str, bytes)
-        ):
+        if isinstance(el, collections.abc.Iterable) and not isinstance(el, (str, bytes)):
             yield from flatten(el)
         else:
             yield el
@@ -346,6 +338,4 @@ def sliding_window(sequence, window_size, step_size):
     # [[1, 2], [2, 4], [4, 5], [5]]
     ```
     """
-    return (
-        sequence[pos : pos + window_size] for pos in range(0, len(sequence), step_size)
-    )
+    return (sequence[pos : pos + window_size] for pos in range(0, len(sequence), step_size))

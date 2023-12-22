@@ -3,7 +3,6 @@ from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
 
 
-
 class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     """Allow using an estimator as a transformer in an earlier step of a pipeline.
 
@@ -28,6 +27,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     multi_output_ : bool
         Whether or not the estimator is multi output.
     """
+
     def __init__(self, estimator, predict_func="predict", check_input=False):
         self.estimator = estimator
         self.predict_func = predict_func
@@ -73,7 +73,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
             The transformed data. Array will be of shape `(X.shape[0], )` if estimator is not multi output.
             For multi output estimators an array of shape `(X.shape[0], y.shape[1])` is returned.
         """
-        
+
         check_is_fitted(self, "estimator_")
         output = getattr(self.estimator_, self.predict_func)(X)
         return output if self.multi_output_ else output.reshape(-1, 1)

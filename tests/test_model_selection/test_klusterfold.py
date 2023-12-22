@@ -1,13 +1,13 @@
+import numpy as np
 import pytest
 from sklearn import clone
 from sklearn.base import BaseEstimator
-
-from sklego.model_selection import KlusterFoldValidation
 from sklearn.cluster import KMeans, MiniBatchKMeans
-from tests.conftest import id_func
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-import numpy as np
+
+from sklego.model_selection import KlusterFoldValidation
+from tests.conftest import id_func
 
 k_means_pipeline = make_pipeline(StandardScaler(), KMeans())
 

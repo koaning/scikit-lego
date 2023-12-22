@@ -4,9 +4,7 @@ import pytest
 
 from sklego.common import flatten
 from sklego.preprocessing import DictMapper
-
-
-from tests.conftest import select_tests, transformer_checks, general_checks, nonmeta_checks
+from tests.conftest import general_checks, nonmeta_checks, select_tests, transformer_checks
 
 
 @pytest.mark.parametrize(
@@ -17,9 +15,9 @@ from tests.conftest import select_tests, transformer_checks, general_checks, non
             "check_sample_weights_invariance",
             "check_dtype_object",
             "check_sample_weights_list",
-            "check_sample_weights_pandas_series"
-        ]
-    )
+            "check_sample_weights_pandas_series",
+        ],
+    ),
 )
 def test_estimator_checks(test_fn):
     test_fn(DictMapper.__name__, DictMapper(mapper={"foo": 1}, default=-1))

@@ -1,9 +1,9 @@
-import pytest
 import numpy as np
+import pytest
 
 from sklego.common import flatten
 from sklego.decomposition import UMAPOutlierDetection
-from tests.conftest import general_checks, outlier_checks, select_tests, nonmeta_checks
+from tests.conftest import general_checks, nonmeta_checks, outlier_checks, select_tests
 
 
 @pytest.mark.parametrize(
@@ -22,9 +22,9 @@ from tests.conftest import general_checks, outlier_checks, select_tests, nonmeta
             "check_dont_overwrite_parameters",
             "check_classifier_data_not_an_array",
             "check_sample_weights_list",
-            "check_sample_weights_pandas_series"
-        ]
-    )
+            "check_sample_weights_pandas_series",
+        ],
+    ),
 )
 def test_estimator_checks(test_fn):
     outlier_mod = UMAPOutlierDetection(n_components=2, threshold=0.1)
@@ -38,6 +38,6 @@ def dataset():
 
 
 def test_obvious_usecase(dataset):
-    mod = UMAPOutlierDetection(n_components=2, threshold=7.5, random_state=42, variant='absolute').fit(dataset)
+    mod = UMAPOutlierDetection(n_components=2, threshold=7.5, random_state=42, variant="absolute").fit(dataset)
     assert mod.predict([[10] * 10]) == np.array([-1])
     assert mod.predict([[0.01] * 10]) == np.array([1])

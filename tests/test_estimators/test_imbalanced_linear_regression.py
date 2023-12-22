@@ -3,10 +3,10 @@
 import numpy as np
 import pytest
 
+from sklego.common import flatten
 from sklego.linear_model import ImbalancedLinearRegression
 from sklego.testing import check_shape_remains_same_regressor
-from sklego.common import flatten
-from tests.conftest import general_checks, nonmeta_checks, select_tests, regressor_checks
+from tests.conftest import general_checks, nonmeta_checks, regressor_checks, select_tests
 
 test_batch = [
     (np.array([0, 0, 3, 0, 6]), 3),
@@ -58,11 +58,8 @@ def test_coefs_and_intercept__no_noise_positive(coefs, intercept, method):
 def test_coefs_and_intercept__no_noise_regularization(coefs, intercept):
     """Test model with regularization. The size of the coef vector should shrink the larger alpha gets."""
     X, y = _create_dataset(coefs, intercept)
-    imbs = [
-        ImbalancedLinearRegression(alpha=alpha, l1_ratio=0.5).fit(X, y)
-        for alpha in range(4)
-    ]
-    coef_size = np.array([np.sum(imb.coef_ ** 2) for imb in imbs])
+    imbs = [ImbalancedLinearRegression(alpha=alpha, l1_ratio=0.5).fit(X, y) for alpha in range(4)]
+    coef_size = np.array([np.sum(imb.coef_**2) for imb in imbs])
 
     for i in range(3):
         assert coef_size[i] >= coef_size[i + 1]
@@ -113,11 +110,11 @@ def test_imbalanced(test_fn):
     "test_fn",
     select_tests(
         flatten([general_checks, nonmeta_checks, regressor_checks]),
-    )
+    ),
 )
 def test_estimator_checks(positive, fit_intercept, method, test_fn):
     regr = (
-        f'{ImbalancedLinearRegression.__name__}_method_{method}_positive_{positive}_fit_intercept_{fit_intercept}',
-        ImbalancedLinearRegression(method=method, positive=positive, fit_intercept=fit_intercept)
+        f"{ImbalancedLinearRegression.__name__}_method_{method}_positive_{positive}_fit_intercept_{fit_intercept}",
+        ImbalancedLinearRegression(method=method, positive=positive, fit_intercept=fit_intercept),
     )
     test_fn(*regr)

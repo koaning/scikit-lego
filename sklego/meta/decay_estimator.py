@@ -1,8 +1,8 @@
-import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
-from ._decay_utils import linear_decay, exponential_decay, stepwise_decay, sigmoid_decay
+
+from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay
 
 
 class DecayEstimator(BaseEstimator):
@@ -85,9 +85,7 @@ class DecayEstimator(BaseEstimator):
         "sigmoid": sigmoid_decay,
     }
 
-    def __init__(
-        self, model, decay_func="exponential", check_input=False, **decay_kwargs
-    ):
+    def __init__(self, model, decay_func="exponential", check_input=False, **decay_kwargs):
         self.model = model
         self.decay_func = decay_func
         self.check_input = check_input
@@ -95,9 +93,7 @@ class DecayEstimator(BaseEstimator):
 
     def _is_classifier(self):
         """Checks if the wrapped estimator is a classifier."""
-        return any(
-            ["ClassifierMixin" in p.__name__ for p in type(self.model).__bases__]
-        )
+        return any(["ClassifierMixin" in p.__name__ for p in type(self.model).__bases__])
 
     @property
     def _estimator_type(self):
@@ -121,18 +117,14 @@ class DecayEstimator(BaseEstimator):
         """
 
         if self.check_input:
-            X, y = check_X_y(
-                X, y, estimator=self, dtype=FLOAT_DTYPES, ensure_min_features=0
-            )
+            X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, ensure_min_features=0)
 
         if self.decay_func in self._ALLOWED_DECAYS.keys():
             self.decay_func_ = self._ALLOWED_DECAYS[self.decay_func]
         elif callable(self.decay_func):
             self.decay_func_ = self.decay_func
         else:
-            raise ValueError(
-                f"`decay_func` should be one of {self._ALLOWED_DECAYS.keys()} or a callable"
-            )
+            raise ValueError(f"`decay_func` should be one of {self._ALLOWED_DECAYS.keys()} or a callable")
 
         self.weights_ = self.decay_func_(X, y, **self.decay_kwargs)
         self.estimator_ = clone(self.model)
@@ -141,9 +133,7 @@ class DecayEstimator(BaseEstimator):
             self.estimator_.fit(X, y, sample_weight=self.weights_)
         except TypeError as e:
             if "sample_weight" in str(e):
-                raise TypeError(
-                    f"Model {type(self.model).__name__}.fit() does not have 'sample_weight'"
-                )
+                raise TypeError(f"Model {type(self.model).__name__}.fit() does not have 'sample_weight'")
 
         if self._is_classifier():
             self.classes_ = self.estimator_.classes_

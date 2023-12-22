@@ -84,9 +84,7 @@ class DictMapper(TransformerMixin, BaseEstimator):
         )
 
         if X.shape[1] != self.n_features_in_:
-            raise ValueError(
-                f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}"
-            )
+            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
         return np.vectorize(self.mapper.get, otypes=[int])(X, self.default)
 
     @property

@@ -1,23 +1,19 @@
-import pytest
 import numpy as np
+import pytest
 from sklearn.linear_model import LogisticRegression
 
 from sklego.common import flatten
 from sklego.linear_model import EqualOpportunityClassifier
 from sklego.metrics import equal_opportunity_score
-from tests.conftest import general_checks, classifier_checks, select_tests, nonmeta_checks
+from tests.conftest import classifier_checks, general_checks, nonmeta_checks, select_tests
 
 
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
         flatten([general_checks, nonmeta_checks, classifier_checks]),
-        exclude=[
-            "check_sample_weights_invariance",
-            "check_sample_weights_list",
-            "check_sample_weights_pandas_series"
-        ]
-    )
+        exclude=["check_sample_weights_invariance", "check_sample_weights_list", "check_sample_weights_pandas_series"],
+    ),
 )
 @pytest.mark.cvxpy
 def test_standard_checks(test_fn):

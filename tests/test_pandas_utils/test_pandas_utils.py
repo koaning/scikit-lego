@@ -1,14 +1,15 @@
-import pytest
-import pandas as pd
-import numpy as np
 import logging
 
+import numpy as np
+import pandas as pd
+import pytest
+
 from sklego.pandas_utils import (
+    _add_lagged_numpy_columns,
+    _add_lagged_pandas_columns,
+    add_lags,
     log_step,
     log_step_extra,
-    add_lags,
-    _add_lagged_pandas_columns,
-    _add_lagged_numpy_columns,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -76,10 +77,11 @@ def test_log_step(capsys, test_df):
 
     captured = capsys.readouterr()
     print_statements = captured.out.split("\n")
-    
+
     assert print_statements[0].startswith("[do_nothing(df)]")
     assert print_statements[1].startswith("[do_nothing(df, kwargs = {'a': '1'})]")
     assert print_statements[2].startswith("[do_something(df)]")
+
 
 def test_log_step_display_args(capsys, test_df):
     """Test that we can disable printing function arguments in the log_step"""
@@ -113,10 +115,10 @@ def test_log_step_logger(caplog, test_df):
     @log_step(print_fn=logging.info)
     def do_nothing(df, *args, **kwargs):
         return df
-    
+
     with caplog.at_level(logging.INFO):
         (test_df.pipe(do_nothing).pipe(do_nothing, a="1").pipe(do_something))
-    
+
     assert caplog.messages[0].startswith("[do_nothing(df)]")
     assert caplog.messages[1].startswith("[do_nothing(df, kwargs = {'a': '1'})]")
     assert caplog.messages[2].startswith("[do_something(df)]")
@@ -179,13 +181,7 @@ def test_log_shape_delta(capsys, test_df):
     def remove_column(df, *args, **kwargs):
         return df.drop(columns="new_column")
 
-    (
-        test_df.pipe(do_nothing)
-        .pipe(add_row)
-        .pipe(remove_row)
-        .pipe(add_column)
-        .pipe(remove_column)
-    )
+    (test_df.pipe(do_nothing).pipe(add_row).pipe(remove_row).pipe(add_column).pipe(remove_column))
 
     captured = capsys.readouterr()
     print_statements = captured.out.split("\n")
@@ -296,9 +292,7 @@ def test_log_extra(capsys):
     n_cats = 3
     n_dogs = 2
 
-    test_df = pd.DataFrame(
-        {"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats}
-    )
+    test_df = pd.DataFrame({"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats})
 
     def cat_counter(df):
         return f"cats={(df['animals']=='cat').sum()}"
@@ -325,9 +319,7 @@ def test_log_extra_kwargs(capsys):
     n_cats = 3
     n_dogs = 2
 
-    test_df = pd.DataFrame(
-        {"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats}
-    )
+    test_df = pd.DataFrame({"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats})
 
     def animal_counter(df, animal="cat"):
         return f"{animal}s={(df['animals']==animal).sum()}"

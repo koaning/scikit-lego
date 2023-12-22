@@ -1,9 +1,9 @@
 from contextlib import nullcontext as does_not_raise
 
-import pytest
 import numpy as np
+import pytest
 
-from sklego.meta._decay_utils import linear_decay, exponential_decay, stepwise_decay, sigmoid_decay
+from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay
 
 
 @pytest.mark.parametrize(
@@ -13,7 +13,7 @@ from sklego.meta._decay_utils import linear_decay, exponential_decay, stepwise_d
         ({"min_value": 0.1, "max_value": 10}, does_not_raise()),
         ({"min_value": 0.5, "max_value": 0.1}, pytest.raises(ValueError)),
         ({"min_value": "abc", "max_value": 0.1}, pytest.raises(TypeError)),
-    ]
+    ],
 )
 def test_linear_decay(kwargs, context):
     X, y = np.random.randn(100, 10), np.random.randn(100)
@@ -28,10 +28,10 @@ def test_linear_decay(kwargs, context):
     [
         ({"decay_rate": 0.9}, does_not_raise()),
         ({"decay_rate": 0.1}, does_not_raise()),
-        ({"decay_rate": -1.}, pytest.raises(ValueError)),
-        ({"decay_rate": 2.}, pytest.raises(ValueError)),
+        ({"decay_rate": -1.0}, pytest.raises(ValueError)),
+        ({"decay_rate": 2.0}, pytest.raises(ValueError)),
         ({"decay_rate": "abc"}, pytest.raises(TypeError)),
-    ]
+    ],
 )
 def test_exponential_decay(kwargs, context):
     X, y = np.random.randn(100, 10), np.random.randn(100)
@@ -39,6 +39,7 @@ def test_exponential_decay(kwargs, context):
     with context:
         weights = exponential_decay(X, y, **kwargs)
         assert np.all(weights[:-1] <= weights[1:])
+
 
 @pytest.mark.parametrize(
     "kwargs, context",
@@ -56,7 +57,7 @@ def test_exponential_decay(kwargs, context):
         ({"step_size": -2}, pytest.raises(ValueError)),
         ({"n_steps": 2.5}, pytest.raises(TypeError)),
         ({"step_size": 2.5}, pytest.raises(TypeError)),
-    ]
+    ],
 )
 def test_stepwise_decay(kwargs, context):
     X, y = np.random.randn(100, 10), np.random.randn(100)
@@ -75,7 +76,7 @@ def test_stepwise_decay(kwargs, context):
         ({"growth_rate": -0.1}, pytest.raises(ValueError)),
         ({"growth_rate": 1.1}, pytest.raises(ValueError)),
         ({"abc": 1.1}, pytest.raises(TypeError)),
-    ]
+    ],
 )
 def test_sigmoid_decay(kwargs, context):
     X, y = np.random.randn(100, 10), np.random.randn(100)
