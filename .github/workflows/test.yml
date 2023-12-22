@@ -1,4 +1,4 @@
-name: Python Package Linux
+name: Python Test Package
 
 on:
   pull_request:
