@@ -3,8 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-# name = "sklego"
-name = "scikit-lego"
+name = "sklego"
 version = "0.7.0"
 description="A collection of lego bricks for scikit-learn pipelines"
 
@@ -80,7 +79,7 @@ utils = [
 dev = ["scikit-lego[all,test,docs]"]
 
 [tool.setuptools.packages.find]
-where = ["sklego"]
+include = ["sklego"]
 exclude = [
     "docs",
     "images",
