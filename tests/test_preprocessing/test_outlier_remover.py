@@ -1,13 +1,13 @@
-import pytest
 import numpy as np
-from sklearn.ensemble import IsolationForest
+import pytest
 from sklearn.cluster import KMeans
+from sklearn.ensemble import IsolationForest
 from sklearn.pipeline import Pipeline
 from sklearn.utils import estimator_checks
 
 from sklego.common import flatten
-from sklego.preprocessing import OutlierRemover
 from sklego.mixture import GMMOutlierDetector
+from sklego.preprocessing import OutlierRemover
 
 
 @pytest.mark.parametrize(
@@ -30,9 +30,7 @@ def test_estimator_checks(test_fn):
     gmm_remover = OutlierRemover(outlier_detector=GMMOutlierDetector(), refit=True)
     test_fn(OutlierRemover.__name__, gmm_remover)
 
-    isolation_forest_remover = OutlierRemover(
-        outlier_detector=IsolationForest(), refit=True
-    )
+    isolation_forest_remover = OutlierRemover(outlier_detector=IsolationForest(), refit=True)
     test_fn(OutlierRemover.__name__, isolation_forest_remover)
 
 
@@ -64,9 +62,7 @@ def test_do_not_refit(mocker):
     mock_outlier_detector.predict.return_value = np.array([-1])
     mocker.patch("sklego.preprocessing.outlier_remover.clone").return_value = mock_outlier_detector
 
-    outlier_remover = OutlierRemover(
-        outlier_detector=mock_outlier_detector, refit=False
-    )
+    outlier_remover = OutlierRemover(outlier_detector=mock_outlier_detector, refit=False)
     outlier_remover.fit(X=np.array([[5, 5]]))
     mock_outlier_detector.fit.assert_not_called()
 

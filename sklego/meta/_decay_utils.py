@@ -1,7 +1,8 @@
 import numpy as np
 
+
 def linear_decay(X, y, min_value=0.0, max_value=1.0):
-    """Generates a linear decay by mapping input data `X`, `y` to a linearly decreasing range from `max_value` 
+    """Generates a linear decay by mapping input data `X`, `y` to a linearly decreasing range from `max_value`
     to `min_value`. The length and step of the decay is determined by the number of samples in `y`.
 
     !!! warning
@@ -17,7 +18,7 @@ def linear_decay(X, y, min_value=0.0, max_value=1.0):
         The minimum value of the decay.
     max_value : float, default=1.
         The maximum value of the decay.
-    
+
     Returns
     -------
     np.ndarray, shape=(n_samples,)
@@ -28,12 +29,13 @@ def linear_decay(X, y, min_value=0.0, max_value=1.0):
     ValueError
         If `min_value` is greater than `max_value`.
     """
-    
+
     if min_value > max_value:
         raise ValueError("`min_value` must be less than or equal to `max_value`")
 
     n_samples = y.shape[0]
     return np.linspace(min_value, max_value, n_samples + 1)[1:]
+
 
 def exponential_decay(X, y, decay_rate=0.999):
     r"""Generates an exponential decay by mapping input data `X`, `y` to a exponential decreasing range
@@ -63,14 +65,13 @@ def exponential_decay(X, y, decay_rate=0.999):
     """
 
     if decay_rate <= 0 or decay_rate >= 1:
-        raise ValueError(
-            f"`decay_rate` must be between 0. and 1., found {decay_rate}"
-        )
+        raise ValueError(f"`decay_rate` must be between 0. and 1., found {decay_rate}")
     n_samples = y.shape[0]
     return decay_rate ** np.arange(n_samples, 0, -1)
 
+
 def stepwise_decay(X, y, n_steps=None, step_size=None, min_value=0.0, max_value=1.0):
-    """Generates a stepwise decay function that maps input data `X`, `y` to a decreasing range from `max_value` to 
+    """Generates a stepwise decay function that maps input data `X`, `y` to a decreasing range from `max_value` to
     `min_value`.
 
     It is possible to specify one of `n_steps` or `step_size` to determine the behaviour of the decay.
@@ -91,7 +92,7 @@ def stepwise_decay(X, y, n_steps=None, step_size=None, min_value=0.0, max_value=
     X : array-like, shape=(n_samples, n_features,)
         Training data. Unused, present for API consistency by convention.
     y : array-like, shape=(n_samples,)
-        Target values. Used to determine the number of samples in the decay.    
+        Target values. Used to determine the number of samples in the decay.
     n_steps : int | None, default=None
         The total number of steps in the decay.
     step_size : int | None, default=None
@@ -117,7 +118,7 @@ def stepwise_decay(X, y, n_steps=None, step_size=None, min_value=0.0, max_value=
         - If `n_steps` is not an integer.
         - If `step_size` is not an integer.
     """
-    
+
     if min_value > max_value:
         raise ValueError("`min_value` must be less than or equal to `max_value`")
 
@@ -144,20 +145,17 @@ def stepwise_decay(X, y, n_steps=None, step_size=None, min_value=0.0, max_value=
     n_samples = y.shape[0]
 
     if step_size is not None and step_size > n_samples:
-        raise ValueError(
-            "`step_size` must be less than or equal to the number of samples"
-        )
+        raise ValueError("`step_size` must be less than or equal to the number of samples")
 
     if n_steps is not None and n_steps > n_samples:
-        raise ValueError(
-            "`n_steps` must be less than or equal to the number of samples"
-        )
+        raise ValueError("`n_steps` must be less than or equal to the number of samples")
 
-    n_steps = (n_samples // step_size if step_size is not None else n_steps)
+    n_steps = n_samples // step_size if step_size is not None else n_steps
     step_size = n_samples // n_steps
     step_width = (max_value - min_value) / n_steps
 
     return max_value - (np.arange(n_samples, 0, -1) // step_size) * step_width
+
 
 def sigmoid_decay(X, y, growth_rate=None, min_value=0.0, max_value=1.0):
     """Generates a sigmoid decay function that maps input data `X`, `y` to a non-linearly decreasing range from
@@ -198,7 +196,6 @@ def sigmoid_decay(X, y, growth_rate=None, min_value=0.0, max_value=1.0):
     if growth_rate is not None and (growth_rate <= 0 or growth_rate >= 1):
         raise ValueError("`growth_rate` must be between 0. and 1.")
 
-    
     n_samples = y.shape[0]
     growth_rate = growth_rate or 10 / n_samples
 

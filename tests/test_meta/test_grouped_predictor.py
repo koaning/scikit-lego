@@ -1,15 +1,14 @@
-import pytest
-import pandas as pd
 import numpy as np
-from sklearn.linear_model import LinearRegression, LogisticRegression
+import pandas as pd
+import pytest
 from sklearn.dummy import DummyRegressor
 from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import make_pipeline
 
 from sklego.common import flatten
-from sklego.meta import GroupedPredictor
 from sklego.datasets import load_chicken
-
+from sklego.meta import GroupedPredictor
 from tests.conftest import general_checks, select_tests
 
 
@@ -46,14 +45,10 @@ def random_xy_grouped_clf_different_classes(request):
     ),
 )
 def test_estimator_checks(test_fn):
-    clf = GroupedPredictor(
-        estimator=LinearRegression(), groups=0, use_global_model=True
-    )
+    clf = GroupedPredictor(estimator=LinearRegression(), groups=0, use_global_model=True)
     test_fn(GroupedPredictor.__name__ + "_fallback", clf)
 
-    clf = GroupedPredictor(
-        estimator=LinearRegression(), groups=0, use_global_model=False
-    )
+    clf = GroupedPredictor(estimator=LinearRegression(), groups=0, use_global_model=False)
     test_fn(GroupedPredictor.__name__ + "_nofallback", clf)
 
 
@@ -114,9 +109,7 @@ def test_predict_proba_has_same_columns_as_distinct_labels(
     y_proba = mod.predict_proba(X)
 
     # Ensure the number of col output is always equal to the cardinality of the labels
-    assert (
-        len(random_xy_grouped_clf_different_classes["y"].unique()) == y_proba.shape[1]
-    )
+    assert len(random_xy_grouped_clf_different_classes["y"].unique()) == y_proba.shape[1]
 
 
 @pytest.mark.parametrize(
@@ -144,11 +137,7 @@ def test_predict_proba_correct_zeros_same_and_different_labels(
     )
 
     # Take distinct labels for group A and group B
-    labels_a, labels_b = (
-        random_xy_grouped_clf_different_classes.groupby("group")
-        .agg({"y": set})
-        .sort_index()["y"]
-    )
+    labels_a, labels_b = random_xy_grouped_clf_different_classes.groupby("group").agg({"y": set}).sort_index()["y"]
 
     # Ensure for the common labels there are no zeros
     in_common_labels = labels_a.intersection(labels_b)
@@ -160,9 +149,7 @@ def test_predict_proba_correct_zeros_same_and_different_labels(
         "B": list(labels_a.difference(labels_b)),
     }
     for grp_name, grp in df_proba.groupby("group"):
-        assert all(
-            (grp.loc[:, label] == 0).all() for label in label_not_in_group[grp_name]
-        )
+        assert all((grp.loc[:, label] == 0).all() for label in label_not_in_group[grp_name])
 
 
 def test_fallback_can_raise_error():
@@ -340,10 +327,7 @@ def test_min_n_obs_shrinkage_too_little_obs(shrinkage_data):
     with pytest.raises(ValueError) as e:
         shrink_est.fit(X, y)
 
-        assert (
-            f"There is no group with size greater than or equal to {too_big_n_obs}"
-            in str(e)
-        )
+        assert f"There is no group with size greater than or equal to {too_big_n_obs}" in str(e)
 
 
 def test_custom_shrinkage(shrinkage_data):
@@ -437,9 +421,7 @@ def test_custom_shrinkage_raises_error(shrinkage_data):
 
         shrink_est.fit(X, y)
 
-        assert "you should feel bad" in str(
-            e
-        ) and "while checking the shrinkage function" in str(e)
+        assert "you should feel bad" in str(e) and "while checking the shrinkage function" in str(e)
 
 
 @pytest.mark.parametrize("wrong_func", [list(), tuple(), dict(), 9])
@@ -535,10 +517,7 @@ def test_shrinkage_single_group_no_global(shrinkage_data):
         )
         shrink_est.fit(X, y)
 
-        assert (
-            "Cannot do shrinkage with a single group if use_global_model is False"
-            in str(e)
-        )
+        assert "Cannot do shrinkage with a single group if use_global_model is False" in str(e)
 
 
 def test_unexisting_shrinkage_func(shrinkage_data):
@@ -565,15 +544,11 @@ def test_unseen_groups_shrinkage(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    shrink_est = GroupedPredictor(
-        DummyRegressor(), ["Planet", "Country", "City"], shrinkage="constant", alpha=0.1
-    )
+    shrink_est = GroupedPredictor(DummyRegressor(), ["Planet", "Country", "City"], shrinkage="constant", alpha=0.1)
 
     shrink_est.fit(X, y)
 
-    unseen_group = pd.DataFrame(
-        {"Planet": ["Earth"], "Country": ["DE"], "City": ["Hamburg"]}
-    )
+    unseen_group = pd.DataFrame({"Planet": ["Earth"], "Country": ["DE"], "City": ["Hamburg"]})
 
     with pytest.raises(ValueError) as e:
         shrink_est.predict(X=pd.concat([unseen_group] * 4, axis=0))
@@ -626,9 +601,7 @@ def test_predict_missing_value_column(shrinkage_data):
 def test_bad_shrinkage_value_error():
     with pytest.raises(ValueError) as e:
         df = load_chicken(as_frame=True)
-        mod = GroupedPredictor(
-            estimator=LinearRegression(), groups="diet", shrinkage="dinosaurhead"
-        )
+        mod = GroupedPredictor(estimator=LinearRegression(), groups="diet", shrinkage="dinosaurhead")
         mod.fit(df[["time", "diet"]], df["weight"])
         assert "shrinkage function" in str(e)
 
@@ -652,11 +625,10 @@ def test_missing_check():
 
 
 def test_has_decision_function():
-    # needed as for example cross_val_score(pipe, X, y, cv=5, scoring="roc_auc", error_score='raise') may fail otherwise, see https://github.com/koaning/scikit-lego/issues/511
+    # needed as for example cross_val_score(pipe, X, y, cv=5, scoring="roc_auc", error_score='raise') may fail
+    # otherwise, see https://github.com/koaning/scikit-lego/issues/511
     df = load_chicken(as_frame=True)
 
     X, y = df.drop(columns="weight"), df["weight"]
     # This should NOT raise errors
-    GroupedPredictor(LogisticRegression(max_iter=2000), groups=["diet"]).fit(
-        X, y
-    ).decision_function(X)
+    GroupedPredictor(LogisticRegression(max_iter=2000), groups=["diet"]).fit(X, y).decision_function(X)

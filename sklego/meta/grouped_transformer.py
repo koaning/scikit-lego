@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
-from ._grouped_utils import _split_groups_and_values
+from sklego.meta._grouped_utils import _split_groups_and_values
 
 
 class GroupedTransformer(BaseEstimator, TransformerMixin):

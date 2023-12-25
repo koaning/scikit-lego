@@ -83,9 +83,7 @@ def select_tests(include, exclude=[]):
             yield test
 
 
-@pytest.fixture(
-    scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
-)
+@pytest.fixture(scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)])
 def random_xy_dataset_regr(request):
     n, k, np_type = request.param
     np.random.seed(42)
@@ -94,9 +92,7 @@ def random_xy_dataset_regr(request):
     return X, y
 
 
-@pytest.fixture(
-    scope="module", params=[_ for _ in it.product([10, 100], [1, 2, 3], np_types)]
-)
+@pytest.fixture(scope="module", params=[_ for _ in it.product([10, 100], [1, 2, 3], np_types)])
 def random_xy_dataset_regr_small(request):
     n, k, np_type = request.param
     np.random.seed(42)
@@ -105,9 +101,7 @@ def random_xy_dataset_regr_small(request):
     return X, y
 
 
-@pytest.fixture(
-    scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
-)
+@pytest.fixture(scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)])
 def random_xy_dataset_clf(request):
     n, k, np_type = request.param
     np.random.seed(42)
@@ -116,9 +110,7 @@ def random_xy_dataset_clf(request):
     return X, y
 
 
-@pytest.fixture(
-    scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
-)
+@pytest.fixture(scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)])
 def random_xy_dataset_multiclf(request):
     n, k, np_type = request.param
     np.random.seed(42)
@@ -127,9 +119,7 @@ def random_xy_dataset_multiclf(request):
     return X, y
 
 
-@pytest.fixture(
-    scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)]
-)
+@pytest.fixture(scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)])
 def random_xy_dataset_multitarget(request):
     n, k, np_type = request.param
     np.random.seed(42)

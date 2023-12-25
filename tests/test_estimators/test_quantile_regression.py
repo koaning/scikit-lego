@@ -3,10 +3,10 @@
 import numpy as np
 import pytest
 
+from sklego.common import flatten
 from sklego.linear_model import QuantileRegression
 from sklego.testing import check_shape_remains_same_regressor
-from sklego.common import flatten
-from tests.conftest import general_checks, nonmeta_checks, select_tests, regressor_checks
+from tests.conftest import general_checks, nonmeta_checks, regressor_checks, select_tests
 
 test_batch = [
     (np.array([0, 0, 3, 0, 6]), 3),
@@ -52,7 +52,7 @@ def test_quantile(coefs, intercept, quantile, method):
     quant = QuantileRegression(method=method, quantile=quantile)
     quant.fit(X, y)
 
-    np.testing.assert_almost_equal((quant.predict(X)>=y).mean(), quantile, decimal=2)
+    np.testing.assert_almost_equal((quant.predict(X) >= y).mean(), quantile, decimal=2)
 
 
 @pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
@@ -71,8 +71,8 @@ def test_coefs_and_intercept__no_noise_regularization(coefs, intercept):
     """Test model with regularization. The size of the coef vector should shrink the larger alpha gets."""
     X, y = _create_dataset(coefs, intercept)
 
-    quants = [QuantileRegression(alpha=alpha, l1_ratio=0.).fit(X, y) for alpha in range(3)]
-    coef_size = np.array([np.sum(quant.coef_ ** 2) for quant in quants])
+    quants = [QuantileRegression(alpha=alpha, l1_ratio=0.0).fit(X, y) for alpha in range(3)]
+    coef_size = np.array([np.sum(quant.coef_**2) for quant in quants])
 
     for i in range(2):
         assert coef_size[i] >= coef_size[i + 1]
@@ -102,11 +102,11 @@ def test_quant(test_fn):
     "test_fn",
     select_tests(
         flatten([general_checks, nonmeta_checks, regressor_checks]),
-    )
+    ),
 )
 def test_estimator_checks(positive, fit_intercept, method, quantile, test_fn):
     regr = (
-        f'{QuantileRegression.__name__}_quantile_{quantile}_method_{method}_positive_{positive}_fit_intercept_{fit_intercept}',
-        QuantileRegression(quantile=quantile, method=method, positive=positive, fit_intercept=fit_intercept)
+        f"{QuantileRegression.__name__}_quantile_{quantile}_method_{method}_positive_{positive}_fit_intercept_{fit_intercept}",
+        QuantileRegression(quantile=quantile, method=method, positive=positive, fit_intercept=fit_intercept),
     )
     test_fn(*regr)

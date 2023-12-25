@@ -46,7 +46,4 @@ class NotInstalledPackage:
         )
 
     def __getattr__(self, name):
-        raise ImportError(
-            f"The package {self.package_name}{self.version} is not installed. "
-            + self.pip_message
-        )
+        raise ImportError(f"The package {self.package_name}{self.version} is not installed. " + self.pip_message)

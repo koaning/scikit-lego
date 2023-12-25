@@ -106,20 +106,12 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
 
-        if (self.method == "quantile") and (
-            (self.threshold > 1) or (self.threshold < 0)
-        ):
-            raise ValueError(
-                f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1"
-            )
+        if (self.method == "quantile") and ((self.threshold > 1) or (self.threshold < 0)):
+            raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1")
         if (self.method == "stddev") and (self.threshold < 0):
-            raise ValueError(
-                f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold "
-            )
+            raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold ")
         if self.method not in self._ALLOWED_METHODS:
-            raise ValueError(
-                f"Method not recognised. Method must be in {self._ALLOWED_METHODS}"
-            )
+            raise ValueError(f"Method not recognised. Method must be in {self._ALLOWED_METHODS}")
 
         self.gmm_ = GaussianMixture(
             n_components=self.n_components,
@@ -149,9 +141,7 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
             mean_likelihood = score_samples.mean()
             new_likelihoods = score_samples[score_samples < max_x_value]
             new_likelihoods_std = np.std(new_likelihoods - mean_likelihood)
-            self.likelihood_threshold_ = mean_likelihood - (
-                self.threshold * new_likelihoods_std
-            )
+            self.likelihood_threshold_ = mean_likelihood - (self.threshold * new_likelihoods_std)
 
         return self
 

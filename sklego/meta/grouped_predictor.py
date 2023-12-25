@@ -6,8 +6,12 @@ from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from sklego.common import as_list, expanding_list
-
-from ._grouped_utils import _split_groups_and_values, constant_shrinkage, min_n_obs_shrinkage, relative_shrinkage
+from sklego.meta._grouped_utils import (
+    _split_groups_and_values,
+    constant_shrinkage,
+    min_n_obs_shrinkage,
+    relative_shrinkage,
+)
 
 
 class GroupedPredictor(BaseEstimator):
@@ -272,9 +276,7 @@ class GroupedPredictor(BaseEstimator):
             if self.fallback_:
                 group_predictor = self.fallback_
             else:
-                raise ValueError(
-                    f"Found new group {group} during predict with use_global_model = False"
-                )
+                raise ValueError(f"Found new group {group} during predict with use_global_model = False")
 
         is_predict_proba = is_classifier(group_predictor) and method == "predict_proba"
         # Ensure to provide pd.DataFrame with the correct label name
@@ -282,9 +284,7 @@ class GroupedPredictor(BaseEstimator):
 
         # getattr(group_predictor, method) returns the predict method of the fitted model
         # if the method argument is "predict" and the predict_proba method if method argument is "predict_proba"
-        return pd.DataFrame(
-            getattr(group_predictor, method)(X), **extra_kwargs
-        ).set_index(index)
+        return pd.DataFrame(getattr(group_predictor, method)(X), **extra_kwargs).set_index(index)
 
     def __predict_groups(
         self,
@@ -307,9 +307,7 @@ class GroupedPredictor(BaseEstimator):
         return (
             pd.concat(
                 [
-                    self.__predict_single_group(
-                        group, X_value.loc[indices, :], method=method
-                    )
+                    self.__predict_single_group(group, X_value.loc[indices, :], method=method)
                     for group, indices in group_indices.items()
                 ],
                 axis=0,
@@ -377,9 +375,7 @@ class GroupedPredictor(BaseEstimator):
         if self.shrinkage is None:
             return self.__predict_groups(X_group, X_value, method="predict_proba")
         else:
-            return self.__predict_shrinkage_groups(
-                X_group, X_value, method="predict_proba"
-            )
+            return self.__predict_shrinkage_groups(X_group, X_value, method="predict_proba")
 
     # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
     @available_if(lambda self: hasattr(self.estimator, "decision_function"))
@@ -412,6 +408,4 @@ class GroupedPredictor(BaseEstimator):
         if self.shrinkage is None:
             return self.__predict_groups(X_group, X_value, method="decision_function")
         else:
-            return self.__predict_shrinkage_groups(
-                X_group, X_value, method="decision_function"
-            )
+            return self.__predict_shrinkage_groups(X_group, X_value, method="decision_function")

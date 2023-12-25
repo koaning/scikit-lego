@@ -2,12 +2,10 @@ from sklearn import pipeline
 
 from sklego.pipeline import DebugPipeline
 
-
 pipeline.Pipeline = DebugPipeline
 
 
 from sklearn.tests import test_pipeline  # noqa: E402
-
 
 # In `test_set_pipeline_step_passthrough` the signature of the DebugPipeline
 # includes a `log_callback`, which is not expected.

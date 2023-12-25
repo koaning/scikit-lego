@@ -1,0 +1,102 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scikit-lego"
+version = "0.7.0"
+description="A collection of lego bricks for scikit-learn pipelines"
+
+license = {file = "LICENSE"}
+readme = "readme.md"
+requires-python = ">=3.6"
+authors = [
+    {name = "Vincent D. Warmerdam"},
+    {name = "Matthijs Brouns"},
+]
+
+maintainers = [
+    {name = "Francesco Bruzzesi"}
+]
+
+dependencies = [
+    "Deprecated>=1.2.6",
+    "pandas>=1.1.5",
+    "scikit-learn>=1.0",
+    "importlib-metadata >= 1.0; python_version < '3.8'",
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+repository = "https://github.com/koaning/scikit-lego"
+issue-tracker = "https://github.com/koaning/scikit-lego/issues"
+documentation = "https://koaning.github.io/scikit-lego/"
+
+[project.optional-dependencies]
+cvxpy = ["cmake", "osqp", "cvxpy>=1.1.8"]
+formulaic = ["formulaic>=0.6.0"]
+patsy = ["patsy>=0.5.1"]
+umap = ["umap-learn>=0.4.6"]
+
+all = ["scikit-lego[cvxpy,formulaic,patsy,umap]"]
+
+docs = [
+    "mkdocs>=1.5.3",
+    "mkdocs-autorefs>=0.5.0",
+    "mkdocs-material>=9.4.5",
+    "mkdocs-material-extensions>=1.2",
+    "mkdocstrings>=0.23.0",
+    "mkdocstrings-python>=1.7.3",
+]
+
+test = [
+    "scikit-lego[all]",
+    "pytest>=6.2.5",
+    "pytest-xdist>=1.34.0",
+    "pytest-cov>=2.6.1",
+    "pytest-mock>=1.6.3",
+]
+
+utils = [
+    "matplotlib>=3.0.2",
+    "jupyter>=1.0.0",
+    "jupyterlab>=0.35.4",
+]
+
+dev = [
+    "scikit-lego[all,test,docs]",
+    "pre-commit>=1.18.3",
+    "ruff>=0.1.6",
+]
+
+[tool.setuptools.packages.find]
+include = ["sklego"]
+exclude = [
+    "docs",
+    "images",
+    "notebooks",
+    "tests",
+]
+
+[tool.setuptools.package-data]
+sklego = ["data/*.zip"]
+
+[tool.ruff]
+line-length = 120
+extend-select = ["I"]
+
+[tool.pytest.ini_options]
+markers = [
+    "cvxpy: tests that require cvxpy (deselect with '-m \"not cvxpy\"')"
+]

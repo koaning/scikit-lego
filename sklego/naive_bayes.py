@@ -136,18 +136,13 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if self.n_features_in_ != X.shape[1]:
-            raise ValueError(
-                f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}"
-            )
+            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
         check_is_fitted(self, ["gmms_", "classes_"])
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():
             class_idx = int(np.argwhere(self.classes_ == k))
             probs[:, class_idx] = np.array(
-                [
-                    m.score_samples(np.expand_dims(X[:, idx], 1))
-                    for idx, m in enumerate(v)
-                ]
+                [m.score_samples(np.expand_dims(X[:, idx], 1)) for idx, m in enumerate(v)]
             ).sum(axis=0)
         likelihood = np.exp(probs)
         return likelihood / likelihood.sum(axis=1).reshape(-1, 1)
@@ -306,18 +301,13 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if self.n_features_in_ != X.shape[1]:
-            raise ValueError(
-                f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}"
-            )
+            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
         check_is_fitted(self, ["gmms_", "classes_"])
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():
             class_idx = int(np.argwhere(self.classes_ == k))
             probs[:, class_idx] = np.array(
-                [
-                    m.score_samples(np.expand_dims(X[:, idx], 1))
-                    for idx, m in enumerate(v)
-                ]
+                [m.score_samples(np.expand_dims(X[:, idx], 1)) for idx, m in enumerate(v)]
             ).sum(axis=0)
         likelihood = np.exp(probs)
         return likelihood / likelihood.sum(axis=1).reshape(-1, 1)

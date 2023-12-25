@@ -124,9 +124,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         ValueError
             If `X` contains non-numeric columns.
         """
-        X = check_array(
-            X, copy=True, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self
-        )
+        X = check_array(X, copy=True, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
 
         # If X contains infs, we need to replace them by nans before computing quantiles
         np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
@@ -134,18 +132,12 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         # There should be no column containing only nan cells at this point. If that's not the case,
         # it means that the user asked ColumnCapper to fit some column containing only nan or inf cells.
         nans_mask = np.isnan(X)
-        invalid_columns_mask = (
-            nans_mask.sum(axis=0) == X.shape[0]
-        )  # Contains as many nans as rows
+        invalid_columns_mask = nans_mask.sum(axis=0) == X.shape[0]  # Contains as many nans as rows
         if invalid_columns_mask.any():
-            raise ValueError(
-                "ColumnCapper cannot fit columns containing only inf/nan values"
-            )
+            raise ValueError("ColumnCapper cannot fit columns containing only inf/nan values")
 
         q = [quantile_limit / 100 for quantile_limit in self.quantile_range]
-        self.quantiles_ = np.nanquantile(
-            a=X, q=q, axis=0, overwrite_input=True, method=self.interpolation
-        )
+        self.quantiles_ = np.nanquantile(a=X, q=q, axis=0, overwrite_input=True, method=self.interpolation)
 
         # Saving the number of columns to ensure coherence between fit and transform inputs
         self.n_features_in_ = X.shape[1]
@@ -180,9 +172,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         )
 
         if X.shape[1] != self.n_features_in_:
-            raise ValueError(
-                "X must have the same number of columns in fit and transform"
-            )
+            raise ValueError("X must have the same number of columns in fit and transform")
 
         if self.discard_infs:
             np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
@@ -211,14 +201,10 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             - If `quantile_range` contains values outside of [0; 100].
             - If `quantile_range` contains values in the wrong order.
         """
-        if not isinstance(quantile_range, tuple) and not isinstance(
-            quantile_range, list
-        ):
+        if not isinstance(quantile_range, tuple) and not isinstance(quantile_range, list):
             raise TypeError("quantile_range must be a tuple or a list")
         if len(quantile_range) != 2:
-            raise ValueError(
-                "quantile_range must contain 2 elements: min_quantile and max_quantile"
-            )
+            raise ValueError("quantile_range must contain 2 elements: min_quantile and max_quantile")
 
         min_quantile, max_quantile = quantile_range
 
@@ -247,11 +233,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         """
         allowed_interpolations = ("linear", "lower", "higher", "midpoint", "nearest")
         if interpolation not in allowed_interpolations:
-            raise ValueError(
-                "Available interpolation methods: {}".format(
-                    ", ".join(allowed_interpolations)
-                )
-            )
+            raise ValueError("Available interpolation methods: {}".format(", ".join(allowed_interpolations)))
 
     @property
     def n_columns_(self):

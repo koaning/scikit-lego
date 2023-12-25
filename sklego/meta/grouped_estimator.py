@@ -1,6 +1,6 @@
 from deprecated import deprecated
 
-from .grouped_predictor import GroupedPredictor
+from sklego.meta.grouped_predictor import GroupedPredictor
 
 
 @deprecated(

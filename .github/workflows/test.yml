@@ -1,0 +1,35 @@
+name: Python Test Package
+
+on:
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [
+          "3.8",
+          "3.9",
+          "3.10",
+          "3.11",
+          # "3.12", # Numba not available for Python 3.12: https://github.com/numba/numba/issues/9197
+        ]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip --no-cache-dir
+        python -m pip install -e ".[test]"
+    - name: Test with pytest
+      run: |
+        pytest -n 2 tests

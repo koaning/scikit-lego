@@ -1,5 +1,6 @@
 import pytest
-from sklego.datasets import load_chicken, load_abalone, make_simpleseries, load_hearts, load_penguins
+
+from sklego.datasets import load_abalone, load_chicken, load_hearts, load_penguins, make_simpleseries
 
 
 def test_chickweight1():
@@ -25,20 +26,16 @@ def test_abalone2():
 
 
 def test_simpleseries_constant_season():
-    df = (
-        make_simpleseries(
-            n_samples=365 * 2,
-            as_frame=True,
-            start_date="2018-01-01",
-            trend=0,
-            noise=0,
-            season_trend=0,
-        )
-        .assign(month=lambda d: d["date"].dt.month,
-                year=lambda d: d["date"].dt.year)
-    )
+    df = make_simpleseries(
+        n_samples=365 * 2,
+        as_frame=True,
+        start_date="2018-01-01",
+        trend=0,
+        noise=0,
+        season_trend=0,
+    ).assign(month=lambda d: d["date"].dt.month, year=lambda d: d["date"].dt.year)
     agg = df.groupby(["year", "month"]).mean().reset_index()
-    var = agg.loc[lambda d: d["month"] == 1]['yt'].var()
+    var = agg.loc[lambda d: d["month"] == 1]["yt"].var()
     assert var == pytest.approx(0.0, abs=0.01)
 
 

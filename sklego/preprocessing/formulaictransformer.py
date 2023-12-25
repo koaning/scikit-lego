@@ -19,10 +19,12 @@ class FormulaicTransformer(TransformerMixin, BaseEstimator):
     ----------
     formula : str
         A formulaic-compatible formula.
-        Refer to the [formulaic documentation](https://matthewwardrop.github.io/formulaic/guides/grammar/) for more details.
+        Refer to the [formulaic documentation](https://matthewwardrop.github.io/formulaic/guides/grammar/) for more
+            details.
     return_type : Literal["pandas", "numpy", "sparse"], default="numpy"
         The type of the returned matrix.
-        Refer to the [formulaic documentation](https://matthewwardrop.github.io/formulaic/guides/model_specs/) for more details.
+        Refer to the [formulaic documentation](https://matthewwardrop.github.io/formulaic/guides/model_specs/) for more
+            details.
 
     Attributes
     ----------
@@ -65,9 +67,7 @@ class FormulaicTransformer(TransformerMixin, BaseEstimator):
                 f"Formula specification {repr(self.formula_)} results in a structured formula, which is not supported."
             )
 
-        self.model_spec_ = self.formula_.get_model_matrix(
-            X, output=self.return_type
-        ).model_spec
+        self.model_spec_ = self.formula_.get_model_matrix(X, output=self.return_type).model_spec
         self.n_features_in_ = X.shape[1]
         return self
 

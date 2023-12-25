@@ -1,6 +1,6 @@
-import pytest
 import warnings
 
+import pytest
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 

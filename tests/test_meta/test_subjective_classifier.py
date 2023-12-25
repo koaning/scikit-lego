@@ -2,20 +2,20 @@ import numpy as np
 import pytest
 from sklearn.cluster import DBSCAN
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import Ridge, LogisticRegression
+from sklearn.linear_model import LogisticRegression, Ridge
 
 from sklego.common import flatten
 from sklego.meta import SubjectiveClassifier
-from tests.conftest import general_checks, classifier_checks, select_tests
+from tests.conftest import classifier_checks, general_checks, select_tests
 
 
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
         flatten([general_checks, classifier_checks]),
-        exclude=['check_sample_weights_invariance']
+        exclude=["check_sample_weights_invariance"],
         # outliers train wont work because we have two thresholds
-    )
+    ),
 )
 def test_estimator_checks_classification(test_fn):
     if test_fn.__name__ == "check_classifiers_classes":
@@ -81,10 +81,7 @@ def test_posterior_computation(mocker, classes, prior, cfm, first_class_posterio
     mock_estimator.classes_ = np.array(classes)
     subjective_model = SubjectiveClassifier(mock_estimator, dict(zip(classes, prior)))
     subjective_model.fit(np.zeros((10, 10)), np.array([classes[0]] * 10))
-    assert (
-        pytest.approx(subjective_model.posterior_matrix_[0, 0], 0.001)
-        == first_class_posterior
-    )
+    assert pytest.approx(subjective_model.posterior_matrix_[0, 0], 0.001) == first_class_posterior
     assert np.isclose(subjective_model.posterior_matrix_.sum(axis=0), 1).all()
 
 
@@ -100,18 +97,14 @@ def test_posterior_computation(mocker, classes, prior, cfm, first_class_posterio
 )
 def test_fit_y_data_inconsistent_with_prior_failure_conditions(prior, y):
     with pytest.raises(ValueError) as exc:
-        SubjectiveClassifier(RandomForestClassifier(), prior).fit(
-            np.zeros((len(y), 2)), np.array(y)
-        )
+        SubjectiveClassifier(RandomForestClassifier(), prior).fit(np.zeros((len(y), 2)), np.array(y))
 
     assert str(exc.value).startswith("Training data is inconsistent with prior")
 
 
 def test_to_discrete():
     assert np.isclose(
-        SubjectiveClassifier._to_discrete(
-            np.array([[1, 0], [0.8, 0.2], [0.5, 0.5], [0.2, 0.8]])
-        ),
+        SubjectiveClassifier._to_discrete(np.array([[1, 0], [0.8, 0.2], [0.5, 0.5], [0.2, 0.8]])),
         np.array([[1, 0], [1, 0], [1, 0], [0, 1]]),
     ).all()
 
@@ -154,19 +147,13 @@ def test_predict_proba(mocker, evidence_type, expected_probas):
 
     mocker.patch("sklego.meta.subjective_classifier.confusion_matrix", side_effect=mock_confusion_matrix)
     mock_inner_estimator = mocker.Mock(RandomForestClassifier)
-    mock_inner_estimator.predict_proba.return_value = np.array(
-        [[0.8, 0.2], [1, 0], [0.5, 0.5], [0.2, 0.8]]
-    )
+    mock_inner_estimator.predict_proba.return_value = np.array([[0.8, 0.2], [1, 0], [0.5, 0.5], [0.2, 0.8]])
     mock_inner_estimator.classes_ = np.array([0, 1])
-    subjective_model = SubjectiveClassifier(
-        mock_inner_estimator, {0: 0.8, 1: 0.2}, evidence=evidence_type
-    )
+    subjective_model = SubjectiveClassifier(mock_inner_estimator, {0: 0.8, 1: 0.2}, evidence=evidence_type)
     subjective_model.fit(np.zeros((10, 10)), np.zeros(10))
     posterior_probabilities = subjective_model.predict_proba(np.zeros((4, 2)))
     assert posterior_probabilities.shape == (4, 2)
-    assert np.isclose(
-        posterior_probabilities, np.array(expected_probas), atol=0.01
-    ).all()
+    assert np.isclose(posterior_probabilities, np.array(expected_probas), atol=0.01).all()
 
 
 @pytest.mark.parametrize(
@@ -188,12 +175,8 @@ def test_predict_proba(mocker, evidence_type, expected_probas):
         ),
     ],
 )
-def test_params_failure_conditions(
-    inner_estimator, prior, evidence, expected_error_msg
-):
+def test_params_failure_conditions(inner_estimator, prior, evidence, expected_error_msg):
     with pytest.raises(ValueError) as exc:
-        SubjectiveClassifier(inner_estimator, prior, evidence).fit(
-            np.zeros((2, 2)), np.zeros(2)
-        )
+        SubjectiveClassifier(inner_estimator, prior, evidence).fit(np.zeros((2, 2)), np.zeros(2))
 
     assert str(exc.value).startswith(expected_error_msg)

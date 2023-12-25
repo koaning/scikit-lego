@@ -1,14 +1,14 @@
-import pandas as pd
-import numpy as np
-from datetime import timedelta
 import datetime
+from datetime import timedelta
 
+import numpy as np
+import pandas as pd
 import pytest
-from sklego.model_selection import TimeGapSplit
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import Lasso
+from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
 
+from sklego.model_selection import TimeGapSplit
 
 df = pd.DataFrame(np.random.randint(0, 30, size=(30, 4)), columns=list("ABCy"))
 df["date"] = pd.date_range(start="1/1/2018", end="1/30/2018")[::-1]
@@ -38,14 +38,10 @@ def test_timegapsplit():
         assert train_mindate <= train_maxdate <= valid_mindate <= valid_maxdate
 
     # regression testing, check if output changes of the last fold
-    assert train_mindate == datetime.datetime.strptime(
-        "2018-01-16", "%Y-%m-%d")
-    assert train_maxdate == datetime.datetime.strptime(
-        "2018-01-20", "%Y-%m-%d")
-    assert valid_mindate == datetime.datetime.strptime(
-        "2018-01-21", "%Y-%m-%d")
-    assert valid_maxdate == datetime.datetime.strptime(
-        "2018-01-23", "%Y-%m-%d")
+    assert train_mindate == datetime.datetime.strptime("2018-01-16", "%Y-%m-%d")
+    assert train_maxdate == datetime.datetime.strptime("2018-01-20", "%Y-%m-%d")
+    assert valid_mindate == datetime.datetime.strptime("2018-01-21", "%Y-%m-%d")
+    assert valid_maxdate == datetime.datetime.strptime("2018-01-23", "%Y-%m-%d")
 
 
 def test_timegapsplit_too_big_gap():
@@ -66,7 +62,7 @@ def test_timegapsplit_using_splits():
         train_duration=timedelta(days=5),
         valid_duration=timedelta(days=3),
         gap_duration=timedelta(days=1),
-        n_splits=3
+        n_splits=3,
     )
     assert len(list(cv.split(X_train, y_train))) == 3
 
@@ -77,7 +73,7 @@ def test_timegapsplit_too_many_splits():
         train_duration=timedelta(days=5),
         valid_duration=timedelta(days=3),
         gap_duration=timedelta(days=1),
-        n_splits=7
+        n_splits=7,
     )
     with pytest.raises(ValueError):
         list(cv.split(X_train, y_train))
@@ -90,7 +86,7 @@ def test_timegapsplit_train_or_nsplit():
             train_duration=None,
             valid_duration=timedelta(days=3),
             gap_duration=timedelta(days=5),
-            n_splits=None
+            n_splits=None,
         )
 
 
@@ -100,7 +96,7 @@ def test_timegapsplit_without_train_duration():
         train_duration=None,
         valid_duration=timedelta(days=3),
         gap_duration=timedelta(days=5),
-        n_splits=3
+        n_splits=3,
     )
     csv = list(cv.split(X_train, y_train))
 
@@ -128,7 +124,6 @@ def test_timegapsplit_with_a_gap():
 
 
 def test_timegapsplit_with_gridsearch():
-
     cv = TimeGapSplit(
         date_serie=df["date"],
         train_duration=timedelta(days=5),
@@ -148,7 +143,6 @@ def test_timegapsplit_with_gridsearch():
 
 
 def test_timegapsplit_summary():
-
     cv = TimeGapSplit(
         date_serie=df["date"],
         train_duration=timedelta(days=5),

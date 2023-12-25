@@ -3,7 +3,7 @@ import pytest
 
 from sklego.common import flatten
 from sklego.dummy import RandomRegressor
-from tests.conftest import nonmeta_checks, regressor_checks, general_checks, select_tests
+from tests.conftest import general_checks, nonmeta_checks, regressor_checks, select_tests
 
 
 @pytest.mark.parametrize(
@@ -15,9 +15,9 @@ from tests.conftest import nonmeta_checks, regressor_checks, general_checks, sel
             "check_methods_subset_invariance",
             "check_regressors_train",
             "check_sample_weights_list",
-            "check_sample_weights_pandas_series"
-        ]
-    )
+            "check_sample_weights_pandas_series",
+        ],
+    ),
 )
 def test_estimator_checks(test_fn):
     # Tests that are skipped:
