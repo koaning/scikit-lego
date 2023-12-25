@@ -78,7 +78,6 @@ dev = [
     "scikit-lego[all,test,docs]",
     "pre-commit>=1.18.3",
     "ruff>=0.1.6",
-    "hatch",
 ]
 
 [tool.setuptools.packages.find]
