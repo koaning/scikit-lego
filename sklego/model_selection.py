@@ -482,10 +482,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
             Train and test indices of the same fold.
         """
         self._check_for_long_estimated_runtime(groups)
-        (
-            self._first_split_index,
-            self._last_split_index,
-        ) = self._calc_first_and_last_split_index(groups=groups)
+        self._first_split_index, self._last_split_index = self._calc_first_and_last_split_index(groups=groups)
         self._best_splits = self._get_split_indices()
         groups = self._regroup(groups)
         for i in range(self.n_splits):

@@ -28,4 +28,4 @@ jobs:
     - name: Test with pytest
       run: |
         pip install -e ".[test]"
-        pytest -n 2 tests
+        make test
