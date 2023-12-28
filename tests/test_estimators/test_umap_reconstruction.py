@@ -27,7 +27,7 @@ from tests.conftest import general_checks, nonmeta_checks, outlier_checks, selec
     ),
 )
 def test_estimator_checks(test_fn):
-    outlier_mod = UMAPOutlierDetection(n_components=2, threshold=0.1)
+    outlier_mod = UMAPOutlierDetection(n_components=2, threshold=0.1, n_neighbors=3)
     test_fn(UMAPOutlierDetection.__name__, outlier_mod)
 
 
@@ -38,6 +38,12 @@ def dataset():
 
 
 def test_obvious_usecase(dataset):
-    mod = UMAPOutlierDetection(n_components=2, threshold=7.5, random_state=42, variant="absolute").fit(dataset)
+    mod = UMAPOutlierDetection(
+        n_components=2,
+        threshold=7.5,
+        random_state=42,
+        variant="absolute",
+        n_neighbors=3,
+    ).fit(dataset)
     assert mod.predict([[10] * 10]) == np.array([-1])
     assert mod.predict([[0.01] * 10]) == np.array([1])

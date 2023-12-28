@@ -68,12 +68,12 @@ def test_split_points_chronological(valid_cv):
 
 @pytest.mark.parametrize("n_splits, n_groups", [(4, 251), (5, 101), (6, 31), (7, 31)])
 def test_user_warning(n_splits, n_groups):
-    groups = list(range(n_groups))
-    X = np.random.randint(1, 10000, size=len(groups))
-    y = np.random.randint(1, 10000, size=len(groups))
+    groups = range(n_groups)
+    X, y = np.random.randint(1, 10000, size=(2, n_groups))
+
     cv = GroupTimeSeriesSplit(n_splits)
     with pytest.warns(UserWarning):
-        cv.split(X, y, groups)
+        cv._check_for_long_estimated_runtime(groups)
 
 
 @pytest.mark.parametrize(
