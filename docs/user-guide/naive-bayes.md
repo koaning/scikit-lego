@@ -37,4 +37,4 @@ We can even zoom in on this second algorithm by having it sample what it believe
 
 ![density](../_static/naive-bayes/model-density.png)
 
-[gaussian-mix-nb-api]: /api/naive-bayes#sklego.naive_bayes.GaussianMixtureNB
+[gaussian-mix-nb-api]: ../../api/naive-bayes#sklego.naive_bayes.GaussianMixtureNB

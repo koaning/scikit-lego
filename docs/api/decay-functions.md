@@ -22,4 +22,4 @@ These functions are used in the [`DecayEstimator`][decay-estimator] to generate 
         show_root_full_path: true
         show_root_heading: true
 
-[decay-estimator]: /api/meta#sklego.meta.decay_estimator.DecayEstimator
+[decay-estimator]: ../../api/meta#sklego.meta.decay_estimator.DecayEstimator

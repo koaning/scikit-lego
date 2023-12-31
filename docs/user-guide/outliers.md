@@ -53,7 +53,7 @@ The other parameters in both models are unique to their underlying transformer m
 
 ## Density Based Detection
 
-We've also got a few outlier detection techniques that are density based approaches. You will find a subset documented in the [mixture method section](/user-guide/mixture-methods) but for completeness we will also list them below here as a comparison.
+We've also got a few outlier detection techniques that are density based approaches. You will find a subset documented in the [mixture method section][mixture-method-user-guide] but for completeness we will also list them below here as a comparison.
 
 ### [GMMOutlierDetector][gmm-outlier-api] Demonstration
 
@@ -71,7 +71,7 @@ We've also got a few outlier detection techniques that are density based approac
 
 ![bayesian-gmm-outlier](../_static/outliers/bayesian-gmm-outlier.png)
 
-Note that for these density based approaches the threshold needs to be interpreted differently. If you're interested, you can find more information [here](/user-guide/mixture-methods#detection-details).
+Note that for these density based approaches the threshold needs to be interpreted differently. If you're interested, you can find more information [here][density-based-user-guide].
 
 ## Model Based Outlier Detection
 
@@ -91,11 +91,13 @@ Note that in order to be complaint to the scikit-learn API we require that the `
 
 ![regr-outlier](../_static/outliers/regr-outlier.png)
 
-[pca-outlier-api]: /api/decomposition#sklego.decomposition.pca_reconstruction.PCAOutlierDetection
-[umap-outlier-api]: /api/decomposition#sklego.decomposition.umap_reconstruction.UMAPOutlierDetection.md
-[gmm-outlier-api]: /api/mixture#sklego.mixture.gmm_outlier_detector.GMMOutlierDetector
-[bayesian-gmm-outlier-api]: /api/mixture#sklego.mixture.bayesian_gmm_detector.BayesianGMMOutlierDetector
-[regr-outlier-api]: /api/meta#sklego.meta.regression_outlier_detector.RegressionOutlierDetector
+[pca-outlier-api]: ../../api/decomposition#sklego.decomposition.pca_reconstruction.PCAOutlierDetection
+[umap-outlier-api]: ../../api/decomposition#sklego.decomposition.umap_reconstruction.UMAPOutlierDetection.md
+[gmm-outlier-api]: ../../api/mixture#sklego.mixture.gmm_outlier_detector.GMMOutlierDetector
+[bayesian-gmm-outlier-api]: ../../api/mixture#sklego.mixture.bayesian_gmm_detector.BayesianGMMOutlierDetector
+[regr-outlier-api]: ../../api/meta#sklego.meta.regression_outlier_detector.RegressionOutlierDetector
+[mixture-method-user-guide]: ../../user-guide/mixture-methods
+[density-based-user-guide]: ../../user-guide/mixture-methods#detection-details
 
 [pyod-docs]: https://pyod.readthedocs.io/en/latest/
 [pca-api]: https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html

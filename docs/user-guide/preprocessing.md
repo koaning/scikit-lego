@@ -278,14 +278,14 @@ Now let's see what occurs when we add a constraint that enforces the feature to 
 
 If these features are now passed to a model that supports monotonicity constraints then we can build models with guarantees.
 
-[estimator-transformer-api]: /api/meta#sklego.meta.estimator_transformer.EstimatorTransformer
-[meta-module]: /api/meta
-[id-transformer-api]: /api/preprocessing#sklego.preprocessing.identitytransformer.IdentityTransformer
-[column-capper-api]: /api/preprocessing#sklego.preprocessing.columncapper.ColumnCapper
-[patsy-api]: /api/preprocessing#sklego.preprocessing.patsytransformer.PatsyTransformer
-[rbf-api]: /api/preprocessing#sklego.preprocessing.repeatingbasis.RepeatingBasisFunction
-[interval-encoder-api]: /api/preprocessing#sklego.preprocessing.intervalencoder.IntervalEncoder
-[decay-section]: /user-guide/meta#decayed-estimation
+[estimator-transformer-api]: ../../api/meta#sklego.meta.estimator_transformer.EstimatorTransformer
+[meta-module]: ../../api/meta
+[id-transformer-api]: ../../api/preprocessing#sklego.preprocessing.identitytransformer.IdentityTransformer
+[column-capper-api]: ../../api/preprocessing#sklego.preprocessing.columncapper.ColumnCapper
+[patsy-api]: ../../api/preprocessing#sklego.preprocessing.patsytransformer.PatsyTransformer
+[rbf-api]: ../../api/preprocessing#sklego.preprocessing.repeatingbasis.RepeatingBasisFunction
+[interval-encoder-api]: ../../api/preprocessing#sklego.preprocessing.intervalencoder.IntervalEncoder
+[decay-section]: ../../user-guide/meta#decayed-estimation
 
 [patsy-docs]: https://patsy.readthedocs.io/en/latest/
 [patsy-formulas]: https://patsy.readthedocs.io/en/latest/formulas.html

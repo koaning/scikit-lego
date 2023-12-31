@@ -14,7 +14,7 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     class that the underlying model gives. We use these probabilities to attempt a more balanced prediction by averaging
     the correction from the confusion matrix with the original probabilities.
 
-    $$P(\text{class_j}) = \alpha P(\text{model}_j) + (1-\alpha) P(\text{class_j} | \text{model}_j) P(\text{model}_j)$$
+    $$P(\text{class}_j) = \alpha P(\text{model}_j) + (1-\alpha) P(\text{class}_j | \text{model}_j) P(\text{model}_j)$$
 
     Parameters
     ----------

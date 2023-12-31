@@ -238,8 +238,9 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
 
     $$\text{deadzone}(e) =
     \begin{cases}
-    e & \text{if } e > \text{threshold} \text{ and effect="linear"} \\
-    e^2 & \text{if } e > \text{threshold} \text{ and effect="quadratic"} \\
+    1 & \text{if } e > \text{threshold} \text{ & effect="constant"} \\
+    e & \text{if } e > \text{threshold} \text{ & effect="linear"} \\
+    e^2 & \text{if } e > \text{threshold} \text{ & effect="quadratic"} \\
     0 & \text{otherwise}
     \end{cases}
     $$
@@ -638,7 +639,7 @@ class FairClassifier(DemographicParityClassifier):
 
 
 class _DemographicParityClassifier(_FairClassifier):
-    r"""Classifier for Demographic Parity fairness constraint.
+    """Classifier for Demographic Parity fairness constraint.
 
     This classifier extends the `_FairClassifier` and adds a Demographic Parity fairness constraint.
     Demographic Parity ensures that the probability of a positive outcome is the same for all groups defined by

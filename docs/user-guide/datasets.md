@@ -197,14 +197,14 @@ Generate a *very simple* timeseries dataset to play with. The generator assumes 
 
 ![timeseries](../_static/datasets/timeseries.png)
 
-[abalone-api]: /api/datasets#sklego.datasets.load_abalone
-[arrests-api]: /api/datasets#sklego.datasets.load_arrests
-[chicken-api]: /api/datasets#sklego.datasets.load_chicken
-[heroes-api]: /api/datasets#sklego.datasets.load_heroes
-[hearts-api]: /api/datasets#sklego.datasets.load_hearts
-[penguins-api]: /api/datasets#sklego.datasets.load_penguins
-[fetch_creditcard-api]: /api/datasets#sklego.datasets.fetch_creditcard
-[make_simpleseries-api]: /api/datasets#sklego.datasets.make_simpleseries
+[abalone-api]: ../../api/datasets#sklego.datasets.load_abalone
+[arrests-api]: ../../api/datasets#sklego.datasets.load_arrests
+[chicken-api]: ../../api/datasets#sklego.datasets.load_chicken
+[heroes-api]: ../../api/datasets#sklego.datasets.load_heroes
+[hearts-api]: ../../api/datasets#sklego.datasets.load_hearts
+[penguins-api]: ../../api/datasets#sklego.datasets.load_penguins
+[fetch_creditcard-api]: ../../api/datasets#sklego.datasets.fetch_creditcard
+[make_simpleseries-api]: ../../api/datasets#sklego.datasets.make_simpleseries
 
 [heroes]: https://heroesofthestorm.blizzard.com/en-us/
 [fetch-openml-api]: https://scikit-learn.org/stable/modules/generated/sklearn.datasets.fetch_openml.html

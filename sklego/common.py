@@ -333,7 +333,7 @@ def sliding_window(sequence, window_size, step_size):
 
     Examples
     --------
-    ```
+    ```py
     list(sliding_window([1, 2, 4, 5], 2, 1))
     # [[1, 2], [2, 4], [4, 5], [5]]
     ```

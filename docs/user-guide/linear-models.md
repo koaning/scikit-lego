@@ -174,8 +174,8 @@ then around 80% of the data is between these two lines.
 
 ![quantile](../_static/linear-models/quantile-fit.png)
 
-[lowess-api]: /api/linear-model#sklego.linear_model.LowessRegression
-[prob-weight-api]: /api/linear-model#sklego.linear_model.ProbWeightRegression
-[column-selector-api]: /api/preprocessing#sklego.preprocessing.ColumnSelector
-[lad-api]: /api/linear-model#sklego.linear_model.LADRegression
-[quantile-api]: /api/linear-model#sklego.linear_model.QuantileRegression
+[lowess-api]: ../../api/linear-model#sklego.linear_model.LowessRegression
+[prob-weight-api]: ../../api/linear-model#sklego.linear_model.ProbWeightRegression
+[column-selector-api]: ../../api/preprocessing#sklego.preprocessing.ColumnSelector
+[lad-api]: ../../api/linear-model#sklego.linear_model.LADRegression
+[quantile-api]: ../../api/linear-model#sklego.linear_model.QuantileRegression

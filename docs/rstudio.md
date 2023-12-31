@@ -135,8 +135,8 @@ Also, it may be simpler and more preferential to use the [python engine][python-
 
 But you can certainly combine the tools from scikit-lego with your tools in R.
 
-[info-filter-api]: /api/preprocessing#sklego.preprocessing.InformationFilter
-[thresholder-api]: /api/meta/#sklego.meta.thresholder.Thresholder
+[info-filter-api]: ../api/preprocessing#sklego.preprocessing.InformationFilter
+[thresholder-api]: ../api/meta/#sklego.meta.thresholder.Thresholder
 
 [reticulate]: https://github.com/rstudio/reticulate
 [reticulate-install]: https://rstudio.github.io/reticulate/articles/versions.html
