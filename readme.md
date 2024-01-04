@@ -1,16 +1,16 @@
 [![Build status](https://github.com/koaning/scikit-lego/workflows/Unit%20Tests/badge.svg)](https://github.com/{github_id}/{repository}/workflows/{workflow_name}/badge.svg)
-[![Downloads](https://pepy.tech/badge/scikit-lego/month)](https://pepy.tech/project/scikit-lego)
+[![Downloads](https://static.pepy.tech/badge/scikit-lego/month)](https://www.pepy.tech/projects/scikit-lego)
 [![Version](https://img.shields.io/pypi/v/scikit-lego)](https://pypi.org/project/scikit-lego/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-lego.svg)](https://anaconda.org/conda-forge/scikit-lego)
 ![](https://img.shields.io/github/license/koaning/scikit-lego)
 ![](https://img.shields.io/pypi/pyversions/scikit-lego)
 ![](https://img.shields.io/github/contributors/koaning/scikit-lego)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![DOI](https://zenodo.org/badge/166836939.svg)](https://zenodo.org/badge/latestdoi/166836939)
 
 # scikit-lego
 
-<a href="https://scikit-lego.readthedocs.io/en/latest/"><img src="images/logo.png" width="35%" height="35%" align="right" /></a>
+<a href="https://koaning.github.io/scikit-lego/"><img src="images/logo.png" width="35%" height="35%" align="right" /></a>
 
 We love scikit learn but very often we find ourselves writing
 custom transformers, metrics and models. The goal of this project
@@ -49,7 +49,7 @@ python setup.py develop
 
 ## Documentation
 
-The documentation can be found [here](https://scikit-lego.netlify.app).
+The documentation can be found [here](https://koaning.github.io/scikit-lego/).
 
 ## Usage
 
