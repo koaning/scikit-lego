@@ -1386,7 +1386,7 @@
 <p>In other words, if you keep that gap in the validation, your metric might be overestimated because those first <span class="arithmatex">\(x\)</span> days might be easier to predict since they are closer to the training set. If you want to be strict in terms of robustness you might want to replicate in the CV exactly this real-world behaviour, and thus you want to introduce a gap of x days between your training and validation folds.</p>
 </li>
 </ul>
-<p><a href="/api/model-selection#sklego.model_selection.TimeGapSplit"><code>TimeGapSplit</code></a> provides 4 parameters to really reproduce your production implementation in your cross-validation schema. We will demonstrate this in a code example below.</p>
+<p><a href="../../api/model-selection#sklego.model_selection.TimeGapSplit"><code>TimeGapSplit</code></a> provides 4 parameters to really reproduce your production implementation in your cross-validation schema. We will demonstrate this in a code example below.</p>
 <h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
 <p>Let's make some random data to start with, and next define a plotting function.</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
@@ -1605,7 +1605,7 @@
 <h2 id="grouptimeseriessplit">GroupTimeSeriesSplit<a class="headerlink" href="#grouptimeseriessplit" title="Permanent link">&para;</a></h2>
 <p>In a time series problem it is possible that not every time unit (e.g. years) has the same amount of rows/observations.
 This makes a normal kfold split impractical as you cannot specify a certain timeframe per fold (e.g. 5 years), because this can cause the folds' sizes to be very different.</p>
-<p>With <a href="/api/model-selection#sklego.model_selection.GroupTimeSeriesSplit"><code>GroupTimeSeriesSplit</code></a> you can specify the amount of folds you want (e.g. <code>n_splits=3</code>) and <code>GroupTimeSeriesSplit</code> will calculate itself folds in such a way that the amount of observations per fold are as similar as possible.</p>
+<p>With <a href="../../api/model-selection#sklego.model_selection.GroupTimeSeriesSplit"><code>GroupTimeSeriesSplit</code></a> you can specify the amount of folds you want (e.g. <code>n_splits=3</code>) and <code>GroupTimeSeriesSplit</code> will calculate itself folds in such a way that the amount of observations per fold are as similar as possible.</p>
 <p>The folds are created with a smartly modified brute forced method. This still means that for higher <code>n_splits</code> values in combination with many different unique time periods (e.g. 100 different years, thus 100 groups) the generation of the optimal split points can take minutes to hours.</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>

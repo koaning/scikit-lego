@@ -1584,7 +1584,7 @@
 <p>One way of thinking of a meta model is to consider it to be a way to <em>decorate</em> a model.</p>
 <p>This part of the documentation will highlight a few of them.</p>
 <h2 id="thresholder">Thresholder<a class="headerlink" href="#thresholder" title="Permanent link">&para;</a></h2>
-<p>The <a href="/api/meta#sklego.meta.thresholder.Thresholder"><code>Thresholder</code></a> can help tweak recall and precision of a model by moving the threshold value of <code>predict_proba</code>.</p>
+<p>The <a href="../../api/meta#sklego.meta.thresholder.Thresholder"><code>Thresholder</code></a> can help tweak recall and precision of a model by moving the threshold value of <code>predict_proba</code>.</p>
 <p>Commonly this threshold is set at 0.5 for two classes. This meta-model can decorate/wrap an estimator with two classes such that the threshold moves.</p>
 <p>We demonstrate how that works below. First we'll import the necessary libraries and generate a skewed dataset.</p>
 <div class="language-py highlight"><span class="filename">Skewed dataset</span><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -1640,7 +1640,7 @@
 <p><img alt="skewed-data" src="../../_static/meta-models/threshold-chart.png" /></p>
 <p>Increasing the threshold will increase the precision but as expected this is at the cost of recall (and accuracy).</p>
 <h3 id="saving-compute">Saving Compute<a class="headerlink" href="#saving-compute" title="Permanent link">&para;</a></h3>
-<p>Technically, you may not need to refit the underlying model that the <a href="/api/meta#sklego.meta.thresholder.Thresholder"><code>Thresholder</code></a> model wraps around.</p>
+<p>Technically, you may not need to refit the underlying model that the <a href="../../api/meta#sklego.meta.thresholder.Thresholder"><code>Thresholder</code></a> model wraps around.</p>
 <p>In those situations you can set the <code>refit</code> parameter to <code>False</code>. If you've got a predefined single model and you're only interested in tuning the cutoff this might make everything run a whole lot faster.</p>
 <div class="language-py highlight"><span class="filename">Cross validation pipeline - no refit</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># %%time </span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
@@ -1737,7 +1737,7 @@ There were four groups on chicks on different protein diets.</p>
 <p>Because the model is linear the dummy variable causes the intercept to change but leaves the gradient untouched. This might not be what we want from a model.</p>
 <p>So let's see how the grouped model can address this.</p>
 <h3 id="model-2-linear-regression-in-groupedpredictor">Model 2: Linear Regression in GroupedPredictor<a class="headerlink" href="#model-2-linear-regression-in-groupedpredictor" title="Permanent link">&para;</a></h3>
-<p>The goal of the <a href="/api/meta#sklego.meta.grouped_predictor.GroupedPredictor">GroupedPredictor</a> is to allow us to split up our data.</p>
+<p>The goal of the <a href="../../api/meta#sklego.meta.grouped_predictor.GroupedPredictor">GroupedPredictor</a> is to allow us to split up our data.</p>
 <p>The image below demonstrates what will happen.</p>
 <p><img alt="grouped" src="../../_static/meta-models/grouped-df.png" /></p>
 <p>We train 5 models in total because the model will also train a fallback automatically (you can turn this off via <code>use_fallback=False</code>).</p>
@@ -1827,7 +1827,7 @@ The code that does this is listed below.</p>
 </tbody>
 </table>
 <p>Let's say that we're interested in scaling the numeric data in this dataframe. If we apply a normal <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html"><code>StandardScaler</code></a> then we'll likely get clusters appear for all the <code>species</code> and for the <code>sex</code>. It may be the case (for fairness reasons) that we don"t mind the clusters based on <code>species</code> but that we <em>do</em> mind the clusters based on <code>sex</code>.</p>
-<p>In these scenarios the <a href="/api/meta#sklego.meta.grouped_transformer.GroupedTransformer"><code>GroupedTransformer</code></a> can help out. We can specify a grouping column that the data needs to be split on before the transformation is applied.</p>
+<p>In these scenarios the <a href="../../api/meta#sklego.meta.grouped_transformer.GroupedTransformer"><code>GroupedTransformer</code></a> can help out. We can specify a grouping column that the data needs to be split on before the transformation is applied.</p>
 <div class="language-py highlight"><span class="filename">GroupedTransformer</span><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span> <span class="nn">sklego.meta</span> <span class="kn">import</span> <span class="n">GroupedTransformer</span>
 </span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
@@ -1869,7 +1869,7 @@ The code that does this is listed below.</p>
 <p>For example, for predicting house prices, using the surface of a house relatively to houses in the same neighborhood could be a more relevant feature than the surface relative to all houses.</p>
 <h2 id="decayed-estimation">Decayed Estimation<a class="headerlink" href="#decayed-estimation" title="Permanent link">&para;</a></h2>
 <p>Often you are interested in predicting the future. You use the data from the past in an attempt to achieve this and it  could be said that perhaps data from the far history is less relevant than data from the recent past.</p>
-<p>This is the idea behind the <a href="/api/meta#sklego.meta.decay_estimator.DecayEstimator"><code>DecayEstimator</code></a> meta-model. It looks at the order of data going in and it will assign a higher importance to recent rows that occurred recently and a lower importance to older rows.</p>
+<p>This is the idea behind the <a href="../../api/meta#sklego.meta.decay_estimator.DecayEstimator"><code>DecayEstimator</code></a> meta-model. It looks at the order of data going in and it will assign a higher importance to recent rows that occurred recently and a lower importance to older rows.</p>
 <p>Recency is based on the order so it is important that the dataset that you pass in is correctly ordered beforehand.</p>
 <p>we'll demonstrate how it works by applying it on a simulated timeseries problem.</p>
 <div class="language-py highlight"><span class="filename">TimeSeries data</span><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span> <span class="nn">sklego.datasets</span> <span class="kn">import</span> <span class="n">make_simpleseries</span>
@@ -1930,7 +1930,7 @@ The code that does this is listed below.</p>
 <p>The arguments of these functions can be passed along to the <code>DecayEstimator</code> class as keyword arguments:</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">DecayEstimator</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">decay_func</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </span></code></pre></div>
-<p>To see which keyword arguments are available for each decay function, please refer to the <a href="/api/decay-functions">Decay Functions API section</a>:</p>
+<p>To see which keyword arguments are available for each decay function, please refer to the <a href="../../api/decay-functions">Decay Functions API section</a>.</p>
 <p>Notice that passing a string to refer to the built-in decays is just a convenience.</p>
 <p>Therefore it is also possible to create a custom decay function and pass it along to the <code>DecayEstimator</code> class, <strong>as long as</strong> the first two arguments of the function are <code>X</code> and <code>y</code> and the return shape is the same as <code>y</code>:</p>
 <div class="language-py highlight"><span class="filename">Custom decay function</span><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">def</span> <span class="nf">custom_decay</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
@@ -1948,7 +1948,7 @@ The code that does this is listed below.</p>
 <p class="admonition-title">Disclaimer</p>
 <p>This feature is an experimental.</p>
 </div>
-<p>We added the <a href="/api/meta#sklego.meta.confusion_balancer.ConfusionBalancer"><code>ConfusionBalancer</code></a> as experimental feature to the meta estimators that can be used to force balance in the confusion matrix of an estimator. Consider the following dataset:</p>
+<p>We added the <a href="../../api/meta#sklego.meta.confusion_balancer.ConfusionBalancer"><code>ConfusionBalancer</code></a> as experimental feature to the meta estimators that can be used to force balance in the confusion matrix of an estimator. Consider the following dataset:</p>
 <details class="example">
 <summary>Make blobs</summary>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -2057,7 +2057,7 @@ The code that does this is listed below.</p>
 <li>Train a classifier to tell us whether the target is zero, or not.</li>
 <li>Train a regressor on all samples with a non-zero target.</li>
 </ol>
-<p>By putting these two together in an obvious way, we get the <a href="/api/meta#sklego.meta.zero_inflated_regressor.ZeroInflatedRegressor"><code>ZeroInflatedRegressor</code></a>. You can use it like this:</p>
+<p>By putting these two together in an obvious way, we get the <a href="../../api/meta#sklego.meta.zero_inflated_regressor.ZeroInflatedRegressor"><code>ZeroInflatedRegressor</code></a>. You can use it like this:</p>
 <div class="language-py highlight"><span class="filename">ZeroInflatedRegressor</span><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span><span class="p">,</span> <span class="n">RandomForestRegressor</span>
 </span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
@@ -2083,7 +2083,7 @@ The code that does this is listed below.</p>
 <p>In case you have some labelled samples of which you know they should be outliers,
 it could be useful to calculate metrics as if the outlier model was a classifier.</p>
 <p>Moreover, if outlier models had a <code>predict_proba</code> method, you could use a classification model combined with an outlier detection model in a <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.StackingClassifier.html#sklearn.ensemble.StackingClassifier"><code>StackingClassifier</code></a> and take advantage of probability outputs of both categories of models.</p>
-<p>To this end, the <a href="/api/meta#sklego.meta.outlier_classifier.OutlierClassifier"><code>OutlierClassifier</code></a> turns an outlier model into a classification model.</p>
+<p>To this end, the <a href="../../api/meta#sklego.meta.outlier_classifier.OutlierClassifier"><code>OutlierClassifier</code></a> turns an outlier model into a classification model.</p>
 <p>A field of application is fraud: when building a model to detect fraud, you often have <em>some</em> labelled positives but you know there should be more, even in your train data.</p>
 <p>If you only use anomaly detection, you don't make use of the information in your labelled data set. If you only use a classifier, you might have insufficient data to do proper train-test splitting and perform hyperparameter optimization.</p>
 <p>Therefore one could combine the two approaches as shown below to get the best of both worlds.</p>

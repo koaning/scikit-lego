@@ -2161,7 +2161,7 @@ the confusion matrix during training.</p>
 <p>The idea is that the confusion matrix calculates <span class="arithmatex">\(P(C_i | M_i)\)</span> where <span class="arithmatex">\(C_i\)</span> is the actual class and <span class="arithmatex">\(M_i\)</span> is the
 class that the underlying model gives. We use these probabilities to attempt a more balanced prediction by averaging
 the correction from the confusion matrix with the original probabilities.</p>
-<div class="arithmatex">\[P(\text{class_j}) = \alpha P(\text{model}_j) + (1-\alpha) P(\text{class_j} | \text{model}_j) P(\text{model}_j)\]</div>
+<div class="arithmatex">\[P(\text{class}_j) = \alpha P(\text{model}_j) + (1-\alpha) P(\text{class}_j | \text{model}_j) P(\text{model}_j)\]</div>
 
 
 
@@ -2370,7 +2370,7 @@ the correction from the confusion matrix with the original probabilities.</p>
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span class="sd">    class that the underlying model gives. We use these probabilities to attempt a more balanced prediction by averaging</span>
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span class="sd">    the correction from the confusion matrix with the original probabilities.</span>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a>
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    $$P(\text{class_j}) = \alpha P(\text{model}_j) + (1-\alpha) P(\text{class_j} | \text{model}_j) P(\text{model}_j)$$</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span class="sd">    $$P(\text{class}_j) = \alpha P(\text{model}_j) + (1-\alpha) P(\text{class}_j | \text{model}_j) P(\text{model}_j)$$</span>
 </span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a>
 </span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span class="sd">    Parameters</span>
 </span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span class="sd">    ----------</span>

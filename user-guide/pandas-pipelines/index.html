@@ -1323,7 +1323,7 @@
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">chickweight</span> <span class="o">=</span> <span class="n">load_chicken</span><span class="p">(</span><span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
-<p>If we now add a <a href="/api/pandas_pipeline#sklego.pandas_utils.log_step"><code>log_step</code></a> decorator to our pipeline function and execute the function, we see that we get some logging statements for free:</p>
+<p>If we now add a <a href="../../api/pandas_pipeline#sklego.pandas_utils.log_step"><code>log_step</code></a> decorator to our pipeline function and execute the function, we see that we get some logging statements for free:</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">sklego.pandas_utils</span> <span class="kn">import</span> <span class="n">log_step</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nd">@log_step</span>
@@ -1394,7 +1394,7 @@
 </span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="go">3      64     6      1     1</span>
 </span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="go">4      76     8      1     1</span>
 </span></code></pre></div>
-<p>We can also define custom logging functions by using <a href="/api/pandas_pipeline#sklego.pandas_utils.log_step_extra"><code>log_step_extra</code></a>.</p>
+<p>We can also define custom logging functions by using <a href="../../api/pandas_pipeline#sklego.pandas_utils.log_step_extra"><code>log_step_extra</code></a>.</p>
 <p>This takes any number of functions (&gt; 1) that can take the output dataframe and return some output that can be converted to a string.</p>
 <p>For example, if we want to log some arbitrary message and the number of unique chicks in our dataset, we can do:</p>
 <div class="language-py highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">from</span> <span class="nn">sklego.pandas_utils</span> <span class="kn">import</span> <span class="n">log_step_extra</span>

@@ -1604,7 +1604,7 @@ and a binary protected attribute <span class="arithmatex">\(z\)</span>, this con
 <p>You can turn this into a metric by calculating how far short the decision process falls of this exact equality. This metric is called the <strong>p% score</strong></p>
 <div class="arithmatex">\[\text{p% score} = \min \left(\frac{P(\hat{y}=1 | z=1)}{P(\hat{y}=1 | z=0)}, \frac{P(\hat{y}=1 | z=0)}{P(\hat{y}=1 | z=1)}\right)\]</div>
 <p>In other words, membership in a protected class should have no correlation with the decision.</p>
-<p>In <code>sklego</code> this metric is implemented in as <a href="/api/metrics#sklego.metrics.p_percent_score"><code>p_percent_score</code></a> and it works as follows:</p>
+<p>In <code>sklego</code> this metric is implemented in as <a href="../../api/metrics#sklego.metrics.p_percent_score"><code>p_percent_score</code></a> and it works as follows:</p>
 <div class="language-py highlight"><span class="filename">p% score</span><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
@@ -1625,7 +1625,7 @@ and a binary protected attribute <span class="arithmatex">\(z\)</span>, this con
 <p>p_percent_score: 0</p>
 </blockquote>
 <p>Of course, no metric is perfect. If, for example, we used this in a loan approval situation the demographic parity only looks at loans made and not at the rate at which loans are repaid.</p>
-<p>That might result in a lower percentage of qualified people who are given loans in one population than in another. Another way of measuring fairness could therefore be to measure equal opportunity<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup>, implemented in <code>sklego</code> as <a href="/api/metrics#sklego.metrics.equal_opportunity_score"><code>equal_opportunity_score</code></a>. This constraint would boil down to:</p>
+<p>That might result in a lower percentage of qualified people who are given loans in one population than in another. Another way of measuring fairness could therefore be to measure equal opportunity<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup>, implemented in <code>sklego</code> as <a href="../../api/metrics#sklego.metrics.equal_opportunity_score"><code>equal_opportunity_score</code></a>. This constraint would boil down to:</p>
 <div class="arithmatex">\[P(\hat{y}=1 | z=0, y=1)=P(\hat{y}=1 | z=1, y=1)\]</div>
 <p>and be turned into a metric in the same way as above:</p>
 <div class="arithmatex">\[\text{equality of opportunity} = \min \left(\frac{P(\hat{y}=1 | z=1, y=1)}{P(\hat{y}=1 | z=0, y=1)}, \frac{P(\hat{y}=1 | z=0, y=1)}{P(\hat{y}=1 | z=1, y=1)}\right)\]</div>
@@ -1660,10 +1660,10 @@ and a binary protected attribute <span class="arithmatex">\(z\)</span>, this con
 <h2 id="data-preprocessing">Data preprocessing<a class="headerlink" href="#data-preprocessing" title="Permanent link">&para;</a></h2>
 <p>When doing data preprocessing we're trying to remove any bias caused by the sensitive variable from the input dataset. By doing this, we remain flexible in our choice of models.</p>
 <h3 id="information-filter">Information Filter<a class="headerlink" href="#information-filter" title="Permanent link">&para;</a></h3>
-<p>This is a great opportunity to use the <a href="/api/preprocessing#sklego.preprocessing.projections.InformationFilter"><code>InformationFilter</code></a> which can filter the information of these two sensitive columns away as a transformation step.</p>
+<p>This is a great opportunity to use the <a href="../../api/preprocessing#sklego.preprocessing.projections.InformationFilter"><code>InformationFilter</code></a> which can filter the information of these two sensitive columns away as a transformation step.</p>
 <p>It does this by projecting all vectors away such that the remaining dataset is orthogonal to the sensitive columns.</p>
 <h4 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h4>
-<p>The <a href="/api/preprocessing#sklego.preprocessing.projections.InformationFilter"><code>InformationFilter</code></a> uses a variant of the <a href="https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process">Gram–Schmidt process</a> to filter information out of the dataset. We can make it visual in two dimensions;</p>
+<p>The <a href="../../api/preprocessing#sklego.preprocessing.projections.InformationFilter"><code>InformationFilter</code></a> uses a variant of the <a href="https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process">Gram–Schmidt process</a> to filter information out of the dataset. We can make it visual in two dimensions;</p>
 <p align="center">
   <img src="../_static/fairness/projections.png" />
 </p>
@@ -2025,7 +2025,7 @@ v_k &amp; = x_k - \frac{x_k v_1}{v_1 v_1} - \frac{x_k' v_2}{v_2 v_2}
 <p>There definitely is a balance between fairness and model accuracy. Which model you'll use depends on the world you want to create by applying your model.</p>
 <p>Note that you can combine models here to make an ensemble too. You can also use the difference between the first and last model as a proxy for bias.</p>
 <h2 id="model-constraints">Model constraints<a class="headerlink" href="#model-constraints" title="Permanent link">&para;</a></h2>
-<p>Another way we could tackle this fairness problem would be to explicitly take fairness into account when optimizing the parameters of our model. This is implemented in the <a href="/api/linear_model#sklego.linear_model.DemographicParityClassifier"><code>DemographicParityClassifier</code></a> as well as the <a href="/api/linear_model#sklego.linear_model.EqualOpportunityClassifier"><code>EqualOpportunityClassifier</code></a>.</p>
+<p>Another way we could tackle this fairness problem would be to explicitly take fairness into account when optimizing the parameters of our model. This is implemented in the <a href="../../api/linear_model#sklego.linear_model.DemographicParityClassifier"><code>DemographicParityClassifier</code></a> as well as the <a href="../../api/linear_model#sklego.linear_model.EqualOpportunityClassifier"><code>EqualOpportunityClassifier</code></a>.</p>
 <p>Both these models are built as an extension of basic logistic regression. Where logistic regression optimizes the following problem:</p>
 <div class="arithmatex">\[
 \begin{array}{cl}
@@ -2042,7 +2042,7 @@ v_k &amp; = x_k - \frac{x_k v_1}{v_1 v_1} - \frac{x_k' v_2}{v_2 v_2}
 <h2 id="demographic-parity-classifier">Demographic Parity Classifier<a class="headerlink" href="#demographic-parity-classifier" title="Permanent link">&para;</a></h2>
 <p>The p% score discussed above is a nice metric but unfortunately it is rather hard to directly implement in the formulation into our model as it is a non-convex function making it difficult to optimize directly. Also, as the p% rule only depends on which side of the decision boundary an observation lies, it is invariant in small changes in the decision boundary. This causes large saddle points in the objective making optimization even more difficult</p>
 <p>Instead of optimizing for the p% directly, we approximate it by taking the covariance between the users’ sensitive
-attributes, <span class="arithmatex">\(z\)</span>m, and the decision boundary. This results in the following formulation of our <a href="/api/linear_model#sklego.linear_model.DemographicParityClassifier"><code>DemographicParityClassifier</code></a>.</p>
+attributes, <span class="arithmatex">\(z\)</span>m, and the decision boundary. This results in the following formulation of our <a href="../../api/linear_model#sklego.linear_model.DemographicParityClassifier"><code>DemographicParityClassifier</code></a>.</p>
 <div class="arithmatex">\[
 \begin{array}{cl}
 {\operatorname{minimize}} &amp; -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i}, \boldsymbol{\theta}\right)\\
@@ -2115,7 +2115,7 @@ d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}
 </details>
 <p><img alt="demographic-parity-grid-results" src="../../_static/fairness/demographic-parity-grid-results.png" /></p>
 <h2 id="equal-opportunity">Equal opportunity<a class="headerlink" href="#equal-opportunity" title="Permanent link">&para;</a></h2>
-<p>In the same spirit as the <code>DemographicParityClassifier</code> discussed above, there is also an <a href="/api/linear_model#sklego.linear_model.EqualOpportunityClassifier"><code>EqualOpportunityClassifier</code></a> which optimizes</p>
+<p>In the same spirit as the <code>DemographicParityClassifier</code> discussed above, there is also an <a href="../../api/linear_model#sklego.linear_model.EqualOpportunityClassifier"><code>EqualOpportunityClassifier</code></a> which optimizes</p>
 <div class="arithmatex">\[
 \begin{array}{cl}
 {\operatorname{minimize}} &amp; -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i}, \boldsymbol{\theta}\right) \\
