@@ -214,7 +214,7 @@ The arguments of these functions can be passed along to the `DecayEstimator` cla
 DecayEstimator(..., decay_func="linear", min_value=0.5)
 ```
 
-To see which keyword arguments are available for each decay function, please refer to the [Decay Functions API section][decay-functions]:
+To see which keyword arguments are available for each decay function, please refer to the [Decay Functions API section][decay-functions].
 
 Notice that passing a string to refer to the built-in decays is just a convenience.
 
@@ -381,14 +381,14 @@ The `OutlierClassifier` can be combined with any classification model in the `St
 
 --8<-- "docs/_static/meta-models/outlier-classifier-stacking.html"
 
-[thresholder-api]: /api/meta#sklego.meta.thresholder.Thresholder
-[grouped-predictor-api]: /api/meta#sklego.meta.grouped_predictor.GroupedPredictor
-[grouped-transformer-api]: /api/meta#sklego.meta.grouped_transformer.GroupedTransformer
-[decay-api]: /api/meta#sklego.meta.decay_estimator.DecayEstimator
-[decay-functions]: /api/decay-functions
-[confusion-balancer-api]: /api/meta#sklego.meta.confusion_balancer.ConfusionBalancer
-[zero-inflated-api]: /api/meta#sklego.meta.zero_inflated_regressor.ZeroInflatedRegressor
-[outlier-classifier-api]: /api/meta#sklego.meta.outlier_classifier.OutlierClassifier
+[thresholder-api]: ../../api/meta#sklego.meta.thresholder.Thresholder
+[grouped-predictor-api]: ../../api/meta#sklego.meta.grouped_predictor.GroupedPredictor
+[grouped-transformer-api]: ../../api/meta#sklego.meta.grouped_transformer.GroupedTransformer
+[decay-api]: ../../api/meta#sklego.meta.decay_estimator.DecayEstimator
+[decay-functions]: ../../api/decay-functions
+[confusion-balancer-api]: ../../api/meta#sklego.meta.confusion_balancer.ConfusionBalancer
+[zero-inflated-api]: ../../api/meta#sklego.meta.zero_inflated_regressor.ZeroInflatedRegressor
+[outlier-classifier-api]: ../../api/meta#sklego.meta.outlier_classifier.OutlierClassifier
 
 [standard-scaler-api]: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
 [stacking-classifier-api]: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.StackingClassifier.html#sklearn.ensemble.StackingClassifier

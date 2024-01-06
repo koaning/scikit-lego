@@ -27,7 +27,7 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
 
     Examples
     --------
-    ```
+    ```py
     from sklearn.datasets import make_regression
     from sklego.preprocessing import OrthogonalTransformer
 
