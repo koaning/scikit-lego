@@ -58,5 +58,5 @@ As a sidenote: this image was generated with some dummy data, but its code can b
     --8<-- "docs/_scripts/mixture-methods.py:outlier-mixture-threshold"
     ```
 
-[gmm-classifier-api]: /api/mixture#sklego.mixture.gmm_classifier.GMMClassifier
-[gmm-outlier-detector-api]: /api/mixture#sklego.mixture.gmm_outlier_detector.GMMOutlierDetector
+[gmm-classifier-api]: ../../api/mixture#sklego.mixture.gmm_classifier.GMMClassifier
+[gmm-outlier-detector-api]: ../../api/mixture#sklego.mixture.gmm_outlier_detector.GMMOutlierDetector

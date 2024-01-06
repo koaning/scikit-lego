@@ -121,5 +121,5 @@ Transformed X:
  [1111. 1111. 1111. 1111. 1111.]]
 ```
 
-[debug-pipe-api]: /api/pipeline#sklego.pipeline.DebugPipeline
+[debug-pipe-api]: ../../api/pipeline#sklego.pipeline.DebugPipeline
 [pipe-api]: https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html

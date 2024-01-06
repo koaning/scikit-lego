@@ -272,10 +272,10 @@ where POS is the subset of the population where `y_true = positive_target`.
 [^1]: M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
 [^2]: M. Hardt, E. Price and N. Srebro (2016), Equality of Opportunity in Supervised Learning
 
-[p-percent-score-api]: /api/metrics#sklego.metrics.p_percent_score
-[equal-opportunity-score-api]: /api/metrics#sklego.metrics.equal_opportunity_score
-[filter-information-api]: /api/preprocessing#sklego.preprocessing.projections.InformationFilter
-[demographic-parity-api]: /api/linear_model#sklego.linear_model.DemographicParityClassifier
-[equal-opportunity-api]: /api/linear_model#sklego.linear_model.EqualOpportunityClassifier
+[p-percent-score-api]: ../../api/metrics#sklego.metrics.p_percent_score
+[equal-opportunity-score-api]: ../../api/metrics#sklego.metrics.equal_opportunity_score
+[filter-information-api]: ../../api/preprocessing#sklego.preprocessing.projections.InformationFilter
+[demographic-parity-api]: ../../api/linear_model#sklego.linear_model.DemographicParityClassifier
+[equal-opportunity-api]: ../../api/linear_model#sklego.linear_model.EqualOpportunityClassifier
 
 [gram–schmidt-process]: https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process

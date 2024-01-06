@@ -146,7 +146,7 @@ def load_arrests(return_X_y=False, as_frame=False):
     ```
 
     The dataset was copied from the carData R package
-    ([dataset documentation](http://vincentarelbundock.github.io/Rdatasets/doc/carData/Arrests.html))
+    ([dataset documentation](https://vincentarelbundock.github.io/Rdatasets/doc/carData/Arrests.html))
     and can originally be found in:
 
     - Personal communication from Michael Friendly, York University.

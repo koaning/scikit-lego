@@ -47,5 +47,5 @@ _ = mod.fit(X, y)
 
 To see more examples, please refer to the [user guide section][user-guide].
 
-[installation-section]: /installation
-[user-guide]: /user-guide/datasets
+[installation-section]: ../installation
+[user-guide]: ../user-guide/datasets
