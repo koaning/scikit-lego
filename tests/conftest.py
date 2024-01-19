@@ -158,11 +158,3 @@ def sensitive_multiclass_classification_dataset():
 def id_func(param):
     """Returns the repr of an object for usage in pytest parametrize"""
     return repr(param)
-
-
-
-# @pytest.fixture
-# def enable_slep006():
-#     """Enable SLEP006 for all tests."""
-#     with config_context(enable_metadata_routing=True):
-#         yield
