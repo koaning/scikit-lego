@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.utils import estimator_checks
-from sklearn.conftest import enable_slep006
 
 
 n_vals = (10, 500)
