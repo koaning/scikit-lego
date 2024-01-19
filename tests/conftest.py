@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.utils import estimator_checks
-from sklearn import config_context
+from sklearn.conftest import enable_slep006
 
 
 n_vals = (10, 500)
@@ -161,8 +161,8 @@ def id_func(param):
 
 
 
-@pytest.fixture
-def enable_slep006():
-    """Enable SLEP006 for all tests."""
-    with config_context(enable_metadata_routing=True):
-        yield
+# @pytest.fixture
+# def enable_slep006():
+#     """Enable SLEP006 for all tests."""
+#     with config_context(enable_metadata_routing=True):
+#         yield
