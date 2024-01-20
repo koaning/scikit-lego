@@ -25,6 +25,11 @@
         show_root_full_path: true
         show_root_heading: true
 
+::: sklego.meta.ordinal_classification.OrdinalClassifier
+    options:
+        show_root_full_path: true
+        show_root_heading: true
+
 ::: sklego.meta.outlier_classifier.OutlierClassifier
     options:
         show_root_full_path: true
