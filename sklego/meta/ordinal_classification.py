@@ -1,12 +1,12 @@
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn import clone
-from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, is_classifier
+from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, MultiOutputMixin, is_classifier
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 
-class OrdinalClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
+class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     r"""The `OrdinalClassifier` allows to use a binary classifier to address an ordinal classification problem.
 
     Suppose we have N ordinal classes to predict, then the original binary classifier is fitted on N-1 by training sets,
@@ -74,7 +74,7 @@ class OrdinalClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
 
     """
 
-    def __init__(self, estimator, n_jobs=None, use_calibration=True):
+    def __init__(self, estimator, *, n_jobs=None, use_calibration=True):
         self.estimator = estimator
         self.n_jobs = n_jobs
         self.use_calibration = use_calibration
@@ -104,7 +104,7 @@ class OrdinalClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         if not is_classifier(self.estimator):
             raise ValueError("The estimator must be a classifier.")
 
-        if hasattr(self.estimator, "predict_proba"):
+        if not hasattr(self.estimator, "predict_proba"):
             raise ValueError("The estimator must implement `.predict_proba()` method.")
 
         X, y = check_X_y(X, y, estimator=self)
