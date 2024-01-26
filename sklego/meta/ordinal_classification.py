@@ -3,7 +3,6 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, MultiOutputMixin, is_classifier
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.metrics import accuracy_score
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
@@ -128,13 +127,13 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         if not hasattr(self.estimator, "predict_proba"):
             raise ValueError("The estimator must implement `.predict_proba()` method.")
 
-        X, y = check_X_y(X, y, estimator=self)
+        X, y = check_X_y(X, y, estimator=self, ensure_min_samples=2)
 
         self.classes_ = np.sort(np.unique(y))
         self.n_features_in_ = X.shape[1]
 
-        if self.n_classes_ < 2:
-            raise ValueError("Classifier can't train when only one class is present.")
+        if self.n_classes_ < 3:
+            raise ValueError("`OrdinalClassifier` can't train when less than 3 classes are present.")
 
         if self.n_jobs is None or self.n_jobs == 1:
             self.estimators_ = {y_label: self._fit_binary_estimator(X, y, y_label) for y_label in self.classes_[:-1]}
@@ -209,23 +208,6 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
             return CalibratedClassifierCV(estimator=clone(self.estimator), **self.calibrarion_kwargs).fit(X, y_bin)
         else:
             return clone(self.estimator).fit(X, y_bin)
-
-    def score(self, X, y):
-        """Returns the accuracy score on the given test data and labels.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features )
-            The training data.
-        y : array-like of shape (n_samples,)
-            The target values.
-
-        Returns
-        -------
-        score : float
-            Accuracy score of self.predict(X) wrt. y.
-        """
-        return accuracy_score(y, self.predict(X))
 
     @property
     def n_classes_(self):

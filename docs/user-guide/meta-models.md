@@ -383,12 +383,16 @@ The `OutlierClassifier` can be combined with any classification model in the `St
 
 ## Ordinal Classification
 
-Ordinal classification (sometimes also referred to as Ordinal Refression) involves predicting an ordinal target variable, where the classes have a meaningful order.
+Ordinal classification (sometimes also referred to as Ordinal Regression) involves predicting an ordinal target variable, where the classes have a meaningful order.
 Examples of this kind of problem are: predicting customer satisfaction on a scale from 1 to 5, predicting the severity of a disease, predicting the quality of a product, etc.
 
 The [`OrdinalClassifier`][ordinal-classifier-api] is a meta-model that can be used to transform any classifier into an ordinal classifier by fitting N-1 binary classifiers, each handling a specific class boundary, namely: $P(y <= 1), P(y <= 2), ..., P(y <= N-1)$.
 
 This implementation is based on the paper [A simple approach to ordinal classification][ordinal-classification-paper] and it allows to predict the ordinal probabilities of each sample belonging to a particular class.
+
+??? tip "Graphical representation"
+    An image (from the paper itself) is worth a thousand words:
+    ![ordinal-classification](../_static/meta-models/ordinal-classification.png)
 
 !!! note "mord library"
     If you are looking for a library that implements other ordinal classification algorithms, you can have a look at the [mord][mord] library.

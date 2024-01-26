@@ -15,7 +15,19 @@ def random_xy_ordinal():
     return X, y
 
 
-@pytest.mark.parametrize("test_fn", select_tests(flatten([general_checks, classifier_checks])))
+@pytest.mark.parametrize(
+    "test_fn",
+    select_tests(
+        flatten([general_checks, classifier_checks]),
+        exclude=[
+            "check_dict_unchanged",
+            "check_fit2d_1feature",
+            "check_classifier_data_not_an_array",
+            "check_classifiers_classes",
+            "check_classifiers_train",
+        ],
+    ),
+)
 def test_estimator_checks(test_fn):
     ord_clf = OrdinalClassifier(estimator=LogisticRegression())
     test_fn("OrdinalClassifier", ord_clf)
@@ -43,7 +55,7 @@ def test_raises_error(random_xy_ordinal, estimator, context, err_msg):
 def test_can_fit_param_combination(random_xy_ordinal, n_jobs, use_calibration):
     X, y = random_xy_ordinal
     ord_clf = OrdinalClassifier(estimator=LogisticRegression(), n_jobs=n_jobs, use_calibration=use_calibration)
-    _ = ord_clf.fit(X, y)
+    ord_clf.fit(X, y)
 
     assert ord_clf.n_jobs == n_jobs
     assert ord_clf.use_calibration == use_calibration
