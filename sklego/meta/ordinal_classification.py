@@ -3,7 +3,8 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, MultiOutputMixin, is_classifier
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.metrics import accuracy_score
+from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
 class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
@@ -26,8 +27,9 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         more like a confidence score).
 
         We recommend to use `CalibratedClassifierCV` to calibrate the probabilities of the binary classifiers.
-        This is enabled by default, but can be disabled by setting `use_calibration=False` and passing a calibrated
-        classifier to the `OrdinalClassifier` constructor.
+
+        You can enable this by setting `use_calibration=True` and passing an uncalibrated classifier to the
+        `OrdinalClassifier` or by passing a calibrated classifier to the `OrdinalClassifier` constructor.
 
         More on this topic can be found in the [scikit-learn documentation](https://scikit-learn.org/stable/modules/calibration.html).
 
@@ -41,9 +43,16 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
     estimator : scikit-learn compatible classifier
         The estimator to be applied to the data, used as binary classifier.
     n_jobs : int, default=None
-        The number of jobs to run in parallel. `None` means 1, `-1` means using all processors.
-    use_calibration : bool, default=True
+        The number of jobs to run in parallel. The same convention of [`joblib.Parallel`](https://joblib.readthedocs.io/en/latest/generated/joblib.Parallel.html)
+        holds:
+
+        - `n_jobs = None`: interpreted as n_jobs=1.
+        - `n_jobs > 0`: n_cpus=n_jobs are used.
+        - `n_jobs < 0`: (n_cpus + 1 + n_jobs) are used.
+    use_calibration : bool, default=False
         Whether or not to calibrate the binary classifiers using `CalibratedClassifierCV`.
+    calibrarion_kwargs : dict | None, default=None
+        Keyword arguments to the `CalibratedClassifierCV` class, used only if `use_calibration=True`.
 
     Attributes
     ----------
@@ -57,12 +66,23 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
     Examples
     --------
     ```py
-    from sklego.meta import OrdinalClassifier
+    import pandas as pd
+
     from sklearn.linear_model import LogisticRegression
+    from sklearn.model_selection import train_test_split
 
-    ...
+    from sklego.meta import OrdinalClassifier
 
-    clf = OrdinalClassifier(LogisticRegression())
+    url = "https://stats.idre.ucla.edu/stat/data/ologit.dta"
+    df = pd.read_stata(url).assign(apply_codes = lambda t: t["apply"].cat.codes)
+
+    target = "apply_codes"
+    features = [c for c in df.columns if c not in {target, "apply"}]
+
+    X, y = df[features].to_numpy(), df[target].to_numpy()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    clf = OrdinalClassifier(LogisticRegression(), n_jobs=-1)
     _ = clf.fit(X_train, y_train)
     clf.predict_proba(X_test)
     ```
@@ -74,10 +94,11 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
 
     """
 
-    def __init__(self, estimator, *, n_jobs=None, use_calibration=True):
+    def __init__(self, estimator, *, n_jobs=None, use_calibration=False, **calibrarion_kwargs):
         self.estimator = estimator
         self.n_jobs = n_jobs
         self.use_calibration = use_calibration
+        self.calibrarion_kwargs = calibrarion_kwargs
 
     def fit(self, X, y):
         """Fit the `OrdinalClassifier` model on training data `X` and `y` by fitting its underlying estimators on
@@ -112,6 +133,9 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         self.classes_ = np.sort(np.unique(y))
         self.n_features_in_ = X.shape[1]
 
+        if self.n_classes_ < 2:
+            raise ValueError("Classifier can't train when only one class is present.")
+
         if self.n_jobs is None or self.n_jobs == 1:
             self.estimators_ = {y_label: self._fit_binary_estimator(X, y, y_label) for y_label in self.classes_[:-1]}
         else:
@@ -123,6 +147,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
                     ),
                 )
             )
+
         return self
 
     def predict_proba(self, X):
@@ -146,6 +171,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
             If `X` has a different number of features than the one seen during `fit`.
         """
         check_is_fitted(self, ["estimators_", "classes_"])
+        X = check_array(X, ensure_2d=True, estimator=self)
 
         if X.shape[1] != self.n_features_in_:
             raise ValueError(f"X has {X.shape[1]} features, expected {self.n_features_in_} features.")
@@ -158,6 +184,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
 
     def predict(self, X):
         """Predict class labels for samples in `X` as the class with the highest probability."""
+        check_is_fitted(self, ["estimators_", "classes_"])
         return self.classes_[np.argmax(self.predict_proba(X), axis=1)]
 
     def _fit_binary_estimator(self, X, y, y_label):
@@ -178,8 +205,29 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
             The fitted binary classifier.
         """
         y_bin = (y <= y_label).astype(int)
-        fitted_model = clone(self.estimator).fit(X, y_bin)
         if self.use_calibration:
-            return CalibratedClassifierCV(fitted_model, cv="prefit").fit(X, y_bin)
+            return CalibratedClassifierCV(estimator=clone(self.estimator), **self.calibrarion_kwargs).fit(X, y_bin)
         else:
-            return fitted_model
+            return clone(self.estimator).fit(X, y_bin)
+
+    def score(self, X, y):
+        """Returns the accuracy score on the given test data and labels.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            The training data.
+        y : array-like of shape (n_samples,)
+            The target values.
+
+        Returns
+        -------
+        score : float
+            Accuracy score of self.predict(X) wrt. y.
+        """
+        return accuracy_score(y, self.predict(X))
+
+    @property
+    def n_classes_(self):
+        """Number of classes."""
+        return len(self.classes_)

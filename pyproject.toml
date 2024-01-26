@@ -95,6 +95,7 @@ sklego = ["data/*.zip"]
 [tool.ruff]
 line-length = 120
 extend-select = ["I"]
+exclude = ["docs"]
 
 [tool.pytest.ini_options]
 markers = [
