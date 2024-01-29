@@ -43,3 +43,6 @@ class MinimumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
         # self.selected_features_ = np.asarray(selected_features)
         return self
+
+    def ciaomamma(self):
+        pass
