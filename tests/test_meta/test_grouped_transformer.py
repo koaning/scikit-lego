@@ -187,7 +187,7 @@ def test_multiple_grouping_columns(dataset_with_multiple_grouping, scaling_range
 
     assert np.allclose(df_with_groups.groupby(["A", "B"]).min(), scaling_range[0])
 
-    # If a group has a single element, it defaults to min, so check wether all maxes are one of the bounds
+    # If a group has a single element, it defaults to min, so check whether all maxes are one of the bounds
     maxes = df_with_groups.groupby(["A", "B"]).max()
     assert np.all(
         np.isclose(maxes, scaling_range[1]) | np.isclose(maxes, scaling_range[0])
