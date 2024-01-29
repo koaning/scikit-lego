@@ -67,9 +67,9 @@ plt.savefig(_static_path / "threshold-chart.png")
 plt.clf()
 
 # --8<-- [start:cross-validation-no-refit]
-# %%time 
+# %%time
 
-# Train an original model 
+# Train an original model
 orig_model = LogisticRegression(solver="lbfgs")
 orig_model.fit(X, y)
 
@@ -111,7 +111,7 @@ from sklego.preprocessing import ColumnSelector
 
 def plot_model(model):
     df = load_chicken(as_frame=True)
-    
+
     _ = model.fit(df[["diet", "time"]], df["weight"])
     metric_df = (df[["diet", "time", "weight"]]
         .assign(pred=lambda d: model.predict(d[["diet", "time"]]))
@@ -280,7 +280,7 @@ plt.clf()
 
 
 # --8<-- [start:decay-functions]
-from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay 
+from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay
 
 fig = plt.figure(figsize=(12, 6))
 
@@ -312,13 +312,13 @@ cmap=sns.color_palette("flare", as_cmap=True)
 np.random.seed(42)
 
 n1, n2, n3 = 100, 500, 50
-X = np.concatenate([np.random.normal(0, 1, (n1, 2)), 
+X = np.concatenate([np.random.normal(0, 1, (n1, 2)),
                     np.random.normal(2, 1, (n2, 2)),
-                    np.random.normal(3, 1, (n3, 2))], 
+                    np.random.normal(3, 1, (n3, 2))],
                    axis=0)
-y = np.concatenate([np.zeros((n1, 1)), 
+y = np.concatenate([np.zeros((n1, 1)),
                     np.ones((n2, 1)),
-                    np.zeros((n3, 1))], 
+                    np.zeros((n3, 1))],
                    axis=0).reshape(-1)
 plt.scatter(X[:, 0], X[:, 1], c=y, cmap=cmap);
 # --8<-- [end:make-blobs]
@@ -360,7 +360,7 @@ from sklego.meta import ConfusionBalancer
 cf_mod = ConfusionBalancer(LogisticRegression(solver="lbfgs", max_iter=1000), alpha=1.0)
 
 grid = GridSearchCV(
-    cf_mod, 
+    cf_mod,
     param_grid={"alpha": np.linspace(-1.0, 3.0, 31)},
     scoring={
         "accuracy": make_scorer(accuracy_score),
@@ -465,3 +465,48 @@ stacker.fit(X,y)
 from sklearn.utils import estimator_html_repr
 with open(_static_path / "outlier-classifier-stacking.html", "w") as f:
     f.write(estimator_html_repr(stacker))
+
+# --8<-- [start:ordinal-classifier-data]
+import pandas as pd
+
+url = "https://stats.idre.ucla.edu/stat/data/ologit.dta"
+df = pd.read_stata(url).assign(apply_codes = lambda t: t["apply"].cat.codes)
+
+target = "apply_codes"
+features = [c for c in df.columns if c not in {target, "apply"}]
+
+X, y = df[features].to_numpy(), df[target].to_numpy()
+df.head()
+# --8<-- [end:ordinal-classifier-data]
+
+with open(_static_path / "ordinal_data.md", "w") as f:
+    f.write(df.head().to_markdown(index=False))
+
+# --8<-- [start:ordinal-classifier]
+from sklearn.linear_model import LogisticRegression
+from sklego.meta import OrdinalClassifier
+
+ord_clf = OrdinalClassifier(LogisticRegression(), n_jobs=-1, use_calibration=False)
+_ = ord_clf.fit(X, y)
+ord_clf.predict_proba(X[0])
+# --8<-- [end:ordinal-classifier]
+
+print(ord_clf.predict_proba(X[0]))
+
+# --8<-- [start:ordinal-classifier-with-calibration]
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.linear_model import LogisticRegression
+from sklego.meta import OrdinalClassifier
+
+calibration_kwargs = {...}
+
+ord_clf = OrdinalClassifier(
+    estimator=LogisticRegression(),
+    use_calibration=True,
+    calibration_kwargs=calibration_kwargs
+)
+
+# This is equivalent to:
+estimator = CalibratedClassifierCV(LogisticRegression(), **calibration_kwargs)
+ord_clf = OrdinalClassifier(estimator)
+# --8<-- [end:ordinal-classifier-with-calibration]

@@ -762,11 +762,44 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#outlierclassifier" class="md-nav__link">
+  <a href="#outlier-classifier" class="md-nav__link">
     <span class="md-ellipsis">
-      OutlierClassifier
+      Outlier Classifier
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ordinal-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ordinal Classification
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ordinal Classification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#probability-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Probability Calibration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#computation-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Computation Time
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1540,11 +1573,44 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#outlierclassifier" class="md-nav__link">
+  <a href="#outlier-classifier" class="md-nav__link">
     <span class="md-ellipsis">
-      OutlierClassifier
+      Outlier Classifier
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ordinal-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ordinal Classification
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ordinal Classification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#probability-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Probability Calibration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#computation-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      Computation Time
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1642,9 +1708,9 @@
 <h3 id="saving-compute">Saving Compute<a class="headerlink" href="#saving-compute" title="Permanent link">&para;</a></h3>
 <p>Technically, you may not need to refit the underlying model that the <a href="../../api/meta#sklego.meta.thresholder.Thresholder"><code>Thresholder</code></a> model wraps around.</p>
 <p>In those situations you can set the <code>refit</code> parameter to <code>False</code>. If you've got a predefined single model and you're only interested in tuning the cutoff this might make everything run a whole lot faster.</p>
-<div class="language-py highlight"><span class="filename">Cross validation pipeline - no refit</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># %%time </span>
+<div class="language-py highlight"><span class="filename">Cross validation pipeline - no refit</span><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># %%time</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># Train an original model </span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># Train an original model</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">orig_model</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;lbfgs&quot;</span><span class="p">)</span>
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">orig_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
@@ -1908,7 +1974,7 @@ The code that does this is listed below.</p>
 <p><img alt="decay-functions" src="../../_static/meta-models/decay-functions.png" /></p>
 <details class="example">
 <summary>Code for plotting the decay functions</summary>
-<div class="language-py highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span> <span class="nn">sklego.meta._decay_utils</span> <span class="kn">import</span> <span class="n">exponential_decay</span><span class="p">,</span> <span class="n">linear_decay</span><span class="p">,</span> <span class="n">sigmoid_decay</span><span class="p">,</span> <span class="n">stepwise_decay</span> 
+<div class="language-py highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span> <span class="nn">sklego.meta._decay_utils</span> <span class="kn">import</span> <span class="n">exponential_decay</span><span class="p">,</span> <span class="n">linear_decay</span><span class="p">,</span> <span class="n">sigmoid_decay</span><span class="p">,</span> <span class="n">stepwise_decay</span>
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
@@ -1960,13 +2026,13 @@ The code that does this is listed below.</p>
 </span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 </span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>
 </span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">n3</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">50</span>
-</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> 
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
 </span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>                    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">n2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
-</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>                    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">n3</span><span class="p">,</span> <span class="mi">2</span><span class="p">))],</span> 
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>                    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">n3</span><span class="p">,</span> <span class="mi">2</span><span class="p">))],</span>
 </span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>                   <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> 
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
 </span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>                    <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
-</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>                    <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))],</span> 
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>                    <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))],</span>
 </span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>                   <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 </span><span id="__span-18-18"><a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">);</span>
 </span></code></pre></div>
@@ -2012,7 +2078,7 @@ The code that does this is listed below.</p>
 </span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="n">cf_mod</span> <span class="o">=</span> <span class="n">ConfusionBalancer</span><span class="p">(</span><span class="n">LogisticRegression</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">&quot;lbfgs&quot;</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 </span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>
 </span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="n">grid</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span>
-</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>    <span class="n">cf_mod</span><span class="p">,</span> 
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>    <span class="n">cf_mod</span><span class="p">,</span>
 </span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>    <span class="n">param_grid</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mi">31</span><span class="p">)},</span>
 </span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>    <span class="n">scoring</span><span class="o">=</span><span class="p">{</span>
 </span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>        <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">accuracy_score</span><span class="p">),</span>
@@ -2078,7 +2144,7 @@ The code that does this is listed below.</p>
 <div class="language-console highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="go">ZIR (RFC+RFR) r²: 0.8992404366385873</span>
 </span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="go">RFR r²: 0.8516522752031502</span>
 </span></code></pre></div>
-<h2 id="outlierclassifier">OutlierClassifier<a class="headerlink" href="#outlierclassifier" title="Permanent link">&para;</a></h2>
+<h2 id="outlier-classifier">Outlier Classifier<a class="headerlink" href="#outlier-classifier" title="Permanent link">&para;</a></h2>
 <p>Outlier models are unsupervised so they don't have <code>predict_proba</code> or <code>score</code> methods.</p>
 <p>In case you have some labelled samples of which you know they should be outliers,
 it could be useful to calculate metrics as if the outlier model was a classifier.</p>
@@ -2139,6 +2205,125 @@ it could be useful to calculate metrics as if the outlier model was a classifier
                                 OutlierClassifier(model=IsolationForest())),
                                (&#x27;classifier&#x27;, RandomForestClassifier())],
                    passthrough=True, stack_method=&#x27;predict_proba&#x27;)</pre></div></div></div><div class="sk-serial"><div class="sk-item"><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label sk-toggleable"><label>anomaly</label></div></div><div class="sk-serial"><div class="sk-item sk-dashed-wrapped"><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-9" type="checkbox" ><label for="sk-estimator-id-9" class="sk-toggleable__label sk-toggleable__label-arrow">model: IsolationForest</label><div class="sk-toggleable__content"><pre>IsolationForest()</pre></div></div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-10" type="checkbox" ><label for="sk-estimator-id-10" class="sk-toggleable__label sk-toggleable__label-arrow">IsolationForest</label><div class="sk-toggleable__content"><pre>IsolationForest()</pre></div></div></div></div></div></div></div></div></div></div></div><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label sk-toggleable"><label>classifier</label></div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-11" type="checkbox" ><label for="sk-estimator-id-11" class="sk-toggleable__label sk-toggleable__label-arrow">RandomForestClassifier</label><div class="sk-toggleable__content"><pre>RandomForestClassifier()</pre></div></div></div></div></div></div></div></div><div class="sk-item"><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label sk-toggleable"><label>final_estimator</label></div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-12" type="checkbox" ><label for="sk-estimator-id-12" class="sk-toggleable__label sk-toggleable__label-arrow">LogisticRegression</label><div class="sk-toggleable__content"><pre>LogisticRegression()</pre></div></div></div></div></div></div></div></div></div></div></div></div>
+
+<h2 id="ordinal-classification">Ordinal Classification<a class="headerlink" href="#ordinal-classification" title="Permanent link">&para;</a></h2>
+<p>Ordinal classification (sometimes also referred to as Ordinal Regression) involves predicting an ordinal target variable, where the classes have a meaningful order.
+Examples of this kind of problem are: predicting customer satisfaction on a scale from 1 to 5, predicting the severity of a disease, predicting the quality of a product, etc.</p>
+<p>The <a href="../../api/meta#sklego.meta.ordinal_classification.OrdinalClassifier"><code>OrdinalClassifier</code></a> is a meta-model that can be used to transform any classifier into an ordinal classifier by fitting N-1 binary classifiers, each handling a specific class boundary, namely: <span class="arithmatex">\(P(y &lt;= 1), P(y &lt;= 2), ..., P(y &lt;= N-1)\)</span>.</p>
+<p>This implementation is based on the paper <a href="https://www.cs.waikato.ac.nz/~eibe/pubs/ordinal_tech_report.pdf">A simple approach to ordinal classification</a> and it allows to predict the ordinal probabilities of each sample belonging to a particular class.</p>
+<details class="tip">
+<summary>Graphical representation</summary>
+<p>An image (from the paper itself) is worth a thousand words:
+<img alt="ordinal-classification" src="../../_static/meta-models/ordinal-classification.png" /></p>
+</details>
+<div class="admonition note">
+<p class="admonition-title">mord library</p>
+<p>If you are looking for a library that implements other ordinal classification algorithms, you can have a look at the <a href="https://pythonhosted.org/mord/">mord</a> library.</p>
+</div>
+<div class="language-py highlight"><span class="filename">Ordinal Data</span><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://stats.idre.ucla.edu/stat/data/ologit.dta&quot;</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_stata</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">apply_codes</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="p">[</span><span class="s2">&quot;apply&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">codes</span><span class="p">)</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;apply_codes&quot;</span>
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="n">target</span><span class="p">,</span> <span class="s2">&quot;apply&quot;</span><span class="p">}]</span>
+</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a>
+</span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">features</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+</span><span id="__span-31-10"><a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">apply</th>
+<th style="text-align: right;">pared</th>
+<th style="text-align: right;">public</th>
+<th style="text-align: right;">gpa</th>
+<th style="text-align: right;">apply_codes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">very likely</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">3.26</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td style="text-align: left;">somewhat likely</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">3.21</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td style="text-align: left;">unlikely</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3.94</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td style="text-align: left;">somewhat likely</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2.81</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr>
+<td style="text-align: left;">somewhat likely</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2.53</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+<p>Description of the dataset from <a href="https://www.statsmodels.org/dev/examples/notebooks/generated/ordinal_regression.html">statsmodels tutorial</a>:</p>
+<blockquote>
+<p>This dataset is about the probability for undergraduate students to apply to graduate school given three exogenous variables:</p>
+<ul>
+<li>their grade point average (<code>gpa</code>), a float between 0 and 4.</li>
+<li><code>pared</code>, a binary that indicates if at least one parent went to graduate school.</li>
+<li><code>public</code>, a binary that indicates if the current undergraduate institution of the student is &gt; public or private.</li>
+</ul>
+<p><code>apply</code>, the target variable is categorical with ordered categories: "unlikely" &lt; "somewhat likely" &lt; "very likely".</p>
+<p>[...]</p>
+<p>For more details see the the Documentation of OrderedModel, <a href="https://stats.oarc.ucla.edu/r/dae/ordinal-logistic-regression/">the UCLA webpage</a>.</p>
+</blockquote>
+<p>The only transformation we are applying to the data is to convert the target variable to an ordinal categorical variable by mapping the ordered categories to integers using their (pandas) category codes.</p>
+<p>We are now ready to train a <a href="../../api/meta#sklego.meta.ordinal_classification.OrdinalClassifier"><code>OrdinalClassifier</code></a> on this dataset:</p>
+<div class="language-py highlight"><span class="filename">OrdinalClassifier</span><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="kn">from</span> <span class="nn">sklego.meta</span> <span class="kn">import</span> <span class="n">OrdinalClassifier</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="n">ord_clf</span> <span class="o">=</span> <span class="n">OrdinalClassifier</span><span class="p">(</span><span class="n">LogisticRegression</span><span class="p">(),</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">use_calibration</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="n">_</span> <span class="o">=</span> <span class="n">ord_clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="n">ord_clf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span></code></pre></div>
+<blockquote>
+<p>[[0.54883853 0.36225347 0.088908]]</p>
+</blockquote>
+<h3 id="probability-calibration">Probability Calibration<a class="headerlink" href="#probability-calibration" title="Permanent link">&para;</a></h3>
+<p>The <code>OrdinalClassifier</code> emphasizes the importance of proper probability estimates for its functionality. It is recommended to use the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.calibration.CalibratedClassifierCV.html"><code>CalibratedClassifierCV</code></a> class from scikit-learn to calibrate the probabilities of the binary classifiers.</p>
+<p>Probability calibration is <em>not</em> enabled by default, but we provide a convenient keyword argument <code>use_calibration</code> to enable it as follows:</p>
+<div class="language-py highlight"><span class="filename">OrdinalClassifier with probability calibration</span><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="kn">from</span> <span class="nn">sklearn.calibration</span> <span class="kn">import</span> <span class="n">CalibratedClassifierCV</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="kn">from</span> <span class="nn">sklego.meta</span> <span class="kn">import</span> <span class="n">OrdinalClassifier</span>
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="n">calibration_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="n">ord_clf</span> <span class="o">=</span> <span class="n">OrdinalClassifier</span><span class="p">(</span>
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>    <span class="n">estimator</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">(),</span>
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>    <span class="n">use_calibration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+</span><span id="__span-33-10"><a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a>    <span class="n">calibration_kwargs</span><span class="o">=</span><span class="n">calibration_kwargs</span>
+</span><span id="__span-33-11"><a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a><span class="p">)</span>
+</span><span id="__span-33-12"><a id="__codelineno-33-12" name="__codelineno-33-12" href="#__codelineno-33-12"></a>
+</span><span id="__span-33-13"><a id="__codelineno-33-13" name="__codelineno-33-13" href="#__codelineno-33-13"></a><span class="c1"># This is equivalent to:</span>
+</span><span id="__span-33-14"><a id="__codelineno-33-14" name="__codelineno-33-14" href="#__codelineno-33-14"></a><span class="n">estimator</span> <span class="o">=</span> <span class="n">CalibratedClassifierCV</span><span class="p">(</span><span class="n">LogisticRegression</span><span class="p">(),</span> <span class="o">**</span><span class="n">calibration_kwargs</span><span class="p">)</span>
+</span><span id="__span-33-15"><a id="__codelineno-33-15" name="__codelineno-33-15" href="#__codelineno-33-15"></a><span class="n">ord_clf</span> <span class="o">=</span> <span class="n">OrdinalClassifier</span><span class="p">(</span><span class="n">estimator</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="computation-time">Computation Time<a class="headerlink" href="#computation-time" title="Permanent link">&para;</a></h3>
+<p>As a meta-estimator, the <code>OrdinalClassifier</code> fits N-1 binary classifiers, which may be computationally expensive, especially with a large number of samples, features, or a complex classifier.</p>
 
 
 
