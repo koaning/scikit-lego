@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scikit-lego"
-version = "0.7.3"
+version = "0.7.4"
 description="A collection of lego bricks for scikit-learn pipelines"
 
 license = {file = "LICENSE"}
@@ -81,7 +81,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["sklego="]
+include = ["sklego*"]
 exclude = [
     "docs",
     "images",
