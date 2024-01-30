@@ -11,6 +11,8 @@ class MinimumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
         self.redundancy_func = redundancy_func
         self.k = k
 
+        # dummy comment
+
     def _get_support_mask(self):
         check_is_fitted(self, ["selected_features_"])
         return self.selected_features_
