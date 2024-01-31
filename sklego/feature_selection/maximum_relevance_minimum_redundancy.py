@@ -1,7 +1,25 @@
 # from sklearn.feature_selection._univariate_selection import _BaseFilter
+import numpy as np
 from sklearn.base import BaseEstimator
+from sklearn.feature_selection import f_classif
 from sklearn.feature_selection._base import SelectorMixin
 from sklearn.utils.validation import check_is_fitted, check_X_y
+
+
+def _f_classif(X, y):
+    return f_classif(X, y)[0]
+
+
+def _redundancy(X, selected, left):
+    return_list = []
+    if len(selected) == 0:
+        return np.ones(len(left))
+    for _l in left:
+        print(f"Selected l = {_l}")
+        rel_list = np.sum([np.abs(np.corrcoef(X[_s], X[_l])[0, 1]) for _s in selected])
+        print(f"rel_list = {rel_list}")
+        return_list += [rel_list]
+    return np.array(return_list)
 
 
 class MinimumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
@@ -13,38 +31,55 @@ class MinimumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
         # dummy comment
         # dummy comment 2
+
     def _get_support_mask(self):
         check_is_fitted(self, ["selected_features_"])
-        return self.selected_features_
+        all_features = [i for i in range(0, self.n_features_in_)]
+        return np.isin(all_features, self.selected_features_)
 
     def _base_step(self):
         # Derive K = min(K, features)
         # Ensure relevance_func and redundancy_func are okay
         pass
 
+    @property
+    def _get_relevance(self):
+        if self.relevance_func == "f":
+            return _f_classif
+        return self.relevance_func
+
+    @property
+    def _get_redundancy(self):
+        if self.redundancy_func == "p":
+            return _redundancy
+        return self.redundancy_func
+
     def fit(self, X, y):
-        # main logic
+        relevance = self._get_relevance
+        redundancy = self._get_redundancy
+
         self.n_features_in_ = X.shape[1]
-        # k =
-        self._base_step()
+        k = min(self.n_features_in_, self.k)
 
         X, y = check_X_y(X, y)
 
-        # left_features = []
-        # selected_features = []
+        left_features = [i for i in range(0, self.n_features_in_)]
+        selected_features = []
 
-        # Perform base model
-        for i in range(self.k):
-            pass
+        for i in range(k):
+            rel_i = relevance(X[:, left_features], y)
+            red_i = redundancy(X, selected_features, left_features) / (i + 1)
 
-            # score_i = [rel(j, i ) / red(j, i )  for ] in left_features]
-            # selected_index = np.argmax(score_i)
+            print(f"Relevance_{i} = {rel_i}")
+            print(f"Redundancy_{i} = {red_i}")
 
-            # get best feature
-            # selected_feature += [left_features.pop(selected_index)]
+            selected_index = np.argmax(rel_i / red_i)
+            selected_features += [left_features.pop(selected_index)]
+            print(
+                f"Selected index = {selected_index},\
+                    selected_feature = {selected_features},\
+                    left_features = {left_features}"
+            )
 
-        # self.selected_features_ = np.asarray(selected_features)
+        self.selected_features_ = np.asarray(selected_features)
         return self
-
-    def ciaomamma(self):
-        pass
