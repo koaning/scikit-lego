@@ -80,11 +80,12 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
         X, y = check_X_y(X, y)
 
-        for i in range(k):
-            rel_i = relevance(X[:, left_features], y)
-            red_i = redundancy(X, selected_features, left_features) / (i + 1)
+        # computed one time for all features
+        rel_score = relevance(X, y)
 
-            selected_index = np.argmax(rel_i / red_i)
+        for i in range(k):
+            red_i = redundancy(X, selected_features, left_features) / (i + 1)
+            selected_index = np.argmax(rel_score[left_features] / red_i)
             selected_features += [left_features.pop(selected_index)]
 
         self.selected_features_ = np.asarray(selected_features)
