@@ -19,7 +19,7 @@ def _redundancy(X, selected, left):
     num = (Xl[:, None, :] * Xs[:, :, None]).sum(axis=0)
     den = np.sqrt((Xl[:, None, :] ** 2).sum(axis=0)) * np.sqrt((Xs[:, :, None] ** 2).sum(axis=0))
 
-    return np.sum(np.abs(num / den), axis=0)
+    return np.sum(np.abs(np.nan_to_num(num / den, nan=np.finfo(float).eps)), axis=0)
 
 
 class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
@@ -38,9 +38,9 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     def _get_relevance(self):
         if self.relevance_func == "f":
             if (self.kind == "auto" and np.issubdtype(self._y_dtype, np.integer)) | (self.kind == "classification"):
-                return lambda X, y: f_classif(X, y)[0]
+                return lambda X, y: np.nan_to_num(f_classif(X, y)[0])
             elif (self.kind == "auto" and np.issubdtype(self._y_dtype, np.floating)) | (self.kind == "regression"):
-                return lambda X, y: f_regression(X, y)[0]
+                return lambda X, y: np.nan_to_num(f_regression(X, y)[0])
             else:
                 raise
         elif callable(self.relevance_func):
@@ -65,6 +65,7 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
         self.n_features_in_ = X.shape[1]
         left_features = list(range(self.n_features_in_))
         selected_features = []
+        selected_scores = []
 
         if not isinstance(self.k, int):
             raise ValueError("k parameter mush be integer type")
@@ -85,8 +86,16 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
         for i in range(k):
             red_i = redundancy(X, selected_features, left_features) / (i + 1)
-            selected_index = np.argmax(rel_score[left_features] / red_i)
+            mrmr_score_i = rel_score[left_features] / red_i
+            selected_index = np.argmax(mrmr_score_i)
             selected_features += [left_features.pop(selected_index)]
+            selected_scores += [mrmr_score_i[selected_index]]
+            # print(f"Scores = {mrmr_score_i}")
+            # print(f"Selected_index = {selected_index}")
+            # print(f"Selected score = {selected_scores}")
 
         self.selected_features_ = np.asarray(selected_features)
+        self.scores_ = np.asarray(selected_scores)
+        print(self.selected_features_)
+        print(self.scores_)
         return self
