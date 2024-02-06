@@ -40,28 +40,46 @@ def _redundancy_pearson(X, selected, left):
 
 
 class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
-    """Maximum relevance minumum redundancy feature selector algoritm.
-    This FeatureSelection algorithm works returning a subset of the original features set of len k.
+    """Maximum Relevance Minimum Redundancy (MRMR) is a feature selection method commonly used in data science to
+    select a subset of features from a larger feature set. The goal of MRMR is to choose features that have high
+    relevance to the target variable while minimizing redundancy among the already selected features.
 
+    How MRMR works:
+    1. Compute the relevance of each feature to the target variable: The relevance of a feature is typically
+    measured using a metric such as mutual information, correlation coefficient, or another appropriate measure of
+    dependence between the feature and the target variable.
+
+    2. Compute the redundancy between each pair of features: Redundancy is the degree of similarity or overlap between
+    features. It can be measured using metrics such as mutual information, correlation coefficient, or other similarity
+    measures.
+
+    3. Select features based on the maximum relevance and minimum redundancy criteria: MRMR aims to maximize the
+    relevance of selected features to the target variable while minimizing redundancy among them.
+
+    4. Construct the final subset of features: MRMR iteratively adds features to the selected subset until a predefined
+    number of features is reached.
 
     Parameters
     ----------
     k : int
         Number of feature the model should use.
-    kind : str, optional
+    kind : Literal["auto", "classficiation", "regression"], default="auto".
         'classification' or 'regression' or 'auto' if auto the model
         will try to infer the type of problem looking at the y data type, by default "auto".
-    relevance_func : str | Callable, optional
-        The relevance function to use, by default "f" (f_classif or  f_regression from sklearn.feature_selection)
-    redundancy_func : str | Callable, optional
-        The redundancy function to use, by default "p" (Pearson correlation)
+    relevance_func : str | Callable,, default= "f"(f_classif or  f_regression from sklearn.feature_selection)
+        [f_classif](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html)
+        [f_regression](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html)
+        The relevance function to use.
+    redundancy_func : str | Callable, default="p" (Pearson correlation)
+        The redundancy function to use.
 
     !! warning:
-        If a custom relevance_func is provided it must have this firm:
-        new_relevance(X: np.array, shape=(n_samples, n_features,), y np.array, shape = (n_samples,)):
-        returns np.array, shape=(n_features, )
+        If a custom relevance_func is provided it must have this signature:
+        Callable[[np.ndarray, np.ndarray], np.ndarray]
+        It should accept X, y as arguments and it should compute the score for each feature of X
+        and return an array of shape (n_features_in_,).
     !! warning:
-        If a custom redundancy_func is provided it must have the same firm as the method _redundancy_pearson
+        If a custom redundancy_func is provided it must have the same signature as the method _redundancy_pearson
 
     Attributes
     ----------
@@ -158,9 +176,7 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
         ------
         ValueError
             if k parameter is not integer type.
-        ValueError
             if k parameter is < n_features_in (X.shape[1])
-        ValueError
             if k parameter < 1
         """
         self._y_dtype = y.dtype
