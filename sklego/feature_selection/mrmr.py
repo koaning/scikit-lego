@@ -39,9 +39,9 @@ def _redundancy_pearson(X, selected, left):
 
 
 class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
-    """Maximum Relevance Minimum Redundancy (MRMR) is a feature selection method commonly used in data science to
-    select a subset of features from a larger feature set. The goal of MRMR is to choose features that have high
-    relevance to the target variable while minimizing redundancy among the already selected features.
+    """Maximum Relevance Minimum Redundancy (MRMR) is an iterative feature selection method commonly used in data
+    science to select a subset of features from a larger feature set. The goal of MRMR is to choose features that
+    have high relevance to the target variable while minimizing redundancy among the already selected features.
 
     How MRMR works:
     1. Compute the relevance of each feature to the target variable: The relevance of a feature is typically
