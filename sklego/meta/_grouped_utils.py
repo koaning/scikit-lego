@@ -45,13 +45,15 @@ def _split_groups_and_values(
     _shape_check(X, min_value_cols)
 
     try:
+        lgroups = as_list(groups)
+
         if isinstance(X, pd.DataFrame):
-            X_group = X.loc[:, as_list(groups)]
-            X_value = X.drop(columns=groups).values
+            X_group = X.loc[:, lgroups]
+            X_value = X.drop(columns=lgroups).values
         else:
-            X_group = pd.DataFrame(X[:, as_list(groups)])
-            pos_indexes = range(X.shape[1])
-            X_value = np.delete(X, [pos_indexes[g] for g in as_list(groups)], axis=1)
+            X_group = pd.DataFrame(X[:, lgroups])
+            X_value = np.delete(X, lgroups, axis=1)
+
     except (KeyError, IndexError):
         raise ValueError(f"Could not drop groups {groups} from columns of X")
 
@@ -88,7 +90,7 @@ def _check_grouping_columns(X_group, **kwargs) -> pd.DataFrame:
 
     # Only check missingness in object columns
     if X_group.select_dtypes(exclude="number").isnull().any(axis=None):
-        raise ValueError("X has NaN values")
+        raise ValueError("Group columns contain NaN values")
 
     # The grouping part we always want as a DataFrame with range index
     return X_group.reset_index(drop=True)

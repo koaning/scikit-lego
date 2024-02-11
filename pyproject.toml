@@ -96,6 +96,9 @@ sklego = ["data/*.zip"]
 line-length = 120
 extend-select = ["I"]
 exclude = ["docs"]
+ignore = [
+    "E731",  # do not assign a `lambda` expression, use a `def`
+    ]
 
 [tool.pytest.ini_options]
 markers = [
