@@ -148,6 +148,7 @@ nav:
     - Metrics: api/metrics.md
     - Mixture: api/mixture.md
     - Model Selection: api/model-selection.md
+    - Features Selection: api/features-selection.md
     - Naive Bayes: api/naive-bayes.md
     - Neighbors: api/neighbors.md
     - Pandas Utils: api/pandas-utils.md
