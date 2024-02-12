@@ -3,10 +3,9 @@ import pandas as pd
 from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
-    ClassifierMixin,
     is_classifier,
-    is_regressor,
 )
+from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
 
 from sklego.common import as_list, expanding_list
@@ -114,8 +113,17 @@ class GroupedPredictor(BaseEstimator):
         """Computes `_estimator_type` dynamically from the wrapped model."""
         return self.estimator._estimator_type
 
+    @property
+    def n_levels_(self):
+        check_is_fitted(self, ["fitted_levels_"])
+        return len(self.fitted_levels_)
+
     def fit(self, X, y=None):
         # TODO: Params and X,y checks
+
+        if is_classifier(self.estimator):
+            self.classes_ = np.sort(np.unique(y))
+            self.n_classes_ = len(self.classes_)
 
         self.groups_ = as_list(self.groups)
         frame = pd.DataFrame(X).assign(__target_value__=y)
@@ -125,13 +133,24 @@ class GroupedPredictor(BaseEstimator):
             frame = frame.assign(__global_model__=1)
             self.groups_ = ["__global_model__"] + self.groups_
 
-        self.fitted_levels_ = expanding_list(self.groups_)
-        self.n_levels_ = len(self.fitted_levels_)
+        self.fitted_levels_ = self.__get_fit_levels()  # expanding_list(self.groups_)
 
         self.estimators_ = self.__fit_estimators(frame)
         self.shrinkage_function_ = self.__set_shrinkage_function()
         self.shrinkage_factors_ = self.__fit_shrinkage_factors(frame)
         return self
+
+    def predict(self, X):
+        preds = self.__predict_estimators(X)
+
+        if is_classifier(self.estimator):
+            return self.classes_[np.argmax(preds, axis=1)]
+        else:
+            return preds.squeeze()
+
+    @available_if(lambda self: hasattr(self.estimator, "predict_proba"))
+    def predict_proba(self, X):
+        return self.__predict_estimators(X)
 
     def __fit_estimators(self, frame):
         estimators_ = {}
@@ -144,6 +163,7 @@ class GroupedPredictor(BaseEstimator):
                     estimators_[grp_values] = clone(self.estimator).fit(_X)
                 else:
                     estimators_[grp_values] = clone(self.estimator).fit(_X, _y)
+
         return estimators_
 
     def __fit_shrinkage_factors(self, frame):
@@ -167,28 +187,40 @@ class GroupedPredictor(BaseEstimator):
             for grp_value, shrink_array in shrinkage_factors.items()
         }
 
-    # def __set_fit_levels(self):
-    #     """Based on the combination of parameters passed to the class, it defines the groups/levels that were fitted.
-    #
-    #     This function should be called only after assigning self.groups_ during fit.
-    #
-    #     We have a few combinations:
-    #     - `fallback_level = 0`, `use_global_model = True`: then one global model is fitted as well as the highest
-    #         level of granularity for the groups passed.
-    #     - `fallback_level = 0`, `use_global_model = False`: then only the highest level of granularity is fitted for the
-    #         groups passed.
-    #     - `fallback_level = 1`: then all levels of granularity for the groups passed.
-    #     """
-    #     check_is_fitted(self, ["groups_"])
-    #     if self.fallback_level == 0 and self.use_global_model:
-    #         levels_ = [["__global_model__"], self.groups_]
-    #     elif self.fallback_level == 0 and not self.use_global_model:
-    #         levels_ = self.groups_
-    #     elif self.fallback_level == 1:
-    #         levels_ = expanding_list(self.groups_)
-    #     else:
-    #         raise ValueError(f"`fallback_level` should be 0 or 1, not {self.fallback_level}")
-    #     return levels_
+    def __predict_estimators(self, X):
+        check_is_fitted(self, ["estimators_", "groups_"])
+
+        frame = pd.DataFrame(X)
+        frame.index = pd.RangeIndex(start=0, stop=frame.shape[0], step=1)
+
+        if self.use_global_model:
+            frame = frame.assign(__global_model__=1)
+
+        depth = getattr(self, "n_classes_", 1)
+
+        preds = np.zeros((X.shape[0], self.n_levels_, depth), dtype=float)
+        shrinkage = np.zeros((X.shape[0], self.n_levels_, self.n_levels_), dtype=float)
+
+        predict_method = "predict_proba" if is_classifier(self.estimator) else "predict"
+        for level, grp_names in enumerate(self.fitted_levels_):
+            for grp_values, grp_frame in frame.groupby(grp_names):
+                grp_idx = grp_frame.index
+
+                _estimator, _level = _get_estimator(
+                    estimators=self.estimators_,
+                    grp_values=grp_values,
+                    grp_names=grp_names,
+                    return_level=len(grp_names),
+                    fallback_method=self.fallback_method,
+                )
+
+                last_dim_ix = _estimator.classes_ if is_classifier(self.estimator) else [0]
+                raw_pred = getattr(_estimator, predict_method)(grp_frame.drop(columns=self.groups_))
+                _shrinkage_factor = self.shrinkage_factors_[grp_values[:_level]]
+                preds[np.ix_(grp_idx, [level], last_dim_ix)] = np.atleast_3d(raw_pred[:, None])
+                shrinkage[np.ix_(grp_idx, [level])] = _shrinkage_factor
+
+        return (preds * shrinkage[:, -1, :][:, :, None]).sum(axis=1)
 
     def __set_shrinkage_function(self):
         if self.shrinkage and len(as_list(self.groups)) == 1 and not self.use_global_model:
@@ -222,89 +254,28 @@ class GroupedPredictor(BaseEstimator):
             if result.shape != expected_shape:
                 raise ValueError(f"shrinkage_function({group_lengths}).shape should be {expected_shape}")
 
+    def __get_fit_levels(self):
+        """Based on the combination of parameters passed to the class, it defines the groups/levels that were fitted.
 
-class GroupedClassifier(GroupedPredictor, ClassifierMixin):
-    def fit(self, X, y):
-        if not is_classifier(self.estimator):
-            raise ValueError(f"estimator should be a classifier, not {self.estimator._estimator_type}")
+        This function should be called only after assigning self.groups_ during fit.
+        """
+        check_is_fitted(self, ["groups_"])
 
-        self.classes_ = np.sort(np.unique(y))
-        self.n_classes_ = len(self.classes_)
+        if self.fallback_method == "raise":
+            levels_ = self.groups_ if self.shrinkage is None else expanding_list(self.groups_)
 
-        super().fit(X, y)
-        return self
+        elif self.fallback_method == "next":
+            levels_ = expanding_list(self.groups_)
 
-    def predict(self, X):
-        probas = self.predict_proba(X)
-        return self.classes_[np.argmax(probas, axis=1)]
+        elif self.fallback_method == "global":
+            if not self.use_global_model:
+                raise ValueError("`fallback_method`='global' requires `use_global_model=True`")
+            elif self.shrinkage is None:
+                levels_ = [["__global_model__"], self.groups_]
+            else:
+                levels_ = expanding_list(self.groups_)
 
-    def predict_proba(self, X):
-        check_is_fitted(self, ["estimators_", "groups_"])
+        else:
+            raise ValueError(f"`fallback_method` should be one of {self._ALLOWED_FALLBACK}, not {self.fallback_method}")
 
-        frame = pd.DataFrame(X)
-        frame.index = pd.RangeIndex(start=0, stop=frame.shape[0], step=1)
-
-        if self.use_global_model:
-            frame = frame.assign(__global_model__=1)
-
-        raw_preds = np.zeros((X.shape[0], self.n_levels_, self.n_classes_), dtype=float)
-        shrinkage = np.zeros((X.shape[0], self.n_levels_, self.n_levels_), dtype=float)
-
-        for level, grp_names in enumerate(self.fitted_levels_):
-            for grp_values, grp_frame in frame.groupby(grp_names):
-                grp_idx = grp_frame.index
-
-                _estimator, _level = _get_estimator(
-                    estimators=self.estimators_,
-                    grp_values=grp_values,
-                    grp_names=grp_names,
-                    return_level=len(grp_names),
-                    fallback_method=self.fallback_method,
-                )
-                _shrinkage_factor = self.shrinkage_factors_[grp_values[:_level]]
-                raw_preds[np.ix_(grp_idx, [level], _estimator.classes_)] = _estimator.predict_proba(
-                    grp_frame.drop(columns=self.groups_)
-                )[:, None, :]
-                shrinkage[np.ix_(grp_idx, [level])] = _shrinkage_factor
-
-        return (raw_preds * shrinkage[:, -1, :][:, :, None]).sum(axis=1)
-
-
-class GroupedRegressor(GroupedPredictor, ClassifierMixin):
-    def fit(self, X, y):
-        if not is_regressor(self.estimator):
-            raise ValueError(f"estimator should be a regressor, not {self.estimator._estimator_type}")
-        super().fit(X, y)
-        return self
-
-    def predict(self, X):
-        check_is_fitted(self, ["estimators_", "groups_"])
-
-        frame = pd.DataFrame(X)
-        frame.index = pd.RangeIndex(start=0, stop=frame.shape[0], step=1)
-
-        if self.use_global_model:
-            frame = frame.assign(__global_model__=1)
-
-        raw_preds = np.empty((X.shape[0], self.n_levels_), dtype=float)
-        shrinkage = np.empty((X.shape[0], self.n_levels_, self.n_levels_), dtype=float)
-
-        for level, grp_names in enumerate(self.fitted_levels_):
-            for grp_values, grp_frame in frame.groupby(grp_names):
-                grp_idx = grp_frame.index
-
-                _estimator, _level = _get_estimator(
-                    estimators=self.estimators_,
-                    grp_values=grp_values,
-                    grp_names=grp_names,
-                    return_level=len(grp_names),
-                    fallback_method=self.fallback_method,
-                )
-                _shrinkage_factor = self.shrinkage_factors_[grp_values[:_level]]
-                raw_preds[grp_idx, level : level + 1] = _estimator.predict(grp_frame.drop(columns=self.groups_))[
-                    :, None
-                ]
-                shrinkage[grp_idx, level : level + 1] = _shrinkage_factor
-
-        preds = np.average(raw_preds, axis=1, weights=shrinkage[:, -1, :])
-        return preds
+        return levels_
