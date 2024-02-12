@@ -94,3 +94,39 @@ def _check_grouping_columns(X_group, **kwargs) -> pd.DataFrame:
 
     # The grouping part we always want as a DataFrame with range index
     return X_group.reset_index(drop=True)
+
+
+def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_method):
+    """Recursive function to get the estimator for the given group values.
+
+    Parameters
+    ----------
+    estimators : dict[tuple, scikit-learn compatible estimator/pipeline]
+        Dictionary with group values as keys and estimators as values.
+    grp_values : tuple
+        List of group values - keys to the estimators dictionary.
+    grp_names : list
+        List of group names
+    return_level : int
+        The level of the group values to return the estimator for.
+    fallback_method : Literal["global", "next", "raise"]
+        Defines which fallback strategy to use if a group is not found at prediction time.
+    """
+    if fallback_method == "raise":
+        return estimators[grp_values], return_level
+
+    elif fallback_method == "next":
+        try:
+            return estimators[grp_values], return_level
+        except KeyError:
+            if len(grp_values) == 1:
+                raise ValueError(
+                    f"No fallback/parent estimator found for the given group values: {grp_names}={grp_values}"
+                )
+            return _get_estimator(estimators, grp_values[:-1], grp_names[:-1], return_level - 1, fallback_method)
+
+    else:  # fallback_method == "global"
+        try:
+            return estimators[grp_values], return_level
+        except KeyError:
+            return estimators[(1,)], 1

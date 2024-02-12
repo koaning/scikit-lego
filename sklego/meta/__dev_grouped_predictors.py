@@ -9,45 +9,7 @@ from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
 
 from sklego.common import as_list, expanding_list
-from sklego.meta._grouped_utils import (
-    constant_shrinkage,
-    min_n_obs_shrinkage,
-    relative_shrinkage,
-)
-
-
-def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_method):
-    """
-    Recursive function to get the estimator for the given group values.
-
-    Parameters
-    ----------
-    estimators : dict
-        Dictionary with group values as keys and estimators as values.
-    grp_values : list
-        List of group values - keys to the estimators dictionary.
-    grp_names : list
-        List of group names
-    return_level : int
-        The level of the group values to return the estimator for.
-    """
-    if fallback_method == "raise":
-        return estimators[grp_values], return_level
-    elif fallback_method == "next":
-        try:
-            return estimators[grp_values], return_level
-        except KeyError:
-            if len(grp_values) == 1:
-                raise ValueError(
-                    f"No fallback/parent estimator found for the given group values: {grp_names}={grp_values}"
-                )
-            return _get_estimator(estimators, grp_values[:-1], grp_names[:-1], return_level - 1, fallback_method)
-
-    elif fallback_method == "global":
-        try:
-            return estimators[grp_values], return_level
-        except KeyError:
-            return estimators[(1,)], 1
+from sklego.meta._grouped_utils import _get_estimator, constant_shrinkage, min_n_obs_shrinkage, relative_shrinkage
 
 
 class GroupedPredictor(BaseEstimator):
@@ -77,8 +39,33 @@ class GroupedPredictor(BaseEstimator):
     check_X : bool, default=True
         Whether to validate `X` to be non-empty 2D array of finite values and attempt to cast `X` to float.
         If disabled, the model/pipeline is expected to handle e.g. missing, non-numeric, or non-finite values.
-    **shrinkage_kwargs : dict
+    fallback_method : Literal["global", "next", "raise"], default="global"
+        Defines which fallback strategy to use if a group is not found at prediction time:
+
+        - "global": use global model to make the prediction, it requires to have `use_global_model=True` flag.
+        - "next": if `groups` has length more than 1, then it fallback to the first available "parent".
+            Example: let `groups=["a", "b"]` with values `(0,0)`, `(0,1)` and `(1, 0)`. If we try to predict the group
+            value `(0,2)`, we fallback to the model trained on `a=0` since there is no model trained on `(a=0,b=2)`.
+        - "raise": if a group value is not found an error is raised.
+    **shrinkage_kwargs : dict[str, Any]
         Keyword arguments to the shrinkage function
+
+    Attributes
+    ----------
+    estimators_ : dict[tuple, scikit-learn compatible estimator/pipeline]
+        Dictionary with group values as keys and estimators as values.
+    groups_ : list[str] | list[int]
+        The list of group names/indexes
+    fitted_levels_ : list[list[str] | list[int]]
+        The list of group names/indexes that were fitted
+    shrinkage_function_ : Callable
+        The shrinkage function that was used
+    shrinkage_factors_ : dict[tuple, np.ndarray]
+        Dictionary with group values as keys and shrinkage factors as values for all fitted levels
+    classes_ : np.ndarray
+        The classes of the target variable, applicable only for classification tasks
+    n_classes_ : int
+        The number of classes of the target variable, applicable only for classification tasks
     """
 
     _check_kwargs = {"ensure_min_features": 0, "accept_large_sparse": False}
@@ -97,7 +84,7 @@ class GroupedPredictor(BaseEstimator):
         shrinkage=None,
         use_global_model=True,
         check_X=True,
-        fallback_method="raise",
+        fallback_method="global",
         **shrinkage_kwargs,
     ):
         self.estimator = estimator
@@ -126,7 +113,8 @@ class GroupedPredictor(BaseEstimator):
             self.n_classes_ = len(self.classes_)
 
         self.groups_ = as_list(self.groups)
-        frame = pd.DataFrame(X).assign(__target_value__=y)
+
+        frame = pd.DataFrame(X).assign(__target_value__=np.array(y))
         frame.index = pd.RangeIndex(start=0, stop=frame.shape[0], step=1)
 
         if self.use_global_model:
