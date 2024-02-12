@@ -140,7 +140,7 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
             else:
                 raise
         elif callable(self.relevance_func):
-            return self.relevance_function
+            return self.relevance_func
         else:
             raise
 
@@ -206,10 +206,20 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
         for i in range(k):
             red_i = redundancy(X, selected_features, left_features) / (i + 1)
-            mrmr_score_i = rel_score[left_features] / red_i
+
+            # print(f"redundnancy i={i} = {red_i}")
+            # print(f"rel_score i = {i} = {rel_score[left_features]}")
+
+            # Fix in case of 0/0 or 0/nan
+            mrmr_score_i = np.nan_to_num(rel_score[left_features] / red_i, np.finfo(float).eps)
+            # mrmr_score_i = rel_score[left_features] / red_i
             selected_index = np.argmax(mrmr_score_i)
             selected_features += [left_features.pop(selected_index)]
             selected_scores += [mrmr_score_i[selected_index]]
+
+            # print(f"mrmr score i={i} = {mrmr_score_i}")
+            # print(f"Selected index i={i} = {selected_index}")
+            # print(f"Selected score i={i} = {mrmr_score_i[selected_index]}")
 
         self.selected_features_ = np.asarray(selected_features)
         self.scores_ = np.asarray(selected_scores)
