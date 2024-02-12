@@ -16,9 +16,10 @@ def constant_shrinkage(group_sizes: list, alpha: float) -> np.ndarray:
     Let $\hat{y}_i$ be the prediction at level $i$, with $i=0$ being the root, than the augmented prediction
     $\hat{y}_i^* = \alpha \hat{y}_i + (1 - \alpha) \hat{y}_{i-1}^*$, with $\hat{y}_0^* = \hat{y}_0$.
     """
+    n_groups = len(group_sizes)
     return np.array(
-        [alpha ** (len(group_sizes) - 1)]
-        + [alpha ** (len(group_sizes) - 1 - i) * (1 - alpha) for i in range(1, len(group_sizes) - 1)]
+        [alpha ** (n_groups - 1)]
+        + [alpha ** (n_groups - 1 - i) * (1 - alpha) for i in range(1, n_groups - 1)]
         + [(1 - alpha)]
     )
 

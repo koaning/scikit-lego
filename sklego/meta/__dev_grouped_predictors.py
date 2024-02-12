@@ -1,10 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn import clone
-from sklearn.base import (
-    BaseEstimator,
-    is_classifier,
-)
+from sklearn.base import BaseEstimator, is_classifier
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
 
@@ -44,8 +41,8 @@ class GroupedPredictor(BaseEstimator):
 
         - "global": use global model to make the prediction, it requires to have `use_global_model=True` flag.
         - "next": if `groups` has length more than 1, then it fallback to the first available "parent".
-            Example: let `groups=["a", "b"]` with values `(0,0)`, `(0,1)` and `(1, 0)`. If we try to predict the group
-            value `(0,2)`, we fallback to the model trained on `a=0` since there is no model trained on `(a=0,b=2)`.
+            Example: let `groups=["a", "b"]` with values `(0, 0)`, `(0, 1)` and `(1, 0)`. If we try to predict the group
+            value `(0,2)`, we fallback to the model trained on `a=0` since there is no model trained on `(a=0, b=2)`.
         - "raise": if a group value is not found an error is raised.
     **shrinkage_kwargs : dict[str, Any]
         Keyword arguments to the shrinkage function
@@ -109,15 +106,16 @@ class GroupedPredictor(BaseEstimator):
         # TODO: Params and X,y checks
 
         if is_classifier(self.estimator):
-            self.classes_ = np.sort(np.unique(y))
+            self.classes_ = np.sort(np.unique(y))  # TODO: Must be sequential!
             self.n_classes_ = len(self.classes_)
 
         self.groups_ = as_list(self.groups)
 
-        frame = pd.DataFrame(X).assign(__target_value__=np.array(y))
-        frame.index = pd.RangeIndex(start=0, stop=frame.shape[0], step=1)
+        # TODO: __grouped_predictor_target_value__?
+        frame = pd.DataFrame(X).assign(__target_value__=np.array(y)).reset_index(drop=True)
 
         if self.use_global_model:
+            # TODO: __grouped_predictor_global_model__?
             frame = frame.assign(__global_model__=1)
             self.groups_ = ["__global_model__"] + self.groups_
 
@@ -129,16 +127,20 @@ class GroupedPredictor(BaseEstimator):
         return self
 
     def predict(self, X):
-        preds = self.__predict_estimators(X)
-
         if is_classifier(self.estimator):
+            preds = self.__predict_estimators(X, method_name="predict_proba")
             return self.classes_[np.argmax(preds, axis=1)]
         else:
-            return preds.squeeze()
+            preds = self.__predict_estimators(X, method_name="predict")
+            return preds
 
     @available_if(lambda self: hasattr(self.estimator, "predict_proba"))
     def predict_proba(self, X):
-        return self.__predict_estimators(X)
+        return self.__predict_estimators(X, method_name="predict_proba")
+
+    @available_if(lambda self: hasattr(self.estimator, "decision_function"))
+    def decision_function(self, X):
+        return self.__predict_estimators(X, method_name="decision_function")
 
     def __fit_estimators(self, frame):
         estimators_ = {}
@@ -148,7 +150,7 @@ class GroupedPredictor(BaseEstimator):
                 _y = grp_frame["__target_value__"]
 
                 if _y.isnull().all():
-                    estimators_[grp_values] = clone(self.estimator).fit(_X)
+                    estimators_[grp_values] = clone(self.estimator).fit(_X)  # TODO: or .fit(_X, None) ?
                 else:
                     estimators_[grp_values] = clone(self.estimator).fit(_X, _y)
 
@@ -175,22 +177,35 @@ class GroupedPredictor(BaseEstimator):
             for grp_value, shrink_array in shrinkage_factors.items()
         }
 
-    def __predict_estimators(self, X):
+    def __predict_estimators(self, X, method_name):
         check_is_fitted(self, ["estimators_", "groups_"])
 
-        frame = pd.DataFrame(X)
-        frame.index = pd.RangeIndex(start=0, stop=frame.shape[0], step=1)
+        frame = pd.DataFrame(X).reset_index(drop=True)
 
         if self.use_global_model:
             frame = frame.assign(__global_model__=1)
 
         depth = getattr(self, "n_classes_", 1)
 
+        # !!! Decision function breaks for the following reasons:
+        # 1. For binary classification, it returns a 1D array
+        # 2. Therefore for the mix case of group A [0,1,2] and group B [0, 3] it has two very different
+        # cases (and output shapes)
+
+        # For the "normal" multiclass cases this implementation works fine
+        # For binary classification it breaks!
+
+        # if method_name == "decision_function":
+        # This serves the case in which different groups have different number of classes for which
+        # a default of 0 would be misleading, and currently breaks the api.
+        # preds = np.empty((X.shape[0], self.n_levels_, depth), dtype=float)
+        # preds[:] = np.nan
+
         preds = np.zeros((X.shape[0], self.n_levels_, depth), dtype=float)
+
         shrinkage = np.zeros((X.shape[0], self.n_levels_, self.n_levels_), dtype=float)
 
-        predict_method = "predict_proba" if is_classifier(self.estimator) else "predict"
-        for level, grp_names in enumerate(self.fitted_levels_):
+        for level_idx, grp_names in enumerate(self.fitted_levels_):
             for grp_values, grp_frame in frame.groupby(grp_names):
                 grp_idx = grp_frame.index
 
@@ -201,14 +216,16 @@ class GroupedPredictor(BaseEstimator):
                     return_level=len(grp_names),
                     fallback_method=self.fallback_method,
                 )
+                _shrinkage_factor = self.shrinkage_factors_[grp_values[:_level]]
 
                 last_dim_ix = _estimator.classes_ if is_classifier(self.estimator) else [0]
-                raw_pred = getattr(_estimator, predict_method)(grp_frame.drop(columns=self.groups_))
-                _shrinkage_factor = self.shrinkage_factors_[grp_values[:_level]]
-                preds[np.ix_(grp_idx, [level], last_dim_ix)] = np.atleast_3d(raw_pred[:, None])
-                shrinkage[np.ix_(grp_idx, [level])] = _shrinkage_factor
 
-        return (preds * shrinkage[:, -1, :][:, :, None]).sum(axis=1)
+                raw_pred = getattr(_estimator, method_name)(grp_frame.drop(columns=self.groups_))
+
+                preds[np.ix_(grp_idx, [level_idx], last_dim_ix)] = np.atleast_3d(raw_pred[:, None])
+                shrinkage[np.ix_(grp_idx, [level_idx])] = _shrinkage_factor
+
+        return (preds * np.atleast_3d(shrinkage[:, -1, :])).sum(axis=1).squeeze()
 
     def __set_shrinkage_function(self):
         if self.shrinkage and len(as_list(self.groups)) == 1 and not self.use_global_model:
