@@ -114,14 +114,17 @@ def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_met
         Defines which fallback strategy to use if a group is not found at prediction time.
     """
     if fallback_method == "raise":
-        return estimators[grp_values], return_level
+        try:
+            return estimators[grp_values], return_level
+        except KeyError:
+            raise KeyError(f"No fallback/parent estimator found for the given group values: {grp_names}={grp_values}")
 
     elif fallback_method == "next":
         try:
             return estimators[grp_values], return_level
         except KeyError:
             if len(grp_values) == 1:
-                raise ValueError(
+                raise KeyError(
                     f"No fallback/parent estimator found for the given group values: {grp_names}={grp_values}"
                 )
             return _get_estimator(estimators, grp_values[:-1], grp_names[:-1], return_level - 1, fallback_method)
