@@ -2,7 +2,6 @@ __all__ = [
     "ConfusionBalancer",
     "DecayEstimator",
     "EstimatorTransformer",
-    "GroupedEstimator",
     "GroupedPredictor",
     "GroupedTransformer",
     "OrdinalClassifier",
@@ -17,7 +16,6 @@ __all__ = [
 from sklego.meta.confusion_balancer import ConfusionBalancer
 from sklego.meta.decay_estimator import DecayEstimator
 from sklego.meta.estimator_transformer import EstimatorTransformer
-from sklego.meta.grouped_estimator import GroupedEstimator
 from sklego.meta.grouped_predictor import GroupedPredictor
 from sklego.meta.grouped_transformer import GroupedTransformer
 from sklego.meta.ordinal_classification import OrdinalClassifier

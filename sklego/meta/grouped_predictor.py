@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn import clone
-from sklearn.base import BaseEstimator, is_classifier
+from sklearn.base import BaseEstimator, is_classifier, is_regressor
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_array, check_is_fitted
 
@@ -15,8 +15,20 @@ from sklego.meta._grouped_utils import (
 
 
 class GroupedPredictor(BaseEstimator):
-    """Construct an estimator per data group. Splits data by values of a single column and fits one estimator per such
-    column.
+    """`GroupedPredictor` is a meta-estimator that fits a separate estimator for each group in the input data.
+
+    The input data is split into a group and a value part: for each unique combination of the group columns, a separate
+    estimator is fitted to the corresponding value rows. The group columns are specified by the `groups` parameter.
+
+    If `use_global_model=True` a fallback estimator will be fitted on the entire dataset in case a group is not found
+    during `.predict()`.
+
+    If `shrinkage` is not `None`, the predictions of the group-level models are combined using a shrinkage method. The
+    shrinkage method can be one of the predefined methods `"constant"`, `"min_n_obs"`, `"relative"` or a custom
+    shrinkage function. The shrinkage method is specified by the `shrinkage` parameter.
+
+    !!! warning "Shrinkage"
+        Shrinkage is only available for regression models.
 
     Parameters
     ----------
@@ -43,6 +55,19 @@ class GroupedPredictor(BaseEstimator):
         If disabled, the model/pipeline is expected to handle e.g. missing, non-numeric, or non-finite values.
     **shrinkage_kwargs : dict
         Keyword arguments to the shrinkage function
+
+    Attributes
+    ----------
+    estimators_ : dict
+        A dictionary with the fitted estimators per group
+    groups_ : list
+        A list of all the groups that were found during fitting
+    fallback_ : estimator
+        A fallback estimator that is used when `use_global_model=True` and a group is not found during `.predict()`
+    shrinkage_function_ : callable
+        The shrinkage function that is used to calculate the shrinkage factors
+    shrinkage_factors_ : dict
+        A dictionary with the shrinkage factors per group
     """
 
     # Number of features in value df can be 0, e.g. for dummy models
@@ -212,6 +237,9 @@ class GroupedPredictor(BaseEstimator):
         self : GroupedPredictor
             The fitted estimator.
         """
+        if self.shrinkage is not None and not is_regressor(self.estimator):
+            raise ValueError("Shrinkage is only available for regression models")
+
         X_group, X_value = _split_groups_and_values(
             X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
@@ -409,3 +437,30 @@ class GroupedPredictor(BaseEstimator):
             return self.__predict_groups(X_group, X_value, method="decision_function")
         else:
             return self.__predict_shrinkage_groups(X_group, X_value, method="decision_function")
+
+    @property
+    def _estimator_type(self):
+        """Computes `_estimator_type` dynamically from the wrapped model."""
+        return self.estimator._estimator_type
+
+
+class GroupedRegressor(GroupedPredictor):
+    pass
+
+
+class GroupedClassifier(GroupedPredictor):
+    def __init__(
+        self,
+        estimator,
+        groups,
+        use_global_model=True,
+        check_X=True,
+        **shrinkage_kwargs,
+    ):
+        super().__init__(
+            estimator=estimator,
+            groups=groups,
+            shrinkage=None,
+            use_global_model=use_global_model,
+            check_X=check_X,
+        )

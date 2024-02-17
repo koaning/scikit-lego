@@ -58,9 +58,7 @@ Wall time: 917 ms
 
 ## Grouped Prediction
 
-<p align="center">
-  <img src="../_static/meta-models/grouped-model.png" />
-</p>
+![grouped-model](../_static/meta-models/grouped-model.png)
 
 To help explain what it can do we'll consider three methods to predict the chicken weight.
 
