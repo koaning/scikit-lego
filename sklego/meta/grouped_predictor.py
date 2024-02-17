@@ -445,7 +445,11 @@ class GroupedPredictor(BaseEstimator):
 
 
 class GroupedRegressor(GroupedPredictor):
-    pass
+    def fit(self, X, y):
+        if not is_regressor(self.estimator):
+            raise ValueError("GroupedRegressor is only available for regression models")
+
+        return super().fit(X, y)
 
 
 class GroupedClassifier(GroupedPredictor):
@@ -464,3 +468,9 @@ class GroupedClassifier(GroupedPredictor):
             use_global_model=use_global_model,
             check_X=check_X,
         )
+
+    def fit(self, X, y):
+        if not is_classifier(self.estimator):
+            raise ValueError("GroupedClassifier is only available for classification models")
+
+        return super().fit(X, y)
