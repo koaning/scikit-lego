@@ -63,15 +63,15 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     ----------
     k : int
         Number of feature the model should use.
-    kind : Literal["auto", "classficiation", "regression"], default="auto".
-        'classification' or 'regression' or 'auto' if auto the model
-        will try to infer the type of problem looking at the y data type, by default "auto".
     relevance_func : str | Callable,, default= "f"(f_classif or  f_regression from sklearn.feature_selection)
         [f_classif](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html)
         [f_regression](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html)
         The relevance function to use.
     redundancy_func : str | Callable, default="p" (Pearson correlation)
         The redundancy function to use.
+    kind : Literal["auto", "classficiation", "regression"], default="auto".
+        'classification' or 'regression' or 'auto' if auto the model
+        will try to infer the type of problem looking at the y data type, by default "auto".
 
     !! warning:
         If a custom relevance_func is provided it must have this signature:
@@ -112,11 +112,11 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     ```
     """
 
-    def __init__(self, k, kind="auto", relevance_func="f", redundancy_func="p"):
+    def __init__(self, k, *, relevance_func="f", redundancy_func="p", kind="auto"):
         self.k = k
-        self.kind = kind
         self.relevance_func = relevance_func
         self.redundancy_func = redundancy_func
+        self.kind = kind
 
     def _get_support_mask(self):
         """SelectorMixin base function to get the selected features mask
@@ -139,11 +139,13 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
             elif (self.kind == "auto" and np.issubdtype(self._y_dtype, np.floating)) | (self.kind == "regression"):
                 return lambda X, y: np.nan_to_num(f_regression(X, y)[0])
             else:
-                raise
+                raise ValueError(
+                    "`kind` parameter must be 'auto', 'classification' or 'regression' and y dtype must be numeric"
+                )
         elif callable(self.relevance_func):
             return self.relevance_func
         else:
-            raise
+            raise ValueError(f"Relevance function supported are 'f' or Callable, got {self.relevance_func}")
 
     @property
     def _get_redundancy(self):
@@ -153,7 +155,7 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
         elif callable(self.redundancy_func):
             return self.redundancy_func
         else:
-            raise
+            raise ValueError(f"Redundancy function supported are 'p' or Callable, got {self.redundancy_func}")
 
     def fit(self, X, y):
         """Fit the underlying feature selection algorithm on the training data `X` and `y`
@@ -179,7 +181,9 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
                 k parameter is not integer type or is < n_features_in (X.shape[1]) or < 1
         """
+        X, y = check_X_y(X, y)
         self._y_dtype = y.dtype
+
         relevance = self._get_relevance
         redundancy = self._get_redundancy
 
@@ -189,22 +193,20 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
         selected_scores = []
 
         if not isinstance(self.k, int):
-            raise ValueError("k parameter mush be integer type")
+            raise ValueError("k parameter must be integer type")
         if self.k > self.n_features_in_:
-            raise ValueError(f"k parameter mush be < n_features_in, got {self.k} - {self.n_features_in_}")
+            raise ValueError(f"k ({self.k}) parameter must be less than n_features_in_ ({self.n_features_in_})")
         elif self.k == self.n_features_in_:
             warnings.warn("k parameter is equal to n_features_in, no feature selection is applied")
             return np.asarray(left_features)
         elif self.k < 1:
-            raise ValueError(f"k parameter mush be >= 1, got {self.k}")
-
-        X, y = check_X_y(X, y)
+            raise ValueError(f"k ({self.k}) parameter must be greater than or equal to 1")
 
         # computed one time for all features
         rel_score = relevance(X, y)
 
         for i in range(self.k):
-            red_i = redundancy(X, selected_features, left_features) / (i + 1)
+            red_i = redundancy(X, selected_features, left_features) / i if i > 0 else 1
             mrmr_score_i = rel_score[left_features] / red_i
             selected_index = np.argmax(mrmr_score_i)
             selected_features += [left_features.pop(selected_index)]
