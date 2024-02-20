@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn import clone
-from sklearn.base import BaseEstimator, is_classifier, is_regressor
+from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, RegressorMixin, is_classifier, is_regressor
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_array, check_is_fitted
 
@@ -14,7 +14,7 @@ from sklego.meta._grouped_utils import (
 )
 
 
-class GroupedPredictor(BaseEstimator):
+class GroupedPredictor(MetaEstimatorMixin, BaseEstimator):
     """`GroupedPredictor` is a meta-estimator that fits a separate estimator for each group in the input data.
 
     The input data is split into a group and a value part: for each unique combination of the group columns, a separate
@@ -444,15 +444,48 @@ class GroupedPredictor(BaseEstimator):
         return self.estimator._estimator_type
 
 
-class GroupedRegressor(GroupedPredictor):
+class GroupedRegressor(GroupedPredictor, RegressorMixin):
+    """`GroupedRegressor` is a meta-estimator that fits a separate regressor for each group in the input data.
+
+    Its spec is the same as [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor] but it is available
+    only for regression models.
+    """
+
     def fit(self, X, y):
+        """Fit one regressor for each group of training data `X` and `y`.
+
+        Will also learn the groups that exist within the training dataset.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : array-like of shape (n_samples,)
+            Target values.
+
+        Returns
+        -------
+        self : GroupedRegressor
+            The fitted regressor.
+
+        Raises
+        -------
+        ValueError
+            If the supplied estimator is not a regressor.
+        """
         if not is_regressor(self.estimator):
             raise ValueError("GroupedRegressor is only available for regression models")
 
         return super().fit(X, y)
 
 
-class GroupedClassifier(GroupedPredictor):
+class GroupedClassifier(GroupedPredictor, ClassifierMixin):
+    """`GroupedClassifier` is a meta-estimator that fits a separate classifier for each group in the input data.
+
+    Its equivalent to [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor] with `shrinkage=None`
+    but it is available only for classification models.
+    """
+
     def __init__(
         self,
         estimator,
@@ -470,6 +503,28 @@ class GroupedClassifier(GroupedPredictor):
         )
 
     def fit(self, X, y):
+        """Fit one classifier for each group of training data `X` and `y`.
+
+        Will also learn the groups that exist within the training dataset.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : array-like of shape (n_samples,)
+            Target values.
+
+        Returns
+        -------
+        self : GroupedClassifier
+            The fitted regressor.
+
+        Raises
+        -------
+        ValueError
+            If the supplied estimator is not a classifier.
+        """
+
         if not is_classifier(self.estimator):
             raise ValueError("GroupedClassifier is only available for classification models")
 
