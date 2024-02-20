@@ -1,16 +1,22 @@
 import numpy as np
 import pandas as pd
 from sklearn import clone
-from sklearn.base import BaseEstimator, is_classifier, is_regressor
+from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, RegressorMixin, is_classifier, is_regressor
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from sklego.common import as_list, expanding_list
 from sklego.meta._grouped_utils import _split_groups_and_values
-from sklego.meta._shrinkage_utils import constant_shrinkage, equal_shrinkage, min_n_obs_shrinkage, relative_shrinkage
+from sklego.meta._shrinkage_utils import (
+    ShrinkageMixin,
+    constant_shrinkage,
+    equal_shrinkage,
+    min_n_obs_shrinkage,
+    relative_shrinkage,
+)
 
 
-class GroupedPredictor(BaseEstimator):
+class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     """`GroupedPredictor` is a meta-estimator that fits a separate estimator for each group in the input data.
 
     The input data is split into a group and a value part: for each unique combination of the group columns, a separate
@@ -71,6 +77,13 @@ class GroupedPredictor(BaseEstimator):
     _global_col_name = "a-column-that-is-constant-for-all-data"
     _global_col_value = "global"
 
+    _ALLOWED_SHRINKAGE = {
+        "constant": constant_shrinkage,
+        "relative": relative_shrinkage,
+        "min_n_obs": min_n_obs_shrinkage,
+        "equal": equal_shrinkage,
+    }
+
     def __init__(
         self,
         estimator,
@@ -86,71 +99,6 @@ class GroupedPredictor(BaseEstimator):
         self.use_global_model = use_global_model
         self.shrinkage_kwargs = shrinkage_kwargs
         self.check_X = check_X
-
-    def __set_shrinkage_function(self):
-        if self.shrinkage and len(as_list(self.groups)) == 1 and not self.use_global_model:
-            raise ValueError("Cannot do shrinkage with a single group if use_global_model is False")
-
-        if isinstance(self.shrinkage, str):
-            # Predefined shrinkage functions
-            shrink_options = {
-                "constant": constant_shrinkage,
-                "relative": relative_shrinkage,
-                "min_n_obs": min_n_obs_shrinkage,
-                "equal": equal_shrinkage,
-            }
-
-            try:
-                self.shrinkage_function_ = shrink_options[self.shrinkage]
-            except KeyError:
-                raise ValueError(
-                    f"The specified shrinkage function {self.shrinkage} is not valid, "
-                    f"choose from {list(shrink_options.keys())} or supply a callable."
-                )
-        elif callable(self.shrinkage):
-            self.__check_shrinkage_func()
-            self.shrinkage_function_ = self.shrinkage
-        else:
-            raise ValueError("Invalid shrinkage specified. Should be either None (no shrinkage), str or callable.")
-
-    def __check_shrinkage_func(self):
-        """Validate the shrinkage function if a function is specified"""
-        group_lengths = [10, 5, 2]
-        expected_shape = np.array(group_lengths).shape
-        try:
-            result = self.shrinkage(group_lengths)
-        except Exception as e:
-            raise ValueError(f"Caught an exception while checking the shrinkage function: {str(e)}") from e
-        else:
-            if not isinstance(result, np.ndarray):
-                raise ValueError(f"shrinkage_function({group_lengths}) should return an np.ndarray")
-            if result.shape != expected_shape:
-                raise ValueError(f"shrinkage_function({group_lengths}).shape should be {expected_shape}")
-
-    def __get_shrinkage_factor(self, X_group):
-        """Get for all complete groups an array of shrinkages"""
-        group_colnames = X_group.columns.to_list()
-        counts = X_group.groupby(group_colnames).size()
-
-        # Groups that are split on all
-        most_granular_groups = [grp for grp in self.groups_ if len(as_list(grp)) == len(group_colnames)]
-
-        # For each hierarchy level in each most granular group, get the number of observations
-        hierarchical_counts = {
-            granular_group: [counts[tuple(subgroup)].sum() for subgroup in expanding_list(granular_group, tuple)]
-            for granular_group in most_granular_groups
-        }
-
-        # For each hierarchy level in each most granular group, get the shrinkage factor
-        shrinkage_factors = {
-            group: self.shrinkage_function_(counts, **self.shrinkage_kwargs)
-            for group, counts in hierarchical_counts.items()
-        }
-
-        # Make sure that the factors sum to one
-        shrinkage_factors = {group: value / value.sum() for group, value in shrinkage_factors.items()}
-
-        return shrinkage_factors
 
     def __fit_single_group(self, group, X, y=None):
         """Fit estimator to the given group."""
@@ -246,8 +194,7 @@ class GroupedPredictor(BaseEstimator):
         if y is not None:
             y = check_array(y, ensure_2d=False)
 
-        if self.shrinkage is not None:
-            self.__set_shrinkage_function()
+        self.shrinkage_function_ = self._set_shrinkage_function()
 
         # List of all hierarchical subsets of columns
         self.group_colnames_hierarchical_ = expanding_list(X_group.columns, list)
@@ -265,7 +212,8 @@ class GroupedPredictor(BaseEstimator):
         self.groups_ = as_list(self.estimators_.keys())
 
         if self.shrinkage is not None:
-            self.shrinkage_factors_ = self.__get_shrinkage_factor(X_group)
+            _groups = [self._global_col_name] + as_list(self.groups) if self.use_global_model else as_list(self.groups)
+            self.shrinkage_factors_ = self._fit_shrinkage_factors(X_group, groups=_groups, most_granular_only=True)
 
         return self
 
@@ -441,15 +389,48 @@ class GroupedPredictor(BaseEstimator):
         return self.estimator._estimator_type
 
 
-class GroupedRegressor(GroupedPredictor):
+class GroupedRegressor(GroupedPredictor, RegressorMixin):
+    """`GroupedRegressor` is a meta-estimator that fits a separate regressor for each group in the input data.
+
+    Its spec is the same as [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor] but it is available
+    only for regression models.
+    """
+
     def fit(self, X, y):
+        """Fit one regressor for each group of training data `X` and `y`.
+
+        Will also learn the groups that exist within the training dataset.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : array-like of shape (n_samples,)
+            Target values.
+
+        Returns
+        -------
+        self : GroupedRegressor
+            The fitted regressor.
+
+        Raises
+        -------
+        ValueError
+            If the supplied estimator is not a regressor.
+        """
         if not is_regressor(self.estimator):
             raise ValueError("GroupedRegressor is only available for regression models")
 
         return super().fit(X, y)
 
 
-class GroupedClassifier(GroupedPredictor):
+class GroupedClassifier(GroupedPredictor, ClassifierMixin):
+    """`GroupedClassifier` is a meta-estimator that fits a separate classifier for each group in the input data.
+
+    Its equivalent to [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor] with `shrinkage=None`
+    but it is available only for classification models.
+    """
+
     def __init__(
         self,
         estimator,
@@ -467,6 +448,28 @@ class GroupedClassifier(GroupedPredictor):
         )
 
     def fit(self, X, y):
+        """Fit one classifier for each group of training data `X` and `y`.
+
+        Will also learn the groups that exist within the training dataset.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : array-like of shape (n_samples,)
+            Target values.
+
+        Returns
+        -------
+        self : GroupedClassifier
+            The fitted regressor.
+
+        Raises
+        -------
+        ValueError
+            If the supplied estimator is not a classifier.
+        """
+
         if not is_classifier(self.estimator):
             raise ValueError("GroupedClassifier is only available for classification models")
 

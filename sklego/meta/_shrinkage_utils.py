@@ -104,7 +104,7 @@ class ShrinkageMixin:
 
     def _set_shrinkage_function(self):
         """Set the shrinkage function and validate it if it is a custom callable"""
-        if self.shrinkage in self._ALLOWED_SHRINKAGE.keys():
+        if isinstance(self.shrinkage, str) and self.shrinkage in self._ALLOWED_SHRINKAGE.keys():
             shrinkage_function_ = self._ALLOWED_SHRINKAGE[self.shrinkage]
 
         elif callable(self.shrinkage):
@@ -173,11 +173,14 @@ class ShrinkageMixin:
             if result.shape != expected_shape:
                 raise ValueError(f"shrinkage_function({group_lengths}).shape should be {expected_shape}")
 
-    def _fit_shrinkage_factors(self, frame):
+    def _fit_shrinkage_factors(self, frame, groups, most_granular_only=False):
         """Computes the shrinkage coefficients for all fitted levels (corresponding to the keys of self.estimators_)"""
         check_is_fitted(self, ["estimators_", "groups_"])
-        counts = frame.groupby(self.groups_).size().rename("counts")
+        counts = frame.groupby(groups).size().rename("counts")
         all_grp_values = list(self.estimators_.keys())
+
+        if most_granular_only:
+            all_grp_values = [grp_value for grp_value in all_grp_values if len(grp_value) == len(groups)]
 
         hierarchical_counts = {
             grp_value: [counts.loc[subgroup].sum() for subgroup in expanding_list(grp_value, tuple)]

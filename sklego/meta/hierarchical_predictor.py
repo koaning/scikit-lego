@@ -238,7 +238,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         )
 
         self.estimators_ = self._fit_estimators(frame)
-        self.shrinkage_factors_ = self._fit_shrinkage_factors(frame)
+        self.shrinkage_factors_ = self._fit_shrinkage_factors(frame, groups=self.groups_)
 
         self.n_groups_ = len(self.groups_)
         self.n_features_ = frame.shape[1] - self.n_groups_ - 1
