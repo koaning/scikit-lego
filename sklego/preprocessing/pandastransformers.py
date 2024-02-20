@@ -1,7 +1,5 @@
-import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.feature_selection._base import SelectorMixin
 from sklearn.utils.validation import check_is_fitted
 
 from sklego.common import as_list
@@ -271,7 +269,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
             raise TypeError("Provided variable X is not of type pandas.DataFrame")
 
 
-class ColumnSelector(SelectorMixin, BaseEstimator):
+class ColumnSelector(BaseEstimator, TransformerMixin):
     """The `ColumnSelector` transformer allows selecting specific columns from a pandas DataFrame by name.
     Can be useful in a sklearn Pipeline.
 
@@ -344,7 +342,7 @@ class ColumnSelector(SelectorMixin, BaseEstimator):
         # if the columns parameter is not a list, make it into a list
         self.columns = columns
 
-    def _get_support_mask(self, X, y=None):
+    def fit(self, X, y=None):
         """Fit the transformer by storing the column names to keep during transform.
 
         Checks:
@@ -377,30 +375,30 @@ class ColumnSelector(SelectorMixin, BaseEstimator):
         self._check_X_for_type(X)
         self._check_column_length()
         self._check_column_names(X)
-        return np.array([True if c in self.columns else False for c in X.columns])
+        return self
 
-    # def transform(self, X):
-    #     """Returns a pandas DataFrame with only the specified columns.
+    def transform(self, X):
+        """Returns a pandas DataFrame with only the specified columns.
 
-    #     Parameters
-    #     ----------
-    #     X : pd.DataFrame
-    #         The data on which we apply the column selection.
+        Parameters
+        ----------
+        X : pd.DataFrame
+            The data on which we apply the column selection.
 
-    #     Returns
-    #     -------
-    #     pd.DataFrame
-    #         The data with the specified columns dropped.
+        Returns
+        -------
+        pd.DataFrame
+            The data with the specified columns dropped.
 
-    #     Raises
-    #     ------
-    #     TypeError
-    #         If `X` is not a `pd.DataFrame` object.
-    #     """
-    #     self._check_X_for_type(X)
-    #     if self.columns:
-    #         return X[self.columns_]
-    #     return X
+        Raises
+        ------
+        TypeError
+            If `X` is not a `pd.DataFrame` object.
+        """
+        self._check_X_for_type(X)
+        if self.columns:
+            return X[self.columns_]
+        return X
 
     def get_feature_names(self):
         """Alias for `.columns_` attribute"""
