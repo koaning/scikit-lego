@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import numpy as np
 import pytest
 from sklearn.datasets import make_classification, make_regression
@@ -72,6 +74,33 @@ def test_mrmr_sklearn_compatible(dataset, k):
     assert len(mrmr.selected_features_) == k == rf.n_features_in_
 
 
-# TODO ADD:
-# tests to make it break for regression and integer or any combination
-# patch red and relevance and count the number of times they are called
+@pytest.mark.parametrize("relevance, redundancy", [("f", "c"), ("a", "p")])
+def test_raises_wrong_relevance_redundancy_parameters(relevance, redundancy):
+    X, y = make_classification(n_features=4)
+    with pytest.raises(ValueError):
+        _ = MaximumRelevanceMinimumRedundancy(k=2, redundancy_func=redundancy, relevance_func=relevance).fit(X, y)
+
+
+# Forcing to have boolean types on the y -> Fails the kind auto determination
+@pytest.mark.parametrize(
+    "kind, dataset",
+    [("auto", [i.astype(bool) if n == 1 else i for n, i in enumerate(make_classification(n_features=4))])],
+)
+def test_raises_wrong_kind_parameters(kind, dataset):
+    X, y = dataset
+    with pytest.raises(ValueError):
+        _ = MaximumRelevanceMinimumRedundancy(k=2, kind=kind).fit(X, y)
+
+
+@pytest.mark.parametrize("k", [1, 2, 3, 4, 5])
+def test_mrmr_count_n_of_calls(k):
+    X, y = make_classification(n_features=10)
+    relevance_mock, redundancy_mock = MagicMock(), MagicMock()
+
+    # MagicMocking the functions to only match the signature of the original functions
+    relevance_mock.side_effect = lambda x, y: np.ones(len(x))
+    redundancy_mock.side_effect = lambda p1, p2, p3: np.ones(len(p3))
+
+    _ = MaximumRelevanceMinimumRedundancy(k=k, redundancy_func=redundancy_mock, relevance_func=relevance_mock).fit(X, y)
+    relevance_mock.assert_called_once()
+    assert redundancy_mock.call_count == k - 1

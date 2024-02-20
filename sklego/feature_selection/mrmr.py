@@ -25,8 +25,8 @@ def _redundancy_pearson(X, selected, left):
     np.ndarray, shape = (len(left), )
         The array containing the redundancy score using pearson correlation.
     """
-    if len(selected) == 0:
-        return np.ones(len(left))
+    # if len(selected) == 0:
+    #     return np.ones(len(left))
 
     X_norm = X - np.mean(X, axis=0, keepdims=True)
     Xs = X_norm[:, selected]
