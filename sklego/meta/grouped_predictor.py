@@ -6,12 +6,8 @@ from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from sklego.common import as_list, expanding_list
-from sklego.meta._grouped_utils import (
-    _split_groups_and_values,
-    constant_shrinkage,
-    min_n_obs_shrinkage,
-    relative_shrinkage,
-)
+from sklego.meta._grouped_utils import _split_groups_and_values
+from sklego.meta._shrinkage_utils import constant_shrinkage, equal_shrinkage, min_n_obs_shrinkage, relative_shrinkage
 
 
 class GroupedPredictor(BaseEstimator):
@@ -76,6 +72,7 @@ class GroupedPredictor(BaseEstimator):
                 "constant": constant_shrinkage,
                 "relative": relative_shrinkage,
                 "min_n_obs": min_n_obs_shrinkage,
+                "equal": equal_shrinkage,
             }
 
             try:

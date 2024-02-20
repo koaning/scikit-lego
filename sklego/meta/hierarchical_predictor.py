@@ -16,7 +16,13 @@ from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from sklego.common import as_list, expanding_list
-from sklego.meta._grouped_utils import constant_shrinkage, min_n_obs_shrinkage, relative_shrinkage
+from sklego.meta._shrinkage_utils import (
+    ShrinkageMixin,
+    constant_shrinkage,
+    equal_shrinkage,
+    min_n_obs_shrinkage,
+    relative_shrinkage,
+)
 
 
 def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_method):
@@ -57,7 +63,7 @@ def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_met
         raise KeyError(f"No fallback/parent estimator found for the given group values: {grp_names}={grp_values}")
 
 
-class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
+class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     """`HierarchicalPredictor` is a meta-estimator that fits a separate estimator for each group in the input data
     in a hierarchical manner. This means that an estimator is fitted for each level of the group columns.
 
@@ -93,7 +99,7 @@ class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
         The base estimator to be used for each level.
     groups : int | str | List[int] | List[str]
         The column(s) of the array/dataframe to select as a grouping parameter set.
-    shrinkage : Literal["constant", "min_n_obs", "relative"] | Callable | None, default=None
+    shrinkage : Literal["constant", "min_n_obs", "relative", "equal"] | Callable | None, default=None
         How to perform shrinkage:
 
         - `None`: No shrinkage (default)
@@ -149,6 +155,7 @@ class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
         "constant": constant_shrinkage,
         "relative": relative_shrinkage,
         "min_n_obs": min_n_obs_shrinkage,
+        "equal": equal_shrinkage,
     }
     _ALLOWED_FALLBACK = {"parent", "raise"}
 
@@ -318,97 +325,6 @@ class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
             )
 
         return estimators_
-
-    def _set_shrinkage_function(self):
-        """Set the shrinkage function and validate it if it is a custom callable"""
-        if self.shrinkage in self._ALLOWED_SHRINKAGE.keys():
-            shrinkage_function_ = self._ALLOWED_SHRINKAGE[self.shrinkage]
-
-        elif callable(self.shrinkage):
-            self.__check_shrinkage_func()
-            shrinkage_function_ = self.shrinkage
-
-        elif self.shrinkage is None:
-            """Instead of keeping two different behaviors for shrinkage and non-shrinkage cases, this conditional block
-            maps no shrinkage to a constant shrinkage function, wit  all the weight on the grouped passed,
-            independently from the level sizes, as expected from the other shrinkage functions (*).
-            This allows the rest of the code to be agnostic to the shrinkage function, and the shrinkage factors.
-
-            (*) Consider the following example:
-
-            - groups = ["a", "b"] with values (0, 0), (0, 1) and (1, 0) of respective sizes 6, 5, 9.
-            - Considering these sizes, in `__fit_shrinkage_factors` the hierarchical_counts will be:
-                - (1, 0, 0): [20, 11, 6]
-                - (1, 0, 1): [20, 11, 5]
-                - (1, 1, 0): [20, 9, 9]
-
-                Notice that we always have the same total count (20), and the shrinkage factors will reflect that.
-            - For `shrinkage = "relative"`, we get the following shrinkage factors:
-                {
-                    (1,): array([1.]),
-                    (1, 0): array([0.64, 0.35]),
-                    (1, 1): array([0.69, 0.31]),
-                    (1, 0, 0): array([0.54, 0.30 , 0.16]),
-                    (1, 0, 1): array([0.56, 0.30, 0.14]),
-                    (1, 1, 0): array([0.52, 0.24, 0.24])
-                }
-            - For `shrinkage = None`, we get the following shrinkage factors:
-                {
-                    (1,): array([1., 0., 0.]),
-                    (1, 0): array([0., 1., 0.]),
-                    (1, 1): array([0., 1., 0.]),
-                    (1, 0, 0): array([0., 0., 1.]),
-                    (1, 0, 1): array([0., 0., 1.]),
-                    (1, 1, 0): array([0., 0., 1.])
-                }
-            """
-
-            def no_shrinkage_function(x):
-                n = len(self.fitted_levels_[-1])
-                return np.lib.pad([1], (len(x) - 1, n - len(x)), "constant", constant_values=(0))
-
-            shrinkage_function_ = no_shrinkage_function
-
-        else:
-            raise ValueError(
-                f"`shrinkage` should be either `None`, {self._ALLOWED_SHRINKAGE.keys()}, or a callable. "
-                f"Found {self.shrinkage} of type {type(self.shrinkage)}"
-            )
-        return shrinkage_function_
-
-    def __check_shrinkage_func(self):
-        """Validate the shrinkage function if a function is specified"""
-        group_lengths = [10, 5, 2]
-        expected_shape = np.array(group_lengths).shape
-        try:
-            result = self.shrinkage(group_lengths)
-        except Exception as e:
-            raise ValueError(f"Caught an exception while checking the shrinkage function: {str(e)}") from e
-        else:
-            if not isinstance(result, np.ndarray):
-                raise ValueError(f"shrinkage_function({group_lengths}) should return an np.ndarray")
-            if result.shape != expected_shape:
-                raise ValueError(f"shrinkage_function({group_lengths}).shape should be {expected_shape}")
-
-    def _fit_shrinkage_factors(self, frame):
-        """Computes the shrinkage coefficients for all fitted levels (corresponding to the keys of self.estimators_)"""
-
-        check_is_fitted(self, ["estimators_", "groups_"])
-        counts = frame.groupby(self.groups_).size().rename("counts")
-        all_grp_values = list(self.estimators_.keys())
-
-        hierarchical_counts = {
-            grp_value: [counts.loc[subgroup].sum() for subgroup in expanding_list(grp_value, tuple)]
-            for grp_value in all_grp_values
-        }
-
-        shrinkage_factors = {
-            grp_value: self.shrinkage_function_(counts, **self.shrinkage_kwargs)
-            for grp_value, counts in hierarchical_counts.items()
-        }
-
-        # Normalize and pad
-        return {grp_value: shrink_array / shrink_array.sum() for grp_value, shrink_array in shrinkage_factors.items()}
 
     def __validate_frame(self, frame):
         """Validate the input arrays"""
