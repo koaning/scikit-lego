@@ -87,7 +87,8 @@ def equal_shrinkage(group_sizes) -> np.ndarray:
 
 
 class ShrinkageMixin:
-    """Mixin class for shrinkage functionality.
+    """Mixin class for shrinkage functionality (setting shrinkage, checking shrinkage function, and fitting shrinkage
+    factors). The shrinkage factors are used to weigh the predictions of the different levels of a model.
 
     Class inherits from this mixin should have the following attributes:
 
@@ -96,10 +97,13 @@ class ShrinkageMixin:
     - shrinkage : str or callable or None
         The shrinkage function to use. If a callable is passed, it should take an array of group sizes and return an
         array of shrinkage factors.
+        `shrinkage` is parsed by `_set_shrinkage_function`, which then returns `shrinkage_function_` to be used in
+        `_fit_shrinkage_factors`.
+    - shrinkage_kwargs : dict[str, Any]
+        Additional keyword arguments to pass to the shrinkage function.
     - fitted_levels_ : list[str | int]
         List of the levels that have been fitted.
     - estimators_ : dict[tuple[Any, ...], scikit-learn compatible estimator]
-    - groups_ : list[str | int]
     """
 
     def _set_shrinkage_function(self):
@@ -174,8 +178,18 @@ class ShrinkageMixin:
                 raise ValueError(f"shrinkage_function({group_lengths}).shape should be {expected_shape}")
 
     def _fit_shrinkage_factors(self, frame, groups, most_granular_only=False):
-        """Computes the shrinkage coefficients for all fitted levels (corresponding to the keys of self.estimators_)"""
-        check_is_fitted(self, ["estimators_", "groups_"])
+        """Computes the shrinkage coefficients for fitted group values (corresponding to the keys of self.estimators_).
+
+        Parameters
+        ----------
+        frame : pd.DataFrame
+            The DataFrame to group by.
+        groups : list[str | int]
+            The columns to group by.
+        most_granular_only : bool
+            Whether to return only the shrinkage factors for the most granular group values.
+        """
+        check_is_fitted(self, ["estimators_", "shrinkage_function_"])
         counts = frame.groupby(groups).size().rename("counts")
         all_grp_values = list(self.estimators_.keys())
 
