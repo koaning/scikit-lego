@@ -54,3 +54,18 @@
     options:
         show_root_full_path: true
         show_root_heading: true
+
+::: sklego.meta.hierarchical_predictor.HierarchicalPredictor
+    options:
+        show_root_full_path: true
+        show_root_heading: true
+
+::: sklego.meta.hierarchical_predictor.HierarchicalClassifier
+    options:
+        show_root_full_path: true
+        show_root_heading: true
+
+::: sklego.meta.hierarchical_predictor.HierarchicalRegressor
+    options:
+        show_root_full_path: true
+        show_root_heading: true

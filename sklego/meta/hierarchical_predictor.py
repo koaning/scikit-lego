@@ -58,6 +58,89 @@ def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_met
 
 
 class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
+    """`HierarchicalPredictor` is a meta-estimator that fits a separate estimator for each group in the input data
+    in a hierarchical manner. This means that an estimator is fitted for each level of the group columns.
+
+    The only exception to that is when `shrinkage=None` **and** `fallback_method="raise"`, in which case only
+    one estimator per group value is fitted.
+
+    If `shrinkage` is not `None`, the predictions of the group-level models are combined using a shrinkage method. The
+    shrinkage method can be one of the predefined methods `"constant"`, `"min_n_obs"`, `"relative"` or a custom
+    shrinkage function.
+
+    !!! question "Differences with `GroupedPredictor`"
+
+        There are two main differences between `HierarchicalPredictor` and `GroupedPredictor`:
+
+        1. The first difference is the fallback method: `HierarchicalPredictor` has a fallback method that can be set to
+            `"parent"` or `"raise"`. If set to `"parent"`, the estimator will recursively fall back to the parent group
+            in case the group value is not found during `.predict()`.
+
+            **This implies that `groups` order matters!**
+
+        2. `HierarchicalPredictor` is meant to properly handle shrinkage in classification tasks. However this requires
+            that the estimator has a `.predict_proba()` method.
+
+    !!! warning "Inheritance"
+
+        This class is not meant to be used directly, but to be inherited by a specific hierarchical predictor, such as
+        `HierarchicalRegressor` or `HierarchicalClassifier`, which properly implement the `.predict()` and
+        `predict`-like methods for the specific task.
+
+    Parameters
+    ----------
+    estimator : scikit-learn compatible estimator/pipeline
+        The base estimator to be used for each level.
+    groups : int | str | List[int] | List[str]
+        The column(s) of the array/dataframe to select as a grouping parameter set.
+    shrinkage : Literal["constant", "min_n_obs", "relative"] | Callable | None, default=None
+        How to perform shrinkage:
+
+        - `None`: No shrinkage (default)
+        - `"constant"`: shrunk prediction for a level is weighted average of its prediction and its parents prediction
+        - `"min_n_obs"`: shrunk prediction is the prediction for the smallest group with at least n observations in it
+        - `"relative"`: each group-level is weight according to its size
+        - `Callable`: a function that takes a list of group lengths and returns an array of the same size with the
+            weights for each group
+    fallback_method : Literal["parent", "raise"], default="parent"
+        The fallback strategy to use if a group is not found at prediction time:
+
+        - "parent": recursively fall back to the parent group in case the group value is not found during `.predict()`.
+            It requires to fit a model on each level, including a global model.
+        - "raise": raise a KeyError if the group value is not found during `.predict()`.
+    n_jobs : int | None, default=None
+        The number of jobs to run in parallel. The same convention of [`joblib.Parallel`](https://joblib.readthedocs.io/en/latest/generated/joblib.Parallel.html)
+        holds:
+
+        - `n_jobs = None`: interpreted as n_jobs=1.
+        - `n_jobs > 0`: n_cpus=n_jobs are used.
+        - `n_jobs < 0`: (n_cpus + 1 + n_jobs) are used.
+    check_X : bool, default=True
+        Whether to validate `X` to be non-empty 2D array of finite values and attempt to cast `X` to float.
+        If disabled, the model/pipeline is expected to handle e.g. missing, non-numeric, or non-finite values.
+    **shrinkage_kwargs : dict
+        Keyword arguments to the shrinkage function
+
+    Attributes
+    ----------
+    estimators_ : dict
+        Fitted estimators for each level.
+    shrinkage_function_ : callable
+        The shrinkage function that is used to calculate the shrinkage factors
+    shrinkage_factors_ : dict
+        Shrinkage factors applied to each level.
+    groups_ : list
+        List of all group columns including a global column.
+    n_groups_ : int
+        Number of unique groups.
+    n_features_in_ : int
+        Number of features in the training data.
+    n_features_ : int
+        Number of features used by the estimators.
+    n_levels_ : int
+        Number of hierarchical levels in the grouping.
+    """
+
     _CHECK_KWARGS = {
         "ensure_min_features": 0,
         "accept_large_sparse": False,
@@ -157,8 +240,13 @@ class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
 
         return self
 
+    def predict(self, X):
+        """Predict the target value for each sample in `X`."""
+        raise NotImplementedError("This method should be implemented in the child class")
+
     def _predict_estimators(self, X, method_name):
         """Calls `method_name` on each level and apply shrinkage if necessary"""
+
         check_is_fitted(self, ["estimators_", "groups_"])
 
         if X.shape[1] != self.n_features_in_:
@@ -343,7 +431,93 @@ class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
 
 
 class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
+    """A hierarchical regressor that predicts values using hierarchical grouping.
+
+    This class extends [`HierarchicalPredictor`][sklego.meta.hierarchical_predictor.HierarchicalPredictor] and adds
+    functionality specific to regression tasks.
+
+    Its spec is the same as `HierarchicalPredictor`, but it is meant to be used for regression tasks.
+
+    Examples
+    --------
+    ```py
+    import pandas as pd
+
+    from sklearn.datasets import make_regression
+    from sklearn.linear_model import LinearRegression
+
+    from sklego.meta import HierarchicalRegressor
+
+    X, y = make_regression(n_samples=1000, n_features=10, n_informative=3, random_state=42)
+    X = pd.DataFrame(X, columns=[f"x_{i}" for i in range(X.shape[1])]).assign(
+        g_1 = ['A'] * 500 + ['B'] * 500,
+        g_2 = ['X'] * 250 + ['Y'] * 250 + ['Z'] * 250 + ['W'] * 250
+    )
+    groups = ["g_1", "g_2"]
+
+    hr = HierarchicalRegressor(
+        estimator=LinearRegression(),
+        groups=groups
+    ).fit(X, y)
+
+    hr.estimators_
+    ```
+
+    ```terminal
+    {
+        (1,): LinearRegression(),
+        (1, 'A'): LinearRegression(),
+        (1, 'B'): LinearRegression(),
+        (1, 'A', 'X'): LinearRegression(),
+        (1, 'A', 'Y'): LinearRegression(),
+        (1, 'B', 'W'): LinearRegression(),
+        (1, 'B', 'Z'): LinearRegression()
+    }
+    ```
+
+    As we can see, the estimators are fitted for each level of the group columns. The trailing (1,) is the global
+    estimator, which is fitted on the entire dataset.
+
+    If we try to predict a sample in which `(g_1, g_2) = ('B', 'X')`, this will fallback to the estimator `(1, 'B')`.
+    when `fallback_method="parent"` or will raise a KeyError when `fallback_method="raise"`.
+
+    As one would expect, `estimator` can be a pipeline, and the pipeline will be fitted on each level of the group:
+    ```py
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    hr = HierarchicalRegressor(
+        estimator=Pipeline([
+            ('scaler', StandardScaler()),
+            ('model', LinearRegression())
+            ]),
+        groups=groups
+    ).fit(X, y)
+    ```
+    """
+
     def fit(self, X, y):
+        """Fit one regressor for each hierarchical group of training data `X` and `y`.
+
+        Will also learn the groups that exist within the training dataset.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : array-like of shape (n_samples,)
+            Target values.
+
+        Returns
+        -------
+        self : HierarchicalRegressor
+            The fitted regressor.
+
+        Raises
+        -------
+        ValueError
+            If the supplied estimator is not a regressor.
+        """
         if not is_regressor(self.estimator):
             raise ValueError("The supplied estimator should be a regressor")
 
@@ -351,11 +525,116 @@ class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
         return self
 
     def predict(self, X):
+        """Predict regression values for new data `X`.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            Predicted regression values.
+        """
         return self._predict_estimators(X, "predict")
 
 
 class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
+    """A hierarchical classifier that predicts labels using hierarchical grouping.
+
+    This class extends [`HierarchicalPredictor`][sklego.meta.hierarchical_predictor.HierarchicalPredictor] and adds
+    functionality specific to regression tasks.
+
+    Its spec is the same as `HierarchicalPredictor`, but it is meant to be used for classification tasks.
+
+    !!! warning ".`predict_proba(..)` method required!"
+
+        In order to use shrinkage with classification tasks, we require the estimator to have `.predict_proba()` method.
+        The only way to blend the predictions of the group-level models is by using the probabilities of each class,
+        and not the labels themselves.
+
+    Examples
+    --------
+    ```py
+    import pandas as pd
+
+    from sklearn.datasets import make_classification
+    from sklearn.linear_model import LogisticRegression
+
+    from sklego.meta import HierarchicalClassifier
+
+    X, y = make_classification(n_samples=1000, n_features=10, n_informative=3, random_state=42)
+    X = pd.DataFrame(X, columns=[f"x_{i}" for i in range(X.shape[1])]).assign(
+        g_1 = ['A'] * 500 + ['B'] * 500,
+        g_2 = ['X'] * 250 + ['Y'] * 250 + ['Z'] * 250 + ['W'] * 250
+    )
+    groups = ["g_1", "g_2"]
+
+    hc = HierarchicalClassifier(
+        estimator=LogisticRegression(),
+        groups=groups
+    ).fit(X, y)
+
+    hc.estimators_
+    ```
+
+    ```terminal
+    {
+        (1,): LogisticRegression(),
+        (1, 'A'): LogisticRegression(),
+        (1, 'B'): LogisticRegression(),
+        (1, 'A', 'X'): LogisticRegression(),
+        (1, 'A', 'Y'): LogisticRegression(),
+        (1, 'B', 'W'): LogisticRegression(),
+        (1, 'B', 'Z'): LogisticRegression()
+    }
+    ```
+
+    As we can see, the estimators are fitted for each level of the group columns. The trailing (1,) is the global
+    estimator, which is fitted on the entire dataset.
+
+    If we try to predict a sample in which `(g_1, g_2) = ('B', 'X')`, this will fallback to the estimator `(1, 'B')`.
+    when `fallback_method="parent"` or will raise a KeyError when `fallback_method="raise"`.
+
+    As one would expect, `estimator` can be a pipeline, and the pipeline will be fitted on each level of the group:
+    ```py
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    hc = HierarchicalClassifier(
+        estimator=Pipeline([
+            ('scaler', StandardScaler()),
+            ('model', LogisticRegression())
+            ]),
+        groups=groups
+    ).fit(X, y)
+    ```
+    """
+
     def fit(self, X, y):
+        """Fit one classifier for each hierarchical group of training data `X` and `y`.
+
+        Will also learn the groups that exist within the training dataset, the classes and the number of classes in the
+        target values.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : array-like of shape (n_samples,)
+            Target values.
+
+        Returns
+        -------
+        self : HierarchicalClassifier
+            The fitted classifier.
+
+        Raises
+        -------
+        ValueError
+            If the supplied estimator is not a classifier.
+        """
         if not is_classifier(self.estimator):
             raise ValueError("The supplied estimator should be a classifier")
 
@@ -369,16 +648,29 @@ class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
         return self
 
     def predict(self, X):
-        preds = self._predict_estimators(X, method_name="predict_proba")
-        return self.classes_[np.argmax(preds, axis=1)]
-
-    def predict_proba(self, X):
-        """Predict probabilities on new data `X`.
+        """Predict class labels for samples in `X` as the class with the highest probability.
 
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Data to predict.
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted class labels.
+        """
+
+        preds = self._predict_estimators(X, method_name="predict_proba")
+        return self.classes_[np.argmax(preds, axis=1)]
+
+    def predict_proba(self, X):
+        """Predict probabilities for each class on new data `X`.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
 
         Returns
         -------
@@ -397,7 +689,7 @@ class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
         Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
-            Data to predict.
+            The data to predict.
 
         Returns
         -------
