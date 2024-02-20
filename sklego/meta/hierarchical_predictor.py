@@ -19,11 +19,6 @@ from sklego.common import as_list, expanding_list
 from sklego.meta._grouped_utils import constant_shrinkage, min_n_obs_shrinkage, relative_shrinkage
 
 
-def is_transformer(estimator):
-    """Check if an estimator is a transformer."""
-    return hasattr(estimator, "transform")
-
-
 def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_method):
     """Recursive function to get the estimator for the given group values.
 
@@ -57,8 +52,9 @@ def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_met
     except KeyError:
         if fallback_method == "parent":
             return _get_estimator(estimators, grp_values[:-1], grp_names[:-1], return_level - 1, fallback_method)
-        else:  # fallback_method == "raise"
-            raise KeyError(f"No fallback/parent estimator found for the given group values: {grp_names}={grp_values}")
+
+        # fallback_method == "raise" case
+        raise KeyError(f"No fallback/parent estimator found for the given group values: {grp_names}={grp_values}")
 
 
 class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
@@ -133,8 +129,16 @@ class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
             raise ValueError(f"`check_X` should be a boolean. Found {type(self.check_X)}")
 
         self.groups_ = [self._GLOBAL_NAME] + as_list(self.groups)
-        self.fitted_levels_ = expanding_list(self.groups_)
-        self.shrinkage_function_ = self._set_shrinkage_function()  # If invalid shrinkage, will raise ValueError
+
+        # The only case in which we don't have to fit multiple levels is when shrinkage is None and fallback_method is 'raise'
+        self.fitted_levels_ = (
+            [self.groups_]
+            if (self.shrinkage is None and self.fallback_method == "raise")
+            else expanding_list(self.groups_)
+        )
+
+        # If invalid shrinkage, will raise ValueError (before fitting all the estimators!)
+        self.shrinkage_function_ = self._set_shrinkage_function()
 
         frame = (
             pd.DataFrame(X)
@@ -153,7 +157,7 @@ class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
 
         return self
 
-    def _inference(self, X, method_name):
+    def _predict_estimators(self, X, method_name):
         """Calls `method_name` on each level and apply shrinkage if necessary"""
         check_is_fitted(self, ["estimators_", "groups_"])
 
@@ -162,14 +166,12 @@ class HierarchicalPredictor(MetaEstimatorMixin, BaseEstimator):
 
         frame = pd.DataFrame(X).reset_index(drop=True).assign(**{self._GLOBAL_NAME: 1})
 
-        if not is_classifier(self.estimator):
-            # regressor or outlier detector
+        if not is_classifier(self.estimator):  # regressor or outlier detector
             n_out = 1
         else:
             if self.n_classes_ > 2 or method_name == "predict_proba":
                 n_out = self.n_classes_
-            else:
-                # binary case with `method_name = "decision_function"`
+            else:  # binary case with `method_name = "decision_function"`
                 n_out = 1
 
         preds = np.zeros((X.shape[0], self.n_levels_, n_out), dtype=float)
@@ -349,7 +351,7 @@ class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
         return self
 
     def predict(self, X):
-        return self._inference(X, "predict")
+        return self._predict_estimators(X, "predict")
 
 
 class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
@@ -367,7 +369,7 @@ class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
         return self
 
     def predict(self, X):
-        preds = self._inference(X, method_name="predict_proba")
+        preds = self._predict_estimators(X, method_name="predict_proba")
         return self.classes_[np.argmax(preds, axis=1)]
 
     def predict_proba(self, X):
@@ -383,7 +385,7 @@ class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
         array-like of shape (n_samples, n_classes)
             Predicted probabilities per class.
         """
-        return self._inference(X, method_name="predict_proba")
+        return self._predict_estimators(X, method_name="predict_proba")
 
     @available_if(lambda self: hasattr(self.estimator, "decision_function"))
     def decision_function(self, X):
@@ -409,16 +411,4 @@ class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
             "on the same target values.",
             UserWarning,
         )
-        return self.__predict_estimators(X, method_name="decision_function")
-
-
-# class HierarchicalTransformer(TransformerMixin):
-#
-#     def fit(self, X, y=None):
-#         if not is_transformer(self.estimator):
-#             raise ValueError("The supplied transformer should have a 'transform' method")
-#         ...
-#         return self
-#
-#     def transform(self, X):
-#         return self._inference(X, "transform")
+        return self._predict_estimators(X, method_name="decision_function")
