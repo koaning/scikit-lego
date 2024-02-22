@@ -59,21 +59,23 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     4. Construct the final subset of features: MRMR iteratively adds features to the selected subset until a predefined
     number of features is reached.
 
+    The implemented formula is:
+    \text{score}_{i}(f) = \frac{\text{relevance}(f | y)}{\text{reduncancy}(f | \text{selected}_{i-1})}
     Parameters
     ----------
     k : int
         Number of feature the model should use.
     relevance_func : str | Callable, default="f"
-       The relevance function to use. The default maps to scikit-learn [f_classif](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html) or  [f_regression](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html) for classification or regression (resp.)
-    redundancy_func : str | Callable, default="p" (Pearson correlation)
-        The redundancy function to use.
+        The relevance function to use. The default maps to scikit-learn [f_classif](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html) or  [f_regression](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html) for classification or regression (resp.)
+    redundancy_func : str | Callable, default="p"
+        The redundancy function to use. The default maps to Pearson correlation computed for each remaining features.
     kind : Literal["auto", "classficiation", "regression"], default="auto".
         'classification' or 'regression' or 'auto' if auto the model
         will try to infer the type of problem looking at the y data type, by default "auto".
 
     !! warning:
         If a custom relevance_func is provided it must have this signature:
-        Callable[[np.ndarray, np.ndarray], np.ndarray]
+        `Callable[[np.ndarray, np.ndarray], np.ndarray]`
         It should accept X, y as arguments and it should compute the score for each feature of X
         and return an array of shape (n_features_in_,).
     !! warning:
@@ -81,7 +83,8 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
     Attributes
     ----------
-    _y_dtype : data type of y
+    _y_dtype : np.dtype
+        data type of y
     selected_features_ : array-like of shape (k,)
         Indexes of the selected features.
     scores_ : array-like of shape (k,)
