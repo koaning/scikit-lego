@@ -63,10 +63,8 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     ----------
     k : int
         Number of feature the model should use.
-    relevance_func : str | Callable,, default= "f"(f_classif or  f_regression from sklearn.feature_selection)
-        [f_classif](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html)
-        [f_regression](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html)
-        The relevance function to use.
+    relevance_func : str | Callable, default="f"
+       The relevance function to use. The default maps to scikit-learn [f_classif](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html) or  [f_regression](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html) for classification or regression (resp.)
     redundancy_func : str | Callable, default="p" (Pearson correlation)
         The redundancy function to use.
     kind : Literal["auto", "classficiation", "regression"], default="auto".
