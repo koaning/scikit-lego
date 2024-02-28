@@ -51,7 +51,7 @@ def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_met
     Raises
     ------
     KeyError
-        If `fallback_method="raise"` and no fallback/parent estimator is found for the given group values.
+        If `fallback_method="raise"` and no estimator is found for the given group values.
     """
     try:
         return estimators[grp_values], return_level
@@ -60,7 +60,7 @@ def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_met
             return _get_estimator(estimators, grp_values[:-1], grp_names[:-1], return_level - 1, fallback_method)
 
         # fallback_method == "raise" case
-        raise KeyError(f"No fallback/parent estimator found for the given group values: {grp_names}={grp_values}")
+        raise KeyError(f"No estimator found for the given group values: {grp_names}={grp_values}")
 
 
 class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
@@ -76,16 +76,21 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
     !!! question "Differences with `GroupedPredictor`"
 
-        There are two main differences between `HierarchicalPredictor` and `GroupedPredictor`:
+        There are two main differences between `HierarchicalPredictor` and
+        [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor]:
 
         1. The first difference is the fallback method: `HierarchicalPredictor` has a fallback method that can be set to
             `"parent"` or `"raise"`. If set to `"parent"`, the estimator will recursively fall back to the parent group
             in case the group value is not found during `.predict()`.
 
-            **This implies that `groups` order matters!**
+            As a consequence of this:
 
-        2. `HierarchicalPredictor` is meant to properly handle shrinkage in classification tasks. However this requires
-            that the estimator has a `.predict_proba()` method.
+            - **`groups` order matters!**
+            - Potentially a combinatoric number of estimators are fitted, one for each unique combination of group
+                values and each level.
+
+        2. `HierarchicalPredictor` is meant to properly handle shrinkage in classification tasks. However this
+            **requires** that the estimator has a `.predict_proba()` method.
 
     !!! warning "Inheritance"
 
@@ -160,7 +165,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     _ALLOWED_FALLBACK = {"parent", "raise"}
 
     _GLOBAL_NAME = "__sklego_global_estimator__"
-    _TARGET_NAME = "__skelgo_target_value__"
+    _TARGET_NAME = "__sklego_target_value__"
 
     def __init__(
         self,
@@ -352,7 +357,8 @@ class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
     This class extends [`HierarchicalPredictor`][sklego.meta.hierarchical_predictor.HierarchicalPredictor] and adds
     functionality specific to regression tasks.
 
-    Its spec is the same as `HierarchicalPredictor`, but it is meant to be used for regression tasks.
+    Its spec is the same as `HierarchicalPredictor`, with additional checks to ensure that the supplied estimator is a
+    regressor.
 
     Examples
     --------
@@ -462,7 +468,8 @@ class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
     This class extends [`HierarchicalPredictor`][sklego.meta.hierarchical_predictor.HierarchicalPredictor] and adds
     functionality specific to regression tasks.
 
-    Its spec is the same as `HierarchicalPredictor`, but it is meant to be used for classification tasks.
+    Its spec is the same as `HierarchicalPredictor`, with additional checks to ensure that the supplied estimator is a
+    classifier that implements the `.predict_proba()` method.
 
     !!! warning ".`predict_proba(..)` method required!"
 
