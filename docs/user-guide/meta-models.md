@@ -63,7 +63,8 @@ Wall time: 917 ms
 To help explain what it can do we'll consider three methods to predict the chicken weight.
 
 The chicken data has 578 rows and 4 columns from an experiment on the effect of diet on early growth of chicks.
-The body weights of the chicks were measured at birth and every second day thereafter until day 20. They were also measured on day 21.
+The body weights of the chicks were measured at birth and every second day thereafter until day 20.
+They were also measured on day 21.
 There were four groups on chicks on different protein diets.
 
 ### Setup
@@ -92,13 +93,13 @@ So let's see how the grouped model can address this.
 
 ### Model 2: Linear Regression in GroupedPredictor
 
-The goal of the [GroupedPredictor][grouped-predictor-api] is to allow us to split up our data.
+The goal of the [`GroupedPredictor`][grouped-predictor-api] is to allow us to split up our data.
 
 The image below demonstrates what will happen.
 
 ![grouped](../_static/meta-models/grouped-df.png)
 
-We train 5 models in total because the model will also train a fallback automatically (you can turn this off via `use_fallback=False`).
+We train 5 models in total because the model will also train a fallback automatically (you can turn this off via `use_global_model=False`).
 
 The idea behind the fallback is that we can predict something if there is a group at prediction time which is unseen during training.
 
@@ -116,7 +117,7 @@ Such model looks a bit better.
 
 ### Model 3: Dummy Regression in GroupedEstimation
 
-We could go a step further and train a [DummyRegressor][dummy-regressor-api] per diet per timestep.
+We could go a step further and train a [`DummyRegressor`][dummy-regressor-api] per diet per timestep.
 
 The code below works similar as the previous example but one difference is that the grouped model does not receive a dataframe but a numpy array.
 
@@ -132,6 +133,16 @@ The code that does this is listed below.
 ![grouped-dummy-model](../_static/meta-models/grouped-dummy-model.png)
 
 Note that these predictions seems to yield the lowest error but take it with a grain of salt since these errors are only based on the train set.
+
+### Specialized Estimators
+
+!!! info "New in version 0.7.5"
+
+Instead of using the generic `GroupedPredictor` directly, it is possible to work with _task specific_ estimators, namely: [`GroupedClassifier`][grouped-classifier-api] and [`GroupedRegressor`][grouped-regressor-api].
+
+Their specs and functionalities are the exact same of the `GroupedPredictor`[^1] but they are specialized for classification and regression tasks, respectively, by adding checks on the input estimator.
+
+[^1]: Not entirely true, as `GroupedClassifier` doesn't allow for the `shrinkage` parameter.
 
 ## Grouped Transformation
 
@@ -441,6 +452,8 @@ As a meta-estimator, the `OrdinalClassifier` fits N-1 binary classifiers, which 
 
 [thresholder-api]: ../../api/meta#sklego.meta.thresholder.Thresholder
 [grouped-predictor-api]: ../../api/meta#sklego.meta.grouped_predictor.GroupedPredictor
+[grouped-classifier-api]: ../../api/meta#sklego.meta.grouped_predictor.GroupedClassifier
+[grouped-regressor-api]: ../../api/meta#sklego.meta.grouped_predictor.GroupedRegressor
 [grouped-transformer-api]: ../../api/meta#sklego.meta.grouped_transformer.GroupedTransformer
 [decay-api]: ../../api/meta#sklego.meta.decay_estimator.DecayEstimator
 [decay-functions]: ../../api/decay-functions

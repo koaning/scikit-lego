@@ -1,3 +1,5 @@
+from contextlib import nullcontext as does_not_raise
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -8,7 +10,7 @@ from sklearn.pipeline import make_pipeline
 
 from sklego.common import flatten
 from sklego.datasets import load_chicken
-from sklego.meta import GroupedPredictor
+from sklego.meta import GroupedClassifier, GroupedPredictor, GroupedRegressor
 from tests.conftest import general_checks, select_tests
 
 
@@ -44,12 +46,13 @@ def random_xy_grouped_clf_different_classes(request):
         ],
     ),
 )
-def test_estimator_checks(test_fn):
-    clf = GroupedPredictor(estimator=LinearRegression(), groups=0, use_global_model=True)
-    test_fn(GroupedPredictor.__name__ + "_fallback", clf)
+@pytest.mark.parametrize("meta_cls", [GroupedRegressor, GroupedPredictor])
+def test_estimator_checks(test_fn, meta_cls):
+    clf = meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
+    test_fn(meta_cls.__name__ + "_fallback", clf)
 
-    clf = GroupedPredictor(estimator=LinearRegression(), groups=0, use_global_model=False)
-    test_fn(GroupedPredictor.__name__ + "_nofallback", clf)
+    clf = meta_cls(estimator=LinearRegression(), groups=0, use_global_model=False)
+    test_fn(meta_cls.__name__ + "_nofallback", clf)
 
 
 def test_chickweight_df1_keys():
@@ -632,3 +635,36 @@ def test_has_decision_function():
     X, y = df.drop(columns="weight"), df["weight"]
     # This should NOT raise errors
     GroupedPredictor(LogisticRegression(max_iter=2000), groups=["diet"]).fit(X, y).decision_function(X)
+
+
+@pytest.mark.parametrize(
+    "meta_cls,estimator,context",
+    [
+        (GroupedRegressor, LinearRegression(), does_not_raise()),
+        (GroupedClassifier, LogisticRegression(), does_not_raise()),
+        (GroupedRegressor, LogisticRegression(), pytest.raises(ValueError)),
+        (GroupedClassifier, LinearRegression(), pytest.raises(ValueError)),
+    ],
+)
+def test_specialized_classes(meta_cls, estimator, context):
+    df = load_chicken(as_frame=True)
+    with context:
+        meta_cls(estimator=estimator, groups="diet").fit(df[["time", "diet"]], df["weight"].astype(int))
+
+
+@pytest.mark.parametrize(
+    "shrinkage,context",
+    [
+        (None, does_not_raise()),
+        ("constant", pytest.raises(ValueError)),
+        ("relative", pytest.raises(ValueError)),
+        ("min_n_obs", pytest.raises(ValueError)),
+        (lambda x: x, pytest.raises(ValueError)),
+    ],
+)
+def test_clf_shrinkage(shrinkage, context):
+    df = load_chicken(as_frame=True)
+    with context:
+        GroupedPredictor(estimator=LogisticRegression(), groups="diet", shrinkage=shrinkage).fit(
+            df[["time", "diet"]], df["weight"].astype(int)
+        )

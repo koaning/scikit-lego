@@ -20,6 +20,16 @@
         show_root_full_path: true
         show_root_heading: true
 
+::: sklego.meta.grouped_predictor.GroupedClassifier
+    options:
+        show_root_full_path: true
+        show_root_heading: true
+
+::: sklego.meta.grouped_predictor.GroupedRegressor
+    options:
+        show_root_full_path: true
+        show_root_heading: true
+
 ::: sklego.meta.grouped_transformer.GroupedTransformer
     options:
         show_root_full_path: true

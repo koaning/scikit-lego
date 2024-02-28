@@ -394,6 +394,8 @@ class GroupedRegressor(GroupedPredictor, RegressorMixin):
 
     Its spec is the same as [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor] but it is available
     only for regression models.
+
+    !!! info "New in version 0.7.5"
     """
 
     def fit(self, X, y):
@@ -429,6 +431,8 @@ class GroupedClassifier(GroupedPredictor, ClassifierMixin):
 
     Its equivalent to [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor] with `shrinkage=None`
     but it is available only for classification models.
+
+    !!! info "New in version 0.7.5"
     """
 
     def __init__(
@@ -472,5 +476,5 @@ class GroupedClassifier(GroupedPredictor, ClassifierMixin):
 
         if not is_classifier(self.estimator):
             raise ValueError("GroupedClassifier is only available for classification models")
-
+        self.classes_ = np.unique(y)
         return super().fit(X, y)
