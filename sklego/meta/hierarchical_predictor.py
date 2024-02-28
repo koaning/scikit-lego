@@ -230,11 +230,11 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         self.groups_ = [self._GLOBAL_NAME] + as_list(self.groups)
 
         # The only case in which we don't have to fit multiple levels is when shrinkage is None and fallback_method is 'raise'
-        self.fitted_levels_ = (
-            [self.groups_]
-            if (self.shrinkage is None and self.fallback_method == "raise")
-            else expanding_list(self.groups_)
-        )
+        self.fitted_levels_ = expanding_list(self.groups_)
+        #     [self.groups_]
+        #     if (self.shrinkage is None and self.fallback_method == "raise")
+        #     else
+        # )
 
         # If invalid shrinkage, will raise ValueError (before fitting all the estimators!)
         self.shrinkage_function_ = self._set_shrinkage_function()
@@ -299,7 +299,9 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
                 raw_pred = getattr(_estimator, method_name)(grp_frame.drop(columns=self.groups_))
 
                 preds[np.ix_(grp_idx, [level_idx], last_dim_ix)] = np.atleast_3d(raw_pred[:, None])
-                shrinkage[np.ix_(grp_idx)] = _shrinkage_factor
+                shrinkage[np.ix_(grp_idx)] = np.lib.pad(
+                    _shrinkage_factor, (0, self.n_levels_ - len(_shrinkage_factor)), "constant", constant_values=(0)
+                )
 
         return (preds * np.atleast_3d(shrinkage)).sum(axis=1).squeeze()
 
