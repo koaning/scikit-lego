@@ -98,21 +98,25 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         `HierarchicalRegressor` or `HierarchicalClassifier`, which properly implement the `.predict()` and
         `predict`-like methods for the specific task.
 
+    !!! info "New in version 0.8.0"
+
     Parameters
     ----------
     estimator : scikit-learn compatible estimator/pipeline
         The base estimator to be used for each level.
     groups : int | str | List[int] | List[str]
         The column(s) of the array/dataframe to select as a grouping parameter set.
-    shrinkage : Literal["constant", "min_n_obs", "relative", "equal"] | Callable | None, default=None
+    shrinkage : Literal["constant", "equal", "min_n_obs", "relative"] | Callable | None, default=None
         How to perform shrinkage:
 
         - `None`: No shrinkage (default)
-        - `"constant"`: shrunk prediction for a level is weighted average of its prediction and its parents prediction
-        - `"min_n_obs"`: shrunk prediction is the prediction for the smallest group with at least n observations in it
-        - `"relative"`: each group-level is weight according to its size
+        - `"constant"`: the augmented prediction for each level is the weighted average between its prediction and the
+            augmented prediction for its parent.
+        - `"equal"`: each group is weighed equally.
+        - `"min_n_obs"`: use only the smallest group with a certain amount of observations.
+        - `"relative"`: weigh each group according to its size.
         - `Callable`: a function that takes a list of group lengths and returns an array of the same size with the
-            weights for each group
+            weights for each group.
     fallback_method : Literal["parent", "raise"], default="parent"
         The fallback strategy to use if a group is not found at prediction time:
 
@@ -360,6 +364,8 @@ class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
     Its spec is the same as `HierarchicalPredictor`, with additional checks to ensure that the supplied estimator is a
     regressor.
 
+    !!! info "New in version 0.8.0"
+
     Examples
     --------
     ```py
@@ -476,6 +482,8 @@ class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
         In order to use shrinkage with classification tasks, we require the estimator to have `.predict_proba()` method.
         The only way to blend the predictions of the group-level models is by using the probabilities of each class,
         and not the labels themselves.
+
+    !!! info "New in version 0.8.0"
 
     Examples
     --------

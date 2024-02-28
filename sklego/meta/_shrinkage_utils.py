@@ -71,7 +71,7 @@ def min_n_obs_shrinkage(group_sizes, min_n_obs: int) -> np.ndarray:
 
 
 def equal_shrinkage(group_sizes) -> np.ndarray:
-    """Weigh each group equally
+    """Each group is weighed equally.
 
     Parameters
     ----------
@@ -92,18 +92,18 @@ class ShrinkageMixin:
 
     Class inherits from this mixin should have the following attributes:
 
-    - _ALLOWED_SHRINKAGE : dict[str, callable]
+    - `_ALLOWED_SHRINKAGE` : dict[str, callable]
         A dictionary mapping the name of the shrinkage function to the function itself.
-    - shrinkage : str or callable or None
+    - `shrinkage` : str | callable | None
         The shrinkage function to use. If a callable is passed, it should take an array of group sizes and return an
         array of shrinkage factors.
         `shrinkage` is parsed by `_set_shrinkage_function`, which then returns `shrinkage_function_` to be used in
         `_fit_shrinkage_factors`.
-    - shrinkage_kwargs : dict[str, Any]
+    - `shrinkage_kwargs` : dict[str, Any]
         Additional keyword arguments to pass to the shrinkage function.
-    - fitted_levels_ : list[str | int]
+    - `fitted_levels_` : list[str | int]
         List of the levels that have been fitted.
-    - estimators_ : dict[tuple[Any, ...], scikit-learn compatible estimator]
+    - `estimators_` : dict[tuple[Any, ...], scikit-learn compatible estimator]
     """
 
     def _set_shrinkage_function(self):

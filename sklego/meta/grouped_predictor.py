@@ -38,15 +38,17 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         The estimator/pipeline to be applied per group.
     groups : int | str | List[int] | List[str]
         The column(s) of the array/dataframe to select as a grouping parameter set.
-    shrinkage : Literal["constant", "min_n_obs", "relative"] | Callable | None, default=None
+    shrinkage : Literal["constant", "equal", "min_n_obs", "relative"] | Callable | None, default=None
         How to perform shrinkage:
 
         - `None`: No shrinkage (default)
-        - `"constant"`: shrunk prediction for a level is weighted average of its prediction and its parents prediction
-        - `"min_n_obs"`: shrunk prediction is the prediction for the smallest group with at least n observations in it
-        - `"relative"`: each group-level is weight according to its size
+        - `"constant"`: the augmented prediction for each level is the weighted average between its prediction and the
+            augmented prediction for its parent.
+        - `"equal"`: each group is weighed equally.
+        - `"min_n_obs"`: use only the smallest group with a certain amount of observations.
+        - `"relative"`: weigh each group according to its size.
         - `Callable`: a function that takes a list of group lengths and returns an array of the same size with the
-            weights for each group
+            weights for each group.
     use_global_model : bool, default=True
 
         - With shrinkage: whether to have a model over the entire input as first group

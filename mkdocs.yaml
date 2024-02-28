@@ -153,6 +153,7 @@ nav:
     - Pandas Utils: api/pandas-utils.md
     - Pipeline: api/pipeline.md
     - Preprocessing: api/preprocessing.md
+    - Shrinkage Functions: api/shrinkage-functions.md
   - This: this.md
 
 not_in_nav: |

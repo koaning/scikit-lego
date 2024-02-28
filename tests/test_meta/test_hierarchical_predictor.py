@@ -15,5 +15,5 @@ from sklego.meta import HierarchicalClassifier, HierarchicalRegressor
         HierarchicalRegressor(estimator=LinearRegression(), groups=0),
     ],
 )
-def test_fallback(meta, value, context):
-    ...
+def test(meta):
+    pass
