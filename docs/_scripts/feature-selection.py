@@ -17,7 +17,6 @@ from sklego.feature_selection import MaximumRelevanceMinimumRedundancy
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-# sns.set_theme(style='darkgrid')
 # --8<-- [end:mrmr-commonimports]
 
 # --8<-- [start:mrmr-intro]
@@ -33,7 +32,9 @@ t_t_s_params = {'test_size': 10000, 'random_state': 42}
 X_train, X_test, y_train, y_test = train_test_split(X, y, **t_t_s_params)
 X_train = X_train.reshape(60000, 28 * 28)
 X_test = X_test.reshape(10000, 28 * 28)
+# --8<-- [end:mrmr-intro]
 
+# --8<-- [start:mrmr-smile]
 def smile_relevance(X, y):
     rows = 28
     cols = 28
@@ -60,8 +61,9 @@ def smile_relevance(X, y):
 
 def smile_redundancy(X, selected, left):
     return np.ones(len(left))
+# --8<-- [end:mrmr-smile]
 
-
+# --8<-- [start:mrmr-core]
 K = 38
 mrmr = MaximumRelevanceMinimumRedundancy(k=K,
                                          kind="auto",
@@ -78,7 +80,7 @@ mi_features = np.argsort(np.nan_to_num(mi, nan=np.finfo(float).eps))[-K:]
 mrmr_features = mrmr.fit(X_train, y_train).selected_features_
 mrmr_smile_features = mrmr_s.fit(X_train, y_train).selected_features_
 
-# --8<-- [end:mrmr-intro]
+# --8<-- [end:mrmr-core]
 # --8<-- [start:mrmr-selected-features]
 # Define features dictionary
 features = {
@@ -92,7 +94,7 @@ for name, s_f in features.items():
     model.fit(X_train[:, s_f], y_train.squeeze())
     y_pred = model.predict(X_test[:, s_f])
     print(f"Feature selection method: {name}")
-    print(round(f1_score(y_test, y_pred, average="weighted"), 3))
+    print(f"F1 score: {round(f1_score(y_test, y_pred, average="weighted"), 3)}")
 
 # --8<-- [end:mrmr-selected-features]
 

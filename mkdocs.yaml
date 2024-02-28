@@ -148,6 +148,7 @@ nav:
     - Meta: api/meta.md
     - Metrics: api/metrics.md
     - Mixture: api/mixture.md
+    - Feature Selection: api/feature-selection.md
     - Model Selection: api/model-selection.md
     - Naive Bayes: api/naive-bayes.md
     - Neighbors: api/neighbors.md
