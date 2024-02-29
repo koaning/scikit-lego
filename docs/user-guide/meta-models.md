@@ -199,7 +199,7 @@ In practice what does that mean? There are a few main differences between hierar
 
 ## Shrinkage Functions
 
-scikit-lego provides a set of shrinkage functions that can be used to shrink the predictions of a model in [Grouped Prediction] and [Hierarchical Predictions].
+Scikit-lego provides a set of shrinkage functions that can be used to shrink the predictions of a model in [Grouped Prediction] and [Hierarchical Predictions].
 
 The following shrinkage are available out of the box:
 
@@ -215,10 +215,18 @@ Such function should takes a list of group sizes and returns an array of the sam
 ```py title="Custom shrinkage function"
 import numpy as np
 
-def random_shrinkage_function(group_sizes):
-    """A custom random shrinkage function"""
-    a = np.random.uniform(low=0., high=1., size=len(group_sizes))
+def exp_decay_shrinkage(group_sizes, decay=0.9):
+    """A custom shrinkage function that creates an exponential decay which is independent of the group sizes, but
+    depends on the decay parameter and the number of groups, and finally normalized to sum to 1.
+    """
+    a = decay ** np.arange(len(group_sizes), 0, -1)
     return a / a.sum()
+
+exp_decay_shrinkage(group_sizes=[30, 20, 15], decay=0.9)
+```
+
+```console
+array([0.29889299, 0.33210332, 0.36900369])
 ```
 
 ## Decayed Estimation
@@ -249,7 +257,7 @@ The decay parameter has a lot of influence on the effect of the model but one ca
 
 ### Decay Functions
 
-scikit-lego provides a set of decay functions that can be used to decay the importance of older data. The default decay function used in `DecayEstimator` is the `exponential_decay` function (`decay_func="exponential"`).
+Scikit-lego provides a set of decay functions that can be used to decay the importance of older data. The default decay function used in `DecayEstimator` is the `exponential_decay` function (`decay_func="exponential"`).
 
 Out of the box there are four decay functions available:
 
