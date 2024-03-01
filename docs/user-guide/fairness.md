@@ -106,9 +106,7 @@ It does this by projecting all vectors away such that the remaining dataset is o
 
 The [`InformationFilter`][filter-information-api] uses a variant of the [Gram–Schmidt process][gram–schmidt-process] to filter information out of the dataset. We can make it visual in two dimensions;
 
-<p align="center">
-  <img src="../_static/fairness/projections.png" />
-</p>
+![projections](../_static/fairness/projections.png)
 
 To explain what occurs in higher dimensions we need to resort to maths. Take a training matrix $X$ that contains columns $x_1, ..., x_k$.
 
