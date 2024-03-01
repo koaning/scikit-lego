@@ -205,6 +205,7 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
             raise ValueError(f"k ({self.k}) parameter must be greater than or equal to 1")
 
         # computed one time for all features
+
         rel_score = relevance(X, y)
 
         for i in range(self.k):
