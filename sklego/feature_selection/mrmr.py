@@ -94,13 +94,14 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     --------
     ```py
     from sklego.feature_selection.mrmr import MaximumRelevanceMinimumRedundancy
+    from sklearn.datasets import make_classification
 
     mrmr =  MaximumRelevanceMinimumRedundancy(k=4,
             kind='auto',
             redundancy_func='p',
             relevance_func='f')
 
-    X, y = ...
+    X, y = make_classification(n_features=4)
 
     # Fit mrmr model
     mrmr = mrmr.fit(X, y)

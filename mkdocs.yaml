@@ -127,6 +127,7 @@ nav:
     - Datasets: user-guide/datasets.md
     - Linear Models: user-guide/linear-models.md
     - Mixture Methods: user-guide/mixture-methods.md
+    - Feature Selection: user-guide/feature-selection.md
     - Naive Bayes: user-guide/naive-bayes.md
     - Meta Models: user-guide/meta-models.md
     - Fairness: user-guide/fairness.md
@@ -147,6 +148,7 @@ nav:
     - Meta: api/meta.md
     - Metrics: api/metrics.md
     - Mixture: api/mixture.md
+    - Feature Selection: api/feature-selection.md
     - Model Selection: api/model-selection.md
     - Features Selection: api/features-selection.md
     - Naive Bayes: api/naive-bayes.md

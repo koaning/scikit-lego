@@ -100,7 +100,6 @@ The image below demonstrates what will happen.
 
 ![grouped](../_static/meta-models/grouped-df.png)
 
-
 We train 5 models in total because the model will also train a fallback automatically (you can turn this off via `use_fallback=False`).
 
 The idea behind the fallback is that we can predict something if there is a group at prediction time which is unseen during training.
@@ -291,6 +290,7 @@ We'll perform an optimistic demonstration below.
     ```py
     --8<-- "docs/_scripts/meta-models.py:confusion-balancer-results"
     ```
+
 It seems that we can pick a value for $\alpha$ such that the confusion matrix is balanced. there's also a modest increase in accuracy for this balancing moment.
 
 It should be emphasized though that this feature is **experimental**. There have been dataset/model combinations where this effect seems to work very well while there have also been situations where this trick does not work at all.
@@ -327,7 +327,7 @@ ZIR (RFC+RFR) r²: 0.8992404366385873
 RFR r²: 0.8516522752031502
 ```
 
-## OutlierClassifier
+## Outlier Classifier
 
 Outlier models are unsupervised so they don't have `predict_proba` or `score` methods.
 
@@ -381,6 +381,66 @@ The `OutlierClassifier` can be combined with any classification model in the `St
 
 --8<-- "docs/_static/meta-models/outlier-classifier-stacking.html"
 
+## Ordinal Classification
+
+Ordinal classification (sometimes also referred to as Ordinal Regression) involves predicting an ordinal target variable, where the classes have a meaningful order.
+Examples of this kind of problem are: predicting customer satisfaction on a scale from 1 to 5, predicting the severity of a disease, predicting the quality of a product, etc.
+
+The [`OrdinalClassifier`][ordinal-classifier-api] is a meta-model that can be used to transform any classifier into an ordinal classifier by fitting N-1 binary classifiers, each handling a specific class boundary, namely: $P(y <= 1), P(y <= 2), ..., P(y <= N-1)$.
+
+This implementation is based on the paper [A simple approach to ordinal classification][ordinal-classification-paper] and it allows to predict the ordinal probabilities of each sample belonging to a particular class.
+
+??? tip "Graphical representation"
+    An image (from the paper itself) is worth a thousand words:
+    ![ordinal-classification](../_static/meta-models/ordinal-classification.png)
+
+!!! note "mord library"
+    If you are looking for a library that implements other ordinal classification algorithms, you can have a look at the [mord][mord] library.
+
+```py title="Ordinal Data"
+--8<-- "docs/_scripts/meta-models.py:ordinal-classifier-data"
+```
+
+--8<-- "docs/_static/meta-models/ordinal_data.md"
+
+Description of the dataset from [statsmodels tutorial][statsmodels-ordinal-regression]:
+
+> This dataset is about the probability for undergraduate students to apply to graduate school given three exogenous variables:
+>
+> - their grade point average (`gpa`), a float between 0 and 4.
+> - `pared`, a binary that indicates if at least one parent went to graduate school.
+> - `public`, a binary that indicates if the current undergraduate institution of the student is > public or private.
+>
+> `apply`, the target variable is categorical with ordered categories: "unlikely" < "somewhat likely" < "very likely".
+>
+> [...]
+>
+> For more details see the the Documentation of OrderedModel, [the UCLA webpage][ucla-webpage].
+
+The only transformation we are applying to the data is to convert the target variable to an ordinal categorical variable by mapping the ordered categories to integers using their (pandas) category codes.
+
+We are now ready to train a [`OrdinalClassifier`][ordinal-classifier-api] on this dataset:
+
+```py title="OrdinalClassifier"
+--8<-- "docs/_scripts/meta-models.py:ordinal-classifier"
+```
+
+> [[0.54883853 0.36225347 0.088908]]
+
+### Probability Calibration
+
+The `OrdinalClassifier` emphasizes the importance of proper probability estimates for its functionality. It is recommended to use the [`CalibratedClassifierCV`][calibrated-classifier-api] class from scikit-learn to calibrate the probabilities of the binary classifiers.
+
+Probability calibration is _not_ enabled by default, but we provide a convenient keyword argument `use_calibration` to enable it as follows:
+
+```py title="OrdinalClassifier with probability calibration"
+--8<-- "docs/_scripts/meta-models.py:ordinal-classifier-with-calibration"
+```
+
+### Computation Time
+
+As a meta-estimator, the `OrdinalClassifier` fits N-1 binary classifiers, which may be computationally expensive, especially with a large number of samples, features, or a complex classifier.
+
 [thresholder-api]: ../../api/meta#sklego.meta.thresholder.Thresholder
 [grouped-predictor-api]: ../../api/meta#sklego.meta.grouped_predictor.GroupedPredictor
 [grouped-transformer-api]: ../../api/meta#sklego.meta.grouped_transformer.GroupedTransformer
@@ -389,8 +449,14 @@ The `OutlierClassifier` can be combined with any classification model in the `St
 [confusion-balancer-api]: ../../api/meta#sklego.meta.confusion_balancer.ConfusionBalancer
 [zero-inflated-api]: ../../api/meta#sklego.meta.zero_inflated_regressor.ZeroInflatedRegressor
 [outlier-classifier-api]: ../../api/meta#sklego.meta.outlier_classifier.OutlierClassifier
+[ordinal-classifier-api]: ../../api/meta#sklego.meta.ordinal_classification.OrdinalClassifier
 
 [standard-scaler-api]: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
 [stacking-classifier-api]: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.StackingClassifier.html#sklearn.ensemble.StackingClassifier
 [dummy-regressor-api]: https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html
 [imb-learn]: https://imbalanced-learn.org/stable/
+[ordinal-classification-paper]: https://www.cs.waikato.ac.nz/~eibe/pubs/ordinal_tech_report.pdf
+[mord]: https://pythonhosted.org/mord/
+[statsmodels-ordinal-regression]: https://www.statsmodels.org/dev/examples/notebooks/generated/ordinal_regression.html
+[ucla-webpage]: https://stats.oarc.ucla.edu/r/dae/ordinal-logistic-regression/
+[calibrated-classifier-api]: https://scikit-learn.org/stable/modules/generated/sklearn.calibration.CalibratedClassifierCV.html
