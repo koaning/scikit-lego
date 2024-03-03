@@ -2,13 +2,11 @@
 
 ## Maximum Relevance Minimum Redundancy
 
-The [`Maximum Relevance Minimum Redundancy`][MaximumRelevanceMinimumRedundancy-api] can help selecting a sub-set of relevant features from all the features available for a machine learning task.
+The [`Maximum Relevance Minimum Redundancy`][MaximumRelevanceMinimumRedundancy-api] (MRMR) is an iterative feature selection method commonly used in data science to select a subset of features from a larger feature set. The goal of MRMR is to choose features that have high *relevance* to the target variable while minimizing *redundancy* among the already selected features.
 
-Maximum Relevance Minimum Redundancy (MRMR) is an iterative feature selection method commonly used in data science to select a subset of features from a larger feature set. The goal of MRMR is to choose features that have high relevance to the target variable while minimizing redundancy among the already selected features.
+MRMR is heavily dependent on the two functions used to determine relevace and redundancy. However, the paper [Maximum Relevanceand Minimum Redundancy Feature Selection Methods for a Marketing Machine Learning Platform](https://arxiv.org/pdf/1908.05376.pdf) shows that using [f_classif](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html) or [f_regression](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html) as relevance function and Pearson correlation as redundancy function is the best choice for a variety of different problems and in general is a good choice.
 
-MRMR is heavily dependent on the two functions used to determine relevace and redundancy. However, from paper [Maximum Relevanceand Minimum Redundancy Feature Selection Methods for a Marketing Machine Learning Platform](https://arxiv.org/pdf/1908.05376.pdf) it is proved that using [f_classif](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html) or [f_regression](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html) as relevance function and Pearson correlation as redundancy function is the best choice for a variety of different problems and in general is a good choice.
-
-Following the Medium article [Feature Selection: How To Throw Away 95% of Your Data and Get 95% Accuracy](https://towardsdatascience.com/feature-selection-how-to-throw-away-95-of-your-data-and-get-95-accuracy-ad41ca016877) we demonstrate a pratical application using the well known mnist dataset.
+Inspired by the Medium article [Feature Selection: How To Throw Away 95% of Your Data and Get 95% Accuracy](https://towardsdatascience.com/feature-selection-how-to-throw-away-95-of-your-data-and-get-95-accuracy-ad41ca016877) we showcase a pratical application using the well known mnist dataset.
 
 Note that although the default scikit-lego MRMR implementation uses redundancy and relevance as defined in [Maximum Relevanceand Minimum Redundancy Feature Selection Methods for a Marketing Machine Learning Platform](https://arxiv.org/pdf/1908.05376.pdf), our implementation offers the possibility of defining custom functions, that may be necessary in different scenarios depending on the data.
 

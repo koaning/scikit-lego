@@ -62,6 +62,27 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     The implemented formula is:
 
     $$\text{score}_{i}(f) = \frac{\text{relevance}(f | y)}{\text{reduncancy}(f | \text{selected}_{i-1})}$$
+
+    !!! warning
+        If a custom relevance_func is provided it must have this signature:
+        `Callable[[np.ndarray, np.ndarray], np.ndarray]`
+        It should accept X, y as arguments and it should compute the score for each feature of X
+        and return an array of shape (n_features_in_,).
+
+    !!! warning
+        If a custom redundancy_func is provided it must have the same signature as the method _redundancy_pearson, hence
+        the function must have three parameters:
+
+            - X : array-like, shape=(n_samples, n_features,). Training used to compute redundancy of the training features.
+
+            - selected : array-like. List of indexes of the selected features at iteration i-th.
+
+            - left : array-like. List of indexes of the left features at iteration i-th. Mrmr will select a feature from this list.
+
+        and it must return:
+
+            - np.ndarray, shape = (len(left), ), The array containing the redundancy score using the custom function.
+
     Parameters
     ----------
     k : int
@@ -73,14 +94,6 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     kind : Literal["auto", "classficiation", "regression"], default="auto".
         'classification' or 'regression' or 'auto' if auto the model
         will try to infer the type of problem looking at the y data type, by default "auto".
-
-    !! warning:
-        If a custom relevance_func is provided it must have this signature:
-        `Callable[[np.ndarray, np.ndarray], np.ndarray]`
-        It should accept X, y as arguments and it should compute the score for each feature of X
-        and return an array of shape (n_features_in_,).
-    !! warning:
-        If a custom redundancy_func is provided it must have the same signature as the method _redundancy_pearson
 
     Attributes
     ----------
