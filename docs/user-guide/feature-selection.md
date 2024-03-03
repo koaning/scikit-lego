@@ -1,7 +1,5 @@
 # Feature Selection
 
-Scikit-lego aims to implement a set of feature selection algorithms.
-
 ## Maximum Relevance Minimum Redundancy
 
 The [`Maximum Relevance Minimum Redundancy`][MaximumRelevanceMinimumRedundancy-api] can help selecting a sub-set of relevant features from all the features available for a machine learning task.
