@@ -122,6 +122,3 @@ dmypy.json
 
 # Local Netlify folder
 .netlify
-
-# venv
-venv*
