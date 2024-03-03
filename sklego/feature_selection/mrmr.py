@@ -94,7 +94,7 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     Examples
     --------
     ```py
-    from sklego.feature_selection.mrmr import MaximumRelevanceMinimumRedundancy
+    from sklego.feature_selection import MaximumRelevanceMinimumRedundancy
     from sklearn.datasets import make_classification
 
     mrmr =  MaximumRelevanceMinimumRedundancy(k=4,
