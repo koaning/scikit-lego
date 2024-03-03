@@ -60,7 +60,8 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     number of features is reached.
 
     The implemented formula is:
-    \text{score}_{i}(f) = \frac{\text{relevance}(f | y)}{\text{reduncancy}(f | \text{selected}_{i-1})}
+
+    $$\text{score}_{i}(f) = \frac{\text{relevance}(f | y)}{\text{reduncancy}(f | \text{selected}_{i-1})}$$
     Parameters
     ----------
     k : int
