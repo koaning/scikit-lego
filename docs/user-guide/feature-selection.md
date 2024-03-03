@@ -50,7 +50,7 @@ After the execution it is possible to inspect the F1-score for the selected feat
 --8<-- "docs/_scripts/feature-selection.py:mrmr-selected-features"
 ```
 
-```console
+```console hl_lines="5-6"
 Feature selection method: f_classif
 F1 score: 0.854
 Feature selection method: mutual_info
