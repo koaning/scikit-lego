@@ -31,10 +31,11 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
 
     _check_kwargs = {"accept_large_sparse": False}
 
-    def __init__(self, transformer, groups, use_global_model=True):
+    def __init__(self, transformer, groups, use_global_model=True, check_X=True):
         self.transformer = transformer
         self.groups = groups
         self.use_global_model = use_global_model
+        self.check_X = check_X
 
     def __fit_single_group(self, group, X, y=None):
         """Fit transformer to the given group.
@@ -117,11 +118,11 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
             self.transformers_ = clone(self.transformer).fit(X, y)
             return self
 
-        X_group, X_value = _split_groups_and_values(X, self.groups, **self._check_kwargs)
+        X_group, X_value = _split_groups_and_values(X, self.groups, check_X=self.check_X, **self._check_kwargs)
         self.transformers_ = self.__fit_grouped_transformer(X_group, X_value, y)
 
         if self.use_global_model:
-            self.fallback_ = clone(self.transformer).fit(X_value)
+            self.fallback_ = clone(self.transformer).fit(X_value, y)
 
         return self
 
@@ -157,7 +158,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
                 axis=0,
             )
             .sort_index()
-            .values
+            .to_numpy()
         )
 
     def transform(self, X):

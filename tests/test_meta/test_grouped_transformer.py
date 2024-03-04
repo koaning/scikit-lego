@@ -162,6 +162,7 @@ def test_get_params():
         "transformer": trf,
         "groups": 0,
         "use_global_model": True,
+        "check_X": True,
     }
 
 
