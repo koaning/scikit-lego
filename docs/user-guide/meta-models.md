@@ -187,7 +187,7 @@ These estimators fit a separate base estimator for each group in the input data 
 
 ### Difference with `GroupedPredictor`
 
-In practice what does that mean? There are a few main differences between hierarchical and grouped meta estimators:
+In practice what does that mean? While the APIs are fairly similar, there are a few main differences between hierarchical and grouped meta estimators:
 
 1. The first difference is the fallback method: hierarchical estimators have a fallback method that can be set to either "parent" or "raise". If set to "parent", the estimator will recursively fall back to the parent group in case the group value is not found during `.predict()`.
 

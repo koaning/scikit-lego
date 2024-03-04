@@ -26,8 +26,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     during `.predict()`.
 
     If `shrinkage` is not `None`, the predictions of the group-level models are combined using a shrinkage method. The
-    shrinkage method can be one of the predefined methods `"constant"`, `"min_n_obs"`, `"relative"` or a custom
-    shrinkage function. The shrinkage method is specified by the `shrinkage` parameter.
+    shrinkage method can be one of the predefined methods `"constant"`, `"equal"`, `"min_n_obs"`, `"relative"` or a
+    custom shrinkage function. The shrinkage method is specified by the `shrinkage` parameter.
 
     !!! warning "Shrinkage"
         Shrinkage is only available for regression models.

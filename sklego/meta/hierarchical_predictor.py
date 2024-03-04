@@ -30,7 +30,7 @@ def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_met
 
     Parameters
     ----------
-    estimators : dict[tuple, scikit-learn compatible estimator/pipeline]
+    estimators : dict[tuple[Any, ...], scikit-learn compatible estimator/pipeline]
         Dictionary with group values as keys and estimators as values.
     grp_values : tuple
         List of group values - keys to the estimators dictionary.
@@ -71,8 +71,8 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     one estimator per group value is fitted.
 
     If `shrinkage` is not `None`, the predictions of the group-level models are combined using a shrinkage method. The
-    shrinkage method can be one of the predefined methods `"constant"`, `"min_n_obs"`, `"relative"` or a custom
-    shrinkage function.
+    shrinkage method can be one of the predefined methods `"constant"`, `"equal"`, `"min_n_obs"`, `"relative"` or a
+    custom shrinkage function.
 
     !!! question "Differences with `GroupedPredictor`"
 
@@ -138,12 +138,37 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
     Attributes
     ----------
-    estimators_ : dict
-        Fitted estimators for each level.
+    estimators_ : dict[tuple[Any,...], scikit-learn compatible estimator/pipeline]
+        Fitted estimators for each level. The keys are the group values, and the values are the fitted estimators.
+        The group values are tuples of the group columns, including the global column which has a fixed placeholder
+        value of 1.
+
+        Let's say we have two group columns, `col_1` and `col_2`. `col_1` has values 'A' and 'B', and `col_2` has
+        values 'X', ... Then `estimators_` dictionary will look something like this:
+
+        ```py
+        {
+            # global estimator
+            (1,): LinearRegression(),
+
+            # estimator for `col_1 = 'A'`
+            (1, 'A'): LinearRegression(),
+
+            # estimator for `col_1 = 'B'`
+            (1, 'B'): LinearRegression(),
+
+            # estimator for `col_1 = 'A'`, `col_2 = 'X'`
+            (1, 'A', 'X'): LinearRegression(),
+            ...
+        }
+        ```
     shrinkage_function_ : callable
         The shrinkage function that is used to calculate the shrinkage factors
-    shrinkage_factors_ : dict
+    shrinkage_factors_ : dict[tuple[Any,...], np.ndarray]
         Shrinkage factors applied to each level.
+
+        The keys are the group values, and the values are the shrinkage factors. The group values are tuples of the
+        group columns, including the global column which has a fixed placeholder value of 1.
     groups_ : list
         List of all group columns including a global column.
     n_groups_ : int
@@ -395,13 +420,13 @@ class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
 
     ```terminal
     {
-        (1,): LinearRegression(),
-        (1, 'A'): LinearRegression(),
-        (1, 'B'): LinearRegression(),
-        (1, 'A', 'X'): LinearRegression(),
-        (1, 'A', 'Y'): LinearRegression(),
-        (1, 'B', 'W'): LinearRegression(),
-        (1, 'B', 'Z'): LinearRegression()
+        (1,): LinearRegression(),  # global estimator
+        (1, 'A'): LinearRegression(),  # estimator for `g_1 = 'A'`
+        (1, 'B'): LinearRegression(),  # estimator for `g_1 = 'B'`
+        (1, 'A', 'X'): LinearRegression(),  # estimator for `(g_1, g_2) = ('A', 'X`)`
+        (1, 'A', 'Y'): LinearRegression(),  # estimator for `(g_1, g_2) = ('A', 'Y`)`
+        (1, 'B', 'W'): LinearRegression(),  # estimator for `(g_1, g_2) = ('B', 'W`)`
+        (1, 'B', 'Z'): LinearRegression(),  # estimator for `(g_1, g_2) = ('B', 'Z`)`
     }
     ```
 
@@ -514,13 +539,13 @@ class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
 
     ```terminal
     {
-        (1,): LogisticRegression(),
-        (1, 'A'): LogisticRegression(),
-        (1, 'B'): LogisticRegression(),
-        (1, 'A', 'X'): LogisticRegression(),
-        (1, 'A', 'Y'): LogisticRegression(),
-        (1, 'B', 'W'): LogisticRegression(),
-        (1, 'B', 'Z'): LogisticRegression()
+        (1,): LogisticRegression(),  # global estimator
+        (1, 'A'): LogisticRegression(),  # estimator for `g_1 = 'A'`
+        (1, 'B'): LogisticRegression(),  # estimator for `g_1 = 'B'`
+        (1, 'A', 'X'): LogisticRegression(),  # estimator for `(g_1, g_2) = ('A', 'X`)`
+        (1, 'A', 'Y'): LogisticRegression(),  # estimator for `(g_1, g_2) = ('A', 'Y`)`
+        (1, 'B', 'W'): LogisticRegression(),  # estimator for `(g_1, g_2) = ('B', 'W`)`
+        (1, 'B', 'Z'): LogisticRegression(),  # estimator for `(g_1, g_2) = ('B', 'Z`)`
     }
     ```
 
