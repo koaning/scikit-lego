@@ -61,7 +61,7 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
     The implemented formula is:
 
-    $$\text{score}_{i}(f) = \frac{\text{relevance}(f | y)}{\text{reduncancy}(f | \text{selected}_{i-1})}$$
+    $$\text{score}_{i}(f) = \frac{\text{relevance}(f | y)}{\text{redundancy}(f | \text{selected}_{i-1})}$$
 
     !!! warning
         If a custom relevance_func is provided it must have this signature:
