@@ -3,12 +3,14 @@ import itertools as it
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn import clone
 from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler, TargetEncoder
 from sklearn.utils import check_X_y
 
 from sklego.common import flatten
-from sklego.datasets import load_penguins
+from sklego.datasets import load_heroes, load_penguins
 from sklego.meta import GroupedTransformer
 from tests.conftest import general_checks, k_vals, n_vals, np_types, select_tests, transformer_checks
 
@@ -330,3 +332,54 @@ def test_with_y(penguins_df):
 
     # 1 column for grouping not in the result
     assert transformed.shape == (X.shape[0], X.shape[1] - 1)
+
+
+@pytest.mark.parametrize(
+    "transformer",
+    (
+        TargetEncoder(target_type="continuous", random_state=123),
+        Pipeline(
+            [("encoder", TargetEncoder(target_type="continuous", random_state=123)), ("scaler", StandardScaler())]
+        ),
+        Pipeline(
+            [("scaler", StandardScaler()), ("encoder", TargetEncoder(target_type="continuous", random_state=123))]
+        ),
+    ),
+)
+def test_transform_with_y(transformer):
+    """Test that the GroupedTransformer works with a transformer that requires y."""
+
+    df_heroes = (
+        load_heroes(as_frame=True)
+        .drop(columns="name")
+        .replace([np.inf, -np.inf], np.nan)
+        .dropna()
+        .assign(role=lambda t: LabelEncoder().fit_transform(t["role"]))
+    )
+
+    target, groups, features = "attack", "attack_type", ["role"]
+    X, y = df_heroes.drop(columns=target), df_heroes[target]
+
+    is_melee = X[groups] == "Melee"
+
+    X_melee = (
+        clone(transformer)
+        .set_output(transform="pandas")
+        .fit(X.loc[is_melee, features], y.loc[is_melee])
+        .transform(X.loc[is_melee, features])
+    )
+    X_ranged = (
+        clone(transformer)
+        .set_output(transform="pandas")
+        .fit(X.loc[~is_melee, features], y.loc[~is_melee])
+        .transform(X.loc[~is_melee, features])
+    )
+
+    X_naive = pd.concat([X_melee, X_ranged]).sort_index()
+    X_grouped = (
+        GroupedTransformer(clone(transformer), groups=groups, check_X=False)
+        .fit(X.loc[:, [groups] + features], y)
+        .transform(X.loc[:, [groups] + features])
+    )
+
+    assert np.allclose(X_naive.to_numpy(), X_grouped)

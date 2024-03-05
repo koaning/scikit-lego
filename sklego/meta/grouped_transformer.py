@@ -19,6 +19,8 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         applied to the entire input without grouping.
     use_global_model : bool, default=True
         Whether or not to fall back to a general transformation in case a group is not found during `.transform()`.
+    check_X : bool, default=True
+        Whether or not to check the input data. If False, the checks are delegated to the wrapped estimator.
 
     Attributes
     ----------
