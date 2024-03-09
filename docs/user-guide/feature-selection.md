@@ -57,7 +57,7 @@ Feature selection method: mrmr_smile
 F1 score: 0.849
 ```
 
-As expected MRMR feature selection model provides better results compared against the other methods. (Smile still performs very well!)
+The MRMR feature selection model provides better results compared against the other methods, although the smile technique performs rather good as well. 
 
 Finally, we can take a look at the selected features.
 
