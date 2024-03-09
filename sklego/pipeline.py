@@ -2,7 +2,6 @@
 Pipelines, variances to the `sklearn.pipeline.Pipeline` object.
 """
 
-
 import logging
 import time
 
