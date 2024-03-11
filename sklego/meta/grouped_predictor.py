@@ -450,7 +450,7 @@ class GroupedRegressor(GroupedPredictor, RegressorMixin):
     Its spec is the same as [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor] but it is available
     only for regression models.
 
-    !!! info "New in version 0.7.5"
+    !!! info "New in version 0.8.0"
     """
 
     def fit(self, X, y):
@@ -487,7 +487,7 @@ class GroupedClassifier(GroupedPredictor, ClassifierMixin):
     Its equivalent to [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor] with `shrinkage=None`
     but it is available only for classification models.
 
-    !!! info "New in version 0.7.5"
+    !!! info "New in version 0.8.0"
     """
 
     def __init__(

@@ -83,6 +83,8 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
             - np.ndarray, shape = (len(left), ), The array containing the redundancy score using the custom function.
 
+    !!! info "New in version 0.8.0"
+
     Parameters
     ----------
     k : int
