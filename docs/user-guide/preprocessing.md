@@ -114,60 +114,35 @@ Let's demonstrate how [`ColumnCapper`][column-capper-api] works in a few example
         [0.10029693, 0.89859006]])
     ```
 
-## Patsy Formulas
+## Formulaic (Wilkinson formulas)
 
 If you're used to the statistical programming language R you might have seen a formula object before. This is an object that represents a shorthand way to design variables used in a statistical model.
 
-The [patsy][patsy-docs] python project took this idea and made it available for python. From sklego we've made a wrapper, called [`PatsyTransformer`][patsy-api], such that you can also use these in your pipelines.
+The [formulaic][formulaic-docs] python project took this idea and made it available for python. From sklego we've made a wrapper, called [`FormulaicTransformer`][formulaic-api], such that you can also use these in your pipelines.
 
 ```py
---8<-- "docs/_scripts/preprocessing.py:patsy-1"
+--8<-- "docs/_scripts/preprocessing.py:formulaic-1"
 ```
 
-```console
-DesignMatrix with shape (5, 5)
-  Intercept  b[T.no]  b[T.yes]  a  np.log(a)
-          1        0         1  1    0.00000
-          1        0         1  2    0.69315
-          1        1         0  3    1.09861
-          1        0         0  4    1.38629
-          1        0         1  5    1.60944
-  Terms:
-    'Intercept' (column 0)
-    'b' (columns 1:3)
-    'a' (column 3)
-    'np.log(a)' (column 4)
-```
+--8<-- "docs/_static/preprocessing/formulaic-1.md"
 
 You might notice that the first column contains the constant array equal to one. You might also expect 3 dummy variable columns instead of 2.
 
-This is because the design matrix from patsy attempts to keep the columns in the matrix linearly independent of each other.
+This is because the design matrix from formulaic attempts to keep the columns in the matrix linearly independent of each other.
 
 If this is not something you'd want to create you can choose to omit
 it by indicating "-1" in the formula.
 
 ```py
---8<-- "docs/_scripts/preprocessing.py:patsy-2"
+--8<-- "docs/_scripts/preprocessing.py:formulaic-2"
 ```
 
-```console
-DesignMatrix with shape (5, 5)
-  b[maybe]  b[no]  b[yes]  a  np.log(a)
-         0      0       1  1    0.00000
-         0      0       1  2    0.69315
-         0      1       0  3    1.09861
-         1      0       0  4    1.38629
-         0      0       1  5    1.60944
-  Terms:
-    'b' (columns 0:3)
-    'a' (column 3)
-    'np.log(a)' (column 4)
-```
+--8<-- "docs/_static/preprocessing/formulaic-2.md"
 
-You'll notice that now the constant array is gone and it is replaced with a dummy array. Again this is now possible because patsy wants to guarantee that each column in this matrix is linearly independent of each other.
+You'll notice that now the constant array is gone and it is replaced with a dummy array. Again this is now possible because formulaic wants to guarantee that each column in this matrix is linearly independent of each other.
 
 The formula syntax is pretty powerful, if you'd like to learn we refer you
-to [formulas][patsy-formulas] documentation.
+to [formulas][formulaic-formulas] documentation.
 
 ## Repeating Basis Function Transformer
 
@@ -282,10 +257,10 @@ If these features are now passed to a model that supports monotonicity constrain
 [meta-module]: ../../api/meta
 [id-transformer-api]: ../../api/preprocessing#sklego.preprocessing.identitytransformer.IdentityTransformer
 [column-capper-api]: ../../api/preprocessing#sklego.preprocessing.columncapper.ColumnCapper
-[patsy-api]: ../../api/preprocessing#sklego.preprocessing.patsytransformer.PatsyTransformer
+[formulaic-api]: ../../api/preprocessing#sklego.preprocessing.formulaictransformer.FormulaicTransformer
 [rbf-api]: ../../api/preprocessing#sklego.preprocessing.repeatingbasis.RepeatingBasisFunction
 [interval-encoder-api]: ../../api/preprocessing#sklego.preprocessing.intervalencoder.IntervalEncoder
 [decay-section]: ../../user-guide/meta#decayed-estimation
 
-[patsy-docs]: https://patsy.readthedocs.io/en/latest/
-[patsy-formulas]: https://patsy.readthedocs.io/en/latest/formulas.html
+[formulaic-docs]: https://matthewwardrop.github.io/formulaic/
+[formulaic-formulas]: https://matthewwardrop.github.io/formulaic/formulas/
