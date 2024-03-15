@@ -20,7 +20,6 @@ maintainers = [
 ]
 
 dependencies = [
-    "Deprecated>=1.2.6",
     "pandas>=1.1.5",
     "scikit-learn>=1.0",
     "importlib-metadata >= 1.0; python_version < '3.8'",
@@ -46,10 +45,9 @@ documentation = "https://koaning.github.io/scikit-lego/"
 [project.optional-dependencies]
 cvxpy = ["cmake", "osqp", "cvxpy>=1.1.8"]
 formulaic = ["formulaic>=0.6.0"]
-patsy = ["patsy>=0.5.1"]
 umap = ["umap-learn>=0.4.6"]
 
-all = ["scikit-lego[cvxpy,formulaic,patsy,umap]"]
+all = ["scikit-lego[cvxpy,formulaic,umap]"]
 
 docs = [
     "mkdocs>=1.5.3",
@@ -98,6 +96,9 @@ exclude = ["docs"]
 
 [tool.ruff.lint]
 extend-select = ["I"]
+ignore = [
+    "E731",  # do not assign a `lambda` expression, use a `def`
+    ]
 
 [tool.pytest.ini_options]
 markers = [

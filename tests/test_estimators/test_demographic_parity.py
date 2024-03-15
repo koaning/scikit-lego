@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 import pytest
 
@@ -10,7 +8,7 @@ except ImportError:
 from sklearn.linear_model import LogisticRegression
 
 from sklego.common import flatten
-from sklego.linear_model import DemographicParityClassifier, FairClassifier
+from sklego.linear_model import DemographicParityClassifier
 from sklego.metrics import p_percent_score
 from tests.conftest import classifier_checks, general_checks, nonmeta_checks, select_tests
 
@@ -122,18 +120,3 @@ def test_fairness(sensitive_classification_dataset):
         fairness = scorer(fair, X, y)
         assert fairness >= prev_fairness
         prev_fairness = fairness
-
-
-@pytest.mark.cvxpy
-def test_deprecation():
-    with warnings.catch_warnings(record=True) as w:
-        # Cause all warnings to always be triggered.
-        warnings.simplefilter("always")
-        # Trigger a warning.
-        FairClassifier(
-            covariance_threshold=1,
-            sensitive_cols=["x1"],
-            penalty="none",
-            train_sensitive_cols=False,
-        )
-        assert issubclass(w[-1].category, DeprecationWarning)
