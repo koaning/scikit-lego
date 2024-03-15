@@ -132,20 +132,26 @@ df = pd.DataFrame({
 })
 X, y = df[["a", "b"]], df[["y"]].to_numpy()
 
-pt = FormulaicTransformer("a + np.log(a) + b", return_type="pandas")
-pt.fit(X, y).transform(X)
+formulaic_transformer = FormulaicTransformer(
+    formula="a + np.log(a) + b",
+    return_type="pandas"
+)
+formulaic_transformer.fit(X, y).transform(X)
 # --8<-- [end:formulaic-1]
 
 with open(_static_path / "formulaic-1.md", "w") as f:
-    f.write(pt.fit(X, y).transform(X).head().to_markdown(index=False))
+    f.write(formulaic_transformer.fit(X, y).transform(X).head().to_markdown(index=False))
 
 # --8<-- [start:formulaic-2]
-pt = FormulaicTransformer("a + np.log(a) + b - 1", return_type="pandas")
-pt.fit(X, y).transform(X)
+formulaic_transformer = FormulaicTransformer(
+    formula="a + np.log(a) + b - 1",
+    return_type="pandas"
+)
+formulaic_transformer.fit(X, y).transform(X)
 # --8<-- [end:formulaic-2]
 
 with open(_static_path / "formulaic-2.md", "w") as f:
-    f.write(pt.fit(X, y).transform(X).head().to_markdown(index=False))
+    f.write(formulaic_transformer.fit(X, y).transform(X).head().to_markdown(index=False))
 
 ######################################## RBF ###########################################
 ##########################################################################################
