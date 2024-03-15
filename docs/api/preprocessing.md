@@ -35,6 +35,11 @@
         show_root_full_path: true
         show_root_heading: true
 
+:::sklego.preprocessing.formulaictransformer.FormulaicTransformer
+    options:
+        show_root_full_path: true
+        show_root_heading: true
+
 :::sklego.preprocessing.projections.OrthogonalTransformer
     options:
         show_root_full_path: true
@@ -46,11 +51,6 @@
         show_root_heading: true
 
 :::sklego.preprocessing.pandastransformers.PandasTypeSelector
-    options:
-        show_root_full_path: true
-        show_root_heading: true
-
-:::sklego.preprocessing.patsytransformer.PatsyTransformer
     options:
         show_root_full_path: true
         show_root_heading: true

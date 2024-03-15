@@ -121,7 +121,6 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.IdentityTransformer` returns the same data, allows for concatenating pipelines
 - `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independent
 - `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
-- `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
 - `sklego.preprocessing.RandomAdder` adds randomness in training
 - `sklego.preprocessing.RepeatingBasisFunction` repeating feature engineering, useful for timeseries
 - `sklego.preprocessing.DictMapper` assign numeric values on categorical columns

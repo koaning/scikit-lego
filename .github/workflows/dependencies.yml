@@ -39,7 +39,7 @@ jobs:
         python -m pip install -e ".[all]"
     - name: Run Checks
       run: |
-        python tests/scripts/check_pip.py installed cvxpy formulaic patsy scikit-learn umap-learn
+        python tests/scripts/check_pip.py installed cvxpy formulaic scikit-learn umap-learn
     - name: Docs can Build
       run: |
         sudo apt-get update && sudo apt-get install pandoc
