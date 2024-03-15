@@ -10,7 +10,6 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-from deprecated.sphinx import deprecated
 from scipy.optimize import minimize
 from scipy.special._ufuncs import expit
 from sklearn.base import BaseEstimator, RegressorMixin
@@ -627,15 +626,6 @@ class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
     def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
         multiclass_meta = {"ovr": OneVsRestClassifier, "ovo": OneVsOneClassifier}[multi_class]
         return multiclass_meta(_DemographicParityClassifier(*args, **kwargs), n_jobs=n_jobs)
-
-
-@deprecated(
-    version="0.4.0",
-    reason="Please use `sklego.linear_model.DemographicParityClassifier instead`",
-)
-class FairClassifier(DemographicParityClassifier):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
 
 class _DemographicParityClassifier(_FairClassifier):
