@@ -7,11 +7,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from sklego.common import flatten
 from sklego.meta import DecayEstimator
-from tests.conftest import (
-    classifier_checks,
-    general_checks,
-    regressor_checks,
-)
+from tests.conftest import classifier_checks, general_checks, regressor_checks
 
 
 @pytest.mark.parametrize("test_fn", flatten([general_checks, regressor_checks]))

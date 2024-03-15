@@ -98,6 +98,9 @@ exclude = ["docs"]
 
 [tool.ruff.lint]
 extend-select = ["I"]
+ignore = [
+    "E731",  # do not assign a `lambda` expression, use a `def`
+    ]
 
 [tool.pytest.ini_options]
 markers = [

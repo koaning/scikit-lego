@@ -177,6 +177,58 @@ This transformer also has use-cases beyond fairness. You could use this transfor
 
 For example, for predicting house prices, using the surface of a house relatively to houses in the same neighborhood could be a more relevant feature than the surface relative to all houses.
 
+## Hierarchical Prediction
+
+!!! info "New in version 0.8.0"
+
+Very closely related to `GroupedPredictor` is the [`HierarchicalPredictor`][hierarchical-predictor-api] meta estimator and the two task specialized classes [`HierarchicalClassifier`][hierarchical-classifier-api] and [`HierarchicalRegressor`][hierarchical-regressor-api].
+
+These estimators fit a separate base estimator for each group in the input data in a hierarchical manner. This means that an estimator is fitted for each subsequential level in the group columns.
+
+### Difference with `GroupedPredictor`
+
+In practice what does that mean? While the APIs are fairly similar, there are a few main differences between hierarchical and grouped meta estimators:
+
+1. The first difference is the fallback method: hierarchical estimators have a fallback method that can be set to either "parent" or "raise". If set to "parent", the estimator will recursively fall back to the parent group in case the group value is not found during `.predict()`.
+
+    !!! warning
+        As a consequence of this, the **order of groups matters** and potentially a combinatoric number of estimators are fitted, one for each unique combination of group values and each level, including a global one.
+
+2. `HierarchicalClassifier` is meant to properly handle shrinkage for classification tasks - however this requires that the base estimator implements a `.predict_proba()` method.
+3. While `GroupedPredictor` is meant to be used directly, `HierarchicalPredictor` is meant to be used as a base class for other estimators such as `HierarchicalClassifier` and `HierarchicalRegressor`.
+
+## Shrinkage Functions
+
+Scikit-lego provides a set of shrinkage functions that can be used to shrink the predictions of a model in [Grouped Prediction] and [Hierarchical Predictions].
+
+The following shrinkage are available out of the box:
+
+- [`"constant"`][constant-shrinkage]: The augmented prediction for each level is the weighted average between its prediction and the augmented prediction for its parent.
+- [`"equal"`][equal-shrinkage]: Each group is weighed equally.
+- [`"min_n_obs"`][min-n-obs-shrinkage]: Use only the smallest group with a certain amount of observations.
+- [`"relative"`][relative-shrinkage]: Weigh each group according to its size.
+
+Additionally to the built-in shrinkage functions, it is possible to provide a custom shrinkage function to the `GroupedPredictor` and `HierarchicalPredictor` classes.
+
+Such function should takes a list of group sizes and returns an array of the same size with the weights (positive values) for each group.
+
+```py title="Custom shrinkage function"
+import numpy as np
+
+def exp_decay_shrinkage(group_sizes, decay=0.9):
+    """A custom shrinkage function that creates an exponential decay which is independent of the group sizes, but
+    depends on the decay parameter and the number of groups, and finally normalized to sum to 1.
+    """
+    a = decay ** np.arange(len(group_sizes), 0, -1)
+    return a / a.sum()
+
+exp_decay_shrinkage(group_sizes=[30, 20, 15], decay=0.9)
+```
+
+```console
+array([0.29889299, 0.33210332, 0.36900369])
+```
+
 ## Decayed Estimation
 
 Often you are interested in predicting the future. You use the data from the past in an attempt to achieve this and it  could be said that perhaps data from the far history is less relevant than data from the recent past.
@@ -205,7 +257,7 @@ The decay parameter has a lot of influence on the effect of the model but one ca
 
 ### Decay Functions
 
-scikit-lego provides a set of decay functions that can be used to decay the importance of older data. The default decay function used in `DecayEstimator` is the `exponential_decay` function (`decay_func="exponential"`).
+Scikit-lego provides a set of decay functions that can be used to decay the importance of older data. The default decay function used in `DecayEstimator` is the `exponential_decay` function (`decay_func="exponential"`).
 
 Out of the box there are four decay functions available:
 
@@ -455,6 +507,13 @@ As a meta-estimator, the `OrdinalClassifier` fits N-1 binary classifiers, which 
 [grouped-classifier-api]: ../../api/meta#sklego.meta.grouped_predictor.GroupedClassifier
 [grouped-regressor-api]: ../../api/meta#sklego.meta.grouped_predictor.GroupedRegressor
 [grouped-transformer-api]: ../../api/meta#sklego.meta.grouped_transformer.GroupedTransformer
+[hierarchical-predictor-api]: ../../api/meta#sklego.meta.hierarchical_predictor.HierarchicalPredictor
+[hierarchical-classifier-api]: ../../api/meta#sklego.meta.hierarchical_predictor.HierarchicalClassifier
+[hierarchical-regressor-api]: ../../api/meta#sklego.meta.hierarchical_predictor.HierarchicalRegressor
+[constant-shrinkage]: ../../api/shrinkage-functions#sklego.meta._shrinkage_utils.constant_shrinkage
+[equal-shrinkage]: ../../api/shrinkage-functions#sklego.meta._shrinkage_utils.equal_shrinkage
+[min-n-obs-shrinkage]: ../../api/shrinkage-functions#sklego.meta._shrinkage_utils.min_n_obs_shrinkage
+[relative-shrinkage]: ../../api/shrinkage-functions#sklego.meta._shrinkage_utils.relative_shrinkage
 [decay-api]: ../../api/meta#sklego.meta.decay_estimator.DecayEstimator
 [decay-functions]: ../../api/decay-functions
 [confusion-balancer-api]: ../../api/meta#sklego.meta.confusion_balancer.ConfusionBalancer

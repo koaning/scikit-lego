@@ -182,7 +182,18 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         return np.diff(p_y_le, n=1, axis=1)
 
     def predict(self, X):
-        """Predict class labels for samples in `X` as the class with the highest probability."""
+        """Predict class labels for samples in `X` as the class with the highest probability.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted class labels.
+        """
         check_is_fitted(self, ["estimators_", "classes_"])
         return self.classes_[np.argmax(self.predict_proba(X), axis=1)]
 
