@@ -10,7 +10,6 @@ __all__ = [
     "HierarchicalPredictor",
     "HierarchicalRegressor",
     "OrdinalClassifier",
-    "OutlierRemover",
     "SubjectiveClassifier",
     "Thresholder",
     "RegressionOutlierDetector",
