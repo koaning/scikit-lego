@@ -2,6 +2,8 @@
 
 ## Maximum Relevance Minimum Redundancy
 
+!!! info "New in version 0.8.0"
+
 The [`Maximum Relevance Minimum Redundancy`][MaximumRelevanceMinimumRedundancy-api] (MRMR) is an iterative feature selection method commonly used in data science to select a subset of features from a larger feature set. The goal of MRMR is to choose features that have high *relevance* to the target variable while minimizing *redundancy* among the already selected features.
 
 MRMR is heavily dependent on the two functions used to determine relevace and redundancy. However, the paper [Maximum Relevanceand Minimum Redundancy Feature Selection Methods for a Marketing Machine Learning Platform](https://arxiv.org/pdf/1908.05376.pdf) shows that using [f_classif](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_classif.html) or [f_regression](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.f_regression.html) as relevance function and Pearson correlation as redundancy function is the best choice for a variety of different problems and in general is a good choice.
@@ -57,7 +59,7 @@ Feature selection method: mrmr_smile
 F1 score: 0.849
 ```
 
-The MRMR feature selection model provides better results compared against the other methods, although the smile technique performs rather good as well. 
+The MRMR feature selection model provides better results compared against the other methods, although the smile technique performs rather good as well.
 
 Finally, we can take a look at the selected features.
 

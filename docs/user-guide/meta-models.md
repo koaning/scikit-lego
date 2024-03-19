@@ -136,7 +136,7 @@ Note that these predictions seems to yield the lowest error but take it with a g
 
 ### Specialized Estimators
 
-!!! info "New in version 0.7.5"
+!!! info "New in version 0.8.0"
 
 Instead of using the generic `GroupedPredictor` directly, it is possible to work with _task specific_ estimators, namely: [`GroupedClassifier`][grouped-classifier-api] and [`GroupedRegressor`][grouped-regressor-api].
 
