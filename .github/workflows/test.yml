@@ -16,7 +16,7 @@ jobs:
           "3.9",
           "3.10",
           "3.11",
-          # "3.12", # Numba not available for Python 3.12: https://github.com/numba/numba/issues/9197
+          "3.12",
         ]
     runs-on: ${{ matrix.os }}
     steps:
