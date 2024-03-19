@@ -118,12 +118,12 @@ cc.transform(arr)
 # --8<-- [end:column-capper-inf]
 
 
-######################################## Patsy ###########################################
+######################################## Formulaic #######################################
 ##########################################################################################
 
-# --8<-- [start:patsy-1]
+# --8<-- [start:formulaic-1]
 import pandas as pd
-from sklego.preprocessing import PatsyTransformer
+from sklego.preprocessing import FormulaicTransformer
 
 df = pd.DataFrame({
     "a": [1, 2, 3, 4, 5],
@@ -132,15 +132,26 @@ df = pd.DataFrame({
 })
 X, y = df[["a", "b"]], df[["y"]].to_numpy()
 
-pt = PatsyTransformer("a + np.log(a) + b")
-pt.fit(X, y).transform(X)
-# --8<-- [end:patsy-1]
+formulaic_transformer = FormulaicTransformer(
+    formula="a + np.log(a) + b",
+    return_type="pandas"
+)
+formulaic_transformer.fit(X, y).transform(X)
+# --8<-- [end:formulaic-1]
 
-# --8<-- [start:patsy-2]
-pt = PatsyTransformer("a + np.log(a) + b - 1")
-pt.fit(X, y).transform(X)
-# --8<-- [end:patsy-2]
+with open(_static_path / "formulaic-1.md", "w") as f:
+    f.write(formulaic_transformer.fit(X, y).transform(X).head().to_markdown(index=False))
 
+# --8<-- [start:formulaic-2]
+formulaic_transformer = FormulaicTransformer(
+    formula="a + np.log(a) + b - 1",
+    return_type="pandas"
+)
+formulaic_transformer.fit(X, y).transform(X)
+# --8<-- [end:formulaic-2]
+
+with open(_static_path / "formulaic-2.md", "w") as f:
+    f.write(formulaic_transformer.fit(X, y).transform(X).head().to_markdown(index=False))
 
 ######################################## RBF ###########################################
 ##########################################################################################

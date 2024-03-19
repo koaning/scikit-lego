@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../_static/logo.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.14">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.50c56a3b.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.10ba22f1.min.css">
       
       
 
@@ -324,14 +324,14 @@
       
     
     
-    
-    
       
-      
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
         
         
           
@@ -352,7 +352,7 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="">
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
@@ -449,16 +449,18 @@
       
         
       
-    
-    
+        
+      
     
     
       
-      
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
         
         
           
@@ -466,7 +468,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   <span class="md-ellipsis">
@@ -538,6 +540,27 @@
   
   <span class="md-ellipsis">
     Mixture Methods
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/feature-selection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feature Selection
   </span>
   
 
@@ -786,16 +809,23 @@
       
         
       
-    
-    
+        
+      
+        
+      
     
     
       
+        
+        
       
+      
+        
+      
+    
     
     <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
-        
         
         
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
@@ -1036,6 +1066,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../feature-selection/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Feature Selection
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../model-selection/" class="md-nav__link">
         
   
@@ -1213,6 +1264,27 @@
   
   <span class="md-ellipsis">
     Preprocessing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shrinkage-functions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Shrinkage Functions
   </span>
   
 
@@ -1510,7 +1582,7 @@
 
           <details class="quote">
             <summary>Source code in <code>sklego/pandas_utils.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-185">185</a></span>
+            <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-185">185</a></span>
 <span class="normal"><a href="#__codelineno-0-186">186</a></span>
 <span class="normal"><a href="#__codelineno-0-187">187</a></span>
 <span class="normal"><a href="#__codelineno-0-188">188</a></span>
@@ -1880,7 +1952,7 @@
 
           <details class="quote">
             <summary>Source code in <code>sklego/pandas_utils.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-19"> 19</a></span>
+            <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-19"> 19</a></span>
 <span class="normal"><a href="#__codelineno-0-20"> 20</a></span>
 <span class="normal"><a href="#__codelineno-0-21"> 21</a></span>
 <span class="normal"><a href="#__codelineno-0-22"> 22</a></span>
@@ -2166,11 +2238,34 @@ Note that the output of each log_function is casted to string using <code>str()<
                 <code>{}</code>
           </td>
         </tr>
+        <tr>
+          <td><code>Returns</code></td>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>Callable</code></td>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>The decorated function.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
     </tbody>
   </table>
-      <p>Returns:
-Callable
-    The decorated function.</p>
 
 
 
@@ -2182,7 +2277,7 @@ Callable
 
           <details class="quote">
             <summary>Source code in <code>sklego/pandas_utils.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-127">127</a></span>
+            <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-127">127</a></span>
 <span class="normal"><a href="#__codelineno-0-128">128</a></span>
 <span class="normal"><a href="#__codelineno-0-129">129</a></span>
 <span class="normal"><a href="#__codelineno-0-130">130</a></span>
@@ -2392,10 +2487,10 @@ Callable
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "navigation.top", "navigation.tracking", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tooltips", "content.tabs.link", "search.suggest", "search.highlight", "search.share", "toc.follow"], "search": "../../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.path", "navigation.indexes", "navigation.footer", "navigation.top", "navigation.tracking", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tooltips", "content.tabs.link", "search.suggest", "search.highlight", "search.share", "toc.follow"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7c377c4.min.js"></script>
+      <script src="../../assets/javascripts/bundle.bd41221c.min.js"></script>
       
         <script src="../../javascripts/mathjax.js"></script>
       
