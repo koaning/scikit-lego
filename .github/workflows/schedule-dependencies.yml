@@ -34,5 +34,5 @@ jobs:
         uv pip freeze
     - name: Test with pytest
       run: |
-        uv pip install -e ".[test]"
+        uv pip install -e ".[test]" --system
         make test
