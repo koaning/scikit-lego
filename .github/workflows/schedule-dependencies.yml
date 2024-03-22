@@ -15,13 +15,12 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
-    - name: Install uv
-      run: |
-         if ['${{ runner.os }}' == 'Windows']; then
-            powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-         else
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-         fi
+    - name: Install uv (Unix)
+      if: runner.os != 'Windows'
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    - name: Install uv (Windows)
+      if: runner.os == 'Windows'
+      run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
