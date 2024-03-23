@@ -1,4 +1,4 @@
-Before working on a large PR, please check with @koaning, @MBrouns or @FBruzzesi that they agree with the direction of the PR. This discussion should take place in a [Github issue](https://github.com/koaning/scikit-lego/issues/new/choose) before working on the PR, unless it's a minor change like spelling in the docs. 
+Before working on a large PR, please check with @FBruzzesi or @koaning to confirm that they agree with the direction of the PR. This discussion should take place in a [Github issue](https://github.com/koaning/scikit-lego/issues/new/choose) before working on the PR, unless it's a minor change like spelling in the docs. 
 
 # Description
 
