@@ -42,6 +42,24 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
         -------
         self : OutlierRemover
             The fitted transformer.
+       
+        Example
+        -------
+        ```py
+        from sklego.preprocessing import OutlierRemover
+        from sklearn.ensemble import IsolationForest
+
+        np.random.seed(0)
+        X = np.random.randn(10000, 2)
+
+        isolation_forest = IsolationForest()
+        isolation_forest.fit(X)
+        detector_preds = isolator_forest.predict(X)
+
+        outlier_remover = OutlierRemover(isolation_forest, refit=True)
+        outlier_remover.fit(X)
+        X_trans = outlier_remover.transform_train(X)
+        ```
         """
         self.estimator_ = clone(self.outlier_detector)
         if self.refit:
@@ -61,6 +79,23 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
         -------
         np.ndarray of shape (n_not_outliers, n_features)
             The data with the outliers removed, where `n_not_outliers = n_samples - n_outliers`.
+	Example
+        -------
+        ```py
+        from sklego.preprocessing import OutlierRemover
+        from sklearn.ensemble import IsolationForest
+
+        np.random.seed(0)
+        X = np.random.randn(10000, 2)
+
+        isolation_forest = IsolationForest()
+        isolation_forest.fit(X)
+        detector_preds = isolator_forest.predict(X)
+
+        outlier_remover = OutlierRemover(isolation_forest, refit=True)
+        outlier_remover.fit(X)
+        X_trans = outlier_remover.transform_train(X)
+        ```
         """
         check_is_fitted(self, "estimator_")
         predictions = self.estimator_.predict(X)
