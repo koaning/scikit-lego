@@ -19,7 +19,7 @@ This means we're usually open to ideas to add here but there are a few things to
 ## When Writing a New Feature
 
 When writing a new feature there's some more
-[details with regard to how scikit learn likes to have it's parts implemented][scikit-develop].
+[details with regard to how scikit learn likes to have its parts implemented][scikit-develop].
 We will display the a sample implementation of the `ColumnSelector` below. Please review all comments marked as Important.
 
 ```py hl_lines="19-22 24-28 46-51 65-69 77-78 83-85" linenums="1"
