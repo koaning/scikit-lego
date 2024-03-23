@@ -127,5 +127,8 @@ To use `GroupTimeSeriesSplit` with sklearn's [GridSearchCV](https://scikit-learn
 --8<-- "docs/_scripts/cross-validation.py:grid-search"
 ```
 
+## Cluster-Kfold
+
+
 [time-gap-split-api]: ../../api/model-selection#sklego.model_selection.TimeGapSplit
 [group-ts-split-api]: ../../api/model-selection#sklego.model_selection.GroupTimeSeriesSplit
