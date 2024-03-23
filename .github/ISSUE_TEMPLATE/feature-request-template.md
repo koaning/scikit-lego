@@ -1,5 +1,5 @@
 ---
-name: Feature Request Template
+name: New Feature Request
 about: This is a template for a Feature Request
 title: "[FEATURE]"
 labels: enhancement
