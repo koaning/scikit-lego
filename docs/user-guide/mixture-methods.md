@@ -4,7 +4,7 @@ Gaussian Mixture Models (GMMs) are flexible building blocks for other machine le
 
 This is in part because they are great approximations for general probability distributions but also because they remain somewhat interpretable even when the dataset gets very complex.
 
-This package makes use of GMMs to construct other algorithms. Bayesian [BayesianGMMClassifier][bayes_gmm-classifier-api] and non-Bayesian Gaussian Mixture Models [GMMClassifier][gmm-classifier-api] are available.
+This package makes use of GMMs to construct other algorithms. In addition to the [GMMClassifier][gmm-classifier-api], this library also features a [BayesianGMMClassifier][bayes_gmm-classifier-api].
 
 ## Classification
 
