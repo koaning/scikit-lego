@@ -131,6 +131,29 @@ To use `GroupTimeSeriesSplit` with sklearn's [GridSearchCV](https://scikit-learn
 
 `ClusterKFold` is a cross-validator that splits the data into `n_splits` folds, where each fold is determined by a clustering algorithm. This is not a common pattern, but it might be useful when you want to make sure that the train and test sets are different.
 
+Here's how you could set up a cross validator that uses KMeans.
+
+```py title="Using Kmeans to generate folds"
+--8<-- "docs/_scripts/cross-validation.py:cluster-fold-start"
+```
+
+You can also use other cross validation methods, but the nice thing about Kmeans is that it demos well. Here's how it would generate folds on a uniform dataset.
+
+```py title="Using Kmeans to generate folds"
+--8<-- "docs/_scripts/cross-validation.py:cluster-fold-plot"
+```
+
+This image is mostly for illustrative purposes because you typically won't directly generate these folds yourself. Instead you'd use a helper function like `cross_val_score` or `GridSearchCV` to do this for you.
+
+```python
+from sklearn.model_selection import cross_val_score
+
+# Given an existing pipeline and X,y dataset, you probably would do something like this:
+fold_method = KlusterFoldValidation(
+    KMeans(n_cluster=5, random_state=42)
+)
+cross_val_score(pipeline, X, y, cv=fold_method)
+```
 
 [time-gap-split-api]: ../../api/model-selection#sklego.model_selection.TimeGapSplit
 [group-ts-split-api]: ../../api/model-selection#sklego.model_selection.GroupTimeSeriesSplit
