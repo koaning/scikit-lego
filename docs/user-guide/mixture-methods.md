@@ -4,7 +4,7 @@ Gaussian Mixture Models (GMMs) are flexible building blocks for other machine le
 
 This is in part because they are great approximations for general probability distributions but also because they remain somewhat interpretable even when the dataset gets very complex.
 
-This package makes use of GMMs to construct other algorithms.
+This package makes use of GMMs to construct other algorithms. In addition to the [GMMClassifier][gmm-classifier-api] and [GMMDetector][gmm-classifier-api], this library also features a [BayesianGMMClassifier][bayes_gmm-classifier-api] and [BayesianGMMDetector][bayes_gmm-outlier-detector-api] as well. These methods offer pretty much the same API, but will have internal methods to figure out what number of components to estimate. These methods tend to take significantly more time to train, so alternatively you may also try doing a proper grid search to figure out the best number of components for your use-case. 
 
 ## Classification
 
@@ -59,4 +59,6 @@ As a sidenote: this image was generated with some dummy data, but its code can b
     ```
 
 [gmm-classifier-api]: ../../api/mixture#sklego.mixture.gmm_classifier.GMMClassifier
+[bayes_gmm-classifier-api]: ../../api/mixture#sklego.mixture.bayesian_gmm_classifier.BayesianGMMClassifier
 [gmm-outlier-detector-api]: ../../api/mixture#sklego.mixture.gmm_outlier_detector.GMMOutlierDetector
+[bayes_gmm-outlier-detector-api]: ../../api/mixture#sklego.mixture.gmm_outlier_detector.BayesianGMMOutlierDetector
