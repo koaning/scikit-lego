@@ -58,7 +58,6 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
 
         outlier_remover = OutlierRemover(isolation_forest, refit=True)
         outlier_remover.fit(X)
-        X_trans = outlier_remover.transform_train(X)
         ```
         """
         self.estimator_ = clone(self.outlier_detector)
