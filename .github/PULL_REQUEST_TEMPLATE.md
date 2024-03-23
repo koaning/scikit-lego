@@ -22,4 +22,4 @@ Fixes #(issue)
 - [ ] I have added tests to check whether the new feature adheres to the sklearn convention
 - [ ] New and existing unit tests pass locally with my changes
 
-If you feel your PR is ready for a review, ping @koaning, @mbrouns or @FBruzzesi.
+If you feel your PR is ready for a review, ping @FBruzzesi or @koaning.
