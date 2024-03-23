@@ -105,7 +105,7 @@ We've turned the array into a dataframe so that we can apply the [`ColumnSelecto
 
 --8<-- "docs/_static/linear-models/grid.html"
 
-You can see that the `ProbWeightRegression` indeeds sums to one.
+You can see that the `ProbWeightRegression` indeed sums to one.
 
 ```py
 --8<-- "docs/_scripts/linear-models.py:prob-weight-coefs"
