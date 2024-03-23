@@ -22,7 +22,7 @@ Install `scikit-lego` via pip with
 pip install scikit-lego
 ```
 
-For more installation options and details, check the [installation section](/docs/installation.md).
+For more installation options and details, check the [installation section][installation-section].
 
 ## Usage
 
@@ -45,7 +45,7 @@ _ = mod.fit(X, y)
 ...
 ```
 
-To see more examples, please refer to the [user guide section](/docs/user-guide/datasets.md).
+To see more examples, please refer to the [user guide section][user-guide].
 
-[installation-section]: ../installation
-[user-guide]: ../user-guide/datasets
+[installation-section]: installation
+[user-guide]: user-guide/datasets
