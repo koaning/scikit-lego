@@ -129,6 +129,8 @@ To use `GroupTimeSeriesSplit` with sklearn's [GridSearchCV](https://scikit-learn
 
 ## Cluster-Kfold
 
+`ClusterKFold` is a cross-validator that splits the data into `n_splits` folds, where each fold is determined by a clustering algorithm. This is not a common pattern, but it might be useful when you want to make sure that the train and test sets are different.
+
 
 [time-gap-split-api]: ../../api/model-selection#sklego.model_selection.TimeGapSplit
 [group-ts-split-api]: ../../api/model-selection#sklego.model_selection.GroupTimeSeriesSplit
