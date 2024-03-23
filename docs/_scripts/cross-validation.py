@@ -211,11 +211,11 @@ grid.best_estimator_.get_params()["reg__alpha"]
 ##########################################################################################
 
 # --8<-- [start:cluster-fold-start]
-from sklego.model_selection import KlusterFoldValidation
+from sklego.model_selection import ClusterFoldValidation
 from sklearn.cluster import KMeans
 
 clusterer = KMeans(n_clusters=5, random_state=42)
-folder = KlusterFoldValidation(clusterer)
+folder = ClusterFoldValidation(clusterer)
 # --8<-- [end:cluster-fold-start]
 
 
