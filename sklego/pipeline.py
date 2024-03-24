@@ -12,13 +12,6 @@ from sklearn.utils.validation import check_memory
 def default_log_callback(output, execution_time, **kwargs):
     """The default log callback which logs the step name, shape of the output and the execution time of the step.
 
-    Parameters
-    ----------
-    output : tuple[np.ndarray | pd.DataFrame, estimator | transformer]
-        The output of the step and a step in the pipeline.
-    execution_time : float
-        The execution time of the step.
-
     !!! info
 
         If you write your custom callback function the input is:
@@ -31,6 +24,12 @@ def default_log_callback(output, execution_time, **kwargs):
         | `output`         | T                | The output of the function     |
         | `execution_time` | float            | The execution time of the step |
 
+    Parameters
+    ----------
+    output : tuple[np.ndarray | pd.DataFrame, estimator | transformer]
+        The output of the step and a step in the pipeline.
+    execution_time : float
+        The execution time of the step.
     """
     logger = logging.getLogger(__name__)
     step_result, step = output
@@ -97,18 +96,11 @@ def _cache_with_function_log_statement(log_callback=default_log_callback):
 class DebugPipeline(Pipeline):
     """A pipeline that has a log statement in between each step, useful for debugging purposes.
 
-    Parameters
-    ----------
-    log_callback : Callable | None, default=None
-        The callback function that logs information in between each intermediate step.
-        If set to `"default"`, `default_log_callback` is used.
-
-    Notes
-    -----
     See [`sklearn.pipeline.Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html#sklearn.pipeline.Pipeline)
-    for all other variables.
+    for all other parameters other than `log_callback`.
 
     !!! note
+
         This implementation is a hack on the original sklearn Pipeline. It aims to have the same behaviour as the
         original sklearn Pipeline, while changing minimal amount of code.
 
@@ -124,6 +116,11 @@ class DebugPipeline(Pipeline):
         - The [`joblib.memory.Memory`](https://joblib.readthedocs.io/en/latest/generated/joblib.Memory.html)
             starts using a `_cache` method.
 
+    Parameters
+    ----------
+    log_callback : Callable | None, default=None
+        The callback function that logs information in between each intermediate step.
+        If set to `"default"`, `default_log_callback` is used.
 
     Examples
     --------
