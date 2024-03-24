@@ -193,16 +193,13 @@ The reason for this separation is that:
     ```
 
 !!! info
-    
-    To generate all the outputs and static files from scratch it is enough to run the following command from the root of the repository:
 
+    To generate all the outputs and static files from scratch it is enough to run the following command from the root of the repository:
     ```bash
     cd docs
     make generate-all
     ```
-
     which will run all the scripts and save results in the `docs/_static` folder.
-
 
 ### Render locally
 
@@ -221,17 +218,16 @@ Then from the root of the project, there are two options:
     ```
 
 === "via make"
-    
+
     ```bash
     make docs
     ```
 
-!!! info 
+!!! info
 
     Using mkdocs directly will allow to add extra params to the command if needed.
 
 Then the documentation page will be available at [localhost][localhost].
-
 
 [gh-issues]: https://github.com/koaning/scikit-lego/issues
 [scikit-develop]: https://scikit-learn.org/stable/developers/develop.html
