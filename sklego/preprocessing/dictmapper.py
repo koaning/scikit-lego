@@ -56,14 +56,20 @@ class DictMapper(TransformerMixin, BaseEstimator):
         })
 
         mapper = {
+
+            #population
+
             "Amsterdam": 1_181_817,
             "Leiden": 130_181,
             "Utrecht": 367_984,
             "Haarlem": 165_396,
+
+            #ranking
+
             "uva": 64,
             "lei": 214,
             "uu": 117,
-            "vu": 105,
+            "vu": 105
         }
 
         dict_mapper = DictMapper(mapper, 0)
@@ -114,10 +120,16 @@ class DictMapper(TransformerMixin, BaseEstimator):
         })
 
         mapper = {
+
+            #population
+
             "Amsterdam": 1_181_817,
             "Leiden": 130_181,
             "Utrecht": 367_984,
             "Haarlem": 165_396,
+
+            #ranking
+
             "uva": 64,
             "lei": 214,
             "uu": 117,
