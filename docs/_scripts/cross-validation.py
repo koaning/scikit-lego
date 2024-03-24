@@ -204,3 +204,28 @@ grid.fit(X, y)
 grid.best_estimator_.get_params()["reg__alpha"]
 # 0.8
 # --8<-- [end:grid-search]
+
+
+
+######################################## ClusterKfold ####################################
+##########################################################################################
+
+# --8<-- [start:cluster-fold-start]
+from sklego.model_selection import ClusterFoldValidation
+from sklearn.cluster import KMeans
+
+clusterer = KMeans(n_clusters=5, random_state=42)
+folder = ClusterFoldValidation(clusterer)
+# --8<-- [end:cluster-fold-start]
+
+
+# --8<-- [start:cluster-fold-plot]
+import matplotlib.pylab as plt
+import numpy as np
+
+X_orig = np.random.uniform(0, 1, (1000, 2))
+for i, split in enumerate(folder.split(X_orig)):
+    x_train, x_valid = split
+    plt.scatter(X_orig[x_valid, 0], X_orig[x_valid, 1], label=f"split {i}")
+plt.legend();
+# --8<-- [end:cluster-fold-plot]
