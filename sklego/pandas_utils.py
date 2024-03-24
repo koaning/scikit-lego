@@ -141,7 +141,8 @@ def log_step_extra(
     **log_func_kwargs: dict
         Keyword arguments to be passed to `log_functions`
 
-    Returns:
+    Returns
+    -------
     Callable
         The decorated function.
 

@@ -12,7 +12,11 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
     """The `GMMDetector` trains a Gaussian Mixture model on a dataset `X`. Once a density is trained we can evaluate the
     likelihood scores to see if it is deemed likely.
 
-    By giving a threshold this model might then label outliers if their likelihood score is too low.
+    By providing a `threshold` this model might then label outliers if their likelihood score is too low.
+
+    !!! note
+        The parameters other than `threshold` and `method` are an exact copy of the parameters in
+        [sklearn.mixture.GaussianMixture]( https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html).
 
     Parameters
     ----------
@@ -27,10 +31,6 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
 
             If you select `method="stddev"` then the threshold value represents the
             numbers of standard deviations before calling something an outlier.
-
-    !!! note
-        The other parameters are an exact copy of the parameters in
-        [sklearn.mixture.GaussianMixture]( https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html).
 
     Attributes
     ----------
