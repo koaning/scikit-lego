@@ -22,14 +22,17 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
+    - name: Install uv (Unix)
+      if: runner.os != 'Windows'
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    - name: Install uv (Windows)
+      if: runner.os == 'Windows'
+      run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip --no-cache-dir
-        python -m pip install -e ".[test]"
+      run: uv pip install -e ".[test]" --system
     - name: Test with pytest
-      run: |
-        make test
+      run: make test
