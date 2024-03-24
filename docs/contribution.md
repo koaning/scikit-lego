@@ -156,13 +156,87 @@ Feel free to look at example implementations before writing your own from scratc
 
 ## Unit Tests
 
-We write unit tests on these objects to make sure that they will work in a [Pipeline][pipe-api].
+We write unit tests on these objects to make sure that they will work in a [scikit-learn Pipeline][pipe-api].
 
 **This must be guaranteed**. To facilitate this we have some _standard_ tests that will check things like
 _"do we change the shape of the input?"_.
 
 If your transformer belongs here: feel free to add it.
 
+## Documentation
+
+The documentation is generated using [Material for MkDocs][mkdocs-material], its extensions and a few plugins.
+In particular [`mkdocstrings-python`][mkdocstrings-python] is used for API rendering.
+
+When a new feature is introduced, it should be documented, and typically there are a few files to add or edit:
+
+- [x] A page in the `docs/api/` folder.
+- [x] A user guide in the `docs/user-guide/` folder.
+- [x] A python script in the `docs/_scripts/` folder to generate plots and code snippets (see [next section](#working-with-pymdown-snippets-extension))
+- [x] Relevant static files, such as images, plots, tables and html's, should be saved in the `docs/_static/` folder.
+- [x] Edit the `mkdocs.yaml` file to include the new pages in the navigation. 
+
+### Working with pymdown snippets extension
+
+The majority of code and code generate plots in the documentation is generated using the scripts in the `docs/_scripts/` folder, and accessed via the [pymdown snippets][pymdown-snippets] extension.
+
+The reason for this separation is that:
+
+- Markdowns are significantly easier to maintain and review than notebooks.
+- Embedding code directly into markdown is simple and convenient, however it does not generate outputs.
+- Instead of having duplicated (and possibly out of sync) code in markdown for rendering and in notebooks/scripts to generate outputs, via [pymdown snippets][pymdown-snippets] extension we can bind the two together.
+- To generate the plots and/or results of a given section it is enough to run the corresponding script from the `docs/_scripts/` folder.
+
+    ```bash
+    cd docs
+    python _scripts/<filename>.py
+    ```
+
+!!! info
+    
+    To generate all the outputs and static files from scratch it is enough to run the following command from the root of the repository:
+
+    ```bash
+    cd docs
+    make generate-all
+    ```
+
+    which will run all the scripts and save results in the `docs/_static` folder.
+
+
+### Render locally
+
+The first step to render the documentation locally is to install the required dependencies:
+
+```bash
+python -m pip install -e ."[docs]"
+```
+
+Then from the root of the project, there are two options:
+
+=== "mkdocs directly"
+
+    ```bash
+    mkdocs serve
+    ```
+
+=== "via make"
+    
+    ```bash
+    make docs
+    ```
+
+!!! info 
+
+    Using mkdocs directly will allow to add extra params to the command if needed.
+
+Then the documentation page will be available at [localhost][localhost].
+
+
 [gh-issues]: https://github.com/koaning/scikit-lego/issues
 [scikit-develop]: https://scikit-learn.org/stable/developers/develop.html
 [pipe-api]: https://scikit-learn.org/stable/modules/compose.html
+[mkdocs-material]: https://squidfunk.github.io/mkdocs-material/
+[mkdocstrings-python]: https://mkdocstrings.github.io/python/
+[pymdown-snippets]: https://facelessuser.github.io/pymdown-extensions/extensions/snippets/
+[localhost]: http://localhost:8000/
