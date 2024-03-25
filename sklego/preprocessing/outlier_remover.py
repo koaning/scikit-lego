@@ -34,7 +34,7 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
 
     isolation_forest = IsolationForest()
     isolation_forest.fit(X)
-    detector_preds = isolator_forest.predict(X)
+    detector_preds = isolation_forest.predict(X)
 
     outlier_remover = OutlierRemover(isolation_forest, refit=True)
     outlier_remover.fit(X)
