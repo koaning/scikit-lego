@@ -253,6 +253,14 @@ Now let's see what occurs when we add a constraint that enforces the feature to 
 
 If these features are now passed to a model that supports monotonicity constraints then we can build models with guarantees.
 
+## Outlier Removal
+
+The [`OutlierRemover`][outlier-remover-api] class is a transformer that removes outliers from your dataset during training time only based on some outlier detector estimator. This can be useful in scenarios where outliers in the training data can negatively impact the performance of your model. By removing these outliers during training, your model can learn from a "clean" dataset that may lead to better performance.
+
+It's important to note that this transformer only removes outliers during training. This means that when you use your trained model to predict on new data, the new data will not have any outliers removed. This is useful because in a real-world scenario, new data may contain outliers and you would want your model to be able to handle these cases.
+
+The `OutlierRemover` class is initialized with an `outlier_detector` estimator, and a boolean flag `refit`. The outlier detector should be a scikit-learn compatible estimator that implements `.fit()` and `.predict()` methods. The refit flag determines whether the underlying estimator is fitted during `OutlierRemover.fit()`.
+
 [estimator-transformer-api]: ../../api/meta#sklego.meta.estimator_transformer.EstimatorTransformer
 [meta-module]: ../../api/meta
 [id-transformer-api]: ../../api/preprocessing#sklego.preprocessing.identitytransformer.IdentityTransformer
@@ -261,6 +269,7 @@ If these features are now passed to a model that supports monotonicity constrain
 [rbf-api]: ../../api/preprocessing#sklego.preprocessing.repeatingbasis.RepeatingBasisFunction
 [interval-encoder-api]: ../../api/preprocessing#sklego.preprocessing.intervalencoder.IntervalEncoder
 [decay-section]: ../../user-guide/meta#decayed-estimation
+[outlier-remover-api]: ../../api/preprocessing#sklego.preprocessing.outlier_remover.OutlierRemover
 
 [formulaic-docs]: https://matthewwardrop.github.io/formulaic/
 [formulaic-formulas]: https://matthewwardrop.github.io/formulaic/formulas/

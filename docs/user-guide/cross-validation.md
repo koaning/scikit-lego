@@ -127,5 +127,40 @@ To use `GroupTimeSeriesSplit` with sklearn's [GridSearchCV](https://scikit-learn
 --8<-- "docs/_scripts/cross-validation.py:grid-search"
 ```
 
+## Cluster-Kfold
+
+The [ClusterFoldValidation](clusterfold-api) object is a cross-validator that splits the data into `n_splits` folds, where each fold is determined by a clustering algorithm. This is not a common pattern, probably more like an anti-pattern really, but it might be useful when you want to make sure that the train and test sets are very distinct. This can be seen as a way to make it harder for the algorithm perform well, because the training sets are sampled differently than the test sets.
+
+### Example
+
+Here's how you could set up a cross validator that uses KMeans.
+
+```py title="Using Kmeans to generate folds"
+--8<-- "docs/_scripts/cross-validation.py:cluster-fold-start"
+```
+
+You can also use other cross validation methods, but the nice thing about Kmeans is that it demos well. Here's how it would generate folds on a uniform dataset.
+
+```py title="Using Kmeans to generate folds"
+--8<-- "docs/_scripts/cross-validation.py:cluster-fold-plot"
+```
+
+![example-1](../_static/cross-validation/kfold.png)
+
+As you can see, each split will focus on a cluster of the data. Hopefully this also makes it clear that this method will ensure that each validation set will be rather distinct from the train set. These sets are not only exclusive, but they are also from a different region of the data by design.
+
+Note that this image is mostly for illustrative purposes because you typically won't directly generate these folds yourself. Instead you'd use a helper function like `cross_val_score` or `GridSearchCV` to do this for you.
+
+```py title="More realistic example"
+from sklearn.model_selection import cross_val_score
+
+# Given an existing pipeline and X,y dataset, you probably would do something like this:
+fold_method = KlusterFoldValidation(
+    KMeans(n_cluster=5, random_state=42)
+)
+cross_val_score(pipeline, X, y, cv=fold_method)
+```
+
 [time-gap-split-api]: ../../api/model-selection#sklego.model_selection.TimeGapSplit
 [group-ts-split-api]: ../../api/model-selection#sklego.model_selection.GroupTimeSeriesSplit
+[clusterfold-api]: ../../api/model-selection#sklego.model_selection.ClusterFoldValidation

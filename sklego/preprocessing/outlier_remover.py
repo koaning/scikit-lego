@@ -11,16 +11,36 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-    outlier_detector : object
+    outlier_detector : scikit-learn compatible estimator
         An outlier detector that implements `.fit()` and `.predict()` methods.
     refit : bool, default=True
-        If True, fits the estimator during `pipeline.fit()`. If False, the estimator is not fitted during
-        `pipeline.fit()`.
+        Whether or not to fit the underlying estimator during `OutlierRemover(...).fit()`.
 
     Attributes
     ----------
     estimator_ : object
         The fitted outlier detector.
+
+    Example
+    -------
+    ```py
+    import numpy as np
+
+    from sklearn.ensemble import IsolationForest
+    from sklego.preprocessing import OutlierRemover
+
+    np.random.seed(0)
+    X = np.random.randn(10000, 2)
+
+    isolation_forest = IsolationForest()
+    isolation_forest.fit(X)
+    detector_preds = isolator_forest.predict(X)
+
+    outlier_remover = OutlierRemover(isolation_forest, refit=True)
+    outlier_remover.fit(X)
+
+    X_trans = outlier_remover.transform_train(X)
+    ```
     """
 
     def __init__(self, outlier_detector, refit=True):
