@@ -131,7 +131,7 @@ class TimeGapSplit:
 
         if len(X) != len(X_index_df):
             raise AssertionError(
-                "X and X_index_df are not the same length, " "there must be some index missing in 'self.date_serie'"
+                "X and X_index_df are not the same length, there must be some index missing in 'self.date_serie'"
             )
 
         date_min = X_index_df["__date__"].min()
@@ -148,11 +148,8 @@ class TimeGapSplit:
         if self.n_splits:
             if n_split_max < self.n_splits:
                 raise ValueError(
-                    (
-                        "Number of folds requested = {1} are greater"
-                        " than maximum  ={0} possible without"
-                        " overlapping validation sets."
-                    ).format(n_split_max, self.n_splits)
+                    f"Number of folds requested = {self.n_splits} are greater than maximum (={n_split_max}) possible"
+                    " without overlapping validation sets."
                 )
 
         current_date = date_min
@@ -357,16 +354,14 @@ class GroupTimeSeriesSplit(_BaseKFold):
     def __init__(self, n_splits):
         if not isinstance(n_splits, numbers.Integral):
             raise ValueError(
-                "The number of folds must be of Integral type. "
-                "%s of type %s was passed." % (n_splits, type(n_splits))
+                f"The number of folds must be of Integral type. {n_splits} of type {type(n_splits)} was passed."
             )
         n_splits = int(n_splits)
 
         if n_splits <= 1:
             raise ValueError(
-                "k-fold cross-validation requires at least one"
-                " train/test split by setting n_splits=2 or more,"
-                " got n_splits={0}.".format(n_splits)
+                "k-fold cross-validation requires at least one train/test split by setting n_splits=2 or more,"
+                f" got n_splits={n_splits}."
             )
 
         self.n_splits = n_splits
@@ -383,11 +378,14 @@ class GroupTimeSeriesSplit(_BaseKFold):
         """
         try:
             return (
-                self._grouped_df.sort_index()
-                .assign(group=lambda df: df["group"].astype(int))
-                .assign(obs_per_group=lambda df: df.groupby("group")["observations"].transform("sum"))
-                .assign(ideal_group_size=round(self._ideal_group_size))
-                .assign(diff_from_ideal_group_size=lambda df: df["obs_per_group"] - df["ideal_group_size"])
+                pd.DataFrame({"group": self._group, "observations": self._obs_per_grp, "index": self._index})
+                .sort_values("index")
+                .assign(
+                    group=lambda df: df["group"].astype(int),
+                    obs_per_group=lambda df: df.groupby("group")["observations"].transform("sum"),
+                    ideal_group_size=round(self._ideal_group_size),
+                    diff_from_ideal_group_size=lambda df: df["obs_per_group"] - df["ideal_group_size"],
+                )
             )
         except AttributeError:
             raise AttributeError(".summary() only works after having ran .split(X, y, groups).")
@@ -414,9 +412,8 @@ class GroupTimeSeriesSplit(_BaseKFold):
         X, y, groups = indexable(X, y, groups)
         n_groups = np.unique(groups).shape[0]
         if self.n_splits >= n_groups:
-            raise ValueError(
-                ("n_splits({0}) must be less than the amount" " of unique groups({1}).").format(self.n_splits, n_groups)
-            )
+            raise ValueError(f"n_splits({self.n_splits}) must be less than the amount" " of unique groups({n_groups}).")
+
         return list(self._iter_test_indices(X, y, groups))
 
     def get_n_splits(self, X=None, y=None, groups=None):
@@ -454,27 +451,17 @@ class GroupTimeSeriesSplit(_BaseKFold):
         """
         unique_groups = len(set(groups))
         warning = (
-            "Finding the optimal split points"
-            " with {0} unique groups and n_splits at {1}"
+            f"Finding the optimal split points with {unique_groups} unique groups and n_splits at {self.n_splits}"
             " can take several minutes."
-        ).format(unique_groups, self.n_splits)
+        )
         if self.n_splits == 4 and unique_groups > 250:
-            warn(
-                warning + " Consider to decrease n_splits to 3 or lower.",
-                UserWarning,
-            )
+            warn(warning + " Consider to decrease n_splits to 3 or lower.", UserWarning)
 
         elif self.n_splits == 5 and unique_groups > 100:
-            warn(
-                warning + " Consider to decrease n_splits to 4 or lower.",
-                UserWarning,
-            )
+            warn(warning + " Consider to decrease n_splits to 4 or lower.", UserWarning)
 
         elif self.n_splits > 5 and unique_groups > 30:
-            warn(
-                warning + " Consider to decrease n_splits to 5 or lower.",
-                UserWarning,
-            )
+            warn(warning + " Consider to decrease n_splits to 5 or lower.", UserWarning)
 
     def _iter_test_indices(self, X=None, y=None, groups=None):
         """Calculate the optimal division of groups into folds so that every fold is as equally large as possible.
@@ -497,8 +484,10 @@ class GroupTimeSeriesSplit(_BaseKFold):
         self._first_split_index, self._last_split_index = self._calc_first_and_last_split_index(groups=groups)
         self._best_splits = self._get_split_indices()
         groups = self._regroup(groups)
+        group_indices = tuple(np.where(groups == i)[0] for i in range(self.n_splits + 1))
+
         for i in range(self.n_splits):
-            yield np.where(groups == i)[0], np.where(groups == i + 1)[0]
+            yield group_indices[i], group_indices[i + 1]
 
     def _calc_first_and_last_split_index(self, X=None, y=None, groups=None):
         """Calculate an approximate first and last split point to reduce the amount of options during a brute force
@@ -520,42 +509,17 @@ class GroupTimeSeriesSplit(_BaseKFold):
         """
 
         # get the counts (=amount of rows) for each group
-        self._grouped_df = (
-            pd.DataFrame(np.array(groups))
-            .rename(columns={0: "index"})
-            .groupby("index")
-            .size()
-            .sort_index()
-            .to_frame()
-            .rename(columns={0: "observations"})
-        )
+        idx, obs_per_grp = np.unique(groups, return_counts=True)
+        order = np.argsort(idx)
+        self._index, self._obs_per_grp = idx[order], obs_per_grp[order]
 
-        # set the ideal group_size and reduce it to 90% to have some leverage
-        self._ideal_group_size = np.sum(self._grouped_df["observations"]) / (self.n_splits + 1)
+        self._ideal_group_size = np.sum(self._obs_per_grp) / (self.n_splits + 1)
         init_ideal_group_size = self._ideal_group_size * 0.9
 
-        # initialize the index of the first split, to reduce the amount of possible index split options
-        first_split_index = (
-            self._grouped_df.assign(cumsum_obs=lambda df: df["observations"].cumsum())
-            .assign(group_id=lambda df: (df["cumsum_obs"] - 1) // init_ideal_group_size)
-            .reset_index()
-            .loc[lambda df: df["group_id"] != 0]
-            .iloc[0]
-            .name
-        )
-        # initialize the index of the last split point, to reduce the amount of possible index split options
-        last_split_index = len(self._grouped_df) - (
-            self._grouped_df.assign(
-                observations=lambda df: df["observations"].values[::-1],
-                cumsum_obs=lambda df: df["observations"].cumsum(),
-            )
-            .reset_index()
-            .assign(group_id=lambda df: (df["cumsum_obs"] - 1) // init_ideal_group_size)
-            .loc[lambda df: df["group_id"] != 0]
-            .iloc[0]
-            .name
-            - 1
-        )
+        cumsum_obs = np.cumsum(self._obs_per_grp)
+        first_split_index = np.where(cumsum_obs > init_ideal_group_size)[0][0]
+        last_split_index = len(self._obs_per_grp) - np.where(cumsum_obs[::-1] > init_ideal_group_size)[0][0] - 1
+
         return first_split_index, last_split_index
 
     def _get_split_indices(self):
@@ -570,7 +534,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # set the index range to search possible splits for
         index_range = range(self._first_split_index, self._last_split_index)
 
-        observations = self._grouped_df["observations"].tolist()
+        observations = self._obs_per_grp
 
         # create generator with all the possible index splits
         # e.g. for [0, 1, 3, 5, 8] and self.n_splits = 2
@@ -591,22 +555,22 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # ideal_group_size = 100
         # group_sizes = [10,20,270]
         # diff_from_ideal_list = [-90, -80, 170]
-        diff_from_ideal_list = [sum(observations[: first_splits[0]]) - self._ideal_group_size]
+        diff_from_ideal_list = [np.sum(observations[: first_splits[0]]) - self._ideal_group_size]
         for split in sliding_window(first_splits, window_size=2, step_size=1):
             try:
-                diff_from_ideal_list += [sum(observations[split[0] : split[1]]) - self._ideal_group_size]
+                diff_from_ideal_list += [np.sum(observations[split[0] : split[1]]) - self._ideal_group_size]
             except IndexError:
-                diff_from_ideal_list += [sum(observations[split[0] :]) - self._ideal_group_size]
+                diff_from_ideal_list += [np.sum(observations[split[0] :]) - self._ideal_group_size]
 
         # keep track of the minimum of the total difference from all groups to the ideal group size
-        min_diff = sum([abs(diff) for diff in diff_from_ideal_list])
+        min_diff = np.sum([np.abs(diff) for diff in diff_from_ideal_list])
         best_splits = first_splits
 
         # loop through all possible split points and check whether a new split
         # has a less total difference from all groups to the ideal group size
         for prev_splits, new_splits in zip(splits_generator, splits_generator_shifted):
             diff_from_ideal_list = self._calc_new_diffs(observations, diff_from_ideal_list, prev_splits, new_splits)
-            new_diff = sum([abs(diff) for diff in diff_from_ideal_list])
+            new_diff = np.sum([np.abs(diff) for diff in diff_from_ideal_list])
 
             # if with the new split the difference is less than the current most optimal, save the new split
             if new_diff < min_diff:
@@ -651,7 +615,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
                 )
 
                 # calculate the value change from one group to another
-                value_change = sum(values[start_index:end_index])
+                value_change = np.sum(values[start_index:end_index])
 
                 # if diff < 0 the previous group gains values, so change value_change to -value_change
                 value_change = value_change if diff > 0 else -value_change
@@ -676,16 +640,17 @@ class GroupTimeSeriesSplit(_BaseKFold):
             Indices for the train and test splits of each fold
         """
 
-        df = self._grouped_df.copy().reset_index()
+        group = self._obs_per_grp.copy()
         # set each unique group to the right group_id to group them into folds
-        df.loc[: self._best_splits[0], "group"] = 0
+
+        group[: self._best_splits[0] + 1] = 0
+
         for group_id, splits in enumerate(sliding_window(self._best_splits, 2, 1)):
             try:
-                df.loc[splits[0] : splits[1], "group"] = group_id + 1
+                group[splits[0] + 1 : splits[1] + 1] = group_id + 1
             except IndexError:
-                df.loc[splits[0] :, "group"] = group_id + 1
-
-        self._grouped_df = df
+                group[splits[0] + 1 :] = group_id + 1
+        self._group = group
         # create a mapper to set every group to the right group_id
-        mapper = dict(zip(df["index"], df["group"]))
+        mapper = dict(zip(self._index, self._group))
         return np.vectorize(mapper.get)(groups)
