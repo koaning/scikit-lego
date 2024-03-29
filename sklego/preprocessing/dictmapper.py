@@ -23,6 +23,34 @@ class DictMapper(TransformerMixin, BaseEstimator):
         Number of features seen during `fit`.
     dim_ : int
         Deprecated, please use `n_features_in_` instead.
+
+    Example
+    -------
+    ```py
+    import pandas as pd
+    from sklego.preprocessing.dictmapper import DictMapper
+    from sklearn.compose import ColumnTransformer
+
+    X = pd.DataFrame({
+        "city_pop": ["Amsterdam", "Leiden", "Utrecht", "None", "Haarlem"]
+    })
+
+    mapper = {
+    "Amsterdam": 1_181_817,
+    "Leiden": 130_181,
+    "Utrecht": 367_984,
+    "Haarlem": 165_396,
+    }
+
+    ct = ColumnTransformer([("dictmapper", DictMapper(mapper, 0), ["city_pop"])])
+    X_trans = ct.fit_transform(X)
+    X_trans
+    # array([[1181817],
+    #        [ 130181],
+    #        [ 367984],
+    #        [      0],
+    #        [ 165396]])
+    ```
     """
 
     def __init__(self, mapper, default):
@@ -43,41 +71,6 @@ class DictMapper(TransformerMixin, BaseEstimator):
         -------
         self : DictMapper
             The fitted transformer.
-
-        Example
-        -------
-        ```py
-        import pandas as pd
-        from sklego.preprocessing.dictmapper import DictMapper
-
-        X = pd.DataFrame({
-            "city": ["Amsterdam", "Leiden", "Utrecht", "Amsterdam", "Haarlem"],
-            "university": ["uva", "lei", "uu", "vu", "none"]
-        })
-
-        mapper = {
-
-            #population
-
-            "Amsterdam": 1_181_817,
-            "Leiden": 130_181,
-            "Utrecht": 367_984,
-            "Haarlem": 165_396,
-
-            #ranking
-
-            "uva": 64,
-            "lei": 214,
-            "uu": 117,
-            "vu": 105
-        }
-
-        dict_mapper = DictMapper(mapper, 0)
-        _ = dict_mapper.fit(X)
-
-        dict_mapper.n_features_in_
-        # 2
-        ```
         """
         X = check_array(
             X,
@@ -107,47 +100,6 @@ class DictMapper(TransformerMixin, BaseEstimator):
         ------
         ValueError
             If the number of columns from `X` differs from the number of columns when fitting.
-
-        Example
-        -------
-        ```py
-        import pandas as pd
-        from sklego.preprocessing.dictmapper import DictMapper
-
-        X = pd.DataFrame({
-            "city": ["Amsterdam", "Leiden", "Utrecht", "Amsterdam", "Haarlem"],
-            "university": ["uva", "lei", "uu", "vu", "none"]
-        })
-
-        mapper = {
-
-            #population
-
-            "Amsterdam": 1_181_817,
-            "Leiden": 130_181,
-            "Utrecht": 367_984,
-            "Haarlem": 165_396,
-
-            #ranking
-
-            "uva": 64,
-            "lei": 214,
-            "uu": 117,
-            "vu": 105
-        }
-
-        dict_mapper = DictMapper(mapper, 0)
-        _ = dict_mapper.fit(X)
-
-        X_trans = dict_mapper.transform(X)
-        X_trans
-        # array([[1181817,      64],
-        #        [ 130181,     214],
-        #        [ 367984,     117],
-        #        [1181817,     105],
-        #        [ 165396,       0]])
-
-        ```
         """
         check_is_fitted(self, ["n_features_in_"])
         X = check_array(

@@ -23,6 +23,30 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
         The fitted underlying outlier detection model.
     classes_ : array-like of shape (2,)
         Classes used for prediction (0 or 1)
+
+    Example
+    -------
+    ```py
+    from sklearn.ensemble import IsolationForest
+    from sklego.meta.outlier_classifier import OutlierClassifier
+
+    X = [[0], [0.5], [-1], [99]]
+    y = [0, 0, 0, 1]
+
+    isolation_forest = IsolationForest()
+
+    outlier_clf = OutlierClassifier(isolation_forest)
+    _ = outlier_clf.fit(X, y)
+
+    preds = outlier_clf.predict([[100], [-0.5], [0.5], [1]])
+    # array[1. 0. 0. 0.]
+
+    proba_preds = outlier_clf.predict_proba([[100], [-0.5], [0.5], [1]])
+    # [[0.34946567 0.65053433]
+    #  [0.79707913 0.20292087]
+    #  [0.80275406 0.19724594]
+    #  [0.80275406 0.19724594]]
+    ```
     """
 
     def __init__(self, model):
@@ -52,33 +76,6 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
         ValueError
             - If the underlying model is not an outlier detection model.
             - If the underlying model does not have a `decision_function` method.
-
-        Example
-        -------
-        ```py
-        from sklearn.ensemble import IsolationForest
-        from sklego.meta.outlier_classifier import OutlierClassifier
-
-        X = [[0], [0.5], [-1], [99]]
-        y = [[0], [0], [0], [1]]
-
-        isolation_forest = IsolationForest()
-        isolation_forest.fit(X)
-        detector_preds = isolation_forest.predict(X)
-        # array[ 1  1  1 -1]
-
-        outlier_clf = OutlierClassifier(isolation_forest)
-        _ = outlier_clf.fit(X, y)
-
-        preds = outlier_clf.predict([[100], [-0.5], [0.5], [1]])
-        # array[1. 0. 0. 0.]
-
-        proba_preds = outlier_clf.predict_proba([[100], [-0.5], [0.5], [1]])
-        # [[0.34946567 0.65053433]
-        #  [0.79707913 0.20292087]
-        #  [0.80275406 0.19724594]
-        #  [0.80275406 0.19724594]]
-        ```
         """
         X, y = check_X_y(X, y, estimator=self)
         if not self._is_outlier_model():
