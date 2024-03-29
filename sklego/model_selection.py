@@ -260,7 +260,7 @@ def KlusterFoldValidation(**kwargs):
 class ClusterFoldValidation:
     """Cross validator that creates folds based on provided cluster method.
     This ensures that data points in the same cluster are not split across different folds.
-    
+
     !!! info "New in version 0.9.0"
 
     Parameters

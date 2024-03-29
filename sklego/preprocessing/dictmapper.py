@@ -23,6 +23,34 @@ class DictMapper(TransformerMixin, BaseEstimator):
         Number of features seen during `fit`.
     dim_ : int
         Deprecated, please use `n_features_in_` instead.
+
+    Example
+    -------
+    ```py
+    import pandas as pd
+    from sklego.preprocessing.dictmapper import DictMapper
+    from sklearn.compose import ColumnTransformer
+
+    X = pd.DataFrame({
+        "city_pop": ["Amsterdam", "Leiden", "Utrecht", "None", "Haarlem"]
+    })
+
+    mapper = {
+        "Amsterdam": 1_181_817,
+        "Leiden": 130_181,
+        "Utrecht": 367_984,
+        "Haarlem": 165_396,
+    }
+
+    ct = ColumnTransformer([("dictmapper", DictMapper(mapper, 0), ["city_pop"])])
+    X_trans = ct.fit_transform(X)
+    X_trans
+    # array([[1181817],
+    #        [ 130181],
+    #        [ 367984],
+    #        [      0],
+    #        [ 165396]])
+    ```
     """
 
     def __init__(self, mapper, default):
