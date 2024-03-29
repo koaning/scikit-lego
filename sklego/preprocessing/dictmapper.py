@@ -36,10 +36,10 @@ class DictMapper(TransformerMixin, BaseEstimator):
     })
 
     mapper = {
-    "Amsterdam": 1_181_817,
-    "Leiden": 130_181,
-    "Utrecht": 367_984,
-    "Haarlem": 165_396,
+        "Amsterdam": 1_181_817,
+        "Leiden": 130_181,
+        "Utrecht": 367_984,
+        "Haarlem": 165_396,
     }
 
     ct = ColumnTransformer([("dictmapper", DictMapper(mapper, 0), ["city_pop"])])
