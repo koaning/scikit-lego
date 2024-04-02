@@ -248,8 +248,20 @@ class TimeGapSplit:
         return pd.DataFrame(summary)
 
 
-class KlusterFoldValidation:
-    """KlusterFold cross validator. Create folds based on provided cluster method
+def KlusterFoldValidation(**kwargs):
+    warn(
+        "Please use `ClusterFoldValidation` instead of `KlusterFoldValidation`."
+        "We will use correct spelling going forward and `KlusterFoldValidation` will be deprecated.",
+        DeprecationWarning,
+    )
+    return ClusterFoldValidation(**kwargs)
+
+
+class ClusterFoldValidation:
+    """Cross validator that creates folds based on provided cluster method.
+    This ensures that data points in the same cluster are not split across different folds.
+
+    !!! info "New in version 0.9.0"
 
     Parameters
     ----------
