@@ -24,6 +24,16 @@ There's a lot of power in simplicity,
 it keeps the approach strong,
 if you understand the solution better than the problem,
 you're doing it wrong.
+
+So as we forge ahead, let's remember the creed,
+simplicity over complexity, our library's seed.
+In the maze of features, let's not lose sight,
+of the end goal in mind shining bright.
+
+With each new feature, a temptation to craft,
+but elegance is found in what we choose to subtract.
+For every line of code, let's ask ourselves twice,
+does it add clarity or merely vice?
 """
 
 print(poem)
