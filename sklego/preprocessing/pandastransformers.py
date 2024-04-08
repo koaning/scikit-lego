@@ -19,8 +19,8 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     feature_names_ : list[str]
         The names of the features to keep during transform.
 
-    Examples
-    --------
+    Example
+    -------
     ```py
     # Selecting a single column from a pandas DataFrame
     import pandas as pd
@@ -183,6 +183,33 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     !!! warning
 
         Raises a `TypeError` if input provided is not a DataFrame.
+
+    Example
+    -------
+    ```py
+    import pandas as pd
+    from sklego.preprocessing import PandasTypeSelector
+
+    df = pd.DataFrame({
+        "name": ["Swen", "Victor", "Alex"],
+        "length": [1.82, 1.85, 1.80],
+        "shoesize": [42, 44, 45]
+    })
+
+    #Excluding single column
+    PandasTypeSelector(exclude='int64').fit_transform(df)
+    #	name	length
+    #0	Swen	1.82
+    #1	Victor	1.85
+    #2	Alex	1.80
+
+    #Including multiple columns
+    PandasTypeSelector(include=['int64', 'object']).fit_transform(df)
+    #	name	shoesize
+    #0	Swen	42
+    #1	Victor	44
+    #2	Alex	45
+    ```
     """
 
     def __init__(self, include=None, exclude=None):

@@ -155,6 +155,24 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         The projection matrix that can be used to filter information out of a dataset.
     col_ids_ : List[int] of length `len(columns)`
         The list of column ids of the sensitive columns.
+
+    Example
+    -------
+    ```py
+    import pandas as pd
+    from sklego.preprocessing import InformationFilter
+
+    df = pd.DataFrame({
+        "user_id": [101, 102, 103],
+        "length": [1.82, 1.85, 1.80],
+        "age": [21, 37, 45]
+    })
+
+    InformationFilter(columns=['length', 'age'], alpha=0.5).fit_transform(df)
+    # array([[50.10152483,  3.87905643],
+    #        [50.26253897, 19.59684308],
+    #        [52.66084873, 28.06719867]])
+    ```
     """
 
     def __init__(self, columns, alpha=1):
