@@ -52,7 +52,7 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         "user_id": [101, 102, 103],
         "created_day": [5, 1, 7]
     })
-    RepeatingBasisFunction(column='created_day', input_range=(1,7)).fit_transform(df)
+    RepeatingBasisFunction(column="created_day", input_range=(1,7)).fit_transform(df)
     # array([[0.06217652, 0.00432024, 0.16901332, 0.89483932, 0.64118039],
     #        [1.        , 0.36787944, 0.01831564, 0.01831564, 0.36787944],
     #        [1.        , 0.36787944, 0.01831564, 0.01831564, 0.36787944]])

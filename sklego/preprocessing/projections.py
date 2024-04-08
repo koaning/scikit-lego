@@ -168,7 +168,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         "age": [21, 37, 45]
     })
 
-    InformationFilter(columns=['length', 'age'], alpha=0.5).fit_transform(df)
+    InformationFilter(columns=["length", "age"], alpha=0.5).fit_transform(df)
     # array([[50.10152483,  3.87905643],
     #        [50.26253897, 19.59684308],
     #        [52.66084873, 28.06719867]])

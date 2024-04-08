@@ -197,14 +197,14 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     })
 
     #Excluding single column
-    PandasTypeSelector(exclude='int64').fit_transform(df)
+    PandasTypeSelector(exclude="int64").fit_transform(df)
     #	name	length
     #0	Swen	1.82
     #1	Victor	1.85
     #2	Alex	1.80
 
     #Including multiple columns
-    PandasTypeSelector(include=['int64', 'object']).fit_transform(df)
+    PandasTypeSelector(include=["int64", "object"]).fit_transform(df)
     #	name	shoesize
     #0	Swen	42
     #1	Victor	44
