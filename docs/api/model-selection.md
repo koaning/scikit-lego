@@ -17,4 +17,4 @@
 
 ## `KlusterFoldValidation`
 
-Prior to `version 0.9.0`, the `ClusterFoldValidation` class was named `KlusterFoldValidation`. The old name is deprecated and will be removed in a future releases.
+Prior to `version 0.8.2`, the `ClusterFoldValidation` class was named `KlusterFoldValidation`. The old name is deprecated and will be removed in a future releases.
