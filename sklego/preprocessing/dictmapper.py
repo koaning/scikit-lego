@@ -24,8 +24,8 @@ class DictMapper(TransformerMixin, BaseEstimator):
     dim_ : int
         Deprecated, please use `n_features_in_` instead.
 
-    Example
-    -------
+    Examples
+    --------
     ```py
     import pandas as pd
     from sklego.preprocessing.dictmapper import DictMapper
