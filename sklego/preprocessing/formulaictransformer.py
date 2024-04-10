@@ -34,6 +34,33 @@ class FormulaicTransformer(TransformerMixin, BaseEstimator):
         The parsed model specification.
     n_features_in_ : int
         Number of features seen during `fit`.
+
+    Examples
+    --------
+    ```py
+    import formulaic
+    import pandas as pd
+    import numpy as np
+    from sklego.preprocessing import FormulaicTransformer
+
+    df = pd.DataFrame({
+        'a': ['A', 'B', 'C'],
+        'b': [0.3, 0.1, 0.2],
+    })
+
+    #default type of returned matrix - numpy
+    FormulaicTransformer("a + b + a:b").fit_transform(df)
+    # array([[1. , 0. , 0. , 0.3, 0. , 0. ],
+    #        [1. , 1. , 0. , 0.1, 0.1, 0. ],
+    #        [1. , 0. , 1. , 0.2, 0. , 0.2]])
+
+    #pandas return type
+    FormulaicTransformer("a + b + a:b", "pandas").fit_transform(df)
+    #	Intercept	a[T.B]	a[T.C]	b	    a[T.B]:b	a[T.C]:b
+    #0	1.0	        0	    0	    0.3	    0.0	        0.0
+    #1	1.0	        1	    0	    0.1	    0.1	        0.0
+    #2	1.0	        0	    1	    0.2	    0.0	        0.2
+    ```
     """
 
     def __init__(self, formula, return_type="numpy"):

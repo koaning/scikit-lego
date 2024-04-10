@@ -21,8 +21,8 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
     estimator_ : object
         The fitted outlier detector.
 
-    Example
-    -------
+    Examples
+    --------
     ```py
     import numpy as np
 

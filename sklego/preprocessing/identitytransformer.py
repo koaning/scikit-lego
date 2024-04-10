@@ -22,6 +22,31 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
         The number of features seen during `fit`.
     shape_ : tuple[int, int]
         Deprecated, please use `n_samples_` and `n_features_in_` instead.
+
+    Examples
+    --------
+    ```py
+    import pandas as pd
+    from sklego.preprocessing import IdentityTransformer
+
+    df = pd.DataFrame({
+        "name": ["Swen", "Victor", "Alex"],
+        "length": [1.82, 1.85, 1.80],
+        "shoesize": [42, 44, 45]
+    })
+
+    IdentityTransformer().fit_transform(df)
+    #	name	length	shoesize
+    # 0	Swen	1.82	42
+    # 1	Victor	1.85	44
+    # 2	Alex	1.80	45
+
+    #using check_X=True to validate `X` to be non-empty 2D array of finite values and attempt to cast `X` to float
+    IdentityTransformer(check_X=True).fit_transform(df.drop(columns="name"))
+    # array([[ 1.82, 42.  ],
+    #        [ 1.85, 44.  ],
+    #        [ 1.8 , 45.  ]])
+    ```
     """
 
     def __init__(self, check_X: bool = False):

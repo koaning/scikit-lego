@@ -42,8 +42,8 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     pipeline_ : ColumnTransformer
         Fitted `ColumnTransformer` object used to transform data with repeating basis functions.
 
-    Example
-    -------
+    Examples
+    --------
     ```py
     import pandas as pd
     from sklego.preprocessing import RepeatingBasisFunction

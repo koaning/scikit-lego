@@ -156,8 +156,8 @@ class InformationFilter(BaseEstimator, TransformerMixin):
     col_ids_ : List[int] of length `len(columns)`
         The list of column ids of the sensitive columns.
 
-    Example
-    -------
+    Examples
+    --------
     ```py
     import pandas as pd
     from sklego.preprocessing import InformationFilter
