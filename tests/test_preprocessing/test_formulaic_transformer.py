@@ -9,6 +9,8 @@ from sklearn.preprocessing import StandardScaler
 
 from sklego.preprocessing import FormulaicTransformer
 
+pytestmark = pytest.mark.formulaic
+
 
 @pytest.fixture()
 def df():
