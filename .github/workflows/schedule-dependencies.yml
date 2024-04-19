@@ -58,7 +58,7 @@ jobs:
     - name: Install dependencies
       run: |
         uv pip install wheel --system
-        uv pip install ${{ matrix.pre-release-dependencies }} -e ".[test]" --system
+        uv pip install ${{ matrix.pre-release-dependencies }} -e ".[test-all]" --system
         uv pip freeze
     - name: Test with pytest
       run: pytest -n auto --disable-warnings --cov=sklego -m "cvxpy or formulaic or umap"
