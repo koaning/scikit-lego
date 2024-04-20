@@ -6,6 +6,8 @@ from sklego.common import flatten
 from sklego.preprocessing import IntervalEncoder
 from tests.conftest import general_checks, transformer_checks
 
+pytestmark = pytest.mark.cvxpy
+
 
 @pytest.mark.parametrize(
     "test_fn",

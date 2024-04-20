@@ -152,7 +152,7 @@ class ShrinkageMixin:
 
             def no_shrinkage_function(x):
                 n = len(self.fitted_levels_[-1])
-                return np.lib.pad([1], (len(x) - 1, n - len(x)), "constant", constant_values=(0))
+                return np.pad([1], (len(x) - 1, n - len(x)), "constant", constant_values=(0))
 
             shrinkage_function_ = no_shrinkage_function
 

@@ -5,6 +5,8 @@ from sklego.common import flatten
 from sklego.linear_model import ProbWeightRegression
 from tests.conftest import general_checks, nonmeta_checks, regressor_checks, select_tests
 
+pytestmark = pytest.mark.cvxpy
+
 
 @pytest.mark.parametrize(
     "test_fn",
@@ -13,7 +15,6 @@ from tests.conftest import general_checks, nonmeta_checks, regressor_checks, sel
         exclude=["check_sample_weights_invariance", "check_sample_weights_list", "check_sample_weights_pandas_series"],
     ),
 )
-@pytest.mark.cvxpy
 def test_estimator_checks(test_fn):
     regr_min_zero = ProbWeightRegression(non_negative=True)
     test_fn(ProbWeightRegression.__name__ + "_min_zero_true", regr_min_zero)
@@ -21,7 +22,6 @@ def test_estimator_checks(test_fn):
     test_fn(ProbWeightRegression.__name__ + "_min_zero_true_false", regr_not_min_zero)
 
 
-@pytest.mark.cvxpy
 def test_shape_trained_model(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
     mod_no_intercept = ProbWeightRegression()
