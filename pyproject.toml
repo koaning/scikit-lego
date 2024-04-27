@@ -45,9 +45,9 @@ issue-tracker = "https://github.com/koaning/scikit-lego/issues"
 documentation = "https://koaning.github.io/scikit-lego/"
 
 [project.optional-dependencies]
-cvxpy = ["cmake", "osqp", "cvxpy>=1.1.8"]
+cvxpy = ["cmake", "osqp", "cvxpy>=1.1.8", "numpy<2.0"]
 formulaic = ["formulaic>=0.6.0"]
-umap = ["umap-learn>=0.4.6"]
+umap = ["umap-learn>=0.4.6", "numpy<2.0"]
 
 all = ["scikit-lego[cvxpy,formulaic,umap]"]
 
@@ -60,12 +60,15 @@ docs = [
     "mkdocstrings-python>=1.7.3",
 ]
 
-test = [
-    "scikit-lego[all]",
+test-dep = [
     "pytest>=6.2.5",
     "pytest-xdist>=1.34.0",
     "pytest-cov>=2.6.1",
     "pytest-mock>=1.6.3",
+]
+
+test-all = [
+    "scikit-lego[all,test-dep]",
 ]
 
 utils = [
@@ -104,5 +107,8 @@ ignore = [
 
 [tool.pytest.ini_options]
 markers = [
-    "cvxpy: tests that require cvxpy (deselect with '-m \"not cvxpy\"')"
+    "cvxpy: tests that require cvxpy (deselect with '-m \"not cvxpy\"')",
+    "formulaic: tests that require formulaic (deselect with '-m \"not formulaic\"')",
+    "umap: tests that require umap (deselect with '-m \"not umap\"')"
 ]
+

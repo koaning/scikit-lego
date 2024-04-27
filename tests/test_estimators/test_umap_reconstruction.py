@@ -5,6 +5,8 @@ from sklego.common import flatten
 from sklego.decomposition import UMAPOutlierDetection
 from tests.conftest import general_checks, nonmeta_checks, outlier_checks, select_tests
 
+pytestmark = pytest.mark.umap
+
 
 @pytest.mark.parametrize(
     "test_fn",

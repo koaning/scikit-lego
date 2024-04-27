@@ -33,6 +33,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: uv pip install -e ".[test]" --system
+      run: uv pip install -e ".[test-all]" --system
     - name: Test with pytest
       run: make test

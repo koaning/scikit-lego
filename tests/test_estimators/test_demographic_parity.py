@@ -12,6 +12,8 @@ from sklego.linear_model import DemographicParityClassifier
 from sklego.metrics import p_percent_score
 from tests.conftest import classifier_checks, general_checks, nonmeta_checks, select_tests
 
+pytestmark = pytest.mark.cvxpy
+
 
 @pytest.mark.parametrize(
     "test_fn",
@@ -20,7 +22,6 @@ from tests.conftest import classifier_checks, general_checks, nonmeta_checks, se
         exclude=["check_sample_weights_invariance", "check_sample_weights_list", "check_sample_weights_pandas_series"],
     ),
 )
-@pytest.mark.cvxpy
 def test_standard_checks(test_fn):
     trf = DemographicParityClassifier(
         covariance_threshold=None,
@@ -70,7 +71,6 @@ def _test_same(dataset):
         assert np.sum(lr.predict(X_without_sens) != fair.predict(X)) / len(X) < 0.01
 
 
-@pytest.mark.cvxpy
 def test_same_logistic(random_xy_dataset_clf):
     """
     Tests whether the fair classifier performs similar to logistic regression
@@ -80,7 +80,6 @@ def test_same_logistic(random_xy_dataset_clf):
     _test_same(random_xy_dataset_clf)
 
 
-@pytest.mark.cvxpy
 def test_same_logistic_multiclass(random_xy_dataset_multiclf):
     """
     Tests whether the fair classifier performs similar to logistic regression
@@ -90,7 +89,6 @@ def test_same_logistic_multiclass(random_xy_dataset_multiclf):
     _test_same(random_xy_dataset_multiclf)
 
 
-@pytest.mark.cvxpy
 def test_regularization(sensitive_classification_dataset):
     """Tests whether increasing regularization decreases the norm of the coefficient vector"""
     X, y = sensitive_classification_dataset
@@ -103,7 +101,6 @@ def test_regularization(sensitive_classification_dataset):
         prev_theta_norm = theta_norm
 
 
-@pytest.mark.cvxpy
 def test_fairness(sensitive_classification_dataset):
     """tests whether fairness (measured by p percent score) increases as we decrease the covariance threshold"""
     X, y = sensitive_classification_dataset
