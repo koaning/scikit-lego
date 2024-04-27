@@ -36,6 +36,21 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         The underlying PCA model.
     offset_ : float
         The offset used for the decision function.
+
+    Examples
+    --------
+    ```py
+    import numpy as np
+    from sklego.decomposition import PCAOutlierDetection
+
+    X = np.array([[-1, -1, -1], [-2, -1, -2], [5, -1, 0], [1, 1, 1], [2, 1, 1], [3, 2, 3]])
+
+    pca_model = PCAOutlierDetection(n_components=2, threshold=0.05)
+    pca_model.fit(X)
+    pca_pred = pca_model.predict(X)
+    pca_pred
+    # [ 1  1  1 -1 -1  1]
+    ```
     """
 
     def __init__(
