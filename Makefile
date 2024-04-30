@@ -1,55 +1,30 @@
 .PHONY: docs
 
-flake:
-	flake8 sklego
-	flake8 tests
-	flake8 setup.py
-
 install:
-	pip install -e .
-
-develop:
-	pip install -e ".[dev]"
+	python -m pip install -e ".[dev]"
 	pre-commit install
-	python setup.py develop
 
-doctest:
-	python -m doctest -v sklego/*.py
-
-test-notebooks:
-	pytest --nbval-lax doc/*.ipynb
-
-test: doctest
-	pytest --disable-warnings --cov=sklego
+test:
+	pytest -n auto --disable-warnings --cov=sklego
 	rm -rf .coverage*
-	pytest --nbval-lax doc/*.ipynb
 
 precommit:
 	pre-commit run
 
-spelling:
-	codespell sklego/*.py
-
 docs:
-	rm -rf doc/.ipynb_checkpoints
-	sphinx-build -a -E doc docs
+	mkdocs serve
 
-docs-deploy: docs
-	netlify deploy --dir=docs --prod
+docs-deploy:
+	mkdocs gh-deploy
 
 clean:
-	rm -rf .pytest_cache
-	rm -rf build
-	rm -rf dist
-	rm -rf docs
-	rm -rf scikit_lego.egg-info
-	rm -rf .ipynb_checkpoints
-	rm -rf .coverage*
+	rm -rf .pytest_cache build dist scikit_lego.egg-info .ipynb_checkpoints .coverage* .mypy_cache .ruff_cache
 
-black:
-	black sklego tests setup.py
+lint:
+	ruff format sklego tests
+	ruff check sklego tests --fix
 
-check: flake precommit test spelling clean
+check: lint precommit test clean
 
 pypi: clean
 	python setup.py sdist

@@ -4,9 +4,7 @@ from sklearn.model_selection import train_test_split
 
 from sklego.common import flatten
 from sklego.preprocessing import RandomAdder
-
-
-from tests.conftest import select_tests, transformer_checks, nonmeta_checks, general_checks
+from tests.conftest import general_checks, nonmeta_checks, select_tests, transformer_checks
 
 
 @pytest.mark.parametrize(
@@ -19,9 +17,9 @@ from tests.conftest import select_tests, transformer_checks, nonmeta_checks, gen
             "check_transformer_data_not_an_array",
             "check_transformer_general",
             "check_sample_weights_list",
-            "check_sample_weights_pandas_series"
-        ]
-    )
+            "check_sample_weights_pandas_series",
+        ],
+    ),
 )
 def test_estimator_checks(test_fn):
     adder = RandomAdder()
@@ -30,12 +28,12 @@ def test_estimator_checks(test_fn):
 
 def test_dtype_regression(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
-    assert RandomAdder().fit(X, y).transform(X).dtype == np.float
+    assert RandomAdder().fit(X, y).transform(X).dtype == float
 
 
 def test_dtype_classification(random_xy_dataset_clf):
     X, y = random_xy_dataset_clf
-    assert RandomAdder().fit(X, y).transform(X).dtype == np.float
+    assert RandomAdder().fit(X, y).transform(X).dtype == float
 
 
 def test_only_transform_train(random_xy_dataset_clf):

@@ -1,28 +1,46 @@
+from warnings import warn
+
 import numpy as np
 from scipy.optimize import minimize_scalar
+from scipy.stats import gaussian_kde
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.mixture import GaussianMixture
-from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
-
-from scipy.stats import gaussian_kde
+from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
 
 
 class GMMOutlierDetector(OutlierMixin, BaseEstimator):
+    """The `GMMDetector` trains a Gaussian Mixture model on a dataset `X`. Once a density is trained we can evaluate the
+    likelihood scores to see if it is deemed likely.
+
+    By providing a `threshold` this model might then label outliers if their likelihood score is too low.
+
+    !!! note
+        The parameters other than `threshold` and `method` are an exact copy of the parameters in
+        [sklearn.mixture.GaussianMixture]( https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html).
+
+    Parameters
+    ----------
+    threshold : float, default=0.99
+        The limit at which the model thinks an outlier appears, must be between (0, 1).
+    method : Literal["quantile", "stddev"], default="quantile"
+        The method to use to apply the `threshold`.
+
+        !!! info
+            If you select `method="quantile"` then the threshold value represents the quantile value to start calling
+            something an outlier.
+
+            If you select `method="stddev"` then the threshold value represents the
+            numbers of standard deviations before calling something an outlier.
+
+    Attributes
+    ----------
+    gmm_ : GaussianMixture
+        The trained Gaussian Mixture model.
+    likelihood_threshold_ : float
+        The threshold value used to determine if something is an outlier.
     """
-    The GMMDetector trains a Gaussian Mixture Model on a dataset X. Once
-    a density is trained we can evaluate the likelihood scores to see if
-    it is deemed likely. By giving a threshold this model might then label
-    outliers if their likelihood score is too low.
 
-    :param threshold: the limit at which the model thinks an outlier appears, must be between (0, 1)
-    :param method: the method that the threshold will be applied to, possible values = [stddev, default=quantile]
-
-    If you select method="quantile" then the threshold value represents the
-    quantile value to start calling something an outlier.
-
-    If you select method="stddev" then the threshold value represents the
-    numbers of standard deviations before calling something an outlier.
-    """
+    _ALLOWED_METHODS = ("quantile", "stddev")
 
     def __init__(
         self,
@@ -46,7 +64,6 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         self.threshold = threshold
         self.method = method
         self.random_state = random_state
-        self.allowed_methods = ["quantile", "stddev"]
         self.n_components = n_components
         self.covariance_type = covariance_type
         self.tol = tol
@@ -62,34 +79,39 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         self.verbose = verbose
         self.verbose_interval = verbose_interval
 
-    def fit(self, X: np.array, y=None) -> "GMMOutlierDetector":
-        """
-        Fit the model using X, y as training data.
+    def fit(self, X: np.ndarray, y=None) -> "GMMOutlierDetector":
+        """Fit the `BayesianGMMOutlierDetector` model using `X`, `y` as training data.
 
-        :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :param y: ignored but kept in for pipeline support
-        :return: Returns an instance of self.
-        """
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            The training data.
+        y : array-like of shape (n_samples,)
+            Ignored, present for compatibility.
 
+        Returns
+        -------
+        self : GMMOutlierDetector
+            The fitted estimator.
+
+        Raises
+        ------
+        ValueError
+            - If `method="quantile"` and `threshold` is not between (0, 1).
+            - If `method="stddev"` and `threshold` is negative.
+            - If `method` is not in `["quantile", "stddev"]`.
+        """
         # GMM sometimes throws an error if you don't do this
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
 
-        if (self.method == "quantile") and (
-            (self.threshold > 1) or (self.threshold < 0)
-        ):
-            raise ValueError(
-                f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1"
-            )
+        if (self.method == "quantile") and ((self.threshold > 1) or (self.threshold < 0)):
+            raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1")
         if (self.method == "stddev") and (self.threshold < 0):
-            raise ValueError(
-                f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold "
-            )
-        if self.method not in self.allowed_methods:
-            raise ValueError(
-                f"Method not recognised. Method must be in {self.allowed_methods}"
-            )
+            raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold ")
+        if self.method not in self._ALLOWED_METHODS:
+            raise ValueError(f"Method not recognised. Method must be in {self._ALLOWED_METHODS}")
 
         self.gmm_ = GaussianMixture(
             n_components=self.n_components,
@@ -119,13 +141,12 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
             mean_likelihood = score_samples.mean()
             new_likelihoods = score_samples[score_samples < max_x_value]
             new_likelihoods_std = np.std(new_likelihoods - mean_likelihood)
-            self.likelihood_threshold_ = mean_likelihood - (
-                self.threshold * new_likelihoods_std
-            )
+            self.likelihood_threshold_ = mean_likelihood - (self.threshold * new_likelihoods_std)
 
         return self
 
     def score_samples(self, X):
+        """Compute the log likelihood for each sample and return the negative value."""
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["gmm_", "likelihood_threshold_"])
         if len(X.shape) == 1:
@@ -138,13 +159,28 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         return self.score_samples(X) + self.likelihood_threshold_
 
     def predict(self, X):
-        """
-        Predict if a point is an outlier.
+        """Predict if a point is an outlier or not using the fitted model.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :return: array, shape=(n_samples,) the predicted data. 1 for inliers, -1 for outliers.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted data. 1 for inliers, -1 for outliers.
         """
-        predictions = (self.decision_function(X) >= 0).astype(np.int)
+        predictions = (self.decision_function(X) >= 0).astype(int)
         predictions[predictions == 1] = -1
         predictions[predictions == 0] = 1
         return predictions
+
+    @property
+    def allowed_methods(self):
+        warn(
+            "Please use `_ALLOWED_METHODS` instead of `allowed_methods`,"
+            "`allowed_methods` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self._ALLOWED_METHODS

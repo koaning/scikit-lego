@@ -1,19 +1,32 @@
-import numpy as np
+from warnings import warn
 
+import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.mixture import GaussianMixture, BayesianGaussianMixture
+from sklearn.mixture import BayesianGaussianMixture, GaussianMixture
 from sklearn.utils import check_X_y
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
+from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
 
 
 class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
-    """
-    The GaussianMixtureNB trains a Naive Bayes Classifier that uses a mixture
-    of gaussians instead of merely training a single one.
+    """The `GaussianMixtureNB` estimator is a naive bayes classifier that uses a mixture of gaussians instead of
+    merely a single one. In particular it trains a `GaussianMixture` model for each class in the target and for each
+    feature in the data, on the subset of `X` where `y == class`.
 
-    You can pass any keyword parameter that scikit-learn's Gaussian Mixture
-    Model uses and it will be passed along.
+    You can pass any keyword parameter that scikit-learn's
+    [GaussianMixture](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html)
+    model uses and it will be passed along to each of the models.
+
+    Attributes
+    ----------
+    gmms_ : dict[int, List[GaussianMixture]]
+        A dictionary of Gaussian Mixture Models, one for each class.
+    classes_ : np.ndarray of shape (n_classes,)
+        The classes seen during `fit`.
+    n_features_in_ : int
+        The number of features seen during `fit`.
+    num_fit_cols_ : int
+        Deprecated, please use `n_features_in_` instead.
     """
 
     def __init__(
@@ -44,13 +57,21 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         self.random_state = random_state
         self.warm_start = warm_start
 
-    def fit(self, X: np.array, y: np.array) -> "GaussianMixtureNB":
-        """
-        Fit the model using X, y as training data.
+    def fit(self, X, y) -> "GaussianMixtureNB":
+        """Fit the `GaussianMixtureNB` estimator using `X` and `y` as training data by fitting a `GaussianMixture` model
+        for each class in the target and for each feature in the data, on the subset of `X` where `y == class`.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :param y: array-like, shape=(n_samples, ) training data.
-        :return: Returns an instance of self.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            The training data.
+        y : array-like of shape (n_samples,)
+            The target values.
+
+        Returns
+        -------
+        self : GaussianMixtureNB
+            The fitted estimator.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         if X.ndim == 1:
@@ -58,7 +79,7 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
 
         self.gmms_ = {}
         self.classes_ = unique_labels(y)
-        self.num_fit_cols_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         for c in self.classes_:
             subset_x, subset_y = X[y == c], y[y == c]
             self.gmms_[c] = [
@@ -81,38 +102,80 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        check_is_fitted(self, ["gmms_", "classes_"])
+        """Predict labels for `X` using fitted estimator and `predict_proba` method, by picking the class with the
+        highest probability.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted data.
+        """
+        check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
-    def predict_proba(self, X: np.array):
-        check_is_fitted(self, ["gmms_", "classes_"])
+    def predict_proba(self, X: np.ndarray):
+        """Predict probabilities for `X` using fitted estimator by summing the probabilities of each gaussian for each
+        class.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples, n_classes)
+            The predicted probabilities.
+        """
+        check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        if self.num_fit_cols_ != X.shape[1]:
-            raise ValueError(
-                f"number of columns {X.shape[1]} does not match fit size {self.num_fit_cols_}"
-            )
+        if self.n_features_in_ != X.shape[1]:
+            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
         check_is_fitted(self, ["gmms_", "classes_"])
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():
             class_idx = int(np.argwhere(self.classes_ == k))
             probs[:, class_idx] = np.array(
-                [
-                    m.score_samples(np.expand_dims(X[:, idx], 1))
-                    for idx, m in enumerate(v)
-                ]
+                [m.score_samples(np.expand_dims(X[:, idx], 1)) for idx, m in enumerate(v)]
             ).sum(axis=0)
         likelihood = np.exp(probs)
         return likelihood / likelihood.sum(axis=1).reshape(-1, 1)
 
+    @property
+    def num_fit_cols_(self):
+        warn(
+            "Please use `n_features_in_` instead of `num_fit_cols_`,"
+            "`num_fit_cols_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_
+
 
 class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
-    """
-    The BayesianGaussianMixtureNB trains a Naive Bayes Classifier that uses a bayesian
-    mixture of gaussians instead of merely training a single one.
+    """The `BayesianGaussianMixtureNB` estimator is a naive bayes classifier that uses a bayesian mixture of gaussians
+    instead of merely a single one. In particular it trains a `BayesianGaussianMixture` model for each class in the
+    target and for each feature in the data, on the subset of `X` where `y == class`.
 
-    You can pass any keyword parameter that scikit-learn's Bayesian Gaussian Mixture
-    Model uses and it will be passed along.
+    You can pass any keyword parameter that scikit-learn's
+    [`BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html)
+    model uses and it will be passed along to each of the models.
+
+    Attributes
+    ----------
+    gmms_ : dict[int, List[BayesianGaussianMixture]]
+        A dictionary of Gaussian Mixture Models, one for each class.
+    classes_ : np.ndarray of shape (n_classes,)
+        The classes seen during `fit`.
+    n_features_in_ : int
+        The number of features seen during `fit`.
+    num_fit_cols_ : int
+        Deprecated, please use `n_features_in_` instead.
     """
 
     def __init__(
@@ -153,13 +216,22 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
         self.verbose = verbose
         self.verbose_interval = verbose_interval
 
-    def fit(self, X: np.array, y: np.array) -> "BayesianGaussianMixtureNB":
-        """
-        Fit the model using X, y as training data.
+    def fit(self, X, y) -> "BayesianGaussianMixtureNB":
+        """Fit the `BayesianGaussianMixtureNB` estimator using `X` and `y` as training data by fitting a
+        `BayesianGaussianMixture` model for each class in the target and for each feature in the data, on the subset of
+        `X` where `y == class`.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :param y: array-like, shape=(n_samples, ) training data.
-        :return: Returns an instance of self.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            The training data.
+        y : array-like of shape (n_samples,)
+            The target values.
+
+        Returns
+        -------
+        self : BayesianGaussianMixtureNB
+            The fitted estimator.
         """
         X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         if X.ndim == 1:
@@ -167,7 +239,7 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
 
         self.gmms_ = {}
         self.classes_ = unique_labels(y)
-        self.num_fit_cols_ = X.shape[1]
+        self.n_features_in_ = X.shape[1]
         for c in self.classes_:
             subset_x, subset_y = X[y == c], y[y == c]
             self.gmms_[c] = [
@@ -195,26 +267,56 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
         return self
 
     def predict(self, X):
-        check_is_fitted(self, ["gmms_", "classes_", "num_fit_cols_"])
+        """Predict labels for `X` using fitted estimator and `predict_proba` method, by picking the class with the
+        highest probability.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted data.
+        """
+        check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
-    def predict_proba(self, X: np.array):
-        check_is_fitted(self, ["gmms_", "classes_", "num_fit_cols_"])
+    def predict_proba(self, X: np.ndarray):
+        """Predict probabilities for `X` using fitted estimator by summing the probabilities of each gaussian for each
+        class.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples, n_classes)
+            The predicted probabilities.
+        """
+        check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        if self.num_fit_cols_ != X.shape[1]:
-            raise ValueError(
-                f"number of columns {X.shape[1]} does not match fit size {self.num_fit_cols_}"
-            )
+        if self.n_features_in_ != X.shape[1]:
+            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
         check_is_fitted(self, ["gmms_", "classes_"])
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():
             class_idx = int(np.argwhere(self.classes_ == k))
             probs[:, class_idx] = np.array(
-                [
-                    m.score_samples(np.expand_dims(X[:, idx], 1))
-                    for idx, m in enumerate(v)
-                ]
+                [m.score_samples(np.expand_dims(X[:, idx], 1)) for idx, m in enumerate(v)]
             ).sum(axis=0)
         likelihood = np.exp(probs)
         return likelihood / likelihood.sum(axis=1).reshape(-1, 1)
+
+    @property
+    def num_fit_cols_(self):
+        warn(
+            "Please use `n_features_in_` instead of `num_fit_cols_`,"
+            "`num_fit_cols_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_features_in_

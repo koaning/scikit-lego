@@ -1,24 +1,24 @@
-import pytest
+from unittest.mock import Mock, patch
+
 import numpy as np
-from unittest.mock import Mock
-from unittest.mock import patch
+import pytest
 from sklearn import clone
 from sklearn.dummy import DummyClassifier
-from sklearn.multioutput import MultiOutputRegressor
+from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.linear_model import LinearRegression, Ridge
-from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.pipeline import FeatureUnion, Pipeline
+from sklearn.preprocessing import OrdinalEncoder
 from sklearn.utils import check_X_y
 from sklearn.exceptions import NotFittedError
 from sklego.common import flatten
 from sklego.meta import EstimatorTransformer
-from tests.conftest import transformer_checks, general_checks
+from tests.conftest import general_checks, transformer_checks
 
 
-@pytest.mark.parametrize(
-    "test_fn", flatten([transformer_checks, general_checks])
-)
+@pytest.mark.parametrize("test_fn", flatten([transformer_checks, general_checks]))
 def test_estimator_checks(test_fn):
-    trf = EstimatorTransformer(LinearRegression())
+    trf = EstimatorTransformer(LinearRegression(), check_input=True)
     test_fn(EstimatorTransformer.__name__, trf)
 
 
@@ -51,6 +51,7 @@ def test_get_params():
         "estimator": clf,
         "estimator__strategy": "most_frequent",
         "predict_func": "predict",
+        "check_input": False,
     }
 
 
@@ -78,20 +79,13 @@ def test_shape_multitarget(random_xy_dataset_multitarget):
     X, y = random_xy_dataset_multitarget
     m = X.shape[0]
     n = y.shape[1]
-    pipeline = Pipeline(
-        [
-            (
-                "multi_ml_features",
-                EstimatorTransformer(MultiOutputRegressor(Ridge()))
-            )
-        ]
-    )
+    pipeline = Pipeline([("multi_ml_features", EstimatorTransformer(MultiOutputRegressor(Ridge())))])
     assert pipeline.fit(X, y).transform(X).shape == (m, n)
 
 
-@patch('sklego.meta.estimator_transformer.clone')
+@patch("sklego.meta.estimator_transformer.clone")
 def test_kwargs(patched_clone, random_xy_dataset_clf):
-    """ Test if kwargs are properly passed to an underlying estimator. """
+    """Test if kwargs are properly passed to an underlying estimator."""
     X, y = random_xy_dataset_clf
     estimator = Mock()
     patched_clone.return_value = estimator
@@ -165,3 +159,24 @@ def test_get_feature_names_out_featureunion(random_xy_dataset_clf):
     feature_names = pipeline.get_feature_names_out()
     expected_feature_names = ["model_1__linearregression", "model_2__ridge"]
     np.testing.assert_array_equal(feature_names, expected_feature_names)
+    np.testing.assert_array_equal(X, estimator.fit.call_args[0][0])
+    np.testing.assert_array_equal(y, estimator.fit.call_args[0][1])
+    np.testing.assert_array_equal(sample_weights, estimator.fit.call_args[1]["sample_weight"])
+
+
+@pytest.mark.parametrize(
+    "X",
+    [
+        np.array([[np.nan, 4], [7, 3], [5, 5], [7, 2], [5, 7]]),
+        np.array([["a", 4], ["a", 3], ["b", 5], ["b", 2], ["b", 7]]),
+    ],
+)
+def test_nan_and_string_input(X):
+    """Test X containing nan and string with check_input=False."""
+    y = np.array([1, 0, 1, 0, 1])
+    clf = Pipeline([("encoder", OrdinalEncoder()), ("gbm", HistGradientBoostingClassifier())])
+    transformer = EstimatorTransformer(clf, check_input=False)
+    transformed = transformer.fit(X, y).transform(X)
+
+    assert transformed.shape == (y.shape[0], 1)
+    assert np.all(transformed == clf.fit(X, y).predict(X))

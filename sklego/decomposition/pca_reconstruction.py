@@ -1,12 +1,41 @@
 import numpy as np
-from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, OutlierMixin
-from sklearn.utils.validation import check_is_fitted, check_array, FLOAT_DTYPES
+from sklearn.decomposition import PCA
+from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
 
 
 class PCAOutlierDetection(BaseEstimator, OutlierMixin):
-    """
-    Does outlier detection based on the reconstruction error from PCA.
+    """`PCAOutlierDetection` is an outlier detector based on the reconstruction error from PCA.
+
+    If the difference between original and reconstructed data is larger than the `threshold`, the point is
+    considered an outlier.
+
+    Parameters
+    ----------
+    n_components : int | None, default=None
+        Number of components of the PCA model.
+    threshold : float | None, default=None
+        The threshold used for the decision function.
+    variant : Literal["relative", "absolute"], default="relative"
+        The variant used for the difference calculation. "relative" means that the difference between original and
+        reconstructed data is divided by the sum of the original data.
+    whiten : bool, default=False
+        `whiten` parameter of PCA model.
+    svd_solver : Literal["auto", "full", "arpack", "randomized"], default="auto"
+        `svd_solver` parameter of PCA model.
+    tol : float, default=0.0
+        `tol` parameter of PCA model.
+    iterated_power : int | Literal["auto"], default="auto"
+        `iterated_power` parameter of PCA model.
+    random_state : int | None, default=None
+        `random_state` parameter of PCA model.
+
+    Attributes
+    ----------
+    pca_ : PCA
+        The underlying PCA model.
+    offset_ : float
+        The offset used for the decision function.
     """
 
     def __init__(
@@ -30,12 +59,25 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         self.random_state = random_state
 
     def fit(self, X, y=None):
-        """
-        Fit the model using X as training data.
+        """Fit the `PCAOutlierDetection` model using `X` as training data by fitting the underlying PCA model, and
+        checking the `threshold` value.
 
-        :param X: array-like, shape=(n_columns, n_samples,) training data.
-        :param y: ignored but kept in for pipeline support
-        :return: Returns an instance of self.
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            The training data.
+        y : array-like of shape (n_samples,) or None, default=None
+            Ignored, present for compatibility.
+
+        Returns
+        -------
+        self : PCAOutlierDetection
+            The fitted estimator.
+
+        Raises
+        ------
+        ValueError
+            If `threshold` is `None`.
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if not self.threshold:
@@ -54,19 +96,23 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         return self
 
     def transform(self, X):
-        """
-        Uses the underlying PCA method to transform the data.
-        """
+        """Transform the data using the underlying PCA method."""
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["pca_", "offset_"])
         return self.pca_.transform(X)
 
     def difference(self, X):
-        """
-        Shows the calculated difference between original and reconstructed data. Row by row.
+        """Return the calculated difference between original and reconstructed data. Row by row.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :return: array, shape=(n_samples,) the difference
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features )
+            Data to calculate the difference for.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The calculated difference.
         """
         check_is_fitted(self, ["pca_", "offset_"])
         reduced = self.pca_.transform(X)
@@ -76,20 +122,32 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         return diff
 
     def decision_function(self, X):
+        """Calculate the decision function for the data as the difference between `threshold` and the `.difference(X)`
+        (which is the difference between original data and reconstructed data)."""
         return self.threshold - self.difference(X)
 
     def score_samples(self, X):
+        """Calculate the score for the samples"""
         return -self.difference(X)
 
     def predict(self, X):
-        """
-        Predict if a point is an outlier.
+        """Predict if a point is an outlier using fitted estimator.
 
-        :param X: array-like, shape=(n_columns, n_samples, ) training data.
-        :return: array, shape=(n_samples,) the predicted data. 1 for inliers, -1 for outliers.
+        If the difference between original and reconstructed data is larger than the `threshold`, the point is
+        considered an outlier.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted data. 1 for inliers, -1 for outliers.
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["pca_", "offset_"])
         result = np.ones(X.shape[0])
         result[self.difference(X) > self.threshold] = -1
-        return result.astype(np.int)
+        return result.astype(int)

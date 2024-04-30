@@ -4,6 +4,7 @@ import pytest
 from sklearn.linear_model import Lasso
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
+
 from sklego.model_selection import GroupTimeSeriesSplit
 
 GROUPS_COL = "group"
@@ -13,16 +14,7 @@ GROUPS_COL = "group"
 def init_data():
     X = np.random.randint(low=1, high=1000, size=17)
     y = np.random.randint(low=1, high=1000, size=17)
-    groups = np.array(
-        [2000] * 3
-        + [2001]
-        + [2002] * 2
-        + [2003]
-        + [2004] * 5
-        + [2005] * 2
-        + [2006] * 2
-        + [2007]
-    )
+    groups = np.array([2000] * 3 + [2001] + [2002] * 2 + [2003] + [2004] * 5 + [2005] * 2 + [2006] * 2 + [2007])
     return X, y, groups
 
 
@@ -61,16 +53,12 @@ def test_error_summary_before_split():
 
 def test_summary_method(valid_cv):
     cv_summary = valid_cv.summary()
-    assert (
-        isinstance(cv_summary, pd.DataFrame) and not cv_summary.empty
-    ), f"{type(cv_summary)}\n{cv_summary}"
+    assert isinstance(cv_summary, pd.DataFrame) and not cv_summary.empty, f"{type(cv_summary)}\n{cv_summary}"
 
 
 def test_n_groups_equal_n_splits_plus_one(valid_cv):
     cv_summary = valid_cv.summary()
-    assert (
-        cv_summary.loc[:, GROUPS_COL].nunique() == valid_cv.get_n_splits() + 1
-    ), f"{cv_summary}"
+    assert cv_summary.loc[:, GROUPS_COL].nunique() == valid_cv.get_n_splits() + 1, f"{cv_summary}"
 
 
 def test_split_points_chronological(valid_cv):
@@ -78,16 +66,14 @@ def test_split_points_chronological(valid_cv):
     assert list(splits) == sorted(splits), f"{splits}"
 
 
-@pytest.mark.parametrize(
-    "n_splits, n_groups", [(4, 251), (5, 101), (6, 31), (7, 31)]
-)
+@pytest.mark.parametrize("n_splits, n_groups", [(4, 251), (5, 101), (6, 31), (7, 31)])
 def test_user_warning(n_splits, n_groups):
-    groups = list(range(n_groups))
-    X = np.random.randint(1, 10000, size=len(groups))
-    y = np.random.randint(1, 10000, size=len(groups))
+    groups = range(n_groups)
+    X, y = np.random.randint(1, 10000, size=(2, n_groups))
+
     cv = GroupTimeSeriesSplit(n_splits)
     with pytest.warns(UserWarning):
-        cv.split(X, y, groups)
+        cv._check_for_long_estimated_runtime(groups)
 
 
 @pytest.mark.parametrize(
@@ -134,12 +120,8 @@ def test_grouptimeseriessplit_with_gridsearch(valid_n_splits):
 
     # X_train, y_train, groups_train = init_data
     X_train = X_train.reshape(-1, 1)
-    cv_splits = GroupTimeSeriesSplit(valid_n_splits).split(
-        X_train, y_train, groups_train
-    )
-    Lasso(random_state=0, tol=0.1, alpha=0.8).fit(
-        X_train, y_train, groups_train
-    )
+    cv_splits = GroupTimeSeriesSplit(valid_n_splits).split(X_train, y_train, groups_train)
+    Lasso(random_state=0, tol=0.1, alpha=0.8).fit(X_train, y_train, groups_train)
     pipe = Pipeline([("reg", Lasso(random_state=0, tol=0.1))])
     alphas = [0.1, 0.5, 0.8]
     grid = GridSearchCV(pipe, {"reg__alpha": alphas}, cv=cv_splits)

@@ -1,4 +1,5 @@
 import pytest
+
 from sklego.common import as_list, sliding_window
 
 

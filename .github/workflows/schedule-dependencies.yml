@@ -1,30 +1,65 @@
 name: Cron Test Dependencies
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
+  
 
 jobs:
-  cron:
+  cron-base:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: ["3.10"]
         os: [macos-latest, ubuntu-latest, windows-latest]
         pre-release-dependencies: ["--pre", ""]
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout source code
+      uses: actions/checkout@v4
+    - name: Install uv (Unix)
+      if: runner.os != 'Windows'
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    - name: Install uv (Windows)
+      if: runner.os == 'Windows'
+      run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install wheel
-        pip install ${{ matrix.pre-release-dependencies }} scikit-lego
-        pip freeze
+        uv pip install wheel --system
+        uv pip install ${{ matrix.pre-release-dependencies }} --system -e ".[test-dep]"
+        uv pip freeze
     - name: Test with pytest
+      run: pytest -n auto --disable-warnings --cov=sklego -m "not cvxpy and not formulaic and not umap"
+
+  cron-extra:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        pre-release-dependencies: ["--pre", ""]
+        extra: ["cvxpy", "formulaic", "umap"]
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+    - name: Install uv (Unix)
+      if: runner.os != 'Windows'
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    - name: Install uv (Windows)
+      if: runner.os == 'Windows'
+      run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
       run: |
-        pip install -e ".[test]"
-        pytest
+        uv pip install wheel --system
+        uv pip install ${{ matrix.pre-release-dependencies }} -e ".[test-dep,${{ matrix.extra }}]" --system
+        uv pip freeze
+    - name: Test with pytest
+      run: pytest -n auto --disable-warnings --cov=sklego -m "${{ matrix.extra }}"

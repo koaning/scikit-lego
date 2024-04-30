@@ -1,7 +1,6 @@
-import warnings
-
-import pytest
 import numpy as np
+import pytest
+
 try:
     from cvxpy import SolverError
 except ImportError:
@@ -9,23 +8,20 @@ except ImportError:
 from sklearn.linear_model import LogisticRegression
 
 from sklego.common import flatten
-from sklego.linear_model import DemographicParityClassifier, FairClassifier
+from sklego.linear_model import DemographicParityClassifier
 from sklego.metrics import p_percent_score
-from tests.conftest import general_checks, classifier_checks, select_tests, nonmeta_checks
+from tests.conftest import classifier_checks, general_checks, nonmeta_checks, select_tests
+
+pytestmark = pytest.mark.cvxpy
 
 
 @pytest.mark.parametrize(
     "test_fn",
     select_tests(
         flatten([general_checks, nonmeta_checks, classifier_checks]),
-        exclude=[
-            "check_sample_weights_invariance",
-            "check_sample_weights_list",
-            "check_sample_weights_pandas_series"
-        ]
-    )
+        exclude=["check_sample_weights_invariance", "check_sample_weights_list", "check_sample_weights_pandas_series"],
+    ),
 )
-@pytest.mark.cvxpy
 def test_standard_checks(test_fn):
     trf = DemographicParityClassifier(
         covariance_threshold=None,
@@ -46,7 +42,7 @@ def _test_same(dataset):
     sensitive_cols = [0]
     X_without_sens = np.delete(X, sensitive_cols, axis=1)
     lr = LogisticRegression(
-        penalty="none",
+        penalty=None,
         solver="lbfgs",
         multi_class="ovr",
         dual=False,
@@ -62,9 +58,7 @@ def _test_same(dataset):
         n_jobs=None,
         l1_ratio=None,
     )
-    fair = DemographicParityClassifier(
-        covariance_threshold=None, sensitive_cols=sensitive_cols, penalty="none"
-    )
+    fair = DemographicParityClassifier(covariance_threshold=None, sensitive_cols=sensitive_cols, penalty="none")
     try:
         fair.fit(X, y)
     except SolverError:
@@ -77,7 +71,6 @@ def _test_same(dataset):
         assert np.sum(lr.predict(X_without_sens) != fair.predict(X)) / len(X) < 0.01
 
 
-@pytest.mark.cvxpy
 def test_same_logistic(random_xy_dataset_clf):
     """
     Tests whether the fair classifier performs similar to logistic regression
@@ -87,7 +80,6 @@ def test_same_logistic(random_xy_dataset_clf):
     _test_same(random_xy_dataset_clf)
 
 
-@pytest.mark.cvxpy
 def test_same_logistic_multiclass(random_xy_dataset_multiclf):
     """
     Tests whether the fair classifier performs similar to logistic regression
@@ -97,22 +89,18 @@ def test_same_logistic_multiclass(random_xy_dataset_multiclf):
     _test_same(random_xy_dataset_multiclf)
 
 
-@pytest.mark.cvxpy
 def test_regularization(sensitive_classification_dataset):
     """Tests whether increasing regularization decreases the norm of the coefficient vector"""
     X, y = sensitive_classification_dataset
 
     prev_theta_norm = np.inf
     for C in [1, 0.5, 0.2, 0.1]:
-        fair = DemographicParityClassifier(
-            covariance_threshold=None, sensitive_cols=["x1"], C=C
-        ).fit(X, y)
+        fair = DemographicParityClassifier(covariance_threshold=None, sensitive_cols=["x1"], C=C).fit(X, y)
         theta_norm = np.abs(np.sum(fair.estimators_[0].coef_))
         assert theta_norm < prev_theta_norm
         prev_theta_norm = theta_norm
 
 
-@pytest.mark.cvxpy
 def test_fairness(sensitive_classification_dataset):
     """tests whether fairness (measured by p percent score) increases as we decrease the covariance threshold"""
     X, y = sensitive_classification_dataset
@@ -129,18 +117,3 @@ def test_fairness(sensitive_classification_dataset):
         fairness = scorer(fair, X, y)
         assert fairness >= prev_fairness
         prev_fairness = fairness
-
-
-@pytest.mark.cvxpy
-def test_deprecation():
-    with warnings.catch_warnings(record=True) as w:
-        # Cause all warnings to always be triggered.
-        warnings.simplefilter("always")
-        # Trigger a warning.
-        FairClassifier(
-            covariance_threshold=1,
-            sensitive_cols=["x1"],
-            penalty="none",
-            train_sensitive_cols=False,
-        )
-        assert issubclass(w[-1].category, DeprecationWarning)

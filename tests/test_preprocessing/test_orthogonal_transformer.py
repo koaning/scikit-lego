@@ -1,11 +1,10 @@
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
-from sklego.preprocessing import OrthogonalTransformer
 from sklego.common import flatten
-
-from tests.conftest import select_tests, transformer_checks, general_checks, nonmeta_checks
+from sklego.preprocessing import OrthogonalTransformer
+from tests.conftest import general_checks, nonmeta_checks, select_tests, transformer_checks
 
 
 @pytest.fixture
@@ -23,18 +22,14 @@ def sample_df(sample_matrix):
     "test_fn",
     select_tests(
         flatten([general_checks, nonmeta_checks, transformer_checks]),
-        exclude=[
-            "check_sample_weights_invariance",
-            "check_sample_weights_list",
-            "check_sample_weights_pandas_series"
-        ]
-    )
+        exclude=["check_sample_weights_invariance", "check_sample_weights_list", "check_sample_weights_pandas_series"],
+    ),
 )
 def test_estimator_checks(test_fn):
     test_fn(OrthogonalTransformer.__name__, OrthogonalTransformer())
 
 
-def check_is_orthogonal(X, tolerance=10 ** -5):
+def check_is_orthogonal(X, tolerance=10**-5):
     """
     Check if X is an column orthogonal matrix. If X is column orthogonal, then X.T * X equals the identity matrix
     :param X: Matrix to check
@@ -47,7 +42,7 @@ def check_is_orthogonal(X, tolerance=10 ** -5):
         raise AssertionError("X is not orthogonal")
 
 
-def check_is_orthonormal(X, tolerance=10 ** -5):
+def check_is_orthonormal(X, tolerance=10**-5):
     """
     Check if X is an column orthonormal matrix, i.e. orthogonal and with columns with norm 1.
     :param X: Matrix to check

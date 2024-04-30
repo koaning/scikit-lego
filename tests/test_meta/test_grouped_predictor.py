@@ -1,16 +1,36 @@
-import pytest
-import pandas as pd
+from contextlib import nullcontext as does_not_raise
+
 import numpy as np
-from sklearn.linear_model import LinearRegression, LogisticRegression
+import pandas as pd
+import pytest
 from sklearn.dummy import DummyRegressor
 from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import make_pipeline
 
 from sklego.common import flatten
-from sklego.meta import GroupedPredictor
 from sklego.datasets import load_chicken
-
+from sklego.meta import GroupedClassifier, GroupedPredictor, GroupedRegressor
 from tests.conftest import general_checks, select_tests
+
+
+@pytest.fixture
+def random_xy_grouped_clf_different_classes(request):
+    group_size = request.param.get("group_size")
+    y_choices_grpa = request.param.get("y_choices_grpa")
+    y_choices_grpb = request.param.get("y_choices_grpb")
+
+    np.random.seed(43)
+    group_col = np.repeat(["A", "B"], group_size)
+    x_col = np.random.normal(size=group_size * 2)
+    y_col = np.hstack(
+        [
+            np.random.choice(y_choices_grpa, size=group_size),
+            np.random.choice(y_choices_grpb, size=group_size),
+        ]
+    )
+    df = pd.DataFrame({"group": group_col, "x": x_col, "y": y_col})
+    return df
 
 
 @pytest.mark.parametrize(
@@ -26,16 +46,13 @@ from tests.conftest import general_checks, select_tests
         ],
     ),
 )
-def test_estimator_checks(test_fn):
-    clf = GroupedPredictor(
-        estimator=LinearRegression(), groups=0, use_global_model=True
-    )
-    test_fn(GroupedPredictor.__name__ + "_fallback", clf)
+@pytest.mark.parametrize("meta_cls", [GroupedRegressor, GroupedPredictor])
+def test_estimator_checks(test_fn, meta_cls):
+    clf = meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
+    test_fn(meta_cls.__name__ + "_fallback", clf)
 
-    clf = GroupedPredictor(
-        estimator=LinearRegression(), groups=0, use_global_model=False
-    )
-    test_fn(GroupedPredictor.__name__ + "_nofallback", clf)
+    clf = meta_cls(estimator=LinearRegression(), groups=0, use_global_model=False)
+    test_fn(meta_cls.__name__ + "_nofallback", clf)
 
 
 def test_chickweight_df1_keys():
@@ -71,6 +88,71 @@ def test_chickweight_can_do_fallback_proba():
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
     assert mod.predict_proba(to_predict).shape == (2, 2)
     assert (mod.predict_proba(to_predict)[0] == mod.predict_proba(to_predict)[1]).all()
+
+
+@pytest.mark.parametrize(
+    "random_xy_grouped_clf_different_classes",
+    [
+        {"group_size": 10, "y_choices_grpa": [0, 1, 2], "y_choices_grpb": [0, 1, 2, 4]},
+        {"group_size": 10, "y_choices_grpa": [0, 2], "y_choices_grpb": [0, 2]},
+        {"group_size": 10, "y_choices_grpa": [0, 1, 2, 3], "y_choices_grpb": [0, 4]},
+        {"group_size": 10, "y_choices_grpa": [0, 1, 2], "y_choices_grpb": [0, 3]},
+    ],
+    indirect=True,
+)
+def test_predict_proba_has_same_columns_as_distinct_labels(
+    random_xy_grouped_clf_different_classes,
+):
+    mod = GroupedPredictor(estimator=LogisticRegression(), groups="group")
+    X, y = (
+        random_xy_grouped_clf_different_classes[["group", "x"]],
+        random_xy_grouped_clf_different_classes["y"],
+    )
+    _ = mod.fit(X, y)
+    y_proba = mod.predict_proba(X)
+
+    # Ensure the number of col output is always equal to the cardinality of the labels
+    assert len(random_xy_grouped_clf_different_classes["y"].unique()) == y_proba.shape[1]
+
+
+@pytest.mark.parametrize(
+    "random_xy_grouped_clf_different_classes",
+    [
+        {"group_size": 5, "y_choices_grpa": [0, 1, 2], "y_choices_grpb": [0, 2]},
+    ],
+    indirect=True,
+)
+def test_predict_proba_correct_zeros_same_and_different_labels(
+    random_xy_grouped_clf_different_classes,
+):
+    mod = GroupedPredictor(estimator=LogisticRegression(), groups="group")
+
+    X, y = (
+        random_xy_grouped_clf_different_classes[["group", "x"]],
+        random_xy_grouped_clf_different_classes["y"],
+    )
+    _ = mod.fit(X, y)
+    y_proba = mod.predict_proba(X)
+
+    df_proba = pd.concat(
+        [random_xy_grouped_clf_different_classes["group"], pd.DataFrame(y_proba)],
+        axis=1,
+    )
+
+    # Take distinct labels for group A and group B
+    labels_a, labels_b = random_xy_grouped_clf_different_classes.groupby("group").agg({"y": set}).sort_index()["y"]
+
+    # Ensure for the common labels there are no zeros
+    in_common_labels = labels_a.intersection(labels_b)
+    assert all((df_proba.loc[:, label] != 0).all() for label in in_common_labels)
+
+    # Ensure for the non common labels there are only zeros
+    label_not_in_group = {
+        "A": list(labels_b.difference(labels_a)),
+        "B": list(labels_a.difference(labels_b)),
+    }
+    for grp_name, grp in df_proba.groupby("group"):
+        assert all((grp.loc[:, label] == 0).all() for label in label_not_in_group[grp_name])
 
 
 def test_fallback_can_raise_error():
@@ -117,7 +199,6 @@ def test_chickweight_np_keys():
 
 
 def test_chickweigt_string_groups():
-
     df = load_chicken(as_frame=True)
     df["diet"] = ["omgomgomg" + s for s in df["diet"].astype(str)]
 
@@ -249,10 +330,7 @@ def test_min_n_obs_shrinkage_too_little_obs(shrinkage_data):
     with pytest.raises(ValueError) as e:
         shrink_est.fit(X, y)
 
-        assert (
-            f"There is no group with size greater than or equal to {too_big_n_obs}"
-            in str(e)
-        )
+        assert f"There is no group with size greater than or equal to {too_big_n_obs}" in str(e)
 
 
 def test_custom_shrinkage(shrinkage_data):
@@ -346,9 +424,7 @@ def test_custom_shrinkage_raises_error(shrinkage_data):
 
         shrink_est.fit(X, y)
 
-        assert "you should feel bad" in str(
-            e
-        ) and "while checking the shrinkage function" in str(e)
+        assert "you should feel bad" in str(e) and "while checking the shrinkage function" in str(e)
 
 
 @pytest.mark.parametrize("wrong_func", [list(), tuple(), dict(), 9])
@@ -444,10 +520,7 @@ def test_shrinkage_single_group_no_global(shrinkage_data):
         )
         shrink_est.fit(X, y)
 
-        assert (
-            "Cannot do shrinkage with a single group if use_global_model is False"
-            in str(e)
-        )
+        assert "Cannot do shrinkage with a single group if use_global_model is False" in str(e)
 
 
 def test_unexisting_shrinkage_func(shrinkage_data):
@@ -474,15 +547,11 @@ def test_unseen_groups_shrinkage(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    shrink_est = GroupedPredictor(
-        DummyRegressor(), ["Planet", "Country", "City"], shrinkage="constant", alpha=0.1
-    )
+    shrink_est = GroupedPredictor(DummyRegressor(), ["Planet", "Country", "City"], shrinkage="constant", alpha=0.1)
 
     shrink_est.fit(X, y)
 
-    unseen_group = pd.DataFrame(
-        {"Planet": ["Earth"], "Country": ["DE"], "City": ["Hamburg"]}
-    )
+    unseen_group = pd.DataFrame({"Planet": ["Earth"], "Country": ["DE"], "City": ["Hamburg"]})
 
     with pytest.raises(ValueError) as e:
         shrink_est.predict(X=pd.concat([unseen_group] * 4, axis=0))
@@ -535,9 +604,7 @@ def test_predict_missing_value_column(shrinkage_data):
 def test_bad_shrinkage_value_error():
     with pytest.raises(ValueError) as e:
         df = load_chicken(as_frame=True)
-        mod = GroupedPredictor(
-            estimator=LinearRegression(), groups="diet", shrinkage="dinosaurhead"
-        )
+        mod = GroupedPredictor(estimator=LinearRegression(), groups="diet", shrinkage="dinosaurhead")
         mod.fit(df[["time", "diet"]], df["weight"])
         assert "shrinkage function" in str(e)
 
@@ -545,25 +612,59 @@ def test_bad_shrinkage_value_error():
 def test_missing_check():
     df = load_chicken(as_frame=True)
 
-    X, y = df.drop(columns='weight'),  df['weight']
+    X, y = df.drop(columns="weight"), df["weight"]
     # create missing value
-    X.loc[0, 'chick'] = np.nan
-    model =  make_pipeline(SimpleImputer(), LinearRegression())
+    X.loc[0, "chick"] = np.nan
+    model = make_pipeline(SimpleImputer(), LinearRegression())
 
     # Should not raise error, check is disabled
-    m = GroupedPredictor(model, groups = ['diet'], check_X = False).fit(X, y)
+    m = GroupedPredictor(model, groups=["diet"], check_X=False).fit(X, y)
     m.predict(X)
 
     # Should raise error, check is still enabled
     with pytest.raises(ValueError) as e:
-        GroupedPredictor(model, groups = ['diet']).fit(X, y)
+        GroupedPredictor(model, groups=["diet"]).fit(X, y)
         assert "contains NaN" in str(e)
 
 
 def test_has_decision_function():
-    # needed as for example cross_val_score(pipe, X, y, cv=5, scoring="roc_auc", error_score='raise') may fail otherwise, see https://github.com/koaning/scikit-lego/issues/511
+    # needed as for example cross_val_score(pipe, X, y, cv=5, scoring="roc_auc", error_score='raise') may fail
+    # otherwise, see https://github.com/koaning/scikit-lego/issues/511
     df = load_chicken(as_frame=True)
 
-    X, y = df.drop(columns='weight'),  df['weight']
+    X, y = df.drop(columns="weight"), df["weight"]
     # This should NOT raise errors
-    GroupedPredictor(LogisticRegression(), groups=["diet"]).fit(X, y).decision_function(X)
+    GroupedPredictor(LogisticRegression(max_iter=2000), groups=["diet"]).fit(X, y).decision_function(X)
+
+
+@pytest.mark.parametrize(
+    "meta_cls,estimator,context",
+    [
+        (GroupedRegressor, LinearRegression(), does_not_raise()),
+        (GroupedClassifier, LogisticRegression(), does_not_raise()),
+        (GroupedRegressor, LogisticRegression(), pytest.raises(ValueError)),
+        (GroupedClassifier, LinearRegression(), pytest.raises(ValueError)),
+    ],
+)
+def test_specialized_classes(meta_cls, estimator, context):
+    df = load_chicken(as_frame=True)
+    with context:
+        meta_cls(estimator=estimator, groups="diet").fit(df[["time", "diet"]], df["weight"].astype(int))
+
+
+@pytest.mark.parametrize(
+    "shrinkage,context",
+    [
+        (None, does_not_raise()),
+        ("constant", pytest.raises(ValueError)),
+        ("relative", pytest.raises(ValueError)),
+        ("min_n_obs", pytest.raises(ValueError)),
+        (lambda x: x, pytest.raises(ValueError)),
+    ],
+)
+def test_clf_shrinkage(shrinkage, context):
+    df = load_chicken(as_frame=True)
+    with context:
+        GroupedPredictor(estimator=LogisticRegression(), groups="diet", shrinkage=shrinkage).fit(
+            df[["time", "diet"]], df["weight"].astype(int)
+        )

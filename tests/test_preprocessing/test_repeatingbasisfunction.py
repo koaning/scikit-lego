@@ -1,6 +1,6 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
 from sklego.preprocessing import RepeatingBasisFunction
 from sklego.preprocessing.repeatingbasis import _RepeatingBasisFunction

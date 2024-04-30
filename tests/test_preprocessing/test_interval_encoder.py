@@ -1,10 +1,12 @@
-import pytest
 import numpy as np
+import pytest
 from sklearn.utils import estimator_checks
 
 from sklego.common import flatten
 from sklego.preprocessing import IntervalEncoder
-from tests.conftest import transformer_checks, general_checks
+from tests.conftest import general_checks, transformer_checks
+
+pytestmark = pytest.mark.cvxpy
 
 
 @pytest.mark.parametrize(

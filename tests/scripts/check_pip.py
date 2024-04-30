@@ -1,18 +1,14 @@
-import sys
 import argparse
 import subprocess
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("verb", help="installed/missing")
-parser.add_argument(
-    "packages", help="list of items to be there/not be there", nargs="+"
-)
+parser.add_argument("packages", help="list of items to be there/not be there", nargs="+")
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    installed = subprocess.check_output([sys.executable, "-m", "pip", "freeze"]).decode(
-        "utf-8"
-    )
+    installed = subprocess.check_output([sys.executable, "-m", "pip", "freeze"]).decode("utf-8")
     for pkg in args.packages:
         if args.verb == "missing":
             if pkg in installed:

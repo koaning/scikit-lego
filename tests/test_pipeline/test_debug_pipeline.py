@@ -1,17 +1,17 @@
 import logging
-import pytest
 
+import pytest
 from sklearn import datasets
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import GridSearchCV
 from sklearn.multiclass import (
-    OneVsRestClassifier,
     OneVsOneClassifier,
+    OneVsRestClassifier,
     OutputCodeClassifier,
 )
 from sklearn.pipeline import FeatureUnion
-from sklearn.svm import LinearSVC
 from sklearn.preprocessing import StandardScaler
+from sklearn.svm import LinearSVC
 
 from sklego.pipeline import DebugPipeline, make_debug_pipeline
 
@@ -27,6 +27,10 @@ class Adder(TransformerMixin, BaseEstimator):
 
     def transform(self, X):
         return X + self._value
+
+    def fit_transform(self, X, y=None):
+        self.fit(X, y)
+        return self.transform(X)
 
     def __repr__(self):
         return f"Adder(value={self._value})"
@@ -47,10 +51,7 @@ def custom_log_callback(output, execution_time, **kwargs):
     """
     logger = logging.getLogger(__name__)
     step_result, step = output
-    logger.info(
-        f"[{step}] shape={step_result.shape} "
-        f"nbytes={step_result.nbytes} time={execution_time}"
-    )
+    logger.info(f"[{step}] shape={step_result.shape} " f"nbytes={step_result.nbytes} time={execution_time}")
 
 
 @pytest.fixture
@@ -65,27 +66,17 @@ def named_steps():
 
 @pytest.fixture
 def nameless_steps():
-    return (
-        Adder(value=1),
-        Adder(value=10),
-        Adder(value=100),
-        Adder(value=1000)
-    )
+    return (Adder(value=1), Adder(value=10), Adder(value=100), Adder(value=1000))
 
 
 @pytest.fixture
 def repeated_steps():
-    return (
-        StandardScaler(),
-        StandardScaler()
-    )
+    return (StandardScaler(), StandardScaler())
 
 
 @pytest.mark.filterwarnings("ignore: The default of the `iid`")  # 0.22
 @pytest.mark.filterwarnings("ignore: You should specify a value")  # 0.22
-@pytest.mark.parametrize(
-    "cls", [OneVsRestClassifier, OneVsOneClassifier, OutputCodeClassifier]
-)
+@pytest.mark.parametrize("cls", [OneVsRestClassifier, OneVsOneClassifier, OutputCodeClassifier])
 def test_classifier_gridsearch(cls):
     pipe = DebugPipeline([("ovrc", cls(LinearSVC(random_state=0, tol=0.1)))])
     Cs = [0.1, 0.5, 0.8]
@@ -136,9 +127,7 @@ def test_step_name_in_logs_when_log_callback_is_default(caplog, named_steps):
     assert caplog.text, f"Log should be none empty: {caplog.text}"
     for _, step in pipe.steps[:-1]:
         assert str(step) in caplog.text, f"{step} should be in: {caplog.text}"
-        assert (
-            caplog.text.count(str(step)) == 1
-        ), f"{step} should be once in {caplog.text}"
+        assert caplog.text.count(str(step)) == 1, f"{step} should be once in {caplog.text}"
 
 
 def test_nbytes_in_logs_when_log_callback_is_custom(caplog, named_steps):
@@ -171,9 +160,7 @@ def test_feature_union(caplog, named_steps):
     for pipe in [pipe_w_default_log_callback, pipe_w_custom_log_callback]:
         for _, step in pipe.steps[:-1]:
             assert str(step) in caplog.text, f"{step} should be in: {caplog.text}"
-            assert (
-                caplog.text.count(str(step)) == 2
-            ), f"{step} should be once in {caplog.text}"
+            assert caplog.text.count(str(step)) == 2, f"{step} should be once in {caplog.text}"
 
 
 def test_different_name_for_repeated_step(nameless_steps):
@@ -189,6 +176,4 @@ def test_nameless_step_name_in_logs_when_log_callback_is_default(caplog, nameles
     assert caplog.text, f"Log should be none empty: {caplog.text}"
     for _, step in pipe.steps[:-1]:
         assert str(step) in caplog.text, f"{step} should be in: {caplog.text}"
-        assert (
-            caplog.text.count(str(step)) == 1
-        ), f"{step} should be once in {caplog.text}"
+        assert caplog.text.count(str(step)) == 1, f"{step} should be once in {caplog.text}"

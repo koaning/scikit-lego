@@ -1,16 +1,15 @@
-[![Build status](https://github.com/koaning/scikit-lego/workflows/Unit%20Tests/badge.svg)](https://github.com/{github_id}/{repository}/workflows/{workflow_name}/badge.svg)
-[![Downloads](https://pepy.tech/badge/scikit-lego/month)](https://pepy.tech/project/scikit-lego)
+[![Downloads](https://static.pepy.tech/badge/scikit-lego/month)](https://www.pepy.tech/projects/scikit-lego)
 [![Version](https://img.shields.io/pypi/v/scikit-lego)](https://pypi.org/project/scikit-lego/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/scikit-lego.svg)](https://anaconda.org/conda-forge/scikit-lego)
 ![](https://img.shields.io/github/license/koaning/scikit-lego)
 ![](https://img.shields.io/pypi/pyversions/scikit-lego)
 ![](https://img.shields.io/github/contributors/koaning/scikit-lego)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![DOI](https://zenodo.org/badge/166836939.svg)](https://zenodo.org/badge/latestdoi/166836939)
 
 # scikit-lego
 
-<a href="https://scikit-lego.readthedocs.io/en/latest/"><img src="images/logo.png" width="35%" height="35%" align="right" /></a>
+<a href="https://koaning.github.io/scikit-lego/"><img src="images/logo.png" width="35%" height="35%" align="right" /></a>
 
 We love scikit learn but very often we find ourselves writing
 custom transformers, metrics and models. The goal of this project
@@ -49,7 +48,7 @@ python setup.py develop
 
 ## Documentation
 
-The documentation can be found [here](https://scikit-lego.netlify.app).
+The documentation can be found [here](https://koaning.github.io/scikit-lego/).
 
 ## Usage
 
@@ -122,7 +121,6 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.IdentityTransformer` returns the same data, allows for concatenating pipelines
 - `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independent
 - `sklego.preprocessing.PandasTypeSelector` selects columns based on pandas type
-- `sklego.preprocessing.PatsyTransformer` applies a [patsy](https://patsy.readthedocs.io/en/latest/formulas.html) formula
 - `sklego.preprocessing.RandomAdder` adds randomness in training
 - `sklego.preprocessing.RepeatingBasisFunction` repeating feature engineering, useful for timeseries
 - `sklego.preprocessing.DictMapper` assign numeric values on categorical columns
@@ -142,7 +140,7 @@ Here's a list of features that this library currently offers:
 We want to be rather open here in what we accept but we do demand three
 things before they become added to the project:
 
-1. any new feature contributes towards a demonstratable real-world usecase
+1. any new feature contributes towards a demonstrable real-world usecase
 2. any new feature passes standard unit tests (we use the ones from scikit-learn)
 3. the feature has been discussed in the issue list beforehand
 

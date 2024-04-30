@@ -1,0 +1,38 @@
+name: Python Test Package
+
+on:
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [
+          "3.8",
+          "3.9",
+          "3.10",
+          "3.11",
+          "3.12",
+        ]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+    - name: Install uv (Unix)
+      if: runner.os != 'Windows'
+      run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    - name: Install uv (Windows)
+      if: runner.os == 'Windows'
+      run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: uv pip install -e ".[test-all]" --system
+    - name: Test with pytest
+      run: make test
