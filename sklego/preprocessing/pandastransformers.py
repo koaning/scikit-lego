@@ -29,6 +29,9 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     - Modin
     - cuDF
 
+    See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/) for an
+    up-to-date list (and to learn how to add your dataframe library to it!).
+
     Examples
     --------
     ```py
@@ -132,13 +135,13 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        pd.DataFrame
+        DataFrame
             The data with the specified columns dropped.
 
         Raises
         ------
         TypeError
-            If `X` is not a `pd.DataFrame` object.
+            If `X` is not a supported DataFrame object.
         """
         check_is_fitted(self, ["feature_names_"])
         X = nw.from_native(X)
