@@ -22,6 +22,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
     Notes
     -----
+    Native cross-dataframe support is achieved using [Narwhals](https://narwhals-dev.github.io).
     Supported dataframes are:
 
     - pandas
@@ -30,7 +31,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     - cuDF
 
     See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/) for an
-    up-to-date list (and to learn how to add your dataframe library to it!).
+    up-to-date list (and to learn how you can add your dataframe library to it!).
 
     Examples
     --------
