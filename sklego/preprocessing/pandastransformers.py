@@ -1,3 +1,4 @@
+import narwhals as nw
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
@@ -6,7 +7,7 @@ from sklego.common import as_list
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
-    """The `ColumnDropper` transformer allows dropping specific columns from a pandas DataFrame by name.
+    """The `ColumnDropper` transformer allows dropping specific columns from a DataFrame by name.
     Can be useful in a sklearn Pipeline.
 
     Parameters
@@ -18,6 +19,21 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     ----------
     feature_names_ : list[str]
         The names of the features to keep during transform.
+
+    Notes
+    -----
+    Native cross-dataframe support is achieved using
+    [Narwhals](https://narwhals-dev.github.io/narwhals/){:target="_blank"}.
+
+    Supported dataframes are:
+
+    - pandas
+    - Polars (eager or lazy)
+    - Modin
+    - cuDF
+
+    See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/){:target="_blank"} for an up-to-date list
+    (and to learn how you can add your dataframe library to it!).
 
     Examples
     --------
@@ -39,7 +55,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     2    1.80        45
     '''
 
-    # Selecting multiple columns from a pandas DataFrame
+    # Dropping multiple columns from a pandas DataFrame
     ColumnDropper(["length", "shoesize"]).fit_transform(df)
     '''
          name
@@ -48,7 +64,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     2    Alex
     '''
 
-    # Selecting non-existent columns returns in a KeyError
+    # Dropping non-existent columns results in a KeyError
     ColumnDropper(["weight"]).fit_transform(df)
     # Traceback (most recent call last):
     #     ...
@@ -67,10 +83,12 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     #        [-1.13554995]])
     ```
 
-    !!! warning
-
-        - Raises a `TypeError` if input provided is not a DataFrame.
-        - Raises a `ValueError` if columns provided are not in the input DataFrame.
+    Raises
+    ------
+    TypeError
+        If input provided is not a DataFrame.
+    KeyError
+        If columns provided are not in the input DataFrame.
     """
 
     def __init__(self, columns: list):
@@ -81,14 +99,14 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
         Checks:
 
-        1. If input is a `pd.DataFrame` object
+        1. If input is a supported DataFrame
         2. If column names are in such DataFrame
 
         Parameters
         ----------
-        X : pd.DataFrame
+        X : DataFrame
             The data on which we apply the column selection.
-        y : pd.Series, default=None
+        y : Series, default=None
             Ignored, present for compatibility.
 
         Returns
@@ -99,42 +117,42 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         Raises
         ------
         TypeError
-            If `X` is not a `pd.DataFrame` object.
+            If `X` is not a supported DataFrame.
         KeyError
             If one or more of the columns provided doesn't exist in the input DataFrame.
         ValueError
             If dropping the specified columns would result in an empty output DataFrame.
         """
         self.columns_ = as_list(self.columns)
-        self._check_X_for_type(X)
+        X = nw.from_native(X)
         self._check_column_names(X)
-        self.feature_names_ = X.columns.drop(self.columns_).tolist()
+        self.feature_names_ = [x for x in X.columns if x not in self.columns_]
         self._check_column_length()
         return self
 
     def transform(self, X):
-        """Returns a pandas DataFrame with only the specified columns.
+        """Returns a DataFrame with only the specified columns.
 
         Parameters
         ----------
-        X : pd.DataFrame
+        X : DataFrame
             The data on which we apply the column selection.
 
         Returns
         -------
-        pd.DataFrame
+        DataFrame
             The data with the specified columns dropped.
 
         Raises
         ------
         TypeError
-            If `X` is not a `pd.DataFrame` object.
+            If `X` is not a supported DataFrame object.
         """
         check_is_fitted(self, ["feature_names_"])
-        self._check_X_for_type(X)
+        X = nw.from_native(X)
         if self.columns_:
-            return X.drop(columns=self.columns_)
-        return X
+            return nw.to_native(X.drop(self.columns_))
+        return nw.to_native(X)
 
     def get_feature_names(self):
         """Alias for `.feature_names_` attribute"""
@@ -150,12 +168,6 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         non_existent_columns = set(self.columns_).difference(X.columns)
         if len(non_existent_columns) > 0:
             raise KeyError(f"{list(non_existent_columns)} column(s) not in DataFrame")
-
-    @staticmethod
-    def _check_X_for_type(X):
-        """Checks if input of the Selector is of the required dtype"""
-        if not isinstance(X, pd.DataFrame):
-            raise TypeError("Provided variable X is not of type pandas.DataFrame")
 
 
 class PandasTypeSelector(BaseEstimator, TransformerMixin):

@@ -113,4 +113,3 @@ markers = [
     "formulaic: tests that require formulaic (deselect with '-m \"not formulaic\"')",
     "umap: tests that require umap (deselect with '-m \"not umap\"')"
 ]
-
