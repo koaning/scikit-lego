@@ -22,7 +22,9 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
     Notes
     -----
-    Native cross-dataframe support is achieved using [Narwhals](https://narwhals-dev.github.io).
+    Native cross-dataframe support is achieved using
+    [Narwhals](https://narwhals-dev.github.io/narwhals/){:target="_blank"}.
+
     Supported dataframes are:
 
     - pandas
@@ -30,8 +32,8 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     - Modin
     - cuDF
 
-    See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/) for an
-    up-to-date list (and to learn how you can add your dataframe library to it!).
+    See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/){:target="_blank"} for an up-to-date list
+    (and to learn how you can add your dataframe library to it!).
 
     Examples
     --------
@@ -53,7 +55,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     2    1.80        45
     '''
 
-    # Selecting multiple columns from a pandas DataFrame
+    # Dropping multiple columns from a pandas DataFrame
     ColumnDropper(["length", "shoesize"]).fit_transform(df)
     '''
          name
@@ -62,7 +64,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     2    Alex
     '''
 
-    # Selecting non-existent columns returns in a KeyError
+    # Dropping non-existent columns results in a KeyError
     ColumnDropper(["weight"]).fit_transform(df)
     # Traceback (most recent call last):
     #     ...
@@ -81,10 +83,12 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     #        [-1.13554995]])
     ```
 
-    !!! warning
-
-        - Raises a `TypeError` if input provided is not a DataFrame.
-        - Raises a `ValueError` if columns provided are not in the input DataFrame.
+    Raises
+    ------
+    TypeError
+        If input provided is not a DataFrame.
+    KeyError
+        If columns provided are not in the input DataFrame.
     """
 
     def __init__(self, columns: list):
