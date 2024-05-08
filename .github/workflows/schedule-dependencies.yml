@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install wheel 
-        python -m pip install ${{ matrix.pre-release-dependencies }}  -e ".[test-dep]"
+        python -m pip install ${{ matrix.pre-release-dependencies }}  -e ".[test]"
         python -m pip freeze
     - name: Test with pytest
       run: pytest -n auto --disable-warnings --cov=sklego -m "not cvxpy and not formulaic and not umap"
@@ -47,7 +47,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install wheel 
-        python -m pip install ${{ matrix.pre-release-dependencies }} -e ".[test-dep,${{ matrix.extra }}]" 
+        python -m pip install ${{ matrix.pre-release-dependencies }} -e ".[test,${{ matrix.extra }}]" 
         python -m pip freeze
     - name: Test with pytest
       run: pytest -n auto --disable-warnings --cov=sklego -m "${{ matrix.extra }}"

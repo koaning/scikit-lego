@@ -40,7 +40,7 @@ nonmeta_checks = (
     estimator_checks.check_pipeline_consistency,
     estimator_checks.check_estimators_nan_inf,
     estimator_checks.check_estimators_overwrite_params,
-    estimator_checks.check_estimator_sparse_data,
+    getattr(estimator_checks, "check_estimator_sparse_data", estimator_checks.check_estimator_sparse_array),
     estimator_checks.check_estimators_pickle,
 )
 

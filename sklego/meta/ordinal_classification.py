@@ -93,11 +93,13 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
 
     """
 
-    def __init__(self, estimator, *, n_jobs=None, use_calibration=False, **calibrarion_kwargs):
+    is_multiclass = True
+
+    def __init__(self, estimator, *, n_jobs=None, use_calibration=False, **calibration_kwargs):
         self.estimator = estimator
         self.n_jobs = n_jobs
         self.use_calibration = use_calibration
-        self.calibrarion_kwargs = calibrarion_kwargs
+        self.calibration_kwargs = calibration_kwargs
 
     def fit(self, X, y):
         """Fit the `OrdinalClassifier` model on training data `X` and `y` by fitting its underlying estimators on
@@ -216,7 +218,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         """
         y_bin = (y <= y_label).astype(int)
         if self.use_calibration:
-            return CalibratedClassifierCV(estimator=clone(self.estimator), **self.calibrarion_kwargs).fit(X, y_bin)
+            return CalibratedClassifierCV(estimator=clone(self.estimator), **self.calibration_kwargs).fit(X, y_bin)
         else:
             return clone(self.estimator).fit(X, y_bin)
 

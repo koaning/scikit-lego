@@ -1,12 +1,12 @@
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.calibration import _SigmoidCalibration
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from sklego.base import OutlierModel
 
 
-class OutlierClassifier(BaseEstimator, ClassifierMixin):
+class OutlierClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     """Morphs an outlier detection model into a classifier.
 
     When an outlier is detected it will output 1 and 0 otherwise. This way you can use familiar metrics again and
@@ -49,6 +49,8 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
     ```
     """
 
+    _required_parameters = ["model"]
+
     def __init__(self, model):
         self.model = model
 
@@ -77,7 +79,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
             - If the underlying model is not an outlier detection model.
             - If the underlying model does not have a `decision_function` method.
         """
-        X, y = check_X_y(X, y, estimator=self)
+        X, y = check_X_y(X, y)
         if not self._is_outlier_model():
             raise ValueError("Passed model does not detect outliers!")
         if not hasattr(self.model, "decision_function"):
@@ -87,6 +89,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
             )
         self.estimator_ = self.model.fit(X, y)
         self.classes_ = np.array([0, 1])
+        self.n_features_in_ = X.shape[1]
 
         # fit sigmoid function for `predict_proba`
         decision_function_scores = self.estimator_.decision_function(X)

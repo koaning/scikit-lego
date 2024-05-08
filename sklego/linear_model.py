@@ -84,6 +84,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
             raise ValueError(f"Param `sigma` must be >= 0, got: {self.sigma}")
         self.X_ = X
         self.y_ = y
+        self.n_features_in_ = X.shape[1]
         return self
 
     def _calc_wts(self, x_i):
@@ -491,6 +492,7 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             raise ValueError(f"penalty should be either 'l1' or 'none', got {self.penalty}")
 
         self.sensitive_col_idx_ = self.sensitive_cols
+
         if isinstance(X, pd.DataFrame):
             self.sensitive_col_idx_ = [i for i, name in enumerate(X.columns) if name in self.sensitive_cols]
         X, y = check_X_y(X, y, accept_large_sparse=False)
@@ -498,7 +500,9 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         sensitive = X[:, self.sensitive_col_idx_]
         if not self.train_sensitive_cols:
             X = np.delete(X, self.sensitive_col_idx_, axis=1)
+
         X = self._add_intercept(X)
+        self.n_features_in_ = X.shape[1] - self.fit_intercept
 
         column_or_1d(y)
         label_encoder = LabelEncoder().fit(y)

@@ -4,11 +4,10 @@ import numpy as np
 import pytest
 from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.meta import ZeroInflatedRegressor
 from sklego.testing import check_shape_remains_same_regressor
-from tests.conftest import general_checks, regressor_checks, select_tests
 
 
 @pytest.mark.parametrize("test_fn", [check_shape_remains_same_regressor])
@@ -19,19 +18,15 @@ def test_zir(test_fn):
     test_fn(ZeroInflatedRegressor.__name__, regr)
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, regressor_checks]),
-    ),
-)
-def test_estimator_checks(test_fn):
-    test_fn(
-        ZeroInflatedRegressor.__name__,
+@parametrize_with_checks(
+    [
         ZeroInflatedRegressor(
             classifier=ExtraTreesClassifier(random_state=0), regressor=ExtraTreesRegressor(random_state=0)
         ),
-    )
+    ]
+)
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 def test_zero_inflated_example():

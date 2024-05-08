@@ -80,7 +80,7 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         self.verbose_interval = verbose_interval
 
     def fit(self, X: np.ndarray, y=None) -> "GMMOutlierDetector":
-        """Fit the `BayesianGMMOutlierDetector` model using `X`, `y` as training data.
+        """Fit the `GMMOutlierDetector` model using `X`, `y` as training data.
 
         Parameters
         ----------
@@ -143,6 +143,8 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
             new_likelihoods_std = np.std(new_likelihoods - mean_likelihood)
             self.likelihood_threshold_ = mean_likelihood - (self.threshold * new_likelihoods_std)
 
+        self.n_iter_ = self.gmm_.n_iter_
+        self.n_features_in_ = X.shape[1]
         return self
 
     def score_samples(self, X):

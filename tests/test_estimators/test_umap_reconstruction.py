@@ -1,36 +1,15 @@
 import numpy as np
 import pytest
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.decomposition import UMAPOutlierDetection
-from tests.conftest import general_checks, nonmeta_checks, outlier_checks, select_tests
 
 pytestmark = pytest.mark.umap
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, nonmeta_checks, outlier_checks]),
-        exclude=[
-            "check_sample_weights_invariance",
-            "check_outliers_fit_predict",
-            "check_outliers_train",
-            "check_fit2d_predict1d",
-            "check_methods_subset_invariance",
-            "check_fit2d_1sample",
-            "check_fit2d_1feature",
-            "check_dict_unchanged",
-            "check_dont_overwrite_parameters",
-            "check_classifier_data_not_an_array",
-            "check_sample_weights_list",
-            "check_sample_weights_pandas_series",
-        ],
-    ),
-)
-def test_estimator_checks(test_fn):
-    outlier_mod = UMAPOutlierDetection(n_components=2, threshold=0.1, n_neighbors=3)
-    test_fn(UMAPOutlierDetection.__name__, outlier_mod)
+@parametrize_with_checks([UMAPOutlierDetection(n_components=2, threshold=0.1, n_neighbors=3)])
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 @pytest.fixture

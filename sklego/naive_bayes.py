@@ -99,6 +99,7 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
                 ).fit(subset_x[:, i].reshape(-1, 1), subset_y)
                 for i in range(X.shape[1])
             ]
+        self.n_iter_ = sum(sum(gmm.n_iter_ for gmm in gmm_c) for gmm_c in self.gmms_.values())
         return self
 
     def predict(self, X):
@@ -264,6 +265,7 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
                 ).fit(subset_x[:, i].reshape(-1, 1), subset_y)
                 for i in range(X.shape[1])
             ]
+        self.n_iter_ = sum(sum(gmm.n_iter_ for gmm in gmm_c) for gmm_c in self.gmms_.values())
         return self
 
     def predict(self, X):

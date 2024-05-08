@@ -1,20 +1,12 @@
 import numpy as np
-import pytest
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.preprocessing import IdentityTransformer
-from tests.conftest import general_checks, nonmeta_checks, select_tests, transformer_checks
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, nonmeta_checks, transformer_checks]),
-        exclude=["check_sample_weights_invariance", "check_sample_weights_list", "check_sample_weights_pandas_series"],
-    ),
-)
-def test_estimator_checks(test_fn):
-    test_fn(IdentityTransformer.__name__, IdentityTransformer(check_X=True))
+@parametrize_with_checks([IdentityTransformer(check_X=True)])
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 def test_same_values(random_xy_dataset_regr):

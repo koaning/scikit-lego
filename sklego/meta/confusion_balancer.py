@@ -6,7 +6,7 @@ from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted,
 from sklego.base import ProbabilisticClassifier
 
 
-class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
+class ConfusionBalancer(MetaEstimatorMixin, ClassifierMixin, BaseEstimator):
     r"""The `ConfusionBalancer` estimator attempts to give it's child estimator a more balanced output by learning from
     the confusion matrix during training.
 
@@ -69,6 +69,7 @@ class ConfusionBalancer(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         self.classes_ = unique_labels(y)
         cfm = confusion_matrix(y, self.estimator.predict(X)).T + self.cfm_smooth
         self.cfm_ = cfm / cfm.sum(axis=1).reshape(-1, 1)
+        self.n_features_in_ = X.shape[1]
         return self
 
     def predict_proba(self, X):

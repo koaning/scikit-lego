@@ -153,6 +153,8 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
             new_likelihoods_std = np.std(new_likelihoods - mean_likelihood)
             self.likelihood_threshold_ = mean_likelihood - (self.threshold * new_likelihoods_std)
 
+        self.n_iter_ = self.gmm_.n_iter_
+        self.n_features_in_ = X.shape[1]
         return self
 
     def score_samples(self, X):

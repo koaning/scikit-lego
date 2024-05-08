@@ -101,12 +101,6 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         self.offset_ = -self.threshold
         return self
 
-    def transform(self, X):
-        """Transform the data using the underlying UMAP method."""
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ["umap_", "offset_"])
-        return self.umap_.transform(X)
-
     def difference(self, X):
         """Return the calculated difference between original and reconstructed data. Row by row.
 

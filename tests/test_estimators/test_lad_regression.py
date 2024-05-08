@@ -1,12 +1,13 @@
 """Test the LADRegressor."""
 
+from itertools import product
+
 import numpy as np
 import pytest
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.linear_model import LADRegression
 from sklego.testing import check_shape_remains_same_regressor
-from tests.conftest import general_checks, nonmeta_checks, regressor_checks, select_tests
 
 test_batch = [
     (np.array([0, 0, 3, 0, 6]), 3),
@@ -82,18 +83,11 @@ def test_lad(test_fn):
     test_fn(LADRegression.__name__, regr)
 
 
-@pytest.mark.parametrize("positive", [True, False])
-@pytest.mark.parametrize("fit_intercept", [True, False])
-@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, nonmeta_checks, regressor_checks]),
-    ),
+@parametrize_with_checks(
+    [
+        LADRegression(**dict(zip(["positive", "fit_intercept", "method"], args)))
+        for args in product([True, False], [True, False], ["SLSQP", "TNC", "L-BFGS-B"])
+    ]
 )
-def test_estimator_checks(positive, fit_intercept, method, test_fn):
-    regr = (
-        f"{LADRegression.__name__}_method_{method}_positive_{positive}_fit_intercept_{fit_intercept}",
-        LADRegression(method=method, positive=positive, fit_intercept=fit_intercept),
-    )
-    test_fn(*regr)
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)

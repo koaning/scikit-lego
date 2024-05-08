@@ -4,22 +4,19 @@ from sklearn.base import is_classifier, is_regressor
 from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.meta import DecayEstimator
-from tests.conftest import classifier_checks, general_checks, regressor_checks
 
 
-@pytest.mark.parametrize("test_fn", flatten([general_checks, regressor_checks]))
-def test_estimator_checks_regression(test_fn):
-    trf = DecayEstimator(LinearRegression(), check_input=True)
-    test_fn(DecayEstimator.__name__, trf)
-
-
-@pytest.mark.parametrize("test_fn", flatten([general_checks, classifier_checks]))
-def test_estimator_checks_classification(test_fn):
-    trf = DecayEstimator(LogisticRegression(solver="lbfgs"), check_input=True)
-    test_fn(DecayEstimator.__name__, trf)
+@parametrize_with_checks(
+    [
+        DecayEstimator(LinearRegression(), check_input=True),
+        DecayEstimator(LogisticRegression(solver="lbfgs"), check_input=True),
+    ]
+)
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 @pytest.mark.parametrize(
@@ -57,7 +54,7 @@ def test_decay_weight(mod, is_clf, decay_func, decay_kwargs):
     assert np.all(mod.weights_[:-1] <= mod.weights_[1:])
 
 
-@pytest.mark.parametrize("mod", flatten([KNeighborsClassifier()]))
+@pytest.mark.parametrize("mod", [KNeighborsClassifier()])
 def test_throw_warning(mod):
     X, y = np.random.normal(0, 1, (100, 100)), np.random.normal(0, 1, (100,)) < 0
     with pytest.raises(TypeError) as e:

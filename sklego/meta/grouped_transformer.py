@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
 from sklego.meta._grouped_utils import _split_groups_and_values
 
 
-class GroupedTransformer(BaseEstimator, TransformerMixin):
+class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
     """Construct a transformer per data group. Splits data by groups from single or multiple columns and transforms
     remaining columns using the transformers corresponding to the groups.
 
@@ -32,6 +32,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
     """
 
     _check_kwargs = {"accept_large_sparse": False}
+    _required_parameters = ["transformer", "groups"]
 
     def __init__(self, transformer, groups, use_global_model=True, check_X=True):
         self.transformer = transformer
@@ -126,6 +127,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         if self.use_global_model:
             self.fallback_ = clone(self.transformer).fit(X_value, y)
 
+        self.n_features_in_ = X.shape[1]
         return self
 
     def __transform_single_group(self, group, X):

@@ -1,32 +1,28 @@
 import numpy as np
 import pytest
 from sklearn.linear_model import LogisticRegression
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.linear_model import EqualOpportunityClassifier
 from sklego.metrics import equal_opportunity_score
-from tests.conftest import classifier_checks, general_checks, nonmeta_checks, select_tests
 
 pytestmark = pytest.mark.cvxpy
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, nonmeta_checks, classifier_checks]),
-        exclude=["check_sample_weights_invariance", "check_sample_weights_list", "check_sample_weights_pandas_series"],
-    ),
+@parametrize_with_checks(
+    [
+        EqualOpportunityClassifier(
+            covariance_threshold=None,
+            positive_target=True,
+            C=1,
+            penalty="none",
+            sensitive_cols=[0],
+            train_sensitive_cols=True,
+        )
+    ]
 )
-def test_standard_checks(test_fn):
-    trf = EqualOpportunityClassifier(
-        covariance_threshold=None,
-        positive_target=True,
-        C=1,
-        penalty="none",
-        sensitive_cols=[0],
-        train_sensitive_cols=True,
-    )
-    test_fn(EqualOpportunityClassifier.__name__, trf)
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 def _test_same(dataset):

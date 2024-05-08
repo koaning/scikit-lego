@@ -1,39 +1,15 @@
 import numpy as np
 import pytest
-from sklearn.utils import estimator_checks
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.preprocessing import IntervalEncoder
-from tests.conftest import general_checks, transformer_checks
 
 pytestmark = pytest.mark.cvxpy
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    flatten(
-        [
-            transformer_checks,
-            general_checks,
-            estimator_checks.check_estimators_dtypes,
-            estimator_checks.check_fit_score_takes_y,
-            # estimator_checks.check_dtype_object,
-            # estimator_checks.check_sample_weights_pandas_series,
-            # estimator_checks.check_sample_weights_list,
-            # estimator_checks.check_sample_weights_invariance,
-            estimator_checks.check_estimators_fit_returns_self,
-            estimator_checks.check_complex_data,
-            estimator_checks.check_estimators_empty_data_messages,
-            estimator_checks.check_pipeline_consistency,
-            estimator_checks.check_estimators_nan_inf,
-            estimator_checks.check_estimators_overwrite_params,
-            estimator_checks.check_estimator_sparse_data,
-            estimator_checks.check_estimators_pickle,
-        ]
-    ),
-)
-def test_estimator_checks(test_fn):
-    test_fn(IntervalEncoder.__name__, IntervalEncoder(n_chunks=2))
+@parametrize_with_checks([IntervalEncoder()])
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 @pytest.mark.parametrize("chunks", [1, 2, 5, 10])
