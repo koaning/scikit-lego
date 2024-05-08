@@ -89,6 +89,8 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         If input provided is not a DataFrame.
     KeyError
         If columns provided are not in the input DataFrame.
+    ValueError
+        If dropping the specified columns would result in an empty output DataFrame.
     """
 
     def __init__(self, columns: list):
@@ -370,10 +372,16 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 
     ColumnSelector(["length", "shoesize"]).fit_transform(df_pl)
     '''
-       length  shoesize
-    0    1.82        42
-    1    1.85        44
-    2    1.80        45
+        shape: (3, 2)
+        ┌────────┬──────────┐
+        │ length ┆ shoesize │
+        │ ---    ┆ ---      │
+        │ f64    ┆ i64      │
+        ╞════════╪══════════╡
+        │ 1.82   ┆ 42       │
+        │ 1.85   ┆ 44       │
+        │ 1.8    ┆ 45       │
+        └────────┴──────────┘
     '''
 
 
@@ -387,6 +395,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
     import polars as pl
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import StandardScaler
+    from sklego.preprocessing import ColumnSelector
 
     pipe = Pipeline([
         ("select", ColumnSelector(["length"])),
@@ -444,7 +453,6 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         self.columns_ = as_list(self.columns)
         X = nw.from_native(X)
         self._check_column_names(X)
-        self.feature_names_ = [x for x in X.columns if x in self.columns_]
         self._check_column_length()
         return self
 
@@ -468,7 +476,7 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         """
         X = nw.from_native(X)
         if self.columns:
-            return nw.to_native(X.select(nw.col(self.columns_)))
+            return nw.to_native(X.select(self.columns_))
         return nw.to_native(X)
 
     def get_feature_names(self):
