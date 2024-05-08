@@ -1,62 +1,53 @@
+from contextlib import nullcontext as does_not_raise
+
 import pandas as pd
+import polars as pl
 import pytest
-from pandas.testing import assert_frame_equal
-from sklearn.pipeline import make_pipeline
+from pandas.testing import assert_frame_equal as pandas_assert_frame_equal
+from polars.testing import assert_frame_equal as polars_assert_frame_equal
+from sklearn.pipeline import Pipeline, make_pipeline
 
 from sklego.preprocessing import ColumnSelector
 
 
 @pytest.fixture()
-def df():
-    return pd.DataFrame(
-        {
-            "a": [1, 2, 3, 4, 5, 6],
-            "b": [10, 9, 8, 7, 6, 5],
-            "c": ["a", "b", "a", "b", "c", "c"],
-            "d": ["b", "a", "a", "b", "a", "b"],
-            "e": [0, 1, 0, 1, 0, 1],
-        }
-    )
+def data():
+    return {
+        "a": [1, 2, 3, 4, 5, 6],
+        "b": [10, 9, 8, 7, 6, 5],
+        "c": ["a", "b", "a", "b", "c", "c"],
+        "d": ["b", "a", "a", "b", "a", "b"],
+        "e": [0, 1, 0, 1, 0, 1],
+    }
 
 
-def test_select_two(df):
-    result_df = ColumnSelector(["d", "e"]).fit_transform(df)
-    expected_df = pd.DataFrame({"d": ["b", "a", "a", "b", "a", "b"], "e": [0, 1, 0, 1, 0, 1]})
+@pytest.mark.parametrize(
+    "frame_func, assert_func",
+    [
+        (pd.DataFrame, pandas_assert_frame_equal),
+        (pl.DataFrame, polars_assert_frame_equal),
+    ],
+)
+@pytest.mark.parametrize(
+    "select, context",
+    [
+        (["a", "b"], does_not_raise()),  # two
+        (["e"], does_not_raise()),  # one
+        (["a", "b", "c", "d", "e"], does_not_raise()),  # all)
+        ([], pytest.raises(ValueError)),  # none
+        (["f"], pytest.raises(KeyError)),  # not in data
+    ],
+)
+@pytest.mark.parametrize("wrapper", [lambda x: x, make_pipeline])
+def test_drop(data, frame_func, assert_func, select, context, wrapper):
+    sub_data = {k: v for k, v in data.items() if k in select}
 
-    assert_frame_equal(result_df, expected_df)
+    with context:
+        transformer = wrapper(ColumnSelector(select))
+        result_df = transformer.fit_transform(frame_func(data))
+        expected_df = frame_func(sub_data)
 
+        assert_func(result_df, expected_df)
 
-def test_select_one(df):
-    result_df = ColumnSelector(["e"]).fit_transform(df)
-    expected_df = pd.DataFrame({"e": [0, 1, 0, 1, 0, 1]})
-
-    assert_frame_equal(result_df, expected_df)
-
-
-def test_select_all(df):
-    result_df = ColumnSelector(["a", "b", "c", "d", "e"]).fit_transform(df)
-    assert_frame_equal(result_df, df)
-
-
-def test_select_none(df):
-    with pytest.raises(ValueError):
-        ColumnSelector([]).fit_transform(df)
-
-
-def test_select_not_in_frame(df):
-    with pytest.raises(KeyError):
-        ColumnSelector(["f"]).fit_transform(df)
-
-
-def test_select_one_in_pipeline(df):
-    pipe = make_pipeline(ColumnSelector(["d"]))
-    result_df = pipe.fit_transform(df)
-    expected_df = pd.DataFrame({"d": ["b", "a", "a", "b", "a", "b"]})
-
-    assert_frame_equal(result_df, expected_df)
-
-
-def test_get_feature_names():
-    df = pd.DataFrame({"a": [4, 5, 6], "b": ["4", "5", "6"]})
-    transformer = ColumnSelector("a").fit(df)
-    assert transformer.get_feature_names() == ["a"]
+        if not isinstance(transformer, Pipeline):
+            assert transformer.get_feature_names() == list(sub_data.keys())
