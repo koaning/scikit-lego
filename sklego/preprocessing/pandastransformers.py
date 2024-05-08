@@ -372,16 +372,16 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 
     ColumnSelector(["length", "shoesize"]).fit_transform(df_pl)
     '''
-        shape: (3, 2)
-        ┌────────┬──────────┐
-        │ length ┆ shoesize │
-        │ ---    ┆ ---      │
-        │ f64    ┆ i64      │
-        ╞════════╪══════════╡
-        │ 1.82   ┆ 42       │
-        │ 1.85   ┆ 44       │
-        │ 1.8    ┆ 45       │
-        └────────┴──────────┘
+    shape: (3, 2)
+    ┌────────┬──────────┐
+    │ length ┆ shoesize │
+    │ ---    ┆ ---      │
+    │ f64    ┆ i64      │
+    ╞════════╪══════════╡
+    │ 1.82   ┆ 42       │
+    │ 1.85   ┆ 44       │
+    │ 1.8    ┆ 45       │
+    └────────┴──────────┘
     '''
 
 
