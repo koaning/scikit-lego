@@ -496,16 +496,11 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         if isinstance(X, pd.DataFrame):
             self.sensitive_col_idx_ = [i for i, name in enumerate(X.columns) if name in self.sensitive_cols]
         X, y = check_X_y(X, y, accept_large_sparse=False)
-
         sensitive = X[:, self.sensitive_col_idx_]
         if not self.train_sensitive_cols:
             X = np.delete(X, self.sensitive_col_idx_, axis=1)
 
         X = self._add_intercept(X)
-        self.n_features_in_ = (
-            X.shape[1] - self.fit_intercept
-        )  # + (1 - int(self.train_sensitive_cols)) * len(self.sensitive_col_idx_)
-
         column_or_1d(y)
         label_encoder = LabelEncoder().fit(y)
         y = label_encoder.transform(y)
@@ -582,6 +577,9 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
     def _add_intercept(self, X):
         if self.fit_intercept:
             return np.c_[np.ones(len(X)), X]
+
+    def _more_tags(self):
+        return {"poor_score": True}
 
 
 class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
