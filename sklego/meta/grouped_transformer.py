@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
+from sklego.common import as_list
 from sklego.meta._grouped_utils import _split_groups_and_values
 
 
@@ -121,7 +122,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
             self.transformers_ = clone(self.transformer).fit(X, y)
             return self
 
-        X_group, X_value = _split_groups_and_values(X, self.groups, check_X=self.check_X, **self._check_kwargs)
+        X_group, X_value = _split_groups_and_values(X, as_list(self.groups), check_X=self.check_X, **self._check_kwargs)
         self.transformers_ = self.__fit_grouped_transformer(X_group, X_value, y)
 
         if self.use_global_model:
@@ -185,6 +186,6 @@ class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         if self.groups is None:
             return self.transformers_.transform(X)
 
-        X_group, X_value = _split_groups_and_values(X, self.groups, **self._check_kwargs)
+        X_group, X_value = _split_groups_and_values(X, as_list(self.groups), **self._check_kwargs)
 
         return self.__transform_groups(X_group, X_value)

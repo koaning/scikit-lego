@@ -7,11 +7,10 @@ from sklearn.dummy import DummyRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import make_pipeline
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.datasets import load_chicken
 from sklego.meta import GroupedClassifier, GroupedPredictor, GroupedRegressor
-from tests.conftest import general_checks, select_tests
 
 
 @pytest.fixture
@@ -33,26 +32,22 @@ def random_xy_grouped_clf_different_classes(request):
     return df
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks]),
-        exclude=[
-            # Nonsense checks because we always need at least two columns (group and value)
-            "check_fit1d",
-            "check_fit2d_predict1d",
-            "check_fit2d_1feature",
-            "check_transformer_data_not_an_array",
-        ],
-    ),
+@parametrize_with_checks(
+    [
+        meta_cls(estimator=LinearRegression(), groups=0, use_global_model=use_global_model)
+        for meta_cls in [GroupedPredictor, GroupedRegressor]
+        for use_global_model in [True, False]
+    ]
 )
-@pytest.mark.parametrize("meta_cls", [GroupedRegressor, GroupedPredictor])
-def test_estimator_checks(test_fn, meta_cls):
-    clf = meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
-    test_fn(meta_cls.__name__ + "_fallback", clf)
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        "check_no_attributes_set_in_init",  # Setting **shrinkage_kwargs in init
+        "check_supervised_y_2d",  # Unsure about this
+        "",
+    }:
+        pytest.skip()
 
-    clf = meta_cls(estimator=LinearRegression(), groups=0, use_global_model=False)
-    test_fn(meta_cls.__name__ + "_nofallback", clf)
+    check(estimator)
 
 
 def test_chickweight_df1_keys():

@@ -1,3 +1,4 @@
+from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
@@ -33,6 +34,8 @@ class ConfusionBalancer(MetaEstimatorMixin, ClassifierMixin, BaseEstimator):
         The confusion matrix used for the correction.
     """
 
+    _required_parameters = ["estimator"]
+
     def __init__(self, estimator, alpha: float = 0.5, cfm_smooth=0):
         self.estimator = estimator
         self.alpha = alpha
@@ -65,9 +68,9 @@ class ConfusionBalancer(MetaEstimatorMixin, ClassifierMixin, BaseEstimator):
             raise ValueError(
                 "The ConfusionBalancer meta model only works on classification models with .predict_proba."
             )
-        self.estimator.fit(X, y)
+        self.estimator_ = clone(self.estimator).fit(X, y)
         self.classes_ = unique_labels(y)
-        cfm = confusion_matrix(y, self.estimator.predict(X)).T + self.cfm_smooth
+        cfm = confusion_matrix(y, self.estimator_.predict(X)).T + self.cfm_smooth
         self.cfm_ = cfm / cfm.sum(axis=1).reshape(-1, 1)
         self.n_features_in_ = X.shape[1]
         return self
@@ -86,8 +89,9 @@ class ConfusionBalancer(MetaEstimatorMixin, ClassifierMixin, BaseEstimator):
         array-like of shape (n_samples, n_classes)
             The predicted values.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        preds = self.estimator.predict_proba(X)
+        check_is_fitted(self, ["cfm_", "classes_", "estimator_"])
+        X = check_array(X, dtype=FLOAT_DTYPES)
+        preds = self.estimator_.predict_proba(X)
         return (1 - self.alpha) * preds + self.alpha * preds @ self.cfm_
 
     def predict(self, X):
@@ -103,6 +107,6 @@ class ConfusionBalancer(MetaEstimatorMixin, ClassifierMixin, BaseEstimator):
         array-like of shape (n_samples,)
             The predicted values.
         """
-        check_is_fitted(self, ["cfm_", "classes_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        check_is_fitted(self, ["cfm_", "classes_", "estimator_"])
+        X = check_array(X, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]

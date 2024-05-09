@@ -6,23 +6,22 @@ from scipy.sparse import issparse
 from sklearn.utils import check_array
 from sklearn.utils.validation import _ensure_no_complex_data
 
-from sklego.common import as_list
-
 
 def _split_groups_and_values(
     X, groups, name="", min_value_cols=1, check_X=True, **kwargs
 ) -> Tuple[pd.DataFrame, np.ndarray]:
     _data_format_checks(X, name=name)
-    _shape_check(X, min_value_cols)
+    check_array(X, ensure_min_features=len(groups) + 1, dtype=None)
 
+    print(groups)
     try:
         if isinstance(X, pd.DataFrame):
-            X_group = X.loc[:, as_list(groups)]
+            X_group = X.loc[:, groups]
             X_value = X.drop(columns=groups).values
         else:
-            X_group = pd.DataFrame(X[:, as_list(groups)])
+            X_group = pd.DataFrame(X[:, groups])
             pos_indexes = range(X.shape[1])
-            X_value = np.delete(X, [pos_indexes[g] for g in as_list(groups)], axis=1)
+            X_value = np.delete(X, [pos_indexes[g] for g in groups], axis=1)
     except (KeyError, IndexError):
         raise ValueError(f"Could not drop groups {groups} from columns of X")
 
@@ -42,12 +41,14 @@ def _data_format_checks(X, name):
 
 
 def _shape_check(X, min_value_cols):
-    if min_value_cols > 1:
-        if X.ndim == 1 or X.shape[1] < 2:
-            raise ValueError(f"0 feature(s) (shape={X.shape}) while a minimum of {min_value_cols} is required.")
-    else:
-        if X.ndim == 2 and X.shape[1] < 1:
-            raise ValueError(f"0 feature(s) (shape={X.shape}) while a minimum of {min_value_cols} is required.")
+    pass
+    # X_ =
+    # if min_value_cols > 1:
+    #     if X_.ndim == 1 or X_.shape[1] < 2:
+    #         raise ValueError(f"0 feature(s) (shape={X_.shape}) while a minimum of {min_value_cols} is required.")
+    # else:
+    #     if X_.ndim == 2 and X_.shape[1] < 1:
+    #         raise ValueError(f"0 feature(s) (shape={X_.shape}) while a minimum of {min_value_cols} is required.")
 
 
 def _check_grouping_columns(X_group, **kwargs) -> pd.DataFrame:

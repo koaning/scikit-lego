@@ -85,6 +85,8 @@ class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
         "sigmoid": sigmoid_decay,
     }
 
+    _required_parameters = ["model"]
+
     def __init__(self, model, decay_func="exponential", check_input=False, **decay_kwargs):
         self.model = model
         self.decay_func = decay_func

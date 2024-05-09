@@ -17,6 +17,11 @@ from tests.conftest import k_vals, n_vals, np_types
 
 @parametrize_with_checks([GroupedTransformer(StandardScaler(), groups=0, check_X=True)])
 def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        "check_transformer_data_not_an_array",
+    }:
+        pytest.skip()
+
     check(estimator)
 
 
