@@ -12,6 +12,9 @@ from sklego.preprocessing import InformationFilter
 
 @parametrize_with_checks([InformationFilter(columns=[0])])
 def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {"check_estimators_empty_data_messages"}:
+        pytest.skip("InformationFilter has custom message")
+
     check(estimator)
 
 

@@ -63,6 +63,8 @@ class FormulaicTransformer(TransformerMixin, BaseEstimator):
     ```
     """
 
+    _required_parameters = ["formula"]
+
     def __init__(self, formula, return_type="numpy"):
         self.formula = formula
         self.return_type = return_type

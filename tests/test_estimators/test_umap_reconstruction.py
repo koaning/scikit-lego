@@ -16,7 +16,7 @@ def test_sklearn_compatible_estimator(estimator, check):
         # in `predict`: np.sum(np.abs(self.umap_.inverse_transform(reduced) - X), axis=1)
         "check_dict_unchanged",
     }:
-        pytest.skip("RandomRegressor is not invariant")
+        pytest.skip()
 
     check(estimator)
 
