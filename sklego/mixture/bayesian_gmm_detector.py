@@ -155,6 +155,7 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
 
         self.n_iter_ = self.gmm_.n_iter_
         self.n_features_in_ = X.shape[1]
+        self.offset_ = self.likelihood_threshold_
         return self
 
     def score_samples(self, X):
@@ -164,11 +165,11 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
 
-        return self.gmm_.score_samples(X) * -1
+        return self.gmm_.score_samples(X)
 
     def decision_function(self, X):
         # We subtract self.offset_ to make 0 be the threshold value for being an outlier:
-        return self.score_samples(X) + self.likelihood_threshold_
+        return self.score_samples(X) - self.offset_
 
     def predict(self, X):
         """Predict if a point is an outlier or not using the fitted estimator.
@@ -183,10 +184,9 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
         array-like of shape (n_samples,)
             The predicted data. 1 for inliers, -1 for outliers.
         """
-        predictions = (self.decision_function(X) >= 0).astype(int)
-        predictions[predictions == 1] = -1
-        predictions[predictions == 0] = 1
-        return predictions
+        preds = (self.decision_function(X) >= 0).astype(int)
+        preds[preds == 0] = -1
+        return preds
 
     @property
     def allowed_methods(self):
