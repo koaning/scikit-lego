@@ -4,7 +4,7 @@ from sklearn.decomposition import PCA
 from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
 
 
-class PCAOutlierDetection(OutlierMixin, BaseEstimator):
+class PCAOutlierDetection(BaseEstimator, OutlierMixin):
     """`PCAOutlierDetection` is an outlier detector based on the reconstruction error from PCA.
 
     If the difference between original and reconstructed data is larger than the `threshold`, the point is

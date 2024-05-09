@@ -5,7 +5,7 @@ from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
 from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay
 
 
-class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
+class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
     """Morphs an estimator such that the training weights can be adapted to ensure that points that are far away have
     less weight.
 
