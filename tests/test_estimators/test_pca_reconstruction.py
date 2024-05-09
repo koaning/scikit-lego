@@ -5,7 +5,8 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 from sklego.decomposition import PCAOutlierDetection
 
 
-@parametrize_with_checks([PCAOutlierDetection(n_components=2, threshold=0.05, random_state=42, variant="absolute")])
+# Remark that as some tests only have 2 features, we need to pass less components, otherwise no outlier is detected
+@parametrize_with_checks([PCAOutlierDetection(n_components=1, threshold=0.05, random_state=42, variant="relative")])
 def test_sklearn_compatible_estimator(estimator, check):
     check(estimator)
 

@@ -195,6 +195,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
     _GLOBAL_NAME = "__sklego_global_estimator__"
     _TARGET_NAME = "__sklego_target_value__"
+    _required_parameters = ["estimator", "groups"]
 
     def __init__(
         self,

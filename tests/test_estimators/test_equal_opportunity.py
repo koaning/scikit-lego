@@ -15,10 +15,12 @@ pytestmark = pytest.mark.cvxpy
             covariance_threshold=None,
             positive_target=True,
             C=1,
-            penalty="none",
             sensitive_cols=[0],
-            train_sensitive_cols=True,
+            penalty=penalty,
+            train_sensitive_cols=train_sensitive_cols,
         )
+        for train_sensitive_cols in [True, False]
+        for penalty in ["none", "l1"]
     ]
 )
 def test_sklearn_compatible_estimator(estimator, check):

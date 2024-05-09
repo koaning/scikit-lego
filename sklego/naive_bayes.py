@@ -141,7 +141,7 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["gmms_", "classes_"])
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():
-            class_idx = int(np.argwhere(self.classes_ == k))
+            class_idx = np.argmax(self.classes_ == k)
             probs[:, class_idx] = np.array(
                 [m.score_samples(np.expand_dims(X[:, idx], 1)) for idx, m in enumerate(v)]
             ).sum(axis=0)
@@ -307,7 +307,7 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
         check_is_fitted(self, ["gmms_", "classes_"])
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():
-            class_idx = int(np.argwhere(self.classes_ == k))
+            class_idx = np.argmax(self.classes_ == k)
             probs[:, class_idx] = np.array(
                 [m.score_samples(np.expand_dims(X[:, idx], 1)) for idx, m in enumerate(v)]
             ).sum(axis=0)

@@ -502,7 +502,9 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             X = np.delete(X, self.sensitive_col_idx_, axis=1)
 
         X = self._add_intercept(X)
-        self.n_features_in_ = X.shape[1] - self.fit_intercept
+        self.n_features_in_ = (
+            X.shape[1] - self.fit_intercept
+        )  # + (1 - int(self.train_sensitive_cols)) * len(self.sensitive_col_idx_)
 
         column_or_1d(y)
         label_encoder = LabelEncoder().fit(y)
