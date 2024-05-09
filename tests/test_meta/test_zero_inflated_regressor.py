@@ -9,21 +9,17 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 from sklego.meta import ZeroInflatedRegressor
 from sklego.testing import check_shape_remains_same_regressor
 
+params = dict(n_estimators=10, max_depth=3, random_state=0, n_jobs=-1)
+
 
 @pytest.mark.parametrize("test_fn", [check_shape_remains_same_regressor])
 def test_zir(test_fn):
-    regr = ZeroInflatedRegressor(
-        classifier=ExtraTreesClassifier(random_state=0), regressor=ExtraTreesRegressor(random_state=0)
-    )
+    regr = ZeroInflatedRegressor(classifier=ExtraTreesClassifier(**params), regressor=ExtraTreesRegressor(**params))
     test_fn(ZeroInflatedRegressor.__name__, regr)
 
 
 @parametrize_with_checks(
-    [
-        ZeroInflatedRegressor(
-            classifier=ExtraTreesClassifier(random_state=0), regressor=ExtraTreesRegressor(random_state=0)
-        ),
-    ]
+    [ZeroInflatedRegressor(classifier=ExtraTreesClassifier(**params), regressor=ExtraTreesRegressor(**params))]
 )
 def test_sklearn_compatible_estimator(estimator, check):
     check(estimator)
@@ -33,11 +29,12 @@ def test_zero_inflated_example():
     from sklearn.model_selection import cross_val_score
 
     np.random.seed(0)
-    X = np.random.randn(10000, 4)
+    X = np.random.randn(10_000, 4)
     y = ((X[:, 0] > 0) & (X[:, 1] > 0)) * np.abs(X[:, 2] * X[:, 3] ** 2)  # many zeroes here, in about 75% of the cases.
 
     zir = ZeroInflatedRegressor(
-        classifier=ExtraTreesClassifier(random_state=0), regressor=ExtraTreesRegressor(random_state=0)
+        classifier=ExtraTreesClassifier(max_depth=20, random_state=0, n_jobs=-1),
+        regressor=ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
     )
 
     zir_score = cross_val_score(zir, X, y).mean()
@@ -50,7 +47,11 @@ def test_zero_inflated_example():
 @pytest.mark.parametrize(
     "classifier,regressor,performance",
     [
-        (ExtraTreesClassifier(random_state=0), ExtraTreesRegressor(random_state=0), 0.85),
+        (
+            ExtraTreesClassifier(max_depth=20, random_state=0, n_jobs=-1),
+            ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
+            0.85,
+        ),
         (KNeighborsClassifier(), KNeighborsRegressor(), 0.55),
     ],
 )
@@ -58,12 +59,12 @@ def test_zero_inflated_with_sample_weights_example(classifier, regressor, perfor
     from sklearn.model_selection import cross_val_score
 
     np.random.seed(0)
-    X = np.random.randn(10000, 4)
+    X = np.random.randn(10_000, 4)
     y = ((X[:, 0] > 0) & (X[:, 1] > 0)) * np.abs(X[:, 2] * X[:, 3] ** 2)  # many zeroes here, in about 75% of the cases.
 
     zir = ZeroInflatedRegressor(classifier=classifier, regressor=regressor)
 
-    zir_score = cross_val_score(zir, X, y, fit_params={"sample_weight": np.arange(len(y))}).mean()
+    zir_score = cross_val_score(zir, X, y, params={"sample_weight": np.arange(len(y))}).mean()
 
     assert zir_score > performance
 

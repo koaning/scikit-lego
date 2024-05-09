@@ -2,12 +2,12 @@ import logging
 from inspect import signature
 
 import numpy as np
-from sklearn.base import BaseEstimator, RegressorMixin, clone, is_classifier, is_regressor
+from sklearn.base import BaseEstimator, MetaEstimatorMixin, RegressorMixin, clone, is_classifier, is_regressor
 from sklearn.exceptions import NotFittedError
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import _check_sample_weight, check_array, check_is_fitted, check_X_y
 
 
-class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
+class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
     """A meta regressor for zero-inflated datasets, i.e. the targets contain a lot of zeroes.
 
     `ZeroInflatedRegressor` consists of a classifier and a regressor.
@@ -60,6 +60,8 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
     ```
     """
 
+    _required_parameters = ["classifier", "regressor"]
+
     def __init__(self, classifier, regressor) -> None:
         self.classifier = classifier
         self.regressor = regressor
@@ -96,6 +98,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
         if not is_regressor(self.regressor):
             raise ValueError(f"`regressor` has to be a regressor. Received instance of {type(self.regressor)} instead.")
 
+        sample_weight = _check_sample_weight(sample_weight, X)
         try:
             check_is_fitted(self.classifier)
             self.classifier_ = self.classifier
