@@ -5,11 +5,9 @@ except ImportError:
 
     umap = NotInstalledPackage("umap-learn")
 
-from numbers import Integral
 
 import numpy as np
 from sklearn.base import BaseEstimator, OutlierMixin
-from sklearn.utils._param_validation import Interval
 from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
 
 
@@ -46,12 +44,6 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
     offset_ : float
         The offset used for the decision function.
     """
-
-    _parameter_constraints: dict = {
-        "n_components": [
-            Interval(Integral, 1, None, closed="left"),
-        ]
-    }
 
     def __init__(
         self,

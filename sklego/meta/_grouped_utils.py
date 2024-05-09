@@ -13,7 +13,6 @@ def _split_groups_and_values(
     _data_format_checks(X, name=name)
     check_array(X, ensure_min_features=min_value_cols, dtype=None)
 
-    print(groups)
     try:
         if isinstance(X, pd.DataFrame):
             X_group = X.loc[:, groups]

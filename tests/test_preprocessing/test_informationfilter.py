@@ -20,7 +20,6 @@ def test_sklearn_compatible_estimator(estimator, check):
 
 def test_v_columns_orthogonal():
     X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser="liac-arff")
-    print(y)
     ifilter = InformationFilter(columns=[11, 12]).fit(X, y)
     v_values = ifilter._make_v_vectors(X, [11, 12])
     assert v_values.prod(axis=1).sum() == pytest.approx(0, abs=1e-5)
