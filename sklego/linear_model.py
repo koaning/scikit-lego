@@ -1023,17 +1023,16 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
 
     def _get_objective(self, X, y, sample_weight):
         def imbalanced_loss(params):
-            return 0.5 * np.mean(
-                sample_weight
-                * np.where(X @ params > y, self.overestimation_punishment_factor, 1)
-                * np.square(y - X @ params)
+            return 0.5 * np.average(
+                np.where(X @ params > y, self.overestimation_punishment_factor, 1) * np.square(y - X @ params),
+                weights=sample_weight,
             ) + self._regularized_loss(params)
 
         def grad_imbalanced_loss(params):
             return (
                 -(sample_weight * np.where(X @ params > y, self.overestimation_punishment_factor, 1) * (y - X @ params))
                 @ X
-                / X.shape[0]
+                / sample_weight.sum()
             ) + self._regularized_grad_loss(params)
 
         return imbalanced_loss, grad_imbalanced_loss
@@ -1134,15 +1133,16 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
 
     def _get_objective(self, X, y, sample_weight):
         def quantile_loss(params):
-            return np.mean(
-                sample_weight * np.where(X @ params < y, self.quantile, 1 - self.quantile) * np.abs(y - X @ params)
+            return np.average(
+                np.where(X @ params < y, self.quantile, 1 - self.quantile) * np.abs(y - X @ params),
+                weights=sample_weight,
             ) + self._regularized_loss(params)
 
         def grad_quantile_loss(params):
             return (
                 -(sample_weight * np.where(X @ params < y, self.quantile, 1 - self.quantile) * np.sign(y - X @ params))
                 @ X
-                / X.shape[0]
+                / sample_weight.sum()
             ) + self._regularized_grad_loss(params)
 
         return quantile_loss, grad_quantile_loss

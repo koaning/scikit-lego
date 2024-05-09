@@ -33,6 +33,8 @@ class Thresholder(BaseEstimator, ClassifierMixin):
         The classes labels.
     """
 
+    _required_parameters = ["model", "threshold"]
+
     def __init__(self, model, threshold: float, refit=False):
         self.model = model
         self.threshold = threshold
@@ -80,6 +82,7 @@ class Thresholder(BaseEstimator, ClassifierMixin):
         self.classes_ = self.estimator_.classes_
         if len(self.classes_) != 2:
             raise ValueError("The `Thresholder` meta model only works on models with two classes.")
+        self.n_features_in_ = X.shape[1]
         return self
 
     def predict(self, X):
@@ -107,3 +110,8 @@ class Thresholder(BaseEstimator, ClassifierMixin):
     def score(self, X, y):
         """Alias for `.score()` method of the underlying estimator."""
         return self.estimator_.score(X, y)
+
+    def _more_tags(self):
+        return {
+            "binary_only": True,
+        }

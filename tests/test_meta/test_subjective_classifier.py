@@ -3,35 +3,26 @@ import pytest
 from sklearn.cluster import DBSCAN
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression, Ridge
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.meta import SubjectiveClassifier
-from tests.conftest import classifier_checks, general_checks, select_tests
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, classifier_checks]),
-        exclude=["check_sample_weights_invariance"],
-        # outliers train wont work because we have two thresholds
-    ),
+@parametrize_with_checks(
+    [
+        SubjectiveClassifier(
+            estimator=LogisticRegression(),
+            prior={0: 0.1, 1: 0.1, 2: 0.1, 3: 0.1, "one": 0.1, "two": 0.1, "three": 0.1, -1: 0.3},
+        )
+    ]
 )
-def test_estimator_checks_classification(test_fn):
-    if test_fn.__name__ == "check_classifiers_classes":
-        prior = {
-            "one": 0.1,
-            "two": 0.1,
-            "three": 0.1,
-            -1: 0.1,
-            1: 0.6,
-        }  # nonsensical prior to make sklearn check pass
-    else:
-        prior = {0: 0.7, 1: 0.2, 2: 0.1}
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        "check_fit2d_1feature",  # custom message
+    }:
+        pytest.skip()
 
-    # Some of the sklearn checkers generate random y data with 3 classes, so prior needs to have these classes
-    estimator = SubjectiveClassifier(LogisticRegression(), prior)
-    test_fn(SubjectiveClassifier.__name__, estimator)
+    check(estimator)
 
 
 @pytest.mark.parametrize(

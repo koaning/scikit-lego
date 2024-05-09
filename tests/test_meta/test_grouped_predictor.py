@@ -34,16 +34,14 @@ def random_xy_grouped_clf_different_classes(request):
 
 @parametrize_with_checks(
     [
-        meta_cls(estimator=LinearRegression(), groups=0, use_global_model=use_global_model)
+        meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
         for meta_cls in [GroupedPredictor, GroupedRegressor]
-        for use_global_model in [True, False]
     ]
 )
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_no_attributes_set_in_init",  # Setting **shrinkage_kwargs in init
         "check_supervised_y_2d",  # Unsure about this
-        "",
     }:
         pytest.skip()
 

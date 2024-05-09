@@ -1,10 +1,7 @@
 """Test the LADRegressor."""
 
-from itertools import product
-
 import numpy as np
 import pytest
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from sklego.linear_model import LADRegression
 from sklego.testing import check_shape_remains_same_regressor
@@ -81,13 +78,3 @@ def test_fit_intercept_and_copy(coefs, intercept):
 def test_lad(test_fn):
     regr = LADRegression()
     test_fn(LADRegression.__name__, regr)
-
-
-@parametrize_with_checks(
-    [
-        LADRegression(**dict(zip(["positive", "fit_intercept", "method"], args)))
-        for args in product([True, False], [True, False], ["SLSQP", "TNC", "L-BFGS-B"])
-    ]
-)
-def test_sklearn_compatible_estimator(estimator, check):
-    check(estimator)

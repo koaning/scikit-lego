@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn import clone
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.utils.validation import check_array, check_is_fitted
 
@@ -33,6 +34,8 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
     idx_ : int
         The index of the target column in the input data.
     """
+
+    _required_parameters = ["model", "column"]
 
     def __init__(self, model, column, lower=2, upper=2, method="sd"):
         self.model = model
@@ -117,8 +120,9 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         if not self._is_regression_model():
             raise ValueError("Passed model must be regression!")
         X, y = self.to_x_y(X)
-        self.estimator_ = self.model.fit(X, y)
+        self.estimator_ = clone(self.model).fit(X, y)
         self.sd_ = np.std(self.estimator_.predict(X) - y)
+        self.n_features_in_ = X.shape[1]
         return self
 
     def predict(self, X, y=None):

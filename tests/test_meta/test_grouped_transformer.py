@@ -19,6 +19,7 @@ from tests.conftest import k_vals, n_vals, np_types
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_transformer_data_not_an_array",
+        "check_fit2d_1feature",  # custom message
     }:
         pytest.skip()
 

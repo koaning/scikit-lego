@@ -11,7 +11,7 @@ def _split_groups_and_values(
     X, groups, name="", min_value_cols=1, check_X=True, **kwargs
 ) -> Tuple[pd.DataFrame, np.ndarray]:
     _data_format_checks(X, name=name)
-    check_array(X, ensure_min_features=len(groups) + 1, dtype=None)
+    check_array(X, ensure_min_features=min_value_cols, dtype=None)
 
     print(groups)
     try:
@@ -38,17 +38,6 @@ def _data_format_checks(X, name):
 
     if issparse(X):  # sklearn.validation._ensure_sparse_format to complicated
         raise ValueError(f"The estimator {name} does not work on sparse matrices")
-
-
-def _shape_check(X, min_value_cols):
-    pass
-    # X_ =
-    # if min_value_cols > 1:
-    #     if X_.ndim == 1 or X_.shape[1] < 2:
-    #         raise ValueError(f"0 feature(s) (shape={X_.shape}) while a minimum of {min_value_cols} is required.")
-    # else:
-    #     if X_.ndim == 2 and X_.shape[1] < 1:
-    #         raise ValueError(f"0 feature(s) (shape={X_.shape}) while a minimum of {min_value_cols} is required.")
 
 
 def _check_grouping_columns(X_group, **kwargs) -> pd.DataFrame:
