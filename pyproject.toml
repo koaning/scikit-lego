@@ -20,7 +20,7 @@ maintainers = [
 ]
 
 dependencies = [
-    "narwhals>=0.7.16",
+    "narwhals>=0.8.9",
     "pandas>=1.1.5",
     "scikit-learn>=1.0",
     "importlib-metadata >= 1.0; python_version < '3.8'",
