@@ -8,7 +8,7 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 from sklego.meta import Thresholder
 
 
-@parametrize_with_checks([Thresholder(LogisticRegression(), threshold=0.5)])
+@parametrize_with_checks([Thresholder(LogisticRegression(), threshold=0.5, check_input=True)])
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_fit2d_1feature",  # custom message

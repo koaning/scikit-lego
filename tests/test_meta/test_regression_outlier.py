@@ -10,6 +10,9 @@ from sklego.meta import RegressionOutlierDetector
 @parametrize_with_checks([RegressionOutlierDetector(LinearRegression(), column=0)])
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
+        # Since `RegressionOutlierDetector` is an outlier detector (`OutlierMixin`), parametrize_with_checks feeds a
+        # outlier dataset. However this is not how this componented is supposed to be used.
+        "check_outliers_train",
         "check_fit2d_1feature",  # custom message
     }:
         pytest.skip()

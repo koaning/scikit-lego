@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from sklearn.linear_model import LinearRegression, LogisticRegression, RidgeClassifier
 
-# from sklearn.utils.estimator_checks import parametrize_with_checks
 from sklego.meta import OrdinalClassifier
 
 
@@ -12,11 +11,6 @@ def random_xy_ordinal():
     X = np.random.normal(0, 2, (1000, 3))
     y = np.select(condlist=[X[:, 0] < 2, X[:, 1] > 2], choicelist=[0, 2], default=1)
     return X, y
-
-
-# @parametrize_with_checks([OrdinalClassifier(estimator=LogisticRegression())])
-# def test_sklearn_compatible_estimator(estimator, check):
-#     check(estimator)
 
 
 @pytest.mark.parametrize(

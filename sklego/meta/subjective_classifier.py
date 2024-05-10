@@ -47,6 +47,7 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         The posterior probabilities for each class, given the prediction of the inner classifier.
     """
 
+    _ALLOWED_EVIDENCE = ("predict_proba", "confusion_matrix", "both")
     _required_parameters = ["estimator", "prior"]
 
     def __init__(self, estimator, prior, evidence="both"):
@@ -105,9 +106,8 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         if not np.isclose(sum(self.prior.values()), 1):
             raise ValueError("Invalid prior: the prior probabilities of all classes should sum to 1")
 
-        valid_evidence_types = ["predict_proba", "confusion_matrix", "both"]
-        if self.evidence not in valid_evidence_types:
-            raise ValueError(f"Invalid evidence: the provided evidence should be one of {valid_evidence_types}")
+        if self.evidence not in self._ALLOWED_EVIDENCE:
+            raise ValueError(f"Invalid evidence: the provided evidence should be one of {self._ALLOWED_EVIDENCE}")
 
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
         if set(y) - set(self.prior.keys()):

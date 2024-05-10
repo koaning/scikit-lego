@@ -20,10 +20,10 @@ def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_no_attributes_set_in_init",  # Setting **shrinkage_kwargs in init
         "check_estimators_pickle",  # Fails when input contains NaN
-        "check_regressor_data_not_an_array",  # DataFrame constructor not properly called!
+        "check_regressor_data_not_an_array",  # DataFrame constructor not properly called!  TODO: This should work
         "check_dtype_object",  # custom message
         "check_fit2d_1feature",  # custom message
-        "check_supervised_y_2d",  # multioutput support?
+        "check_supervised_y_2d",  # TODO: Is it possible to support multioutput?
     }:
         pytest.skip()
 

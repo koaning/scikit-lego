@@ -5,7 +5,13 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 from sklego.meta import ConfusionBalancer
 
 
-@parametrize_with_checks([ConfusionBalancer(LogisticRegression(solver="lbfgs"))])
+@parametrize_with_checks(
+    [
+        ConfusionBalancer(estimator=LogisticRegression(solver="lbfgs"), alpha=alpha, cfm_smooth=cfm_smooth)
+        for alpha in (0.1, 0.5, 0.9)
+        for cfm_smooth in (0, 1, 2)
+    ]
+)
 def test_sklearn_compatible_estimator(estimator, check):
     check(estimator)
 

@@ -11,13 +11,14 @@ def _split_groups_and_values(
     X, groups, name="", min_value_cols=1, check_X=True, **kwargs
 ) -> Tuple[pd.DataFrame, np.ndarray]:
     _data_format_checks(X, name=name)
-    check_array(X, ensure_min_features=min_value_cols, dtype=None)
+    check_array(X, ensure_min_features=min_value_cols, dtype=None, force_all_finite=False)
 
     try:
         if isinstance(X, pd.DataFrame):
             X_group = X.loc[:, groups]
             X_value = X.drop(columns=groups).values
         else:
+            X = np.asarray(X)  # deals with `_NotAnArray` case
             X_group = pd.DataFrame(X[:, groups])
             pos_indexes = range(X.shape[1])
             X_value = np.delete(X, [pos_indexes[g] for g in groups], axis=1)

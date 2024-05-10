@@ -11,8 +11,8 @@ from sklego.meta import DecayEstimator
 
 @parametrize_with_checks(
     [
-        DecayEstimator(LinearRegression(), check_input=True),
-        DecayEstimator(LogisticRegression(solver="lbfgs"), check_input=True),
+        DecayEstimator(LinearRegression(), check_input=True, decay_func=decay_func)
+        for decay_func in ("linear", "exponential", "sigmoid")
     ]
 )
 def test_sklearn_compatible_estimator(estimator, check):

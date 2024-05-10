@@ -18,7 +18,8 @@ from sklego.meta import SubjectiveClassifier
 )
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
-        "check_fit2d_1feature",  # custom message
+        "check_classifiers_regression_target",  # Custom message from `if set(y) - set(self.prior.keys())`
+        "check_fit2d_1feature",  # Custom message
     }:
         pytest.skip()
 
@@ -68,10 +69,17 @@ def test_posterior_computation(mocker, classes, prior, cfm, first_class_posterio
         return np.array(cfm)
 
     mocker.patch("sklego.meta.subjective_classifier.confusion_matrix", side_effect=mock_confusion_matrix)
-    mock_estimator = mocker.Mock(RandomForestClassifier())
-    mock_estimator.classes_ = np.array(classes)
+    mocker.patch(
+        "sklego.meta.subjective_classifier.SubjectiveClassifier.classes_",
+        new_callable=mocker.PropertyMock,
+        return_value=np.array(classes),
+    )
+
+    mock_estimator = mocker.MagicMock(RandomForestClassifier())
+
     subjective_model = SubjectiveClassifier(mock_estimator, dict(zip(classes, prior)))
     subjective_model.fit(np.zeros((10, 10)), np.array([classes[0]] * 10))
+
     assert pytest.approx(subjective_model.posterior_matrix_[0, 0], 0.001) == first_class_posterior
     assert np.isclose(subjective_model.posterior_matrix_.sum(axis=0), 1).all()
 
@@ -136,13 +144,22 @@ def test_predict_proba(mocker, evidence_type, expected_probas):
     def mock_confusion_matrix(y, y_pred):
         return np.array([[80, 20], [10, 90]])
 
+    classes = [0, 1]
     mocker.patch("sklego.meta.subjective_classifier.confusion_matrix", side_effect=mock_confusion_matrix)
-    mock_inner_estimator = mocker.Mock(RandomForestClassifier)
-    mock_inner_estimator.predict_proba.return_value = np.array([[0.8, 0.2], [1, 0], [0.5, 0.5], [0.2, 0.8]])
-    mock_inner_estimator.classes_ = np.array([0, 1])
+    mocker.patch(
+        "sklego.meta.subjective_classifier.SubjectiveClassifier.classes_",
+        new_callable=mocker.PropertyMock,
+        return_value=np.array(classes),
+    )
+    mock_inner_estimator = mocker.MagicMock(RandomForestClassifier)
+
+    mock_inner_estimator.classes_ = np.array(classes)
     subjective_model = SubjectiveClassifier(mock_inner_estimator, {0: 0.8, 1: 0.2}, evidence=evidence_type)
     subjective_model.fit(np.zeros((10, 10)), np.zeros(10))
+
+    subjective_model.estimator_.predict_proba = lambda X: np.array([[0.8, 0.2], [1, 0], [0.5, 0.5], [0.2, 0.8]])
     posterior_probabilities = subjective_model.predict_proba(np.zeros((4, 2)))
+
     assert posterior_probabilities.shape == (4, 2)
     assert np.isclose(posterior_probabilities, np.array(expected_probas), atol=0.01).all()
 

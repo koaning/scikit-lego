@@ -13,9 +13,12 @@ from sklego.mixture import GMMOutlierDetector
 @parametrize_with_checks([OutlierClassifier(GMMOutlierDetector(threshold=0.1, method="quantile"))])
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
-        "check_classifiers_train",  # Training is not suppose to happen on classification dataset
-        "check_classifiers_regression_target",  # original dataset could also be regression depending on the outlier
-        "check_classifiers_classes",  # TODO: Double check
+        # Since `OutlierClassifier` is a classifier (`ClassifierMixin`), parametrize_with_checks feeds a classification
+        # dataset. However this is not how this classifier is supposed to be used.
+        "check_classifiers_train",
+        "check_classifiers_classes",
+        # Similarly, the original dataset could also be regression task depending on the outlier detection algo
+        "check_classifiers_regression_target",
     }:
         pytest.skip()
 

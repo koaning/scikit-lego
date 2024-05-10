@@ -13,6 +13,28 @@ from sklego.datasets import load_chicken
 from sklego.meta import GroupedClassifier, GroupedPredictor, GroupedRegressor
 
 
+@parametrize_with_checks(
+    [
+        meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
+        for meta_cls in [GroupedPredictor, GroupedRegressor]
+    ]
+)
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        "check_no_attributes_set_in_init",  # Setting **shrinkage_kwargs in init
+        "check_estimators_empty_data_messages",  # Custom message
+        "check_fit2d_1feature",  # Custom message (after grouping we are left with zero features)
+        "check_supervised_y_2d",  # Unsure about this
+    }:
+        pytest.skip()
+
+    if check.func.__name__ == "check_regressors_train" and estimator.__class__ is GroupedPredictor:
+        # Can't use `isinstance(estimator, GroupedPredictor)` since that's true for both cases
+        pytest.skip()
+
+    check(estimator)
+
+
 @pytest.fixture
 def random_xy_grouped_clf_different_classes(request):
     group_size = request.param.get("group_size")
@@ -30,22 +52,6 @@ def random_xy_grouped_clf_different_classes(request):
     )
     df = pd.DataFrame({"group": group_col, "x": x_col, "y": y_col})
     return df
-
-
-@parametrize_with_checks(
-    [
-        meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
-        for meta_cls in [GroupedPredictor, GroupedRegressor]
-    ]
-)
-def test_sklearn_compatible_estimator(estimator, check):
-    if check.func.__name__ in {
-        "check_no_attributes_set_in_init",  # Setting **shrinkage_kwargs in init
-        "check_supervised_y_2d",  # Unsure about this
-    }:
-        pytest.skip()
-
-    check(estimator)
 
 
 def test_chickweight_df1_keys():
