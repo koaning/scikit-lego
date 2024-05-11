@@ -1,7 +1,9 @@
 from contextlib import nullcontext as does_not_raise
+from random import randint
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn import clone
 from sklearn.datasets import make_classification, make_regression
@@ -13,8 +15,10 @@ from sklearn.preprocessing import StandardScaler
 
 from sklego.meta import HierarchicalClassifier, HierarchicalRegressor
 
+frame_funcs = [pd.DataFrame, pl.DataFrame]
 
-def make_hierarchical_dataset(task):
+
+def make_hierarchical_dataset(task, frame_func=pd.DataFrame):
     n_samples, n_features, n_informative, random_state = 1000, 10, 3, 42
     if task == "binary-classification":
         X, y = make_classification(
@@ -38,14 +42,18 @@ def make_hierarchical_dataset(task):
     else:
         raise ValueError("Invalid task")
 
-    X = pd.DataFrame(X, columns=[f"x_{i}" for i in range(X.shape[1])]).assign(
-        g_0=1,
-        g_1=["A"] * (n_samples // 2) + ["B"] * (n_samples // 2),
-        g_2=["X"] * (n_samples // 4) + ["Y"] * (n_samples // 2) + ["Z"] * (n_samples // 4),
+    X_ = (
+        pd.DataFrame(X, columns=[f"x_{i}" for i in range(X.shape[1])])
+        .assign(
+            g_0=1,
+            g_1=["A"] * (n_samples // 2) + ["B"] * (n_samples // 2),
+            g_2=["X"] * (n_samples // 4) + ["Y"] * (n_samples // 2) + ["Z"] * (n_samples // 4),
+        )
+        .pipe(frame_func)
     )
     groups = ["g_0", "g_1", "g_2"]
 
-    return X, y, groups
+    return X_, y, groups
 
 
 def make_hierarchical_dummy():
@@ -107,7 +115,7 @@ def test_fit_predict(meta_cls, base_estimator, task, fallback_method, shrinkage)
     """Tests that the model can be fit and predict with different configurations of fallback and shrinkage methods if
     X to predict contains same groups as X used to fit.
     """
-    X, y, groups = make_hierarchical_dataset(task)
+    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
 
     meta_model = meta_cls(estimator=base_estimator, groups=groups, fallback_method=fallback_method, **shrinkage).fit(
         X, y
@@ -133,10 +141,11 @@ def test_fallback(meta_cls, base_estimator, task, fallback_method, context):
     """Tests that the model fails or not when predicting with different fallback methods if X to predict contains
     unseen group values.
     """
-    X, y, groups = make_hierarchical_dataset(task)
+    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
 
     meta_model = meta_cls(estimator=base_estimator, groups=groups, fallback_method=fallback_method).fit(X, y)
-    X.loc[:, groups] = "unseen_group_value"
+    X[groups] = np.ones((X.shape[0], len(groups))) * -1  # Shortcut assignment that works both in pandas and polars
+
     with context:
         meta_model.predict(X)
 
@@ -163,7 +172,7 @@ def test_shrinkage(meta_cls, base_estimator, task, metric, shrinkage):
     """Tests that the model performance is better than the base estimator when predicting with different shrinkage
     methods.
     """
-    X, y, groups = make_hierarchical_dataset(task)
+    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
 
     meta_model = meta_cls(estimator=clone(base_estimator), groups=groups, **shrinkage).fit(X, y)
     base_model = clone(base_estimator).fit(X.drop(columns=groups), y)

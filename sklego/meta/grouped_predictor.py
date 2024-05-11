@@ -1,3 +1,4 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
 from sklearn import clone
@@ -187,6 +188,9 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         if self.shrinkage is not None and not is_regressor(self.estimator):
             raise ValueError("Shrinkage is only available for regression models")
 
+        X = nw.from_native(X, strict=False, eager_only=True)
+        X = X.to_pandas() if isinstance(X, nw.DataFrame) else X
+
         X_group, X_value = _split_groups_and_values(
             X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
@@ -290,7 +294,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             # Fill with prob = 0 for impossible labels in predict_proba
             .fillna(0)
             .sort_index()
-            .values.squeeze()
+            .to_numpy()
+            .squeeze()
         )
 
     def predict(self, X):
@@ -310,6 +315,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         """
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
+        X = nw.from_native(X, strict=False, eager_only=True)
+        X = X.to_pandas() if isinstance(X, nw.DataFrame) else X
         X_group, X_value = _split_groups_and_values(
             X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )

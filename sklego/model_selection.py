@@ -182,8 +182,8 @@ class TimeGapSplit:
             if self.window == "rolling":
                 start_date = current_date
             yield (
-                X_train_df["np_index"].values,
-                X_valid_df["np_index"].values,
+                X_train_df["np_index"].to_numpy(),
+                X_valid_df["np_index"].to_numpy(),
             )
 
     def get_n_splits(self, X=None, y=None, groups=None):
@@ -546,7 +546,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # initialize the index of the last split point, to reduce the amount of possible index split options
         last_split_index = len(self._grouped_df) - (
             self._grouped_df.assign(
-                observations=lambda df: df["observations"].values[::-1],
+                observations=lambda df: df["observations"].to_numpy()[::-1],
                 cumsum_obs=lambda df: df["observations"].cumsum(),
             )
             .reset_index()

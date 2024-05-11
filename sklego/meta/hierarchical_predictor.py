@@ -1,5 +1,6 @@
 from warnings import warn
 
+import narwhals as nw
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
@@ -252,20 +253,17 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         if not isinstance(self.check_X, bool):
             raise ValueError(f"`check_X` should be a boolean. Found {type(self.check_X)}")
 
-        self.groups_ = [self._GLOBAL_NAME] + as_list(self.groups)
+        self.groups_ = [self._GLOBAL_NAME, *as_list(self.groups)]
 
         # The only case in which we don't have to fit multiple levels is when shrinkage is None and fallback_method is 'raise'
         self.fitted_levels_ = expanding_list(self.groups_)
-        #     [self.groups_]
-        #     if (self.shrinkage is None and self.fallback_method == "raise")
-        #     else
-        # )
 
         # If invalid shrinkage, will raise ValueError (before fitting all the estimators!)
         self.shrinkage_function_ = self._set_shrinkage_function()
 
+        X = nw.from_native(X, strict=False, eager_only=True)
         frame = (
-            pd.DataFrame(X)
+            (X.to_pandas() if isinstance(X, nw.DataFrame) else pd.DataFrame(X))
             .assign(**{self._TARGET_NAME: np.array(y), self._GLOBAL_NAME: 1})
             .reset_index(drop=True)
             .pipe(self.__validate_frame)
@@ -293,7 +291,12 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         if X.shape[1] != self.n_features_in_:
             raise ValueError(f"X should have {self.n_features_in_} features, got {X.shape[1]}")
 
-        frame = pd.DataFrame(X).reset_index(drop=True).assign(**{self._GLOBAL_NAME: 1})
+        X = nw.from_native(X, strict=False, eager_only=True)
+        frame = (
+            (X.to_pandas() if isinstance(X, nw.DataFrame) else pd.DataFrame(X))
+            .reset_index(drop=True)
+            .assign(**{self._GLOBAL_NAME: 1})
+        )
 
         if not is_classifier(self.estimator):  # regressor or outlier detector
             n_out = 1

@@ -18,7 +18,7 @@ def _split_groups_and_values(
     try:
         if isinstance(X, pd.DataFrame):
             X_group = X.loc[:, as_list(groups)]
-            X_value = X.drop(columns=groups).values
+            X_value = X.drop(columns=groups).to_numpy()
         else:
             X_group = pd.DataFrame(X[:, as_list(groups)])
             pos_indexes = range(X.shape[1])

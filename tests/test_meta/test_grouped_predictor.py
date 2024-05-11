@@ -2,6 +2,7 @@ from contextlib import nullcontext as does_not_raise
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.dummy import DummyRegressor
 from sklearn.impute import SimpleImputer
@@ -55,22 +56,18 @@ def test_estimator_checks(test_fn, meta_cls):
     test_fn(meta_cls.__name__ + "_nofallback", clf)
 
 
-def test_chickweight_df1_keys():
-    df = load_chicken(as_frame=True)
-    mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
-    mod.fit(df[["time", "diet"]], df["weight"])
-    assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
+@pytest.mark.parametrize("groups, expected", [("diet", {1, 2, 3, 4}), ("chick", set(range(1, 50 + 1)))])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_chickweight_keys(groups, expected, frame_func):
+    df = frame_func(load_chicken(as_frame=True))
+    mod = GroupedPredictor(estimator=LinearRegression(), groups=groups)
+    mod.fit(df[["time", groups]], df["weight"])
+    assert set(mod.estimators_.keys()) == expected
 
 
-def test_chickweight_df2_keys():
-    df = load_chicken(as_frame=True)
-    mod = GroupedPredictor(estimator=LinearRegression(), groups="chick")
-    mod.fit(df[["time", "chick"]], df["weight"])
-    assert set(mod.estimators_.keys()) == set(range(1, 50 + 1))
-
-
-def test_chickweight_can_do_fallback():
-    df = load_chicken(as_frame=True)
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_chickweight_can_do_fallback(frame_func):
+    df = frame_func(load_chicken(as_frame=True))
     mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
@@ -79,9 +76,11 @@ def test_chickweight_can_do_fallback():
     assert mod.predict(to_predict)[0] == mod.predict(to_predict)[1]
 
 
-def test_chickweight_can_do_fallback_proba():
-    df = load_chicken(as_frame=True)
-    y = np.where(df.weight > df.weight.mean(), 1, 0)
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_chickweight_can_do_fallback_proba(frame_func):
+    df = frame_func(load_chicken(as_frame=True))
+
+    y = np.where(df["weight"] > df["weight"].mean(), 1, 0)
     mod = GroupedPredictor(estimator=LogisticRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], y)
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
