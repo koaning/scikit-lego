@@ -1,5 +1,5 @@
+import narwhals as nw
 import numpy as np
-import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
@@ -181,16 +181,17 @@ class InformationFilter(BaseEstimator, TransformerMixin):
 
     def _check_coltype(self, X):
         """Check if the `columns` type(s) are compatible with `X` type."""
+        X_ = nw.from_native(X, strict=False, eager_only=True)
         for col in as_list(self.columns):
             if isinstance(col, str):
-                if isinstance(X, np.ndarray):
+                if isinstance(X_, np.ndarray):
                     raise ValueError(f"column {col} is a string but datatype receive is numpy.")
-                if isinstance(X, pd.DataFrame):
-                    if col not in X.columns:
-                        raise ValueError(f"column {col} is not in {X.columns}")
+                if isinstance(X_, nw.DataFrame):
+                    if col not in X_.columns:
+                        raise ValueError(f"column {col} is not in {X_.columns}")
             if isinstance(col, int):
-                if col not in range(np.atleast_2d(np.array(X)).shape[1]):
-                    raise ValueError(f"column {col} is out of bounds for input shape {X.shape}")
+                if col not in range(np.atleast_2d(np.array(X_)).shape[1]):
+                    raise ValueError(f"column {col} is out of bounds for input shape {X_.shape}")
 
     def _col_idx(self, X, name):
         """Get the column index of a column name."""
