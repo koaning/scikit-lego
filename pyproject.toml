@@ -63,6 +63,7 @@ docs = [
 
 test-dep = [
     "narwhals[polars]",
+    "pyarrow",
     "pytest>=6.2.5",
     "pytest-xdist>=1.34.0",
     "pytest-cov>=2.6.1",
