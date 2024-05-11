@@ -1,5 +1,5 @@
+import narwhals as nw
 import numpy as np
-import pandas as pd
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.utils.validation import check_array, check_is_fitted
 
@@ -11,8 +11,11 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
     ----------
     model : scikit-learn compatible regression model
         A regression model that will be used for prediction.
-    column : int
-        The index of the target column to predict in the input data.
+    column : int | str
+        This should be:
+
+            - The index of the target column to predict in the input data, when the input is an array.
+            - The name of the target column to predict in the input data, when the input is a dataframe.
     lower : float, default=2.0
         Lower threshold for outlier detection. The method used for detection depends on the `method` parameter.
     upper : float, default=2.0
@@ -32,6 +35,21 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         The standard deviation of the differences between true and predicted values.
     idx_ : int
         The index of the target column in the input data.
+
+    Notes
+    -----
+    Native cross-dataframe support is achieved using
+    [Narwhals](https://narwhals-dev.github.io/narwhals/){:target="_blank"}.
+    Supported dataframes are:
+
+    - pandas
+    - Polars (eager)
+    - Modin
+
+    See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/){:target="_blank"} for an up-to-date list
+    (and to learn how you can add your dataframe library to it!), though note that only those
+    supported by [sklearn.utils.check_X_y](https://scikit-learn.org/stable/modules/generated/sklearn.utils.check_X_y.html)
+    will work with this class.
     """
 
     def __init__(self, model, column, lower=2, upper=2, method="sd"):
@@ -112,8 +130,9 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         ValueError
             If the `model` is not a regression estimator.
         """
-        self.idx_ = np.argmax([i == self.column for i in X.columns]) if isinstance(X, pd.DataFrame) else self.column
-        X = check_array(X, estimator=self)
+        X = nw.from_native(X, eager_only=True, strict=False)
+        self.idx_ = np.argmax([i == self.column for i in X.columns]) if isinstance(X, nw.DataFrame) else self.column
+        X = check_array(nw.to_native(X, strict=False), estimator=self)
         if not self._is_regression_model():
             raise ValueError("Passed model must be regression!")
         X, y = self.to_x_y(X)
