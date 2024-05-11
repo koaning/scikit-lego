@@ -43,7 +43,7 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
     Supported dataframes are:
 
     - pandas
-    - Polars (eager or lazy)
+    - Polars (eager)
     - Modin
     - cuDF
 
@@ -129,7 +129,7 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         ValueError
             If the `model` is not a regression estimator.
         """
-        X = nw.from_native(X, strict=False)
+        X = nw.from_native(X, eager_only=True, strict=False)
         self.idx_ = np.argmax([i == self.column for i in X.columns]) if isinstance(X, nw.DataFrame) else self.column
         X = check_array(X, estimator=self)
         if not self._is_regression_model():
