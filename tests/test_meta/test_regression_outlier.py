@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.linear_model import LinearRegression, LogisticRegression
 
@@ -42,14 +43,15 @@ def test_obvious_example():
         assert preds[i] == -1
 
 
-def test_obvious_example_pandas():
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_obvious_example_dataframe(frame_func):
     # generate random data for illustrative example
     np.random.seed(42)
     x = np.random.normal(0, 1, 100)
     y = 1 + x + np.random.normal(0, 0.2, 100)
     for i in [20, 25, 50, 80]:
         y[i] += 2
-    X = pd.DataFrame({"x": x, "y": y})
+    X = frame_func({"x": x, "y": y})
 
     # fit and plot
     mod = RegressionOutlierDetector(LinearRegression(), column="y")
@@ -58,14 +60,15 @@ def test_obvious_example_pandas():
         assert preds[i] == -1
 
 
-def test_raises_error():
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_raises_error(frame_func):
     # generate random data for illustrative example
     np.random.seed(42)
     x = np.random.normal(0, 1, 100)
     y = 1 + x + np.random.normal(0, 0.2, 100)
     for i in [20, 25, 50, 80]:
         y[i] += 2
-    X = pd.DataFrame({"x": x, "y": y})
+    X = frame_func({"x": x, "y": y})
 
     with pytest.raises(ValueError):
         mod = RegressionOutlierDetector(LogisticRegression(), column="y")
