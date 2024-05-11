@@ -45,10 +45,11 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
     - pandas
     - Polars (eager)
     - Modin
-    - cuDF
 
     See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/){:target="_blank"} for an up-to-date list
-    (and to learn how you can add your dataframe library to it!).
+    (and to learn how you can add your dataframe library to it!), though note that only those
+    supported by [sklearn.utils.check_X_y](https://scikit-learn.org/stable/modules/generated/sklearn.utils.check_X_y.html)
+    will work with this class.
     """
 
     def __init__(self, model, column, lower=2, upper=2, method="sd"):
