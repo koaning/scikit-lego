@@ -83,9 +83,18 @@ def log_step(
         )
 
     names = False if dtypes else names
-
+    
+    nw_from_kwargs = {
+        "strict": False,
+        "eager_only": True,
+        "allow_series": True,
+    }
+    nw_to_kwargs = {"strict": False}
     @wraps(func)
     def wrapper(*args, **kwargs):
+        args = [nw.from_native(a, **nw_from_kwargs) for a in args]
+        kwargs = {k: nw.from_native(v, **nw_from_kwargs) for k,v in kwargs.items()}
+        
         if shape_delta:
             old_shape = args[0].shape
         tic = dt.datetime.now()
@@ -97,10 +106,11 @@ def log_step(
                 f"time={dt.datetime.now() - tic}" if time_taken else None,
                 f"n_obs={result.shape[0]}, n_col={result.shape[1]}" if shape else None,
                 _get_shape_delta(old_shape, result.shape) if shape_delta else None,
-                f"names={result.columns.to_list()}" if names else None,
+                f"names={result.columns}" if names else None,
                 f"dtypes={result.dtypes.to_dict()}" if dtypes else None,
             ]
-            return result
+            return nw.to_native(result, **nw_to_kwargs)
+
         except Exception as exc:
             optional_strings = [
                 f"time={dt.datetime.now() - tic}" if time_taken else None,
