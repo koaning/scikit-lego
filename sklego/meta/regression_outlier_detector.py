@@ -131,7 +131,7 @@ class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
         """
         X = nw.from_native(X, eager_only=True, strict=False)
         self.idx_ = np.argmax([i == self.column for i in X.columns]) if isinstance(X, nw.DataFrame) else self.column
-        X = check_array(X, estimator=self)
+        X = check_array(nw.to_native(X, strict=False), estimator=self)
         if not self._is_regression_model():
             raise ValueError("Passed model must be regression!")
         X, y = self.to_x_y(X)
