@@ -1,3 +1,4 @@
+import narwhals as nw
 import numpy as np
 from sklearn.utils.validation import check_is_fitted
 
@@ -190,14 +191,19 @@ class ShrinkageMixin:
             Whether to return only the shrinkage factors for the most granular group values.
         """
         check_is_fitted(self, ["estimators_", "shrinkage_function_"])
-        counts = frame.groupby(groups).size().rename("counts")
+        counts = frame.group_by(groups).agg(nw.len().alias("counts"))
         all_grp_values = list(self.estimators_.keys())
 
         if most_granular_only:
             all_grp_values = [grp_value for grp_value in all_grp_values if len(grp_value) == len(groups)]
 
         hierarchical_counts = {
-            grp_value: [counts.loc[subgroup].sum() for subgroup in expanding_list(grp_value, tuple)]
+            grp_value: [
+                nw.to_native(
+                    counts.filter(*[nw.col(c) == s for c, s in zip(groups, subgroup)]).select(nw.sum("counts"))
+                ).to_numpy()[0][0]
+                for subgroup in expanding_list(grp_value, tuple)
+            ]
             for grp_value in all_grp_values
         }
 

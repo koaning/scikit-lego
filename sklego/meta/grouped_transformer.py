@@ -1,10 +1,12 @@
+from typing import Union
+
 import narwhals as nw
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
 from sklego.common import as_list
-from sklego.meta._grouped_utils import to_nw_frame
+from sklego.meta._grouped_utils import parse_X_y
 
 
 class GroupedTransformer(BaseEstimator, TransformerMixin):
@@ -62,7 +64,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         except Exception as e:
             raise type(e)(f"Exception for group {group}: {e}")
 
-    def __fit_grouped_transformer(self, frame: nw.DataFrame, y: np.ndarray):
+    def __fit_grouped_transformer(self, frame: nw.DataFrame, y: Union[np.ndarray, None]):
         """Fit a transformer to each group"""
 
         grouped_transformers = {
@@ -105,11 +107,9 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         """
         self.__check_transformer()
         self.fallback_ = None
-        self.groups_ = as_list(self.groups)
+        self.groups_ = as_list(self.groups) if self.groups is not None else None
 
-        frame = to_nw_frame(X).with_columns(__sklego_target__=y)
-
-        # TODO: Checks
+        frame = parse_X_y(X, y, self.groups_, check_X=self.check_X, **self._check_kwargs)
 
         if self.groups is None:
             X_, y_ = (
@@ -119,8 +119,6 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
             self.transformers_ = clone(self.transformer).fit(X_, y=y_)
             return self
 
-        print("here")
-        # X_group, X_value = _split_groups_and_values(X, self.groups, check_X=self.check_X, **self._check_kwargs)
         self.transformers_ = self.__fit_grouped_transformer(frame, y)
 
         if self.use_global_model:
@@ -134,7 +132,6 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
 
     def __transform_single_group(self, group, X):
         """Transform a single group by getting its transformer from the fitted dict"""
-        # Keep track of the original index such that we can sort in __transform_groups
         try:
             group_transformer = self.transformers_[group]
         except KeyError:
@@ -184,13 +181,12 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, ["fallback_", "transformers_"])
 
-        frame = to_nw_frame(X)
+        frame = parse_X_y(X, y=None, groups=self.groups_, check_X=self.check_X, **self._check_kwargs).drop(
+            "__sklego_target__"
+        )
 
         if self.groups is None:
             X_ = nw.to_native(frame)
             return self.transformers_.transform(X_)
-
-        # TODO: Check
-        # X_group, X_value = _split_groups_and_values(X, self.groups, **self._check_kwargs)
 
         return self.__transform_groups(frame)

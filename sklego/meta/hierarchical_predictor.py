@@ -17,6 +17,7 @@ from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from sklego.common import as_list, expanding_list
+from sklego.meta._grouped_utils import _validate_groups_values
 from sklego.meta._shrinkage_utils import (
     ShrinkageMixin,
     constant_shrinkage,
@@ -196,6 +197,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
     _GLOBAL_NAME = "__sklego_global_estimator__"
     _TARGET_NAME = "__sklego_target_value__"
+    _INDEX_NAME = "__sklego_index__"
 
     def __init__(
         self,
@@ -262,12 +264,18 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         self.shrinkage_function_ = self._set_shrinkage_function()
 
         X = nw.from_native(X, strict=False, eager_only=True)
-        frame = (
-            (X.to_pandas() if isinstance(X, nw.DataFrame) else pd.DataFrame(X))
-            .assign(**{self._TARGET_NAME: np.array(y), self._GLOBAL_NAME: 1})
-            .reset_index(drop=True)
-            .pipe(self.__validate_frame)
-        )
+        if not isinstance(X, nw.DataFrame):
+            X = nw.from_native(pd.DataFrame(X))
+
+        n_samples = X.shape[0]
+        native_space = nw.get_native_namespace(X)
+
+        frame = X.with_columns(
+            **{
+                self._TARGET_NAME: nw.from_native(native_space.Series(y), allow_series=True),
+                self._GLOBAL_NAME: nw.from_native(native_space.Series([1] * n_samples), allow_series=True),
+            }
+        ).pipe(self.__validate_frame)
 
         self.estimators_ = self._fit_estimators(frame)
         self.shrinkage_factors_ = self._fit_shrinkage_factors(frame, groups=self.groups_)
@@ -292,11 +300,18 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             raise ValueError(f"X should have {self.n_features_in_} features, got {X.shape[1]}")
 
         X = nw.from_native(X, strict=False, eager_only=True)
-        frame = (
-            (X.to_pandas() if isinstance(X, nw.DataFrame) else pd.DataFrame(X))
-            .reset_index(drop=True)
-            .assign(**{self._GLOBAL_NAME: 1})
-        )
+        if not isinstance(X, nw.DataFrame):
+            X = nw.from_native(pd.DataFrame(X))
+
+        n_samples = X.shape[0]
+        native_space = nw.get_native_namespace(X)
+
+        frame = X.with_columns(
+            **{
+                self._GLOBAL_NAME: nw.from_native(native_space.Series([1] * n_samples), allow_series=True),
+                self._INDEX_NAME: np.arange(n_samples),
+            }
+        ).pipe(self.__validate_frame)
 
         if not is_classifier(self.estimator):  # regressor or outlier detector
             n_out = 1
@@ -310,8 +325,8 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         shrinkage = np.zeros((X.shape[0], self.n_levels_), dtype=float)
 
         for level_idx, grp_names in enumerate(self.fitted_levels_):
-            for grp_values, grp_frame in frame.groupby(grp_names):
-                grp_idx = grp_frame.index
+            for grp_values, grp_frame in frame.group_by(grp_names):
+                grp_idx = nw.to_native(grp_frame.select(self._INDEX_NAME)).to_numpy().squeeze()
 
                 _estimator, _level = _get_estimator(
                     estimators=self.estimators_,
@@ -323,8 +338,8 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
                 _shrinkage_factor = self.shrinkage_factors_[grp_values[:_level]]
 
                 last_dim_ix = _estimator.classes_ if is_classifier(self.estimator) else [0]
-
-                raw_pred = getattr(_estimator, method_name)(grp_frame.drop(columns=self.groups_))
+                X_grp_ = nw.to_native(grp_frame.drop([*self.groups_, self._INDEX_NAME]))
+                raw_pred = getattr(_estimator, method_name)(X_grp_)
 
                 preds[np.ix_(grp_idx, [level_idx], last_dim_ix)] = np.atleast_3d(raw_pred[:, None])
                 shrinkage[np.ix_(grp_idx)] = np.pad(
@@ -335,11 +350,11 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
     def _fit_single_estimator(self, grp_frame):
         """Shortcut to fit an estimator on a single group"""
-        _X = grp_frame.drop(columns=self.groups_ + [self._TARGET_NAME])
-        _y = grp_frame[self._TARGET_NAME]
+        _X = nw.to_native(grp_frame.drop([*self.groups_, self._TARGET_NAME]))
+        _y = nw.to_native(grp_frame.select(self._TARGET_NAME))
         return clone(self.estimator).fit(_X, _y)
 
-    def _fit_estimators(self, frame):
+    def _fit_estimators(self, frame: nw.DataFrame):
         """Fits one estimator per level of the group column(s), and returns a dictionary of the fitted estimators.
 
         The keys of the dictionary are the group values, and the values are the fitted estimators.
@@ -350,7 +365,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             estimators_ = {
                 grp_values: self._fit_single_estimator(grp_frame)
                 for grp_names in self.fitted_levels_
-                for grp_values, grp_frame in frame.groupby(grp_names)
+                for grp_values, grp_frame in frame.group_by(grp_names)
             }
         else:
             fit_func = lambda grp_values, grp_frame: (grp_values, self._fit_single_estimator(grp_frame))
@@ -359,7 +374,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
                 Parallel(n_jobs=self.n_jobs)(
                     delayed(fit_func)(grp_values, grp_frame)
                     for grp_names in self.fitted_levels_
-                    for grp_values, grp_frame in frame.groupby(grp_names)
+                    for grp_values, grp_frame in frame.group_by(grp_names)
                 )
             )
 
@@ -369,18 +384,10 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         """Validate the input arrays"""
 
         if self.check_X:
-            X_values = frame.drop(columns=self.groups_ + [self._TARGET_NAME]).copy()
+            X_values = frame.drop([*self.groups_])
             check_array(X_values, **self._CHECK_KWARGS)
 
-        X_groups = frame.loc[:, self.groups_].copy()
-
-        X_group_num = X_groups.select_dtypes(include="number")
-        if X_group_num.shape[1]:
-            check_array(X_group_num, **self._CHECK_KWARGS)
-
-        # Only check missingness in object columns
-        if X_groups.select_dtypes(exclude="number").isnull().any(axis=None):
-            raise ValueError("Group columns contain NaN values")
+        _validate_groups_values(frame, self.groups_)
 
         return frame
 

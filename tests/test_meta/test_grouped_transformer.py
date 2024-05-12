@@ -290,6 +290,7 @@ def test_df_missing_group(penguins_df, frame_func):
 def test_array_with_multiple_string_cols(penguins):
     X = penguins
 
+    # BROKEN: Failing due to negative indexing... kind of an edge case
     meta = GroupedTransformer(StandardScaler(), groups=[0, -1])
 
     transformed = meta.fit_transform(X)
