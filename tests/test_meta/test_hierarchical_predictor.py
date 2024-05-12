@@ -1,6 +1,7 @@
 from contextlib import nullcontext as does_not_raise
 from random import randint
 
+import narwhals as nw
 import numpy as np
 import pandas as pd
 import polars as pl
@@ -56,8 +57,8 @@ def make_hierarchical_dataset(task, frame_func=pd.DataFrame):
     return X_, y, groups
 
 
-def make_hierarchical_dummy():
-    df_train = pd.DataFrame(
+def make_hierarchical_dummy(frame_func):
+    df_train = frame_func(
         {
             "g_1": ["A"] * 500 + ["B"] * 500,
             "g_2": ["X"] * 250 + ["Y"] * 500 + ["Z"] * 250,
@@ -66,19 +67,14 @@ def make_hierarchical_dummy():
     )
     # -> will fit the following values: (g_1, g_2) in {(A,X), (A, Y), (B, Y), (B, Z)} and g_1 in {A, B}
 
-    df_pred = pd.DataFrame(
-        [
-            ["A", "X"],
-            ["A", "Y"],
-            ["A", "Z"],  # fallback to estimator for g_1 = A
-            ["B", "X"],  # fallback to estimator for g_1 = B
-            ["B", "Y"],
-            ["B", "Z"],
-            ["C", "X"],  # fallback to global estimator
-        ],
-        columns=["g_1", "g_2"],
-    )
-    return df_train, df_pred
+    df_pred = frame_func({"g_1": ["A"] * 3 + ["B"] * 3 + ["C"], "g_2": list("XYZ") * 2 + ["X"]})
+
+    # The following fallbacks are expected:
+    # ("A", "Z") -> to estimator for g_1 = A
+    # ("B", "X") -> to estimator for g_1 = B
+    # ("C", "X") -> to global estimator
+
+    return nw.from_native(df_train), nw.from_native(df_pred)
 
 
 @pytest.mark.parametrize(
@@ -201,15 +197,16 @@ def test_shrinkage(meta_cls, base_estimator, task, metric, shrinkage):
         (lambda x: np.array([1, 0, 1]), [0.25, 0.75, 0.5, 0.5, 0.75, 0.25, 0.5]),
     ],
 )
-def test_expected_output(meta_model, method, shrinkage, expected):
-    df_train, df_test = make_hierarchical_dummy()
+@pytest.mark.parametrize("frame_func", frame_funcs)
+def test_expected_output(meta_model, method, shrinkage, expected, frame_func):
+    df_train, df_test = make_hierarchical_dummy(frame_func)
 
-    X_train, y_train = df_train[["g_1", "g_2"]], df_train["target"]
-    X_test = df_test[["g_1", "g_2"]]
+    X_train, y_train = df_train.select("g_1", "g_2"), df_train.select("target")
+    X_test = df_test.select("g_1", "g_2")
 
-    meta_model.set_params(shrinkage=shrinkage).fit(X_train, y_train)
+    meta_model.set_params(shrinkage=shrinkage).fit(nw.to_native(X_train), nw.to_native(y_train).to_numpy().squeeze())
     select_pred = lambda x: x[:, 1] if x.ndim > 1 else x
 
-    y_pred = select_pred(getattr(meta_model, method)(X_test))
+    y_pred = select_pred(getattr(meta_model, method)(nw.to_native(X_test)))
 
     assert np.allclose(expected, y_pred)
