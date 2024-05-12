@@ -78,6 +78,7 @@ class TimeGapSplit:
     - pandas
     - Polars (eager)
     - Modin
+    - cuDF
 
     See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/){:target="_blank"} for an up-to-date list
     (and to learn how you can add your dataframe library to it!), though note that only those
