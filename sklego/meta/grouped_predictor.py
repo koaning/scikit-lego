@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import List, Union
 
 import narwhals as nw
@@ -122,10 +123,10 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         grouped_estimators = {
             # Fit a clone of the estimators to each group
-            group_name: self.__fit_single_group(
-                group_name,
+            (group_name[0] if len(group_name) == 1 else group_name): self.__fit_single_group(
+                group=(group_name[0] if len(group_name) == 1 else group_name),
                 X=nw.to_native(X_grp.drop(["__sklego_target__", *columns])),
-                y=(nw.to_native(X_grp.select("__sklego_target__")) if y is not None else None),
+                y=(nw.to_native(X_grp.select("__sklego_target__")).to_numpy().reshape(-1) if y is not None else None),
             )
             for group_name, X_grp in frame.group_by(columns)
         }
@@ -182,8 +183,9 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         if self.shrinkage is not None and not is_regressor(self.estimator):
             raise ValueError("Shrinkage is only available for regression models")
 
-        _group_cols = as_list(self.groups) if self.groups is not None else None
+        _group_cols = as_list(deepcopy(self.groups)) if self.groups is not None else None
         frame = parse_X_y(X, y, _group_cols, check_X=self.check_X, **self._check_kwargs)
+
         frame, _group_cols = self.__add_shrinkage_column(frame, _group_cols)
 
         self.shrinkage_function_ = self._set_shrinkage_function()
@@ -200,36 +202,37 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             self.fallback_ = clone(self.estimator).fit(X_, y_)
 
         if self.shrinkage is not None:
-            self.estimators_ = self.__fit_shrinkage_groups(
-                frame,
-                y,
-            )
+            self.estimators_ = self.__fit_shrinkage_groups(frame, y)
         else:
             self.estimators_ = self.__fit_grouped_estimator(frame, y, columns=_group_cols)
 
         self.groups_ = as_list(self.estimators_.keys())
 
         if self.shrinkage is not None:
-            _groups = [self._global_col_name] + as_list(self.groups) if self.use_global_model else as_list(self.groups)
+            _groups = (
+                [*as_list(deepcopy(self.groups)), self._global_col_name]
+                if self.use_global_model
+                else as_list(deepcopy(self.groups))
+            )
             self.shrinkage_factors_ = self._fit_shrinkage_factors(frame, groups=_groups, most_granular_only=True)
+
+            self.shrinkage_factors_ = {(k[0] if len(k) == 1 else k): v for k, v in self.shrinkage_factors_.items()}
 
         return self
 
-    def __predict_shrinkage_groups(self, frame, method="predict"):
+    def __predict_shrinkage_groups(self, frame, method="predict", groups=None):
         """Make predictions for all shrinkage groups"""
         # DataFrame with predictions for each hierarchy level, per row. Missing groups errors are thrown here.
         hierarchical_predictions = pd.concat(
             [
-                pd.Series(self.__predict_groups(frame, level_columns, method=method))
+                pd.Series(self.__predict_groups(frame, method=method, groups=level_columns))
                 for level_columns in self.group_colnames_hierarchical_
             ],
             axis=1,
         )
 
         # This is a Series with values the tuples of hierarchical grouping
-        prediction_groups = pd.Series(
-            [tuple(_) for _ in frame.select(self._groups).to_pandas().itertuples(index=False)]
-        )
+        prediction_groups = pd.Series([tuple(_) for _ in frame.select(groups).to_pandas().itertuples(index=False)])
 
         # This is a Series of arrays
         shrinkage_factors = prediction_groups.map(self.shrinkage_factors_)
@@ -257,24 +260,19 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         # if the method argument is "predict" and the predict_proba method if method argument is "predict_proba"
         return pd.DataFrame(getattr(group_predictor, method)(X), **extra_kwargs)
 
-    def __predict_groups(
-        self,
-        frame: nw.DataFrame,
-        method="predict",
-    ):
+    def __predict_groups(self, frame: nw.DataFrame, method="predict", groups=None):
         """Predict for all groups"""
         n_samples = frame.shape[0]
         frame = frame.with_columns(__sklego_index__=np.arange(n_samples))
-
         return (
             pd.concat(
                 [
                     self.__predict_single_group(
-                        group_name,
-                        nw.to_native(X_grp.drop(["__sklego_index__", *self.groups_])),
+                        (group_name[0] if len(group_name) == 1 else group_name),
+                        nw.to_native(X_grp.drop(["__sklego_index__", *groups])),
                         method=method,
-                    ).set_index(nw.to_native(X_grp.select("__sklego_index__")).to_numpy().squeeze().astype(int))
-                    for group_name, X_grp in frame.group_by(self.groups_)
+                    ).set_index(nw.to_native(X_grp.select("__sklego_index__")).to_numpy().reshape(-1).astype(int))
+                    for group_name, X_grp in frame.group_by(groups)
                 ],
                 axis=0,
             )
@@ -301,16 +299,16 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         """
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
-        _group_cols = as_list(self.groups) if self.groups is not None else None
-        frame = parse_X_y(X, y=None, groups=self.groups_, check_X=self.check_X, **self._check_kwargs).drop(
+        _group_cols = as_list(deepcopy(self.groups)) if self.groups is not None else None
+        frame = parse_X_y(X, y=None, groups=_group_cols, check_X=self.check_X, **self._check_kwargs).drop(
             "__sklego_target__"
         )
-        frame, _group_cols = self.__add_shrinkage_column(frame, self._groups)
+        frame, _group_cols = self.__add_shrinkage_column(frame, _group_cols)
 
         if self.shrinkage is None:
-            return self.__predict_groups(frame, method="predict")
+            return self.__predict_groups(frame, method="predict", groups=_group_cols)
         else:
-            return self.__predict_shrinkage_groups(frame, method="predict")
+            return self.__predict_shrinkage_groups(frame, method="predict", groups=_group_cols)
 
     # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
     @available_if(lambda self: hasattr(self.estimator, "predict_proba"))
@@ -332,16 +330,16 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         """
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
-        _group_cols = as_list(self.groups) if self.groups is not None else None
-        frame = parse_X_y(X, y=None, groups=self.groups_, check_X=self.check_X, **self._check_kwargs).drop(
+        _group_cols = as_list(deepcopy(self.groups)) if self.groups is not None else None
+        frame = parse_X_y(X, y=None, groups=_group_cols, check_X=self.check_X, **self._check_kwargs).drop(
             "__sklego_target__"
         )
-        frame, _group_cols = self.__add_shrinkage_column(frame, self._groups)
+        frame, _group_cols = self.__add_shrinkage_column(frame, _group_cols)
 
         if self.shrinkage is None:
-            return self.__predict_groups(frame, method="predict_proba")
+            return self.__predict_groups(frame, method="predict_proba", groups=_group_cols)
         else:
-            return self.__predict_shrinkage_groups(frame, method="predict_proba")
+            return self.__predict_shrinkage_groups(frame, method="predict_proba", groups=_group_cols)
 
     # This ensures that the meta-estimator only has the predict_proba method if the estimator has it
     @available_if(lambda self: hasattr(self.estimator, "decision_function"))
@@ -365,16 +363,16 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         """
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
-        _group_cols = as_list(self.groups) if self.groups is not None else None
-        frame = parse_X_y(X, y=None, groups=self.groups_, check_X=self.check_X, **self._check_kwargs).drop(
+        _group_cols = as_list(deepcopy(self.groups)) if self.groups is not None else None
+        frame = parse_X_y(X, y=None, groups=_group_cols, check_X=self.check_X, **self._check_kwargs).drop(
             "__sklego_target__"
         )
-        frame, _group_cols = self.__add_shrinkage_column(frame, self._groups)
+        frame, _group_cols = self.__add_shrinkage_column(frame, _group_cols)
 
         if self.shrinkage is None:
-            return self.__predict_groups(frame, method="decision_function")
+            return self.__predict_groups(frame, method="decision_function", groups=_group_cols)
         else:
-            return self.__predict_shrinkage_groups(frame, method="decision_function")
+            return self.__predict_shrinkage_groups(frame, method="decision_function", groups=_group_cols)
 
     @property
     def _estimator_type(self):
