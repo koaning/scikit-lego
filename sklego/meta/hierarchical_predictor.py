@@ -350,8 +350,10 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
     def _fit_single_estimator(self, grp_frame):
         """Shortcut to fit an estimator on a single group"""
+        # native_space = 
         _X = nw.to_native(grp_frame.drop([*self.groups_, self._TARGET_NAME]))
-        _y = nw.to_native(grp_frame.select(self._TARGET_NAME))
+        _y = nw.to_native(grp_frame[self._TARGET_NAME])
+
         return clone(self.estimator).fit(_X, _y)
 
     def _fit_estimators(self, frame: nw.DataFrame):

@@ -199,17 +199,16 @@ class ShrinkageMixin:
 
         hierarchical_counts = {
             grp_value: [
-                nw.to_native(
-                    counts.filter(*[nw.col(c) == s for c, s in zip(groups, subgroup)]).select(nw.sum("counts"))
-                ).to_numpy()[0][0]
+                    # As zip is "zip shortest" and filter works with comma separate conditions: 
+                    counts.filter(*[nw.col(c) == v for c, v in zip(groups, subgroup)]).select(nw.sum("counts")).to_numpy()[0][0]
                 for subgroup in expanding_list(grp_value, tuple)
             ]
             for grp_value in all_grp_values
         }
 
         shrinkage_factors = {
-            grp_value: self.shrinkage_function_(counts, **self.shrinkage_kwargs)
-            for grp_value, counts in hierarchical_counts.items()
+            grp_value: self.shrinkage_function_(counts_, **self.shrinkage_kwargs)
+            for grp_value, counts_ in hierarchical_counts.items()
         }
 
         # Normalize and pad

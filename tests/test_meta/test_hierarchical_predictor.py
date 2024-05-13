@@ -201,12 +201,11 @@ def test_shrinkage(meta_cls, base_estimator, task, metric, shrinkage):
 def test_expected_output(meta_model, method, shrinkage, expected, frame_func):
     df_train, df_test = make_hierarchical_dummy(frame_func)
 
-    X_train, y_train = df_train.select("g_1", "g_2"), df_train.select("target")
+    X_train, y_train = df_train.select("g_1", "g_2"), df_train["target"]
     X_test = df_test.select("g_1", "g_2")
+    meta_model.set_params(shrinkage=shrinkage).fit(nw.to_native(X_train), nw.to_native(y_train))
 
-    meta_model.set_params(shrinkage=shrinkage).fit(nw.to_native(X_train), nw.to_native(y_train).to_numpy().squeeze())
     select_pred = lambda x: x[:, 1] if x.ndim > 1 else x
-
     y_pred = select_pred(getattr(meta_model, method)(nw.to_native(X_test)))
 
     assert np.allclose(expected, y_pred)

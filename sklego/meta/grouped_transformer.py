@@ -72,7 +72,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
             group_name: self.__fit_single_group(
                 group_name,
                 X=nw.to_native(X_grp.drop(["__sklego_target__", *self.groups_])),
-                y=(nw.to_native(X_grp.select("__sklego_target__")) if y is not None else None),
+                y=(nw.to_native(X_grp["__sklego_target__"]) if y is not None else None),
             )
             for group_name, X_grp in frame.group_by(self.groups_)
         }
@@ -114,7 +114,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         if self.groups is None:
             X_, y_ = (
                 nw.to_native(frame.drop("__sklego_target__")),
-                nw.to_native(frame.select("__sklego_target__")) if y is not None else None,
+                nw.to_native(frame["__sklego_target__"]) if y is not None else None,
             )
             self.transformers_ = clone(self.transformer).fit(X_, y=y_)
             return self
@@ -124,7 +124,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         if self.use_global_model:
             X_, y_ = (
                 nw.to_native(frame.drop(["__sklego_target__", *self.groups_])),
-                nw.to_native(frame.select("__sklego_target__")) if y is not None else None,
+                nw.to_native(frame["__sklego_target__"]) if y is not None else None,
             )
             self.fallback_ = clone(self.transformer).fit(X_, y_)
 

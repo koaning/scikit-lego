@@ -197,7 +197,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         if self.shrinkage is None and self.use_global_model:
             X_ = nw.to_native(frame.drop([*_group_cols, "__sklego_target__"]))
-            y_ = nw.to_native(frame.select("__sklego_target__"))
+            y_ = nw.to_native(frame["__sklego_target__"])
 
             self.fallback_ = clone(self.estimator).fit(X_, y_)
 
@@ -271,7 +271,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
                         (group_name[0] if len(group_name) == 1 else group_name),
                         nw.to_native(X_grp.drop(["__sklego_index__", *groups])),
                         method=method,
-                    ).set_index(nw.to_native(X_grp.select("__sklego_index__")).to_numpy().reshape(-1).astype(int))
+                    ).set_index(nw.to_native(X_grp["__sklego_index__"]).to_numpy().reshape(-1).astype(int))
                     for group_name, X_grp in frame.group_by(groups)
                 ],
                 axis=0,
