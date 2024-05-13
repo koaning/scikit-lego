@@ -141,9 +141,14 @@ def sensitive_classification_dataset():
 
     return df[["x1", "x2"]], df["y"]
 
+@pytest.fixture(params=[pd.DataFrame])
+def funct(request):
+    return request.param
+
+
 @pytest.fixture
-def sensitive_classification_dataset_equalopportunity():
-    df = pd.DataFrame(
+def sensitive_classification_dataset_equalopportunity(funct):
+    df = funct(
         {
             "x1": [1, 0, 1, 0, 1, 0, 1, 1],
             "x2": [0, 0, 0, 0, 0, 1, 1, 1],
