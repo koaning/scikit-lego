@@ -141,7 +141,7 @@ def sensitive_classification_dataset():
 
     return df[["x1", "x2"]], df["y"]
 
-@pytest.fixture(params=[pd.DataFrame])
+@pytest.fixture(params=[pd.DataFrame, pl.DataFrame])
 def funct(request):
     return request.param
 
