@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+import polars as pl
 import pytest
 from sklearn.linear_model import LogisticRegression
 
@@ -116,6 +118,9 @@ def test_fairness(sensitive_classification_dataset_equalopportunity):
             penalty="none",
             train_sensitive_cols=False,
         ).fit(X, y)
+        if isinstance(X, pl.DataFrame):
+            X = pd.DataFrame(X.to_dict())
+            y = pd.Series(y.to_list())
         fairness = scorer(fair, X, y)
         assert fairness >= prev_fairness
         prev_fairness = fairness

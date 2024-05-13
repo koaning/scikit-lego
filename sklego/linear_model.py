@@ -11,7 +11,6 @@ from warnings import warn
 
 import narwhals as nw
 import numpy as np
-import pandas as pd
 from scipy.optimize import minimize
 from scipy.special._ufuncs import expit
 from sklearn.base import BaseEstimator, RegressorMixin
