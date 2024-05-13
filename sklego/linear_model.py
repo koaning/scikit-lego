@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 from inspect import signature
 from warnings import warn
 
+import narwhals as nw
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
@@ -492,7 +493,8 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             raise ValueError(f"penalty should be either 'l1' or 'none', got {self.penalty}")
 
         self.sensitive_col_idx_ = self.sensitive_cols
-        if isinstance(X, pd.DataFrame):
+        X = nw.from_native(X, eager_only=True, strict=False)
+        if isinstance(X, nw.DataFrame):
             self.sensitive_col_idx_ = [i for i, name in enumerate(X.columns) if name in self.sensitive_cols]
         X, y = check_X_y(X, y, accept_large_sparse=False)
 
