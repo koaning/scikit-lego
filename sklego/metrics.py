@@ -78,7 +78,7 @@ def p_percent_score(sensitive_column, positive_target=1):
         """Remember: X is the thing going *in* to your pipeline."""
         sensitive_col = X[:, sensitive_column] if isinstance(X, np.ndarray) else X[sensitive_column]
 
-        if not np.all((sensitive_col == 0) | (sensitive_col == 1)):
+        if not ((sensitive_col == 0) | (sensitive_col == 1)).all():
             raise ValueError(
                 f"p_percent_score only supports binary indicator columns for `column`. "
                 f"Found values {np.unique(sensitive_col)}"
