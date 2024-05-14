@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import narwhals as nw
 from narwhals.dependencies import get_pandas
 from sklearn.base import BaseEstimator, TransformerMixin
