@@ -8,20 +8,17 @@ from sklego.common import as_list
 
 def _nw_match_dtype(dtype, selection):
     if selection == "number":
-        return any(
-            dtype == x
-            for x in (
-                nw.Int64,
-                nw.Int32,
-                nw.Int16,
-                nw.Int8,
-                nw.UInt64,
-                nw.UInt32,
-                nw.UInt16,
-                nw.UInt8,
-                nw.Float64,
-                nw.Float32,
-            )
+        return dtype in (
+            nw.Int64,
+            nw.Int32,
+            nw.Int16,
+            nw.Int8,
+            nw.UInt64,
+            nw.UInt32,
+            nw.UInt16,
+            nw.UInt8,
+            nw.Float64,
+            nw.Float32,
         )
     if selection == "bool":
         return dtype == nw.Boolean
@@ -29,7 +26,7 @@ def _nw_match_dtype(dtype, selection):
         return dtype == nw.String
     if selection == "category":
         return dtype == nw.Categorical
-    msg = f"Expected {{'number', 'bool', 'string', 'category'}}, got: {selection}"
+    msg = f"Expected {{'number', 'bool', 'string', 'category'}}, got: {selection}, which is not (yet!) supported."
     raise ValueError(msg)
 
 
