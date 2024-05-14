@@ -2,6 +2,7 @@ import itertools as it
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 
 from sklego.preprocessing import PandasTypeSelector
@@ -9,16 +10,18 @@ from tests.conftest import id_func
 
 
 @pytest.mark.parametrize("transformer", [PandasTypeSelector(include=["number"])], ids=id_func)
-def test_len_regression(transformer, random_xy_dataset_regr):
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_len_regression(transformer, random_xy_dataset_regr, frame_func):
     X, y = random_xy_dataset_regr
-    X = pd.DataFrame(X)
+    X = frame_func(X)
     assert transformer.fit(X, y).transform(X).shape[0] == X.shape[0]
 
 
 @pytest.mark.parametrize("transformer", [PandasTypeSelector(include=["number"])], ids=id_func)
-def test_len_classification(transformer, random_xy_dataset_clf):
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_len_classification(transformer, random_xy_dataset_clf, frame_func):
     X, y = random_xy_dataset_clf
-    X = pd.DataFrame(X)
+    X = frame_func(X)
     assert transformer.fit(X, y).transform(X).shape[0] == X.shape[0]
 
 
@@ -42,21 +45,26 @@ def test_get_params_np(include, exclude):
     assert transformer.get_params() == {"include": include, "exclude": exclude}
 
 
-def test_value_error_differrent_dtyes():
-    fit_df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-    transform_df = pd.DataFrame({"a": [4, 5, 6], "b": ["4", "5", "6"]})
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_value_error_differrent_dtyes(frame_func):
+    fit_df = frame_func({"a": [1, 2, 3], "b": [4, 5, 6]})
+    transform_df = frame_func({"a": [4, 5, 6], "b": ["4", "5", "6"]})
     transformer = PandasTypeSelector(exclude=["category"]).fit(fit_df)
 
     with pytest.raises(ValueError):
         transformer.transform(transform_df)
 
 
-def test_get_feature_names():
-    df = pd.DataFrame({"a": [4, 5, 6], "b": ["4", "5", "6"]})
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_get_feature_names(frame_func):
+    df = frame_func({"a": [4, 5, 6], "b": ["4", "5", "6"]})
     transformer_number = PandasTypeSelector(include="number").fit(df)
     assert transformer_number.get_feature_names() == ["a"]
 
-    transformer_number = PandasTypeSelector(include="object").fit(df)
+    if frame_func is pd.DataFrame:
+        transformer_number = PandasTypeSelector(include="object").fit(df)
+    else:
+        transformer_number = PandasTypeSelector(include="string").fit(df)
     assert transformer_number.get_feature_names() == ["b"]
 
 
