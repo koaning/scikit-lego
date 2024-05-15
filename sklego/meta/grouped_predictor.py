@@ -125,7 +125,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             # Fit a clone of the estimators to each group
             (group_name[0] if len(group_name) == 1 else group_name): self.__fit_single_group(
                 group=(group_name[0] if len(group_name) == 1 else group_name),
-                X=nw.to_native(X_grp.drop(["__sklego_target__", *columns])),
+                X=nw.to_native(X_grp.drop(["__sklego_target__", *columns, *as_list(self.groups)])),
                 y=(nw.to_native(X_grp.select("__sklego_target__")).to_numpy().reshape(-1) if y is not None else None),
             )
             for group_name, X_grp in frame.group_by(columns)
@@ -214,8 +214,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
                 if self.use_global_model
                 else as_list(deepcopy(self.groups))
             )
-            self.shrinkage_factors_ = self._fit_shrinkage_factors(frame, groups=_groups, most_granular_only=True)
 
+            self.shrinkage_factors_ = self._fit_shrinkage_factors(frame, groups=_groups, most_granular_only=True)
             self.shrinkage_factors_ = {(k[0] if len(k) == 1 else k): v for k, v in self.shrinkage_factors_.items()}
 
         return self
@@ -223,6 +223,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     def __predict_shrinkage_groups(self, frame, method="predict", groups=None):
         """Make predictions for all shrinkage groups"""
         # DataFrame with predictions for each hierarchy level, per row. Missing groups errors are thrown here.
+        print(f"{self.group_colnames_hierarchical_=}")
         hierarchical_predictions = pd.concat(
             [
                 pd.Series(self.__predict_groups(frame, method=method, groups=level_columns))
@@ -239,6 +240,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         # Convert the Series of arrays it to a DataFrame
         shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
+
+        print(hierarchical_predictions)
         return (hierarchical_predictions * shrinkage_factors).sum(axis=1)
 
     def __predict_single_group(self, group, X, method="predict"):
@@ -262,17 +265,19 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
     def __predict_groups(self, frame: nw.DataFrame, method="predict", groups=None):
         """Predict for all groups"""
+
+        print(f"Predicting for {groups=}")
         n_samples = frame.shape[0]
         frame = frame.with_columns(__sklego_index__=np.arange(n_samples))
         return (
             pd.concat(
                 [
                     self.__predict_single_group(
-                        (group_name[0] if len(group_name) == 1 else group_name),
-                        nw.to_native(X_grp.drop(["__sklego_index__", *groups])),
+                        (group_value[0] if len(group_value) == 1 else group_value),
+                        nw.to_native(X_grp.drop(["__sklego_index__", *groups, *as_list(self.groups)])),
                         method=method,
                     ).set_index(nw.to_native(X_grp["__sklego_index__"]).to_numpy().reshape(-1).astype(int))
-                    for group_name, X_grp in frame.group_by(groups)
+                    for group_value, X_grp in frame.group_by(groups)
                 ],
                 axis=0,
             )
