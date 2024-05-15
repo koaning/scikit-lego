@@ -24,6 +24,16 @@ def _create_dataset(coefs, intercept, noise=0.0):
     return X, y
 
 
+@parametrize_with_checks(
+    [
+        ImbalancedLinearRegression(**dict(zip(["positive", "fit_intercept", "method"], args)))
+        for args in product([True, False], [True, False], ["SLSQP", "TNC", "L-BFGS-B"])
+    ]
+)
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
+
+
 @pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
 def test_coefs_and_intercept__no_noise(coefs, intercept, method):
@@ -102,13 +112,3 @@ def test_fit_intercept_and_copy(coefs, intercept):
 def test_imbalanced(test_fn):
     regr = ImbalancedLinearRegression()
     test_fn(ImbalancedLinearRegression.__name__, regr)
-
-
-@parametrize_with_checks(
-    [
-        ImbalancedLinearRegression(**dict(zip(["positive", "fit_intercept", "method"], args)))
-        for args in product([True, False], [True, False], ["SLSQP", "TNC", "L-BFGS-B"])
-    ]
-)
-def test_sklearn_compatible_estimator(estimator, check):
-    check(estimator)

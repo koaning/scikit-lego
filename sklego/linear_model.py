@@ -1069,6 +1069,11 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
         This implementation uses
         [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html).
 
+    !!! warning
+        If while fitting the model, `sample_weight` contains (some) zero values, the solvers may not converge properly.
+        We would expect that a sample weight of zero is equivalent to removing the sample, however unittests tell us
+        that this is not the case for `method='L-BFGS-B'`
+
     Parameters
     ----------
     alpha : float, default=0.0
@@ -1198,6 +1203,11 @@ class LADRegression(QuantileRegression):
     !!! info
         This implementation uses
         [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html).
+
+    !!! warning
+        If while fitting the model, `sample_weight` contains (some) zero values, the solvers may not converge properly.
+        We would expect that a sample weight of zero is equivalent to removing the sample, however unittests tell us
+        that this is not the case for `method='L-BFGS-B'`
 
     Parameters
     ----------

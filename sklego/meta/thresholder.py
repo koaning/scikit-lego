@@ -101,7 +101,7 @@ class Thresholder(BaseEstimator, ClassifierMixin):
 
         self._handle_refit(X, y, sample_weight)
 
-        self.n_features_in_ = self.estimator_.n_features_in_
+        self.n_features_in_ = X.shape[1]
         self.classes_ = self.estimator_.classes_
         if len(self.classes_) != 2:
             raise ValueError("The `Thresholder` meta model only works on models with two classes.")
