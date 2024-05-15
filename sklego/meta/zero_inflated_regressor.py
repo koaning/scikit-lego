@@ -111,7 +111,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
                 logging.warning("Classifier ignores sample_weight.")
                 self.classifier_.fit(X, y != 0)
 
-        non_zero_indices = np.where(self.classifier_.predict(X) == 1)[0]
+        non_zero_indices = np.where(y != 0)[0]
 
         if non_zero_indices.size > 0:
             try:

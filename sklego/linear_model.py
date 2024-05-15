@@ -4,8 +4,9 @@ except ImportError:
     from sklego.notinstalled import NotInstalledPackage
 
     cp = NotInstalledPackage("cvxpy")
-
+import logging
 from abc import ABC, abstractmethod
+from inspect import signature
 from warnings import warn
 
 import numpy as np
@@ -534,12 +535,20 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         constraints = self.constraints(y_hat, y, sensitive, n_obs)
 
         problem = cp.Problem(cp.Maximize(log_likelihood), constraints)
-        problem.solve(max_iters=self.max_iter)
+
+        if "max_iters" in signature(problem.solve).parameters:
+            kwargs = {"max_iters": self.max_iter}
+        else:
+            if self.max_iter:
+                logging.warning("solver does not support `max_iters` and it `self.max_iter` will be ignored")
+            kwargs = {}
+
+        problem.solve(**kwargs)
 
         if problem.status in ["infeasible", "unbounded"]:
             raise ValueError(f"problem was found to be {problem.status}")
 
-        self.n_iter_ = problem.solver_stats.num_iters
+        self.n_iter_ = getattr(problem.solver_stats, "num_iters", 0)
 
         if self.fit_intercept:
             self.coef_ = theta.value[np.newaxis, 1:]
