@@ -82,7 +82,7 @@ def test_value_error_inequal(random_xy_dataset_regr):
     X, y = random_xy_dataset_regr
     X = pd.DataFrame(X)
     if X.shape[0] > 0:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Column dtypes were not equal during fit and transform"):
             transformer.fit(X)
             # Remove column to create error
             transformer.transform(X.iloc[:, :-1])

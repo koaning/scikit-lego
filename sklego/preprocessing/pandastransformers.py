@@ -354,7 +354,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
                         f"{X.dtypes}"
                     )
             except ValueError as e:
-                raise ValueError("Columns were not equal during fit and transform") from e
+                raise ValueError("Column dtypes were not equal during fit and transform") from e
             transformed_df = X.select_dtypes(include=self.include, exclude=self.exclude)
         else:
             X = nw.from_native(X)
