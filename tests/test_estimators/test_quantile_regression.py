@@ -33,9 +33,9 @@ def _create_dataset(coefs, intercept, noise=0.0):
 )
 def test_sklearn_compatible_estimator(estimator, check):
     if (
-        check.func.__name__ == "check_sample_weights_invariance"
-        # and signature(check.func.__dict__["__wrapped__"]).parameters["kind"] == "kind='zeros'"
-        and estimator.method != "SLSQP"
+        estimator.method != "SLSQP"
+        and check.func.__name__ == "check_sample_weights_invariance"
+        and getattr(check, "keywords", {}).get("kind") == "zeros"
     ):
         pytest.skip()
     check(estimator)

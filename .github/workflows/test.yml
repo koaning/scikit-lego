@@ -27,6 +27,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: python -m pip install -e ".[test-all]"
+      run: |
+        python -m pip install -e ".[test-all]"
+        python -m pip freeze
     - name: Test with pytest
       run: make test
