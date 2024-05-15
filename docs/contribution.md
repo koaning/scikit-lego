@@ -27,7 +27,7 @@ from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
 
-class PandasTypeSelector(BaseEstimator, TransformerMixin):
+class TypeSelector(BaseEstimator, TransformerMixin):
     TYPES = {'number', 'category', 'float', 'int', 'object', 'datetime', 'timedelta'}
     """
     Select columns in a pandas dataframe based on their dtype
@@ -174,7 +174,7 @@ When a new feature is introduced, it should be documented, and typically there a
 - [x] A user guide in the `docs/user-guide/` folder.
 - [x] A python script in the `docs/_scripts/` folder to generate plots and code snippets (see [next section](#working-with-pymdown-snippets-extension))
 - [x] Relevant static files, such as images, plots, tables and html's, should be saved in the `docs/_static/` folder.
-- [x] Edit the `mkdocs.yaml` file to include the new pages in the navigation. 
+- [x] Edit the `mkdocs.yaml` file to include the new pages in the navigation.
 
 ### Working with pymdown snippets extension
 

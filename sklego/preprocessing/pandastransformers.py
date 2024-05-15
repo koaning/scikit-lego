@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import warnings
+
 import narwhals as nw
 from narwhals.dependencies import get_pandas
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -219,19 +221,21 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
             raise KeyError(f"{list(non_existent_columns)} column(s) not in DataFrame")
 
 
-class PandasTypeSelector(BaseEstimator, TransformerMixin):
-    """The `PandasTypeSelector` transformer allows to select columns in a DataFrame based on their type.
+class TypeSelector(BaseEstimator, TransformerMixin):
+    """The `TypeSelector` transformer allows to select columns in a DataFrame based on their type.
     Can be useful in a sklearn Pipeline.
 
     - For pandas, it uses
       [pandas.DataFrame.select_dtypes](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.select_dtypes.html)
       method.
-    - For non-pandas dataframes (e.g. Polars), the following  inputs are allowed:
+    - For non-pandas dataframes (e.g. Polars), the following inputs are allowed:
 
       - 'number'
       - 'string'
       - 'bool'
       - 'category'
+
+    !!! info "New in version 0.9.0"
 
     Parameters
     ----------
@@ -255,7 +259,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     --------
     ```py
     import pandas as pd
-    from sklego.preprocessing import PandasTypeSelector
+    from sklego.preprocessing import TypeSelector
 
     df = pd.DataFrame({
         "name": ["Swen", "Victor", "Alex"],
@@ -264,14 +268,14 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
     })
 
     #Excluding single column
-    PandasTypeSelector(exclude="int64").fit_transform(df)
+    TypeSelector(exclude="int64").fit_transform(df)
     #	name	length
     #0	Swen	1.82
     #1	Victor	1.85
     #2	Alex	1.80
 
     #Including multiple columns
-    PandasTypeSelector(include=["int64", "object"]).fit_transform(df)
+    TypeSelector(include=["int64", "object"]).fit_transform(df)
     #	name	shoesize
     #0	Swen	42
     #1	Victor	44
@@ -295,7 +299,7 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        self : PandasTypeSelector
+        self : TypeSelector
             The fitted transformer.
 
         Raises
@@ -368,6 +372,21 @@ class PandasTypeSelector(BaseEstimator, TransformerMixin):
             transformed_df = _nw_select_dtypes(X, include=self.include, exclude=self.exclude)
 
         return transformed_df
+
+
+class PandasTypeSelector(TypeSelector):
+    """
+    !!! warning "Deprecated since version 0.9.0, please use TypeSelector instead"
+    """
+
+    def __init__(self, include=None, exclude=None):
+        warnings.warn(
+            "PandasTypeSelector is deprecated and will be removed in a future version. "
+            "Please use `from sklego.preprocessing import TypeSelector` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(include=include, exclude=exclude)
 
 
 class ColumnSelector(BaseEstimator, TransformerMixin):
