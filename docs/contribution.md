@@ -27,7 +27,7 @@ from sklearn.base import BaseEstimator, TransformerMixin, MetaEstimatorMixin
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.validation import FLOAT_DTYPES, check_random_state, check_is_fitted
 
-class TypeSelector(BaseEstimator, TransformerMixin):
+class PandasTypeSelector(BaseEstimator, TransformerMixin):
     TYPES = {'number', 'category', 'float', 'int', 'object', 'datetime', 'timedelta'}
     """
     Select columns in a pandas dataframe based on their dtype
