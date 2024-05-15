@@ -33,25 +33,23 @@ def _nw_match_dtype(dtype, selection):
 
 
 def _nw_select_dtypes(df, include: str | list[str], exclude: str | list[str]):
-    feature_names = []
+    if not include and not exclude:
+        raise ValueError("Must provide at least one of `include` or `exclude`")
+
     if isinstance(include, str):
         include = [include]
     if isinstance(exclude, str):
         exclude = [exclude]
-    for name, dtype in df.schema.items():
-        if include and exclude:
-            if any(_nw_match_dtype(dtype, _include) for _include in include) and not any(
-                _nw_match_dtype(dtype, _exclude) for _exclude in exclude
-            ):
-                feature_names.append(name)
-        elif include:
-            if any(_nw_match_dtype(dtype, _include) for _include in include):
-                feature_names.append(name)
-        elif exclude:
-            if not any(_nw_match_dtype(dtype, _exclude) for _exclude in exclude):
-                feature_names.append(name)
-        else:
-            raise ValueError("Must provide at least one of `include` or `exclude`")
+
+    include = include or ["string", "number", "bool", "category"]
+    exclude = exclude or []
+
+    feature_names = [
+        name
+        for name, dtype in df.schema.items()
+        if any(_nw_match_dtype(dtype, _include) for _include in include)
+        and not any(_nw_match_dtype(dtype, _exclude) for _exclude in exclude)
+    ]
     return df.select(feature_names)
 
 
