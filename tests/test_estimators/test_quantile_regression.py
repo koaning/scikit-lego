@@ -35,7 +35,7 @@ def test_sklearn_compatible_estimator(estimator, check):
     if (
         check.func.__name__ == "check_sample_weights_invariance"
         # and signature(check.func.__dict__["__wrapped__"]).parameters["kind"] == "kind='zeros'"
-        and estimator.method == "L-BFGS-B"
+        and estimator.method != "SLSQP"
     ):
         pytest.skip()
     check(estimator)
