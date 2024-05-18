@@ -230,12 +230,27 @@ class TypeSelector(BaseEstimator, TransformerMixin):
       method.
     - For non-pandas dataframes (e.g. Polars), the following inputs are allowed:
 
-      - 'number'
-      - 'string'
-      - 'bool'
-      - 'category'
+        - 'number'
+        - 'string'
+        - 'bool'
+        - 'category'
 
     !!! info "New in version 0.9.0"
+
+    Notes
+    -----
+    Native cross-dataframe support is achieved using
+    [Narwhals](https://narwhals-dev.github.io/narwhals/){:target="_blank"}.
+
+    Supported dataframes are:
+
+    - pandas
+    - Polars (eager or lazy)
+    - Modin
+    - cuDF
+
+    See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/){:target="_blank"} for an up-to-date list
+    (and to learn how you can add your dataframe library to it!).
 
     Parameters
     ----------
