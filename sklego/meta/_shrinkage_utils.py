@@ -2,7 +2,7 @@ import narwhals as nw
 import numpy as np
 from sklearn.utils.validation import check_is_fitted
 
-from sklego.common import expanding_list, as_list
+from sklego.common import as_list, expanding_list
 
 
 def constant_shrinkage(group_sizes, alpha: float) -> np.ndarray:

@@ -149,14 +149,13 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             n_samples = frame.shape[0]
             native_space = nw.get_native_namespace(frame)
 
-            frame = frame.with_columns(
-                **{
-                    self._global_col_name: nw.from_native(
-                        native_space.Series([self._global_col_value] * n_samples), allow_series=True
-                    )
-                }
+            frame = frame.select(
+                nw.from_native(native_space.Series([self._global_col_value] * n_samples), allow_series=True).alias(
+                    self._global_col_name
+                ),
+                nw.all(),
             )
-            groups = [self._global_col_name] if groups is None else [*groups, self._global_col_name]
+            groups = [self._global_col_name] if groups is None else [self._global_col_name, *groups]
 
         return frame, groups
 
@@ -184,15 +183,22 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             raise ValueError("Shrinkage is only available for regression models")
 
         _group_cols = as_list(deepcopy(self.groups)) if self.groups is not None else None
-        frame = parse_X_y(X, y, _group_cols, check_X=self.check_X, **self._check_kwargs)
 
+        if (
+            self.shrinkage is not None
+            and _group_cols is not None
+            and len(_group_cols) == 1
+            and not self.use_global_model
+        ):
+            raise ValueError("Shrinkage is not null, but found a total of 1 groups")
+
+        frame = parse_X_y(X, y, _group_cols, check_X=self.check_X, **self._check_kwargs)
         frame, _group_cols = self.__add_shrinkage_column(frame, _group_cols)
 
         self.shrinkage_function_ = self._set_shrinkage_function()
 
         # List of all hierarchical subsets of columns
         self.group_colnames_hierarchical_ = expanding_list(_group_cols, list)
-
         self.fallback_ = None
 
         if self.shrinkage is None and self.use_global_model:
@@ -210,7 +216,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         if self.shrinkage is not None:
             _groups = (
-                [*as_list(deepcopy(self.groups)), self._global_col_name]
+                [self._global_col_name, *as_list(deepcopy(self.groups))]
                 if self.use_global_model
                 else as_list(deepcopy(self.groups))
             )
@@ -223,7 +229,6 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     def __predict_shrinkage_groups(self, frame, method="predict", groups=None):
         """Make predictions for all shrinkage groups"""
         # DataFrame with predictions for each hierarchy level, per row. Missing groups errors are thrown here.
-        print(f"{self.group_colnames_hierarchical_=}")
         hierarchical_predictions = pd.concat(
             [
                 pd.Series(self.__predict_groups(frame, method=method, groups=level_columns))
@@ -241,7 +246,6 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         # Convert the Series of arrays it to a DataFrame
         shrinkage_factors = pd.DataFrame.from_dict(shrinkage_factors.to_dict()).T
 
-        print(hierarchical_predictions)
         return (hierarchical_predictions * shrinkage_factors).sum(axis=1)
 
     def __predict_single_group(self, group, X, method="predict"):
@@ -266,7 +270,6 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     def __predict_groups(self, frame: nw.DataFrame, method="predict", groups=None):
         """Predict for all groups"""
 
-        print(f"Predicting for {groups=}")
         n_samples = frame.shape[0]
         frame = frame.with_columns(__sklego_index__=np.arange(n_samples))
         return (
