@@ -192,6 +192,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         ):
             raise ValueError("Shrinkage is not null, but found a total of 1 groups")
 
+        X = nw.from_native(X, strict=False, eager_only=True)
+
         frame = parse_X_y(X, y, _group_cols, check_X=self.check_X, **self._check_kwargs)
         frame, _group_cols = self.__add_shrinkage_column(frame, _group_cols)
 
@@ -308,6 +310,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         _group_cols = as_list(deepcopy(self.groups)) if self.groups is not None else None
+        X = nw.from_native(X, strict=False, eager_only=True)
         frame = parse_X_y(X, y=None, groups=_group_cols, check_X=self.check_X, **self._check_kwargs).drop(
             "__sklego_target__"
         )
@@ -339,6 +342,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         _group_cols = as_list(deepcopy(self.groups)) if self.groups is not None else None
+        X = nw.from_native(X, strict=False, eager_only=True)
         frame = parse_X_y(X, y=None, groups=_group_cols, check_X=self.check_X, **self._check_kwargs).drop(
             "__sklego_target__"
         )
@@ -372,6 +376,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         _group_cols = as_list(deepcopy(self.groups)) if self.groups is not None else None
+        X = nw.from_native(X, strict=False, eager_only=True)
+
         frame = parse_X_y(X, y=None, groups=_group_cols, check_X=self.check_X, **self._check_kwargs).drop(
             "__sklego_target__"
         )

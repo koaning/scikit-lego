@@ -109,6 +109,13 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         self.fallback_ = None
         self.groups_ = as_list(self.groups) if self.groups is not None else None
 
+        X = nw.from_native(X, strict=False, eager_only=True)
+        if not isinstance(X, nw.DataFrame) and self.groups_ is not None:
+            # Accounts for negative indices if X is an array
+            self.groups_ = [
+                X.shape[1] + group if isinstance(group, int) and group < 0 else group for group in self.groups_
+            ]
+
         frame = parse_X_y(X, y, self.groups_, check_X=self.check_X, **self._check_kwargs)
 
         if self.groups is None:
@@ -181,6 +188,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, ["fallback_", "transformers_"])
 
+        X = nw.from_native(X, strict=False, eager_only=True)
         frame = parse_X_y(X, y=None, groups=self.groups_, check_X=self.check_X, **self._check_kwargs).drop(
             "__sklego_target__"
         )
