@@ -1,16 +1,17 @@
 import numpy as np
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn import clone
+from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.calibration import _SigmoidCalibration
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from sklego.base import OutlierModel
 
 
-class OutlierClassifier(BaseEstimator, ClassifierMixin):
+class OutlierClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     """Morphs an outlier detection model into a classifier.
 
-    When an outlier is detected it will output 1 and 0 otherwise. This way you can use familiar metrics again and
-    this allows you to consider outlier models as a fraud detector.
+    When an outlier is detected it will output 1 and 0 otherwise. This way you can use familiar metrics again and this
+    allows you to consider outlier models as a fraud detector.
 
     Parameters
     ----------
@@ -49,6 +50,8 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
     ```
     """
 
+    _required_parameters = ["model"]
+
     def __init__(self, model):
         self.model = model
 
@@ -77,7 +80,6 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
             - If the underlying model is not an outlier detection model.
             - If the underlying model does not have a `decision_function` method.
         """
-        X, y = check_X_y(X, y, estimator=self)
         if not self._is_outlier_model():
             raise ValueError("Passed model does not detect outliers!")
         if not hasattr(self.model, "decision_function"):
@@ -85,7 +87,9 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
                 f"Passed model {self.model} does not have a `decision_function` "
                 f"method. This is required for `predict_proba` estimation."
             )
-        self.estimator_ = self.model.fit(X, y)
+        X, y = check_X_y(X, y)
+        self.estimator_ = clone(self.model).fit(X, y)
+        self.n_features_in_ = self.estimator_.n_features_in_
         self.classes_ = np.array([0, 1])
 
         # fit sigmoid function for `predict_proba`
@@ -109,8 +113,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, ["estimator_", "classes_"])
         preds = self.estimator_.predict(X)
-        result = np.zeros(preds.shape)
-        result[preds == -1] = 1
+        result = (preds == -1).astype(int)
         return result
 
     def predict_proba(self, X):

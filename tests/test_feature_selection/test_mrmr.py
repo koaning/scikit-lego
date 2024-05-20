@@ -5,16 +5,14 @@ import pytest
 from sklearn.datasets import make_classification, make_regression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.feature_selection.mrmr import MaximumRelevanceMinimumRedundancy, _redundancy_pearson
-from tests.conftest import general_checks, transformer_checks
 
 
-@pytest.mark.parametrize("test_fn", flatten([general_checks, transformer_checks]))
-def test_transformer_checks(test_fn):
-    mrmr = MaximumRelevanceMinimumRedundancy(k=1)
-    test_fn(MaximumRelevanceMinimumRedundancy.__name__, mrmr)
+@parametrize_with_checks([MaximumRelevanceMinimumRedundancy(k=1)])
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 def test_redundancy_pearson():

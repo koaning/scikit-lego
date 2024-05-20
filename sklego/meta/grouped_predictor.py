@@ -85,6 +85,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         "min_n_obs": min_n_obs_shrinkage,
         "equal": equal_shrinkage,
     }
+    _required_parameters = ["estimator", "groups"]
 
     def __init__(
         self,
@@ -188,7 +189,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             raise ValueError("Shrinkage is only available for regression models")
 
         X_group, X_value = _split_groups_and_values(
-            X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
+            X, as_list(self.groups), min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
 
         X_group = self.__add_shrinkage_column(X_group)
@@ -196,6 +197,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         if y is not None:
             y = check_array(y, ensure_2d=False)
 
+        self.n_features_in_ = X_group.shape[1] + X_value.shape[1]
+        self.n_fitted_levels_ = 1 + self.use_global_model
         self.shrinkage_function_ = self._set_shrinkage_function()
 
         # List of all hierarchical subsets of columns
@@ -311,7 +314,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         X_group, X_value = _split_groups_and_values(
-            X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
+            X, as_list(self.groups), min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
 
         X_group = self.__add_shrinkage_column(X_group)
@@ -342,7 +345,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         X_group, X_value = _split_groups_and_values(
-            X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
+            X, as_list(self.groups), min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
 
         X_group = self.__add_shrinkage_column(X_group)
@@ -375,7 +378,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
         X_group, X_value = _split_groups_and_values(
-            X, self.groups, min_value_cols=0, check_X=self.check_X, **self._check_kwargs
+            X, as_list(self.groups), min_value_cols=0, check_X=self.check_X, **self._check_kwargs
         )
 
         X_group = self.__add_shrinkage_column(X_group)

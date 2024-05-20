@@ -97,6 +97,10 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
                 verbose_interval=self.verbose_interval,
             )
             self.gmms_[c] = mixture.fit(subset_x, subset_y)
+
+        self.n_features_in_ = X.shape[1]
+        self.n_iter_ = sum(mixture.n_iter_ for mixture in self.gmms_.values())
+
         return self
 
     def predict(self, X):

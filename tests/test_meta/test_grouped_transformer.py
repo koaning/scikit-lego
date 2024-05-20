@@ -8,28 +8,22 @@ from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler, TargetEncoder
 from sklearn.utils import check_X_y
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.datasets import load_heroes, load_penguins
 from sklego.meta import GroupedTransformer
-from tests.conftest import general_checks, k_vals, n_vals, np_types, select_tests, transformer_checks
+from tests.conftest import k_vals, n_vals, np_types
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([transformer_checks, general_checks]),
-        exclude=[
-            # Nonsense checks because we always need at least two columns (group and value)
-            "check_fit2d_1feature",
-            "check_fit2d_predict1d",
-            "check_transformer_data_not_an_array",
-        ],
-    ),
-)
-def test_estimator_checks(test_fn):
-    trf = GroupedTransformer(StandardScaler(), groups=0)
-    test_fn(GroupedTransformer.__name__, trf)
+@parametrize_with_checks([GroupedTransformer(StandardScaler(), groups=0, check_X=True)])
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        "check_transformer_data_not_an_array",  # TODO: Look into this
+        "check_fit2d_1feature",  # custom message
+    }:
+        pytest.skip()
+
+    check(estimator)
 
 
 @pytest.fixture(scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)])

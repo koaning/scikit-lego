@@ -1,21 +1,12 @@
 import numpy as np
-import pytest
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.linear_model import LowessRegression
-from tests.conftest import general_checks, nonmeta_checks, regressor_checks, select_tests
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, nonmeta_checks, regressor_checks]),
-        exclude=["check_sample_weights_invariance", "check_sample_weights_list", "check_sample_weights_pandas_series"],
-    ),
-)
-def test_estimator_checks(test_fn):
-    lowess = LowessRegression()
-    test_fn(LowessRegression.__name__, lowess)
+@parametrize_with_checks([LowessRegression()])
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 def test_obvious_usecase():

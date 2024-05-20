@@ -242,3 +242,6 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             DeprecationWarning,
         )
         return self.n_features_in_
+
+    def _more_tags(self):
+        return {"allow_nan": True}

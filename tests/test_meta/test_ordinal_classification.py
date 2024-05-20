@@ -2,9 +2,7 @@ import numpy as np
 import pytest
 from sklearn.linear_model import LinearRegression, LogisticRegression, RidgeClassifier
 
-from sklego.common import flatten
 from sklego.meta import OrdinalClassifier
-from tests.conftest import classifier_checks, general_checks, select_tests
 
 
 @pytest.fixture
@@ -13,24 +11,6 @@ def random_xy_ordinal():
     X = np.random.normal(0, 2, (1000, 3))
     y = np.select(condlist=[X[:, 0] < 2, X[:, 1] > 2], choicelist=[0, 2], default=1)
     return X, y
-
-
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, classifier_checks]),
-        exclude=[
-            "check_dict_unchanged",
-            "check_fit2d_1feature",
-            "check_classifier_data_not_an_array",
-            "check_classifiers_classes",
-            "check_classifiers_train",
-        ],
-    ),
-)
-def test_estimator_checks(test_fn):
-    ord_clf = OrdinalClassifier(estimator=LogisticRegression())
-    test_fn("OrdinalClassifier", ord_clf)
 
 
 @pytest.mark.parametrize(

@@ -3,32 +3,19 @@ import pytest
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import HistGradientBoostingClassifier, StackingClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.meta import Thresholder
-from tests.conftest import classifier_checks, general_checks, select_tests
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, classifier_checks]),
-        exclude=[
-            "check_sample_weights_invariance",
-            "check_fit2d_predict1d",
-            "check_methods_subset_invariance",
-            "check_dont_overwrite_parameters",
-            "check_classifiers_classes",
-            "check_classifiers_train",
-            "check_supervised_y_2d",
-            "check_classifier_data_not_an_array",  # https://github.com/koaning/scikit-lego/issues/490
-        ],
-        # outliers train wont work because we have two thresholds
-    ),
-)
-def test_standard_checks(test_fn):
-    trf = Thresholder(LogisticRegression(), threshold=0.5)
-    test_fn(Thresholder.__name__, trf)
+@parametrize_with_checks([Thresholder(LogisticRegression(), threshold=0.5, check_input=True)])
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        "check_fit2d_1feature",  # custom message
+    }:
+        pytest.skip()
+
+    check(estimator)
 
 
 def test_same_threshold():

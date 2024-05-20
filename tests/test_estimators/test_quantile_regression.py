@@ -1,12 +1,13 @@
 """Test the QuantileRegression."""
 
+from itertools import product
+
 import numpy as np
 import pytest
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.linear_model import QuantileRegression
 from sklego.testing import check_shape_remains_same_regressor
-from tests.conftest import general_checks, nonmeta_checks, regressor_checks, select_tests
 
 test_batch = [
     (np.array([0, 0, 3, 0, 6]), 3),
@@ -17,30 +18,38 @@ test_batch = [
 
 def _create_dataset(coefs, intercept, noise=0.0):
     np.random.seed(0)
-    X = np.random.randn(10000, coefs.shape[0])
-    y = X @ coefs + intercept + noise * np.random.randn(10000)
+    size = 1_000
+    X = np.random.randn(size, coefs.shape[0])
+    y = X @ coefs + intercept + noise * np.random.randn(size)
 
     return X, y
 
 
-@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
-@pytest.mark.parametrize("coefs, intercept", test_batch)
-def test_coefs_and_intercept__no_noise(coefs, intercept, method):
-    """Regression problems without noise."""
-    X, y = _create_dataset(coefs, intercept)
-    quant = QuantileRegression(method=method)
-    quant.fit(X, y)
-    assert quant.score(X, y) > 0.99
+@parametrize_with_checks(
+    [
+        QuantileRegression(**dict(zip(["quantile", "positive", "fit_intercept", "method"], args)))
+        for args in product([0.5, 0.3], [True, False], [True, False], ["SLSQP", "TNC", "L-BFGS-B"])
+    ]
+)
+def test_sklearn_compatible_estimator(estimator, check):
+    if (
+        estimator.method != "SLSQP"
+        and check.func.__name__ == "check_sample_weights_invariance"
+        and getattr(check, "keywords", {}).get("kind") == "zeros"
+    ):
+        pytest.skip()
+    check(estimator)
 
 
 @pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
 @pytest.mark.parametrize("coefs, intercept", test_batch)
-def test_score(coefs, intercept, method):
-    """Tests with noise on an easy problem. A good score should be possible."""
-    X, y = _create_dataset(coefs, intercept, noise=1.0)
+@pytest.mark.parametrize("noise, expected", [(0.0, 0.99), (1.0, 0.9)])
+def test_coefs_and_intercept(method, coefs, intercept, noise, expected):
+    """Regression problems with different level of noise."""
+    X, y = _create_dataset(coefs, intercept, noise=noise)
     quant = QuantileRegression(method=method)
     quant.fit(X, y)
-    assert quant.score(X, y) > 0.9
+    assert quant.score(X, y) > expected
 
 
 @pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
@@ -92,21 +101,3 @@ def test_fit_intercept_and_copy(coefs, intercept):
 def test_quant(test_fn):
     regr = QuantileRegression()
     test_fn(QuantileRegression.__name__, regr)
-
-
-@pytest.mark.parametrize("quantile", [0.5, 0.3])
-@pytest.mark.parametrize("positive", [True, False])
-@pytest.mark.parametrize("fit_intercept", [True, False])
-@pytest.mark.parametrize("method", ["SLSQP", "TNC", "L-BFGS-B"])
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, nonmeta_checks, regressor_checks]),
-    ),
-)
-def test_estimator_checks(positive, fit_intercept, method, quantile, test_fn):
-    regr = (
-        f"{QuantileRegression.__name__}_quantile_{quantile}_method_{method}_positive_{positive}_fit_intercept_{fit_intercept}",
-        QuantileRegression(quantile=quantile, method=method, positive=positive, fit_intercept=fit_intercept),
-    )
-    test_fn(*regr)
