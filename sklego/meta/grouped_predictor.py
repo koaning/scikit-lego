@@ -89,6 +89,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         "min_n_obs": min_n_obs_shrinkage,
         "equal": equal_shrinkage,
     }
+    _required_parameters = ["estimator", "groups"]
 
     def __init__(
         self,
@@ -197,6 +198,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         frame = parse_X_y(X, y, _group_cols, check_X=self.check_X, **self._check_kwargs)
         frame, _group_cols = self.__add_shrinkage_column(frame, _group_cols)
 
+        self.n_features_in_ = X_group.shape[1] + X_value.shape[1]
+        self.n_fitted_levels_ = 1 + self.use_global_model
         self.shrinkage_function_ = self._set_shrinkage_function()
 
         # List of all hierarchical subsets of columns
@@ -341,6 +344,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         """
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
+
         _group_cols = as_list(deepcopy(self.groups)) if self.groups is not None else None
         X = nw.from_native(X, strict=False, eager_only=True)
         frame = parse_X_y(X, y=None, groups=_group_cols, check_X=self.check_X, **self._check_kwargs).drop(
@@ -375,9 +379,9 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         """
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
+
         _group_cols = as_list(deepcopy(self.groups)) if self.groups is not None else None
         X = nw.from_native(X, strict=False, eager_only=True)
-
         frame = parse_X_y(X, y=None, groups=_group_cols, check_X=self.check_X, **self._check_kwargs).drop(
             "__sklego_target__"
         )

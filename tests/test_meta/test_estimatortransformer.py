@@ -10,16 +10,14 @@ from sklearn.multioutput import MultiOutputRegressor
 from sklearn.pipeline import FeatureUnion, Pipeline
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.utils import check_X_y
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.meta import EstimatorTransformer
-from tests.conftest import general_checks, transformer_checks
 
 
-@pytest.mark.parametrize("test_fn", flatten([transformer_checks, general_checks]))
-def test_estimator_checks(test_fn):
-    trf = EstimatorTransformer(LinearRegression(), check_input=True)
-    test_fn(EstimatorTransformer.__name__, trf)
+@parametrize_with_checks([EstimatorTransformer(LinearRegression(), check_input=True)])
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 def test_values_uniform(random_xy_dataset_clf):

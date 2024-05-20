@@ -9,7 +9,7 @@ from sklego.common import as_list
 from sklego.meta._grouped_utils import parse_X_y
 
 
-class GroupedTransformer(BaseEstimator, TransformerMixin):
+class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
     """Construct a transformer per data group. Splits data by groups from single or multiple columns and transforms
     remaining columns using the transformers corresponding to the groups.
 
@@ -35,6 +35,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
     """
 
     _check_kwargs = {"accept_large_sparse": False}
+    _required_parameters = ["transformer", "groups"]
 
     def __init__(self, transformer, groups, use_global_model=True, check_X=True):
         self.transformer = transformer
@@ -135,6 +136,7 @@ class GroupedTransformer(BaseEstimator, TransformerMixin):
             )
             self.fallback_ = clone(self.transformer).fit(X_, y_)
 
+        self.n_features_in_ = X.shape[1]
         return self
 
     def __transform_single_group(self, group, X):

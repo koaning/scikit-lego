@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import normalize
@@ -45,6 +46,9 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     posterior_matrix_ : array-like, shape=(n_classes, n_classes)
         The posterior probabilities for each class, given the prediction of the inner classifier.
     """
+
+    _ALLOWED_EVIDENCE = ("predict_proba", "confusion_matrix", "both")
+    _required_parameters = ["estimator", "prior"]
 
     def __init__(self, estimator, prior, evidence="both"):
         self.estimator = estimator
@@ -102,9 +106,8 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         if not np.isclose(sum(self.prior.values()), 1):
             raise ValueError("Invalid prior: the prior probabilities of all classes should sum to 1")
 
-        valid_evidence_types = ["predict_proba", "confusion_matrix", "both"]
-        if self.evidence not in valid_evidence_types:
-            raise ValueError(f"Invalid evidence: the provided evidence should be one of {valid_evidence_types}")
+        if self.evidence not in self._ALLOWED_EVIDENCE:
+            raise ValueError(f"Invalid evidence: the provided evidence should be one of {self._ALLOWED_EVIDENCE}")
 
         X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
         if set(y) - set(self.prior.keys()):
@@ -112,11 +115,12 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
                 f"Training data is inconsistent with prior: no prior defined for classes "
                 f"{set(y) - set(self.prior.keys())}"
             )
-        self.estimator.fit(X, y)
-        cfm = confusion_matrix(y, self.estimator.predict(X))
+        self.estimator_ = clone(self.estimator).fit(X, y)
+        cfm = confusion_matrix(y, self.estimator_.predict(X))
         self.posterior_matrix_ = np.array(
             [[self._posterior(y, y_hat, cfm) for y_hat in range(cfm.shape[0])] for y in range(cfm.shape[0])]
         )
+        self.n_features_in_ = X.shape[1]
         return self
 
     @staticmethod
@@ -144,7 +148,7 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         """
         check_is_fitted(self, ["posterior_matrix_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        y_hats = self.estimator.predict_proba(X)  # these are ignorant of the prior
+        y_hats = self.estimator_.predict_proba(X)  # these are ignorant of the prior
 
         if self.evidence == "predict_proba":
             prior_weights = np.array([self.prior[klass] for klass in self.classes_])
@@ -173,4 +177,4 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
     @property
     def classes_(self):
         """Alias for `.classes_` attribute of the underlying estimator."""
-        return self.estimator.classes_
+        return self.estimator_.classes_

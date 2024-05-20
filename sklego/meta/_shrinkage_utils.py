@@ -48,6 +48,11 @@ def relative_shrinkage(group_sizes) -> np.ndarray:
     return np.asarray(group_sizes)
 
 
+def no_shrinkage_function(x, n):
+    # n = len(self.fitted_levels_[-1])
+    return np.pad([1], (len(x) - 1, n - len(x)), "constant", constant_values=(0))
+
+
 def min_n_obs_shrinkage(group_sizes, min_n_obs: int) -> np.ndarray:
     """Use only the smallest group with a certain amount of observations.
 
@@ -118,7 +123,7 @@ class ShrinkageMixin:
 
         elif self.shrinkage is None:
             """Instead of keeping two different behaviors for shrinkage and non-shrinkage cases, this conditional block
-            maps no shrinkage to a constant shrinkage function, wit  all the weight on the grouped passed,
+            maps no shrinkage to a constant shrinkage function, with all the weight on the grouped passed,
             independently from the level sizes, as expected from the other shrinkage functions (*).
             This allows the rest of the code to be agnostic to the shrinkage function, and the shrinkage factors.
 
@@ -151,11 +156,7 @@ class ShrinkageMixin:
                 }
             """
 
-            def no_shrinkage_function(x):
-                n = len(self.fitted_levels_[-1])
-                return np.pad([1], (len(x) - 1, n - len(x)), "constant", constant_values=(0))
-
-            shrinkage_function_ = no_shrinkage_function
+            shrinkage_function_ = partial(no_shrinkage_function, n=self.n_fitted_levels_)
 
         else:
             raise ValueError(

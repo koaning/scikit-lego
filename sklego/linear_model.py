@@ -85,6 +85,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
             raise ValueError(f"Param `sigma` must be >= 0, got: {self.sigma}")
         self.X_ = X
         self.y_ = y
+        self.n_features_in_ = X.shape[1]
         return self
 
     def _calc_wts(self, x_i):
@@ -494,14 +495,14 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         self.sensitive_col_idx_ = self.sensitive_cols
         X = nw.from_native(X, eager_only=True, strict=False)
         if isinstance(X, nw.DataFrame):
+
             self.sensitive_col_idx_ = [i for i, name in enumerate(X.columns) if name in self.sensitive_cols]
         X, y = check_X_y(X, y, accept_large_sparse=False)
-
         sensitive = X[:, self.sensitive_col_idx_]
         if not self.train_sensitive_cols:
             X = np.delete(X, self.sensitive_col_idx_, axis=1)
-        X = self._add_intercept(X)
 
+        X = self._add_intercept(X)
         column_or_1d(y)
         label_encoder = LabelEncoder().fit(y)
         y = label_encoder.transform(y)
@@ -586,6 +587,9 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
     def _add_intercept(self, X):
         if self.fit_intercept:
             return np.c_[np.ones(len(X)), X]
+
+    def _more_tags(self):
+        return {"poor_score": True}
 
 
 class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
@@ -1027,17 +1031,16 @@ class ImbalancedLinearRegression(BaseScipyMinimizeRegressor):
 
     def _get_objective(self, X, y, sample_weight):
         def imbalanced_loss(params):
-            return 0.5 * np.mean(
-                sample_weight
-                * np.where(X @ params > y, self.overestimation_punishment_factor, 1)
-                * np.square(y - X @ params)
+            return 0.5 * np.average(
+                np.where(X @ params > y, self.overestimation_punishment_factor, 1) * np.square(y - X @ params),
+                weights=sample_weight,
             ) + self._regularized_loss(params)
 
         def grad_imbalanced_loss(params):
             return (
                 -(sample_weight * np.where(X @ params > y, self.overestimation_punishment_factor, 1) * (y - X @ params))
                 @ X
-                / X.shape[0]
+                / sample_weight.sum()
             ) + self._regularized_grad_loss(params)
 
         return imbalanced_loss, grad_imbalanced_loss
@@ -1066,6 +1069,11 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
     !!! info
         This implementation uses
         [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html).
+
+    !!! warning
+        If, while fitting the model, `sample_weight` contains any zero values, some solvers may not converge properly.
+        We would expect that a sample weight of zero is equivalent to removing the sample, however unittests tell us
+        that this is always the case only for `method='SLSQP'` (our default)
 
     Parameters
     ----------
@@ -1138,15 +1146,16 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
 
     def _get_objective(self, X, y, sample_weight):
         def quantile_loss(params):
-            return np.mean(
-                sample_weight * np.where(X @ params < y, self.quantile, 1 - self.quantile) * np.abs(y - X @ params)
+            return np.average(
+                np.where(X @ params < y, self.quantile, 1 - self.quantile) * np.abs(y - X @ params),
+                weights=sample_weight,
             ) + self._regularized_loss(params)
 
         def grad_quantile_loss(params):
             return (
                 -(sample_weight * np.where(X @ params < y, self.quantile, 1 - self.quantile) * np.sign(y - X @ params))
                 @ X
-                / X.shape[0]
+                / sample_weight.sum()
             ) + self._regularized_grad_loss(params)
 
         return quantile_loss, grad_quantile_loss
@@ -1195,6 +1204,11 @@ class LADRegression(QuantileRegression):
     !!! info
         This implementation uses
         [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html).
+
+    !!! warning
+        If, while fitting the model, `sample_weight` contains any zero values, some solvers may not converge properly.
+        We would expect that a sample weight of zero is equivalent to removing the sample, however unittests tell us
+        that this is always the case only for `method='SLSQP'` (our default)
 
     Parameters
     ----------

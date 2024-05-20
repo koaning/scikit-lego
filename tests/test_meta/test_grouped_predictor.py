@@ -8,11 +8,32 @@ from sklearn.dummy import DummyRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import make_pipeline
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.datasets import load_chicken
 from sklego.meta import GroupedClassifier, GroupedPredictor, GroupedRegressor
-from tests.conftest import general_checks, select_tests
+
+
+@parametrize_with_checks(
+    [
+        meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
+        for meta_cls in [GroupedPredictor, GroupedRegressor]
+    ]
+)
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        "check_no_attributes_set_in_init",  # Setting **shrinkage_kwargs in init
+        "check_estimators_empty_data_messages",  # Custom message
+        "check_fit2d_1feature",  # Custom message (after grouping we are left with zero features)
+        "check_supervised_y_2d",  # Unsure about this
+    }:
+        pytest.skip()
+
+    if check.func.__name__ == "check_regressors_train" and estimator.__class__ is GroupedPredictor:
+        # Can't use `isinstance(estimator, GroupedPredictor)` since that's true for both cases
+        pytest.skip()
+
+    check(estimator)
 
 
 @pytest.fixture
@@ -32,28 +53,6 @@ def random_xy_grouped_clf_different_classes(request):
     )
     df = pd.DataFrame({"group": group_col, "x": x_col, "y": y_col})
     return df
-
-
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks]),
-        exclude=[
-            # Nonsense checks because we always need at least two columns (group and value)
-            "check_fit1d",
-            "check_fit2d_predict1d",
-            "check_fit2d_1feature",
-            "check_transformer_data_not_an_array",
-        ],
-    ),
-)
-@pytest.mark.parametrize("meta_cls", [GroupedRegressor, GroupedPredictor])
-def test_estimator_checks(test_fn, meta_cls):
-    clf = meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
-    test_fn(meta_cls.__name__ + "_fallback", clf)
-
-    clf = meta_cls(estimator=LinearRegression(), groups=0, use_global_model=False)
-    test_fn(meta_cls.__name__ + "_nofallback", clf)
 
 
 @pytest.mark.parametrize("groups, expected", [("diet", {1, 2, 3, 4}), ("chick", set(range(1, 50 + 1)))])

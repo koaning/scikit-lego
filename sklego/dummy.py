@@ -124,3 +124,6 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
             DeprecationWarning,
         )
         return self._ALLOWED_STRATEGIES
+
+    def _more_tags(self):
+        return {"poor_score": True, "non_deterministic": True}

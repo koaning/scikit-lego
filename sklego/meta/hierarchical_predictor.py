@@ -179,7 +179,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         Number of features in the training data.
     n_features_ : int
         Number of features used by the estimators.
-    n_levels_ : int
+    n_fitted_levels_ : int
         Number of hierarchical levels in the grouping.
     """
 
@@ -198,6 +198,8 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     _GLOBAL_NAME = "__sklego_global_estimator__"
     _TARGET_NAME = "__sklego_target_value__"
     _INDEX_NAME = "__sklego_index__"
+
+    _required_parameters = ["estimator", "groups"]
 
     def __init__(
         self,
@@ -283,7 +285,6 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         self.n_groups_ = len(self.groups_)
         self.n_features_ = frame.shape[1] - self.n_groups_ - 1
         self.n_features_in_ = frame.shape[1] - 2  # target and global columns
-        self.n_levels_ = len(self.fitted_levels_)
 
         return self
 
@@ -295,7 +296,8 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         """Calls `method_name` on each level and apply shrinkage if necessary"""
 
         check_is_fitted(self, ["estimators_", "groups_"])
-
+        if X.ndim != 2:
+            raise ValueError(f"Reshape your data: X should be 2d, got {X.ndim}")
         if X.shape[1] != self.n_features_in_:
             raise ValueError(f"X should have {self.n_features_in_} features, got {X.shape[1]}")
 
@@ -321,8 +323,8 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             else:  # binary case with `method_name = "decision_function"`
                 n_out = 1
 
-        preds = np.zeros((X.shape[0], self.n_levels_, n_out), dtype=float)
-        shrinkage = np.zeros((X.shape[0], self.n_levels_), dtype=float)
+        preds = np.zeros((X.shape[0], self.n_fitted_levels_, n_out), dtype=float)
+        shrinkage = np.zeros((X.shape[0], self.n_fitted_levels_), dtype=float)
 
         for level_idx, grp_names in enumerate(self.fitted_levels_):
             for grp_values, grp_frame in frame.group_by(grp_names):
@@ -343,7 +345,10 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
                 preds[np.ix_(grp_idx, [level_idx], last_dim_ix)] = np.atleast_3d(raw_pred[:, None])
                 shrinkage[np.ix_(grp_idx)] = np.pad(
-                    _shrinkage_factor, (0, self.n_levels_ - len(_shrinkage_factor)), "constant", constant_values=(0)
+                    _shrinkage_factor,
+                    (0, self.n_fitted_levels_ - len(_shrinkage_factor)),
+                    "constant",
+                    constant_values=(0),
                 )
 
         return (preds * np.atleast_3d(shrinkage)).sum(axis=1).squeeze()
@@ -391,6 +396,17 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         _validate_groups_values(frame, self.groups_)
 
         return frame
+
+    @property
+    def n_levels_(self):
+        warn(
+            "Please use `n_fitted_levels_` instead of `n_levels_`, `n_levels_` will be deprecated in future versions",
+            DeprecationWarning,
+        )
+        return self.n_fitted_levels_
+
+    def _more_tags(self):
+        return {"allow_nan": True}
 
 
 class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):

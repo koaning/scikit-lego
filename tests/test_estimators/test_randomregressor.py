@@ -1,33 +1,17 @@
 import numpy as np
 import pytest
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.dummy import RandomRegressor
-from tests.conftest import general_checks, nonmeta_checks, regressor_checks, select_tests
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, nonmeta_checks, regressor_checks]),
-        exclude=[
-            "check_sample_weights_invariance",
-            "check_methods_subset_invariance",
-            "check_regressors_train",
-            "check_sample_weights_list",
-            "check_sample_weights_pandas_series",
-        ],
-    ),
+@parametrize_with_checks(
+    [RandomRegressor(strategy="normal", random_state=42), RandomRegressor(strategy="uniform", random_state=42)]
 )
-def test_estimator_checks(test_fn):
-    # Tests that are skipped:
-    # 'check_methods_subset_invariance': Since we add noise, the method is not invariant on a subset
-    # 'check_regressors_train': score is not always greater than 0.5 due to randomness
-    regr_normal = RandomRegressor(strategy="normal")
-    test_fn(RandomRegressor.__name__ + "_normal", regr_normal)
-
-    regr_uniform = RandomRegressor(strategy="uniform")
-    test_fn(RandomRegressor.__name__ + "_uniform", regr_uniform)
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {"check_methods_subset_invariance", "check_methods_sample_order_invariance"}:
+        pytest.skip("RandomRegressor is not invariant")
+    check(estimator)
 
 
 def test_values_uniform(random_xy_dataset_regr):

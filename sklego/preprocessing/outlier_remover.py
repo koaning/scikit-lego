@@ -43,10 +43,11 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
     ```
     """
 
+    _required_parameters = ["outlier_detector"]
+
     def __init__(self, outlier_detector, refit=True):
         self.outlier_detector = outlier_detector
         self.refit = refit
-        self.estimator_ = None
 
     def fit(self, X, y=None):
         """Fit the estimator on training data `X` and `y` by fitting the underlying outlier detector if `refit` is True.

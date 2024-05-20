@@ -46,7 +46,7 @@ issue-tracker = "https://github.com/koaning/scikit-lego/issues"
 documentation = "https://koaning.github.io/scikit-lego/"
 
 [project.optional-dependencies]
-cvxpy = ["cmake", "osqp", "cvxpy>=1.1.8", "numpy<2.0"]
+cvxpy = ["cmake", "osqp", "cvxpy>=1.1.8"]
 formulaic = ["formulaic>=0.6.0"]
 umap = ["umap-learn>=0.4.6", "numpy<2.0"]
 
@@ -61,7 +61,7 @@ docs = [
     "mkdocstrings-python>=1.7.3",
 ]
 
-test-dep = [
+test = [
     "narwhals[polars]",
     "pyarrow",
     "pytest>=6.2.5",
@@ -71,7 +71,7 @@ test-dep = [
 ]
 
 test-all = [
-    "scikit-lego[all,test-dep]",
+    "scikit-lego[all,test]",
 ]
 
 utils = [
