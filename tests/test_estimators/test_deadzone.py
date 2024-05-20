@@ -1,8 +1,14 @@
 import numpy as np
 import pytest
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from sklego.linear_model import DeadZoneRegressor
 from sklego.testing import check_shape_remains_same_regressor
+
+
+@parametrize_with_checks([DeadZoneRegressor()])
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 @pytest.fixture

@@ -1,16 +1,19 @@
 import numpy as np
-import pytest
 from sklearn.linear_model import LogisticRegression
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.meta import ConfusionBalancer
-from tests.conftest import classifier_checks, general_checks
 
 
-@pytest.mark.parametrize("test_fn", flatten([general_checks, classifier_checks]))
-def test_estimator_checks_classification(test_fn):
-    trf = ConfusionBalancer(LogisticRegression(solver="lbfgs"))
-    test_fn(ConfusionBalancer.__name__, trf)
+@parametrize_with_checks(
+    [
+        ConfusionBalancer(estimator=LogisticRegression(solver="lbfgs"), alpha=alpha, cfm_smooth=cfm_smooth)
+        for alpha in (0.1, 0.5, 0.9)
+        for cfm_smooth in (0, 1, 2)
+    ]
+)
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 def test_sum_equals_one():

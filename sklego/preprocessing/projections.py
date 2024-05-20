@@ -79,7 +79,7 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
             self.normalization_vector_ = np.linalg.norm(Q, ord=2, axis=0)
         else:
             self.normalization_vector_ = np.ones((X.shape[1],))
-
+        self.n_features_in_ = X.shape[1]
         return self
 
     def transform(self, X):
@@ -175,6 +175,8 @@ class InformationFilter(BaseEstimator, TransformerMixin):
     ```
     """
 
+    _required_parameters = ["columns"]
+
     def __init__(self, columns, alpha=1):
         self.columns = columns
         self.alpha = alpha
@@ -243,6 +245,8 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         # we want to learn matrix P: X P = X_fair
         # this means we first need to create X_fair in order to learn P
         self.projection_, resid, rank, s = np.linalg.lstsq(X, X_fair, rcond=None)
+        self.n_features_in_ = X.shape[1]
+
         return self
 
     def transform(self, X):

@@ -7,31 +7,21 @@ from sklearn.datasets import fetch_openml
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.preprocessing import InformationFilter
-from tests.conftest import general_checks, nonmeta_checks, select_tests, transformer_checks
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, transformer_checks, nonmeta_checks]),
-        exclude=[
-            "check_sample_weights_invariance",
-            "check_estimators_empty_data_messages",
-            "check_sample_weights_list",
-            "check_sample_weights_pandas_series",
-        ],
-    ),
-)
-def test_estimator_checks(test_fn):
-    test_fn(InformationFilter.__name__, InformationFilter(columns=[0]))
+@parametrize_with_checks([InformationFilter(columns=[0])])
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {"check_estimators_empty_data_messages"}:
+        pytest.skip("InformationFilter has custom message")
+
+    check(estimator)
 
 
 def test_v_columns_orthogonal():
     X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser="liac-arff")
-    print(y)
     ifilter = InformationFilter(columns=[11, 12]).fit(X, y)
     v_values = ifilter._make_v_vectors(X, [11, 12])
     assert v_values.prod(axis=1).sum() == pytest.approx(0, abs=1e-5)

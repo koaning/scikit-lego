@@ -3,35 +3,29 @@ import pytest
 from sklearn.cluster import KMeans
 from sklearn.ensemble import IsolationForest
 from sklearn.pipeline import Pipeline
-from sklearn.utils import estimator_checks
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.mixture import GMMOutlierDetector
 from sklego.preprocessing import OutlierRemover
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    flatten(
-        [
-            estimator_checks.check_transformers_unfitted,
-            estimator_checks.check_fit2d_predict1d,
-            estimator_checks.check_fit2d_1sample,
-            estimator_checks.check_fit2d_1feature,
-            estimator_checks.check_fit1d,
-            estimator_checks.check_get_params_invariance,
-            estimator_checks.check_set_params,
-            estimator_checks.check_dont_overwrite_parameters,
-            estimator_checks.check_transformers_unfitted,
-        ]
-    ),
+@parametrize_with_checks(
+    [
+        OutlierRemover(outlier_detector=GMMOutlierDetector(), refit=True),
+        OutlierRemover(outlier_detector=IsolationForest(), refit=True),
+    ]
 )
-def test_estimator_checks(test_fn):
-    gmm_remover = OutlierRemover(outlier_detector=GMMOutlierDetector(), refit=True)
-    test_fn(OutlierRemover.__name__, gmm_remover)
-
-    isolation_forest_remover = OutlierRemover(outlier_detector=IsolationForest(), refit=True)
-    test_fn(OutlierRemover.__name__, isolation_forest_remover)
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        # As this transformer removes samples, it is not standard for sure
+        "check_transformer_general",
+        "check_methods_sample_order_invariance",  # leads to out of index
+        "check_methods_subset_invariance",  # leads to different shapes
+        "check_transformer_data_not_an_array",  # hash only supports a few types
+        "check_pipeline_consistency",  # Discussed in https://github.com/koaning/scikit-lego/issues/643
+    }:
+        pytest.skip("OutlierRemover is a TrainOnlyTransformer")
+    check(estimator)
 
 
 def test_no_outliers(mocker):

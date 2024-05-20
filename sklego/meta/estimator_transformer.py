@@ -57,6 +57,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         self.multi_output_ = len(y.shape) > 1
         self.estimator_ = clone(self.estimator)
         self.estimator_.fit(X, y, **kwargs)
+        self.n_features_in_ = X.shape[1]
         return self
 
     def transform(self, X):

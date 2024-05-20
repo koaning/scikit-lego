@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.preprocessing import OrthogonalTransformer
-from tests.conftest import general_checks, nonmeta_checks, select_tests, transformer_checks
 
 
 @pytest.fixture
@@ -18,15 +17,9 @@ def sample_df(sample_matrix):
     return pd.DataFrame(sample_matrix)
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, nonmeta_checks, transformer_checks]),
-        exclude=["check_sample_weights_invariance", "check_sample_weights_list", "check_sample_weights_pandas_series"],
-    ),
-)
-def test_estimator_checks(test_fn):
-    test_fn(OrthogonalTransformer.__name__, OrthogonalTransformer())
+@parametrize_with_checks([OrthogonalTransformer()])
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 def check_is_orthogonal(X, tolerance=10**-5):

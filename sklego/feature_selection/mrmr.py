@@ -130,6 +130,8 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
     ```
     """
 
+    _required_parameters = ["k"]
+
     def __init__(self, k, *, relevance_func="f", redundancy_func="p", kind="auto"):
         self.k = k
         self.relevance_func = relevance_func
@@ -199,7 +201,7 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
                 k parameter is not integer type or is < n_features_in (X.shape[1]) or < 1
         """
-        X, y = check_X_y(X, y)
+        X, y = check_X_y(X, y, dtype="numeric", y_numeric=True)
         self._y_dtype = y.dtype
 
         relevance = self._get_relevance
