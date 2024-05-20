@@ -1,3 +1,5 @@
+from functools import partial
+
 import narwhals as nw
 import numpy as np
 from sklearn.utils.validation import check_is_fitted

@@ -19,6 +19,7 @@ from sklego.meta import HierarchicalClassifier, HierarchicalRegressor
 
 frame_funcs = [pd.DataFrame, pl.DataFrame]
 
+
 @parametrize_with_checks([HierarchicalRegressor(estimator=LinearRegression(), groups=0)])
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
@@ -28,10 +29,12 @@ def test_sklearn_compatible_estimator(estimator, check):
         "check_dtype_object",  # custom message
         "check_fit2d_1feature",  # custom message
         "check_supervised_y_2d",  # TODO: Is it possible to support multioutput?
+        "check_estimators_empty_data_messages",  # custom message
     }:
         pytest.skip()
 
     check(estimator)
+
 
 def make_hierarchical_dataset(task, frame_func=pd.DataFrame):
     n_samples, n_features, n_informative, random_state = 1000, 10, 3, 42

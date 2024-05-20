@@ -17,7 +17,7 @@ from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_array, check_is_fitted
 
 from sklego.common import as_list, expanding_list
-from sklego.meta._grouped_utils import _validate_groups_values
+from sklego.meta._grouped_utils import _data_format_checks, _validate_groups_values
 from sklego.meta._shrinkage_utils import (
     ShrinkageMixin,
     constant_shrinkage,
@@ -179,7 +179,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         Number of features in the training data.
     n_features_ : int
         Number of features used by the estimators.
-    n_fitted_levels_ : int
+    n_levels_ : int
         Number of hierarchical levels in the grouping.
     """
 
@@ -261,15 +261,26 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         # The only case in which we don't have to fit multiple levels is when shrinkage is None and fallback_method is 'raise'
         self.fitted_levels_ = expanding_list(self.groups_)
-
+        self.n_fitted_levels_ = len(self.fitted_levels_)
         # If invalid shrinkage, will raise ValueError (before fitting all the estimators!)
         self.shrinkage_function_ = self._set_shrinkage_function()
+
+        _data_format_checks(X)
 
         X = nw.from_native(X, strict=False, eager_only=True)
         if not isinstance(X, nw.DataFrame):
             X = nw.from_native(pd.DataFrame(X))
 
-        n_samples = X.shape[0]
+        n_samples, self.n_features_in_ = X.shape
+
+        if n_samples < 2:
+            msg = f"Found {n_samples} sample or less, while a minimum of 2 is required."
+            raise ValueError(msg)
+
+        if self.n_features_in_ < 1:
+            msg = "Found 0 features, while a minimum of 1 if required."
+            raise ValueError(msg)
+
         native_space = nw.get_native_namespace(X)
 
         frame = X.with_columns(
@@ -279,12 +290,11 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             }
         ).pipe(self.__validate_frame)
 
-        self.estimators_ = self._fit_estimators(frame)
-        self.shrinkage_factors_ = self._fit_shrinkage_factors(frame, groups=self.groups_)
-
         self.n_groups_ = len(self.groups_)
         self.n_features_ = frame.shape[1] - self.n_groups_ - 1
-        self.n_features_in_ = frame.shape[1] - 2  # target and global columns
+
+        self.estimators_ = self._fit_estimators(frame)
+        self.shrinkage_factors_ = self._fit_shrinkage_factors(frame, groups=self.groups_)
 
         return self
 
@@ -296,8 +306,10 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         """Calls `method_name` on each level and apply shrinkage if necessary"""
 
         check_is_fitted(self, ["estimators_", "groups_"])
-        if X.ndim != 2:
-            raise ValueError(f"Reshape your data: X should be 2d, got {X.ndim}")
+
+        if len(X.shape) != 2:
+            raise ValueError(f"Reshape your data: X should be 2d, got {len(X.shape)}")
+
         if X.shape[1] != self.n_features_in_:
             raise ValueError(f"X should have {self.n_features_in_} features, got {X.shape[1]}")
 
@@ -323,8 +335,8 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             else:  # binary case with `method_name = "decision_function"`
                 n_out = 1
 
-        preds = np.zeros((X.shape[0], self.n_fitted_levels_, n_out), dtype=float)
-        shrinkage = np.zeros((X.shape[0], self.n_fitted_levels_), dtype=float)
+        preds = np.zeros((X.shape[0], self.n_levels_, n_out), dtype=float)
+        shrinkage = np.zeros((X.shape[0], self.n_levels_), dtype=float)
 
         for level_idx, grp_names in enumerate(self.fitted_levels_):
             for grp_values, grp_frame in frame.group_by(grp_names):
@@ -345,10 +357,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
                 preds[np.ix_(grp_idx, [level_idx], last_dim_ix)] = np.atleast_3d(raw_pred[:, None])
                 shrinkage[np.ix_(grp_idx)] = np.pad(
-                    _shrinkage_factor,
-                    (0, self.n_fitted_levels_ - len(_shrinkage_factor)),
-                    "constant",
-                    constant_values=(0),
+                    _shrinkage_factor, (0, self.n_levels_ - len(_shrinkage_factor)), "constant", constant_values=(0)
                 )
 
         return (preds * np.atleast_3d(shrinkage)).sum(axis=1).squeeze()

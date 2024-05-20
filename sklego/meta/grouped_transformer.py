@@ -2,14 +2,14 @@ from typing import Union
 
 import narwhals as nw
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin, clone
+from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
 from sklego.common import as_list
 from sklego.meta._grouped_utils import parse_X_y
 
 
-class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
+class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     """Construct a transformer per data group. Splits data by groups from single or multiple columns and transforms
     remaining columns using the transformers corresponding to the groups.
 
@@ -200,3 +200,6 @@ class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
             return self.transformers_.transform(X_)
 
         return self.__transform_groups(frame)
+
+    def _more_tags(self):
+        return {"allow_nan": True}

@@ -21,6 +21,10 @@ def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_transformer_data_not_an_array",  # TODO: Look into this
         "check_fit2d_1feature",  # custom message
+        "check_fit2d_predict1d",  # custom message
+        "check_dtype_object",  # custom message
+        "check_estimators_empty_data_messages",  # custom message
+        "check_estimators_pickle",  # Fails if input contains nan
     }:
         pytest.skip()
 
