@@ -58,7 +58,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
     """
 
     _HASHERS = {
-        pd.DataFrame: lambda X: hashlib.sha256(pd.util.hash_pandas_object(X, index=True).values).hexdigest(),
+        pd.DataFrame: lambda X: hashlib.sha256(pd.util.hash_pandas_object(X, index=True).to_numpy()).hexdigest(),
         np.ndarray: lambda X: hash(X.data.tobytes()),
         np.memmap: lambda X: hash(X.data.tobytes()),
     }

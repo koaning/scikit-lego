@@ -495,7 +495,6 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         self.sensitive_col_idx_ = self.sensitive_cols
         X = nw.from_native(X, eager_only=True, strict=False)
         if isinstance(X, nw.DataFrame):
-
             self.sensitive_col_idx_ = [i for i, name in enumerate(X.columns) if name in self.sensitive_cols]
         X, y = check_X_y(X, y, accept_large_sparse=False)
         sensitive = X[:, self.sensitive_col_idx_]

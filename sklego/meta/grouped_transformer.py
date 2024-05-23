@@ -1,13 +1,15 @@
+from typing import Union
+
+import narwhals as nw
 import numpy as np
-import pandas as pd
 from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
 from sklego.common import as_list
-from sklego.meta._grouped_utils import _split_groups_and_values
+from sklego.meta._grouped_utils import parse_X_y
 
 
-class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
+class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     """Construct a transformer per data group. Splits data by groups from single or multiple columns and transforms
     remaining columns using the transformers corresponding to the groups.
 
@@ -63,28 +65,18 @@ class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         except Exception as e:
             raise type(e)(f"Exception for group {group}: {e}")
 
-    def __fit_grouped_transformer(self, X_group: pd.DataFrame, X_value: np.ndarray, y=None):
+    def __fit_grouped_transformer(self, frame: nw.DataFrame, y: Union[np.ndarray, None]):
         """Fit a transformer to each group"""
-        # Make the groups based on the groups dataframe, use the indices on the values array
-        try:
-            group_indices = X_group.groupby(X_group.columns.tolist()).indices
-        except TypeError:
-            # This one is needed because of line #918 of sklearn/utils/estimator_checks
-            raise TypeError("argument must be a string, date or number")
 
-        if y is not None:
-            if isinstance(y, pd.Series):
-                y.index = X_group.index
-
-            grouped_transformers = {
-                # Fit a clone of the transformer to each group
-                group: self.__fit_single_group(group, X_value[indices, :], y[indices])
-                for group, indices in group_indices.items()
-            }
-        else:
-            grouped_transformers = {
-                group: self.__fit_single_group(group, X_value[indices, :]) for group, indices in group_indices.items()
-            }
+        grouped_transformers = {
+            # Fit a clone of the transformer to each group
+            group_name: self.__fit_single_group(
+                group_name,
+                X=nw.to_native(X_grp.drop(["__sklego_target__", *self.groups_])),
+                y=(nw.to_native(X_grp["__sklego_target__"]) if y is not None else None),
+            )
+            for group_name, X_grp in frame.group_by(self.groups_)
+        }
 
         return grouped_transformers
 
@@ -115,26 +107,40 @@ class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
             The fitted transformer.
         """
         self.__check_transformer()
-
         self.fallback_ = None
+        self.groups_ = as_list(self.groups) if self.groups is not None else None
+
+        X = nw.from_native(X, strict=False, eager_only=True)
+        if not isinstance(X, nw.DataFrame) and self.groups_ is not None:
+            # Accounts for negative indices if X is an array
+            self.groups_ = [
+                X.shape[1] + group if isinstance(group, int) and group < 0 else group for group in self.groups_
+            ]
+
+        frame = parse_X_y(X, y, self.groups_, check_X=self.check_X, **self._check_kwargs)
 
         if self.groups is None:
-            self.transformers_ = clone(self.transformer).fit(X, y)
+            X_, y_ = (
+                nw.to_native(frame.drop("__sklego_target__")),
+                nw.to_native(frame["__sklego_target__"]) if y is not None else None,
+            )
+            self.transformers_ = clone(self.transformer).fit(X_, y=y_)
             return self
 
-        X_group, X_value = _split_groups_and_values(X, as_list(self.groups), check_X=self.check_X, **self._check_kwargs)
-        self.transformers_ = self.__fit_grouped_transformer(X_group, X_value, y)
+        self.transformers_ = self.__fit_grouped_transformer(frame, y)
 
         if self.use_global_model:
-            self.fallback_ = clone(self.transformer).fit(X_value, y)
+            X_, y_ = (
+                nw.to_native(frame.drop(["__sklego_target__", *self.groups_])),
+                nw.to_native(frame["__sklego_target__"]) if y is not None else None,
+            )
+            self.fallback_ = clone(self.transformer).fit(X_, y_)
 
         self.n_features_in_ = X.shape[1]
         return self
 
     def __transform_single_group(self, group, X):
         """Transform a single group by getting its transformer from the fitted dict"""
-        # Keep track of the original index such that we can sort in __transform_groups
-        index = X.index
         try:
             group_transformer = self.transformers_[group]
         except KeyError:
@@ -143,28 +149,29 @@ class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
             else:
                 raise ValueError(f"Found new group {group} during transform with use_global_model = False")
 
-        return pd.DataFrame(group_transformer.transform(X)).set_index(index)
+        return np.asarray(group_transformer.transform(X))
 
-    def __transform_groups(self, X_group: pd.DataFrame, X_value: np.ndarray):
+    def __transform_groups(self, frame: nw.DataFrame):
         """Transform all groups"""
-        # Reset indices such that they are the same in X_group (reset in __check_grouping_columns),
-        # this way we can track the order of the result
-        X_value = pd.DataFrame(X_value).reset_index(drop=True)
 
-        # Make the groups based on the groups dataframe, use the indices on the values array
-        group_indices = X_group.groupby(X_group.columns.tolist()).indices
+        n_samples = frame.shape[0]
+        frame = frame.with_columns(__sklego_index__=np.arange(n_samples))
 
-        return (
-            pd.concat(
-                [
-                    self.__transform_single_group(group, X_value.loc[indices, :])
-                    for group, indices in group_indices.items()
-                ],
-                axis=0,
+        results = [
+            (
+                nw.to_native(X_grp.select("__sklego_index__")).to_numpy().squeeze().astype(int),
+                self.__transform_single_group(
+                    group_name, nw.to_native(X_grp.drop(["__sklego_index__", *self.groups_]))
+                ),
             )
-            .sort_index()
-            .to_numpy()
-        )
+            for group_name, X_grp in frame.group_by(self.groups_)
+        ]
+
+        output = np.zeros(shape=(n_samples, results[0][1].shape[1]))
+        for grp_index, grp_result in results:
+            output[grp_index, :] = grp_result
+
+        return output
 
     def transform(self, X):
         """Transform new data `X` by transforming on each group. If a group is not found during `.transform()` and
@@ -183,9 +190,16 @@ class GroupedTransformer(BaseEstimator, TransformerMixin, MetaEstimatorMixin):
         """
         check_is_fitted(self, ["fallback_", "transformers_"])
 
+        X = nw.from_native(X, strict=False, eager_only=True)
+        frame = parse_X_y(X, y=None, groups=self.groups_, check_X=self.check_X, **self._check_kwargs).drop(
+            "__sklego_target__"
+        )
+
         if self.groups is None:
-            return self.transformers_.transform(X)
+            X_ = nw.to_native(frame)
+            return self.transformers_.transform(X_)
 
-        X_group, X_value = _split_groups_and_values(X, as_list(self.groups), **self._check_kwargs)
+        return self.__transform_groups(frame)
 
-        return self.__transform_groups(X_group, X_value)
+    def _more_tags(self):
+        return {"allow_nan": True}

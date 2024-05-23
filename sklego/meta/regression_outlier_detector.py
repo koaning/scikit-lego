@@ -1,6 +1,5 @@
 import narwhals as nw
 import numpy as np
-
 from sklearn import clone
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.utils.validation import check_array, check_is_fitted

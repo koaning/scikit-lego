@@ -1,7 +1,10 @@
 from contextlib import nullcontext as does_not_raise
+from random import randint
 
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn import clone
 from sklearn.datasets import make_classification, make_regression
@@ -14,6 +17,8 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from sklego.meta import HierarchicalClassifier, HierarchicalRegressor
 
+frame_funcs = [pd.DataFrame, pl.DataFrame]
+
 
 @parametrize_with_checks([HierarchicalRegressor(estimator=LinearRegression(), groups=0)])
 def test_sklearn_compatible_estimator(estimator, check):
@@ -24,13 +29,14 @@ def test_sklearn_compatible_estimator(estimator, check):
         "check_dtype_object",  # custom message
         "check_fit2d_1feature",  # custom message
         "check_supervised_y_2d",  # TODO: Is it possible to support multioutput?
+        "check_estimators_empty_data_messages",  # custom message
     }:
         pytest.skip()
 
     check(estimator)
 
 
-def make_hierarchical_dataset(task):
+def make_hierarchical_dataset(task, frame_func=pd.DataFrame):
     n_samples, n_features, n_informative, random_state = 1000, 10, 3, 42
     if task == "binary-classification":
         X, y = make_classification(
@@ -54,19 +60,24 @@ def make_hierarchical_dataset(task):
     else:
         raise ValueError("Invalid task")
 
-    X = pd.DataFrame(X, columns=[f"x_{i}" for i in range(X.shape[1])]).assign(
-        g_0=1,
-        g_1=["A"] * (n_samples // 2) + ["B"] * (n_samples // 2),
-        g_2=["X"] * (n_samples // 4) + ["Y"] * (n_samples // 2) + ["Z"] * (n_samples // 4),
+    X_ = (
+        pd.DataFrame(X, columns=[f"x_{i}" for i in range(X.shape[1])])
+        .assign(
+            g_0=1,
+            g_1=["A"] * (n_samples // 2) + ["B"] * (n_samples // 2),
+            g_2=["X"] * (n_samples // 4) + ["Y"] * (n_samples // 2) + ["Z"] * (n_samples // 4),
+        )
+        .pipe(frame_func)
     )
     groups = ["g_0", "g_1", "g_2"]
 
-    return X, y, groups
+    return X_, y, groups
 
 
-def make_hierarchical_dummy():
-    df_train = pd.DataFrame(
+def make_hierarchical_dummy(frame_func):
+    df_train = frame_func(
         {
+            "x": np.ones(1000),
             "g_1": ["A"] * 500 + ["B"] * 500,
             "g_2": ["X"] * 250 + ["Y"] * 500 + ["Z"] * 250,
             "target": [0] * 250 + [1] * 500 + [0] * 250,
@@ -74,19 +85,14 @@ def make_hierarchical_dummy():
     )
     # -> will fit the following values: (g_1, g_2) in {(A,X), (A, Y), (B, Y), (B, Z)} and g_1 in {A, B}
 
-    df_pred = pd.DataFrame(
-        [
-            ["A", "X"],
-            ["A", "Y"],
-            ["A", "Z"],  # fallback to estimator for g_1 = A
-            ["B", "X"],  # fallback to estimator for g_1 = B
-            ["B", "Y"],
-            ["B", "Z"],
-            ["C", "X"],  # fallback to global estimator
-        ],
-        columns=["g_1", "g_2"],
-    )
-    return df_train, df_pred
+    df_pred = frame_func({"x": [1] * 7, "g_1": ["A"] * 3 + ["B"] * 3 + ["C"], "g_2": list("XYZ") * 2 + ["X"]})
+
+    # The following fallbacks are expected:
+    # ("A", "Z") -> to estimator for g_1 = A
+    # ("B", "X") -> to estimator for g_1 = B
+    # ("C", "X") -> to global estimator
+
+    return nw.from_native(df_train), nw.from_native(df_pred)
 
 
 @pytest.mark.parametrize(
@@ -123,7 +129,7 @@ def test_fit_predict(meta_cls, base_estimator, task, fallback_method, shrinkage)
     """Tests that the model can be fit and predict with different configurations of fallback and shrinkage methods if
     X to predict contains same groups as X used to fit.
     """
-    X, y, groups = make_hierarchical_dataset(task)
+    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
 
     meta_model = meta_cls(estimator=base_estimator, groups=groups, fallback_method=fallback_method, **shrinkage).fit(
         X, y
@@ -149,10 +155,11 @@ def test_fallback(meta_cls, base_estimator, task, fallback_method, context):
     """Tests that the model fails or not when predicting with different fallback methods if X to predict contains
     unseen group values.
     """
-    X, y, groups = make_hierarchical_dataset(task)
+    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
 
     meta_model = meta_cls(estimator=base_estimator, groups=groups, fallback_method=fallback_method).fit(X, y)
-    X.loc[:, groups] = "unseen_group_value"
+    X[groups] = np.ones((X.shape[0], len(groups))) * -1  # Shortcut assignment that works both in pandas and polars
+
     with context:
         meta_model.predict(X)
 
@@ -179,7 +186,7 @@ def test_shrinkage(meta_cls, base_estimator, task, metric, shrinkage):
     """Tests that the model performance is better than the base estimator when predicting with different shrinkage
     methods.
     """
-    X, y, groups = make_hierarchical_dataset(task)
+    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
 
     meta_model = meta_cls(estimator=clone(base_estimator), groups=groups, **shrinkage).fit(X, y)
     base_model = clone(base_estimator).fit(X.drop(columns=groups), y)
@@ -208,15 +215,15 @@ def test_shrinkage(meta_cls, base_estimator, task, metric, shrinkage):
         (lambda x: np.array([1, 0, 1]), [0.25, 0.75, 0.5, 0.5, 0.75, 0.25, 0.5]),
     ],
 )
-def test_expected_output(meta_model, method, shrinkage, expected):
-    df_train, df_test = make_hierarchical_dummy()
+@pytest.mark.parametrize("frame_func", frame_funcs)
+def test_expected_output(meta_model, method, shrinkage, expected, frame_func):
+    df_train, df_test = make_hierarchical_dummy(frame_func)
 
-    X_train, y_train = df_train[["g_1", "g_2"]], df_train["target"]
-    X_test = df_test[["g_1", "g_2"]]
+    X_train, y_train = df_train.select("x", "g_1", "g_2"), df_train["target"]
+    X_test = df_test.select("x", "g_1", "g_2")
+    meta_model.set_params(shrinkage=shrinkage).fit(nw.to_native(X_train), nw.to_native(y_train))
 
-    meta_model.set_params(shrinkage=shrinkage).fit(X_train, y_train)
     select_pred = lambda x: x[:, 1] if x.ndim > 1 else x
-
-    y_pred = select_pred(getattr(meta_model, method)(X_test))
+    y_pred = select_pred(getattr(meta_model, method)(nw.to_native(X_test)))
 
     assert np.allclose(expected, y_pred)

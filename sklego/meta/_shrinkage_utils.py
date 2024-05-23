@@ -1,9 +1,10 @@
 from functools import partial
 
+import narwhals as nw
 import numpy as np
 from sklearn.utils.validation import check_is_fitted
 
-from sklego.common import expanding_list
+from sklego.common import as_list, expanding_list
 
 
 def constant_shrinkage(group_sizes, alpha: float) -> np.ndarray:
@@ -193,20 +194,26 @@ class ShrinkageMixin:
             Whether to return only the shrinkage factors for the most granular group values.
         """
         check_is_fitted(self, ["estimators_", "shrinkage_function_"])
-        counts = frame.groupby(groups).size().rename("counts")
+        counts = frame.group_by(groups).agg(nw.len().alias("counts"))
         all_grp_values = list(self.estimators_.keys())
 
         if most_granular_only:
-            all_grp_values = [grp_value for grp_value in all_grp_values if len(grp_value) == len(groups)]
+            all_grp_values = [grp_value for grp_value in all_grp_values if len(as_list(grp_value)) == len(groups)]
 
         hierarchical_counts = {
-            grp_value: [counts.loc[subgroup].sum() for subgroup in expanding_list(grp_value, tuple)]
+            grp_value: [
+                # As zip is "zip shortest" and filter works with comma separate conditions:
+                counts.filter(*[nw.col(c) == v for c, v in zip(groups, subgroup)])
+                .select(nw.sum("counts"))
+                .to_numpy()[0][0]
+                for subgroup in expanding_list(grp_value, tuple)
+            ]
             for grp_value in all_grp_values
         }
 
         shrinkage_factors = {
-            grp_value: self.shrinkage_function_(counts, **self.shrinkage_kwargs)
-            for grp_value, counts in hierarchical_counts.items()
+            grp_value: self.shrinkage_function_(counts_, **self.shrinkage_kwargs)
+            for grp_value, counts_ in hierarchical_counts.items()
         }
 
         # Normalize and pad

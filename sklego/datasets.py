@@ -112,8 +112,8 @@ def load_penguins(return_X_y=False, as_frame=False):
                 "body_mass_g",
                 "sex",
             ]
-        ].values,
-        df["species"].values,
+        ].to_numpy(),
+        df["species"].to_numpy(),
     )
     if return_X_y:
         return X, y
@@ -162,8 +162,8 @@ def load_arrests(return_X_y=False, as_frame=False):
     if as_frame:
         return df
     X, y = (
-        df[["colour", "year", "age", "sex", "employed", "citizen", "checks"]].values,
-        df["released"].values,
+        df[["colour", "year", "age", "sex", "employed", "citizen", "checks"]].to_numpy(),
+        df["released"].to_numpy(),
     )
     if return_X_y:
         return X, y
@@ -208,7 +208,7 @@ def load_chicken(return_X_y=False, as_frame=False):
     df = pd.read_csv(filepath)
     if as_frame:
         return df
-    X, y = df[["time", "diet", "chick"]].values, df["weight"].values
+    X, y = df[["time", "diet", "chick"]].to_numpy(), df["weight"].to_numpy()
     if return_X_y:
         return X, y
     return {"data": X, "target": y}
@@ -265,8 +265,8 @@ def load_abalone(return_X_y=False, as_frame=False):
             "shell_weight",
             "rings",
         ]
-    ].values
-    y = df["sex"].values
+    ].to_numpy()
+    y = df["sex"].to_numpy()
     if return_X_y:
         return X, y
     return {"data": X, "target": y}
@@ -304,8 +304,8 @@ def load_heroes(return_X_y=False, as_frame=False):
     df = pd.read_csv(filepath)
     if as_frame:
         return df
-    X = df[["health", "attack"]].values
-    y = df["attack_type"].values
+    X = df[["health", "attack"]].to_numpy()
+    y = df["attack_type"].to_numpy()
     if return_X_y:
         return X, y
     return {"data": X, "target": y}
@@ -377,8 +377,8 @@ def load_hearts(return_X_y=False, as_frame=False):
             "ca",
             "thal",
         ]
-    ].values
-    y = df["target"].values
+    ].to_numpy()
+    y = df["target"].to_numpy()
     if return_X_y:
         return X, y
     return {"data": X, "target": y}
