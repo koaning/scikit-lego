@@ -100,21 +100,21 @@ def test_same_logistic_multiclass(random_xy_dataset_multiclf):
     _test_same(random_xy_dataset_multiclf)
 
 
-def test_regularization(sensitive_classification_dataset):
+def test_regularization(sensitive_classification_dataset_equalopportunity):
     """Tests whether increasing regularization decreases the norm of the coefficient vector"""
-    X, y = sensitive_classification_dataset
+    X, y = sensitive_classification_dataset_equalopportunity
 
     prev_theta_norm = np.inf
-    for C in [1, 0.5, 0.2, 0.1]:
+    for C in [1, 0.5, 0.1, 0.05]:
         fair = DemographicParityClassifier(covariance_threshold=None, sensitive_cols=["x1"], C=C).fit(X, y)
-        theta_norm = np.abs(np.sum(fair.estimators_[0].coef_))
+        theta_norm = np.sum(np.abs(fair.estimators_[0].coef_))
         assert theta_norm < prev_theta_norm
         prev_theta_norm = theta_norm
 
 
-def test_fairness(sensitive_classification_dataset):
+def test_fairness(sensitive_classification_dataset_equalopportunity):
     """tests whether fairness (measured by p percent score) increases as we decrease the covariance threshold"""
-    X, y = sensitive_classification_dataset
+    X, y = sensitive_classification_dataset_equalopportunity
     scorer = p_percent_score("x1")
 
     prev_fairness = -np.inf

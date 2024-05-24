@@ -1,5 +1,7 @@
+import narwhals as nw
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.datasets import fetch_openml
 from sklearn.linear_model import LinearRegression
@@ -39,57 +41,8 @@ def test_alpha_param1():
     assert np.isclose(ifilter.fit_transform(X), X_removed).all()
 
 
-def test_alpha_param2():
-    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser="liac-arff")
-    df = pd.DataFrame(
-        X,
-        columns=[
-            "crim",
-            "zn",
-            "indus",
-            "chas",
-            "nox",
-            "rm",
-            "age",
-            "dis",
-            "rad",
-            "tax",
-            "ptratio",
-            "b",
-            "lstat",
-        ],
-    )
-    ifilter = InformationFilter(columns=["b", "lstat"], alpha=0.0)
-    X_removed = df.drop(columns=["b", "lstat"]).values
-    assert np.isclose(ifilter.fit_transform(df), X_removed).all()
-
-
-def test_output_orthogonal_pandas():
-    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser="liac-arff")
-    df = pd.DataFrame(
-        X,
-        columns=[
-            "crim",
-            "zn",
-            "indus",
-            "chas",
-            "nox",
-            "rm",
-            "age",
-            "dis",
-            "rad",
-            "tax",
-            "ptratio",
-            "b",
-            "lstat",
-        ],
-    )
-    X_fair = InformationFilter(columns=["b", "lstat"]).fit_transform(df)
-    assert all([(c * df["b"]).sum() < 1e-5 for c in X_fair.T])
-    assert all([(c * df["lstat"]).sum() < 1e-5 for c in X_fair.T])
-
-
-def test_output_orthogonal_general_cols():
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_alpha_param2(frame_func):
     X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser="liac-arff")
     cols = [
         "crim",
@@ -106,7 +59,55 @@ def test_output_orthogonal_general_cols():
         "b",
         "lstat",
     ]
-    df = pd.DataFrame(X, columns=cols)
+    df = frame_func(dict(zip(cols, X.T)))
+    ifilter = InformationFilter(columns=["b", "lstat"], alpha=0.0)
+    X_removed = nw.from_native(df).drop(["b", "lstat"]).to_numpy()
+    assert np.isclose(ifilter.fit_transform(df), X_removed).all()
+
+
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_output_orthogonal_frame(frame_func):
+    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser="liac-arff")
+    cols = [
+        "crim",
+        "zn",
+        "indus",
+        "chas",
+        "nox",
+        "rm",
+        "age",
+        "dis",
+        "rad",
+        "tax",
+        "ptratio",
+        "b",
+        "lstat",
+    ]
+    df = frame_func(dict(zip(cols, X.T)))
+    X_fair = InformationFilter(columns=["b", "lstat"]).fit_transform(df)
+    assert all([(c * df["b"]).sum() < 1e-5 for c in X_fair.T])
+    assert all([(c * df["lstat"]).sum() < 1e-5 for c in X_fair.T])
+
+
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_output_orthogonal_general_cols(frame_func):
+    X, y = fetch_openml(data_id=531, return_X_y=True, as_frame=False, parser="liac-arff")
+    cols = [
+        "crim",
+        "zn",
+        "indus",
+        "chas",
+        "nox",
+        "rm",
+        "age",
+        "dis",
+        "rad",
+        "tax",
+        "ptratio",
+        "b",
+        "lstat",
+    ]
+    df = frame_func(dict(zip(cols, X.T)))
     for col in cols:
         X_fair = InformationFilter(columns=col).fit_transform(df)
         assert all([(c * df[col]).sum() < 1e-5 for c in X_fair.T])

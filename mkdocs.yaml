@@ -21,9 +21,7 @@ theme:
   name: material
   logo: _static/logo.png
   favicon: _static/logo.png
-  font:
-    text: Ubuntu
-    code: Ubuntu Mono
+  font: false
   highlightjs: true
   hljs_languages:
     - bash

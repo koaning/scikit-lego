@@ -174,7 +174,7 @@ When a new feature is introduced, it should be documented, and typically there a
 - [x] A user guide in the `docs/user-guide/` folder.
 - [x] A python script in the `docs/_scripts/` folder to generate plots and code snippets (see [next section](#working-with-pymdown-snippets-extension))
 - [x] Relevant static files, such as images, plots, tables and html's, should be saved in the `docs/_static/` folder.
-- [x] Edit the `mkdocs.yaml` file to include the new pages in the navigation. 
+- [x] Edit the `mkdocs.yaml` file to include the new pages in the navigation.
 
 ### Working with pymdown snippets extension
 

@@ -1,55 +1,59 @@
-from typing import Tuple
+from __future__ import annotations
 
-import numpy as np
+from typing import List
+
+import narwhals as nw
 import pandas as pd
 from scipy.sparse import issparse
 from sklearn.utils import check_array
 from sklearn.utils.validation import _ensure_no_complex_data
 
 
-def _split_groups_and_values(
-    X, groups, name="", min_value_cols=1, check_X=True, **kwargs
-) -> Tuple[pd.DataFrame, np.ndarray]:
-    _data_format_checks(X, name=name)
-    check_array(X, ensure_min_features=min_value_cols, dtype=None, force_all_finite=False)
+def parse_X_y(X, y, groups, check_X=True, **kwargs) -> nw.DataFrame:
+    """Converts X, y to narwhals dataframe.
 
-    try:
-        if isinstance(X, pd.DataFrame):
-            X_group = X.loc[:, groups]
-            X_value = X.drop(columns=groups).values
-        else:
-            X = np.asarray(X)  # deals with `_NotAnArray` case
-            X_group = pd.DataFrame(X[:, groups])
-            pos_indexes = range(X.shape[1])
-            X_value = np.delete(X, [pos_indexes[g] for g in groups], axis=1)
-    except (KeyError, IndexError):
-        raise ValueError(f"Could not drop groups {groups} from columns of X")
+    If it is not a supported dataframe, it uses pandas constructor as a fallback.
 
-    X_group = _check_grouping_columns(X_group, **kwargs)
+    Additionally, data checks are performed.
+    """
+    # Check raw X
+    _data_format_checks(X)
 
-    if check_X:
-        X_value = check_array(X_value, **kwargs)
+    # Convert X to Narwhals frame
+    X = nw.from_native(X, strict=False, eager_only=True)
+    if not isinstance(X, nw.DataFrame):
+        X = nw.from_native(pd.DataFrame(X))
 
-    return X_group, X_value
+    # Check groups and feaures values
+    if groups is not None:
+        _validate_groups_values(X, groups)
+
+        if check_X:
+            check_array(X.drop(groups), **kwargs)
+
+    # Convert y and assign it to the frame
+    n_samples = X.shape[0]
+    native_space = nw.get_native_namespace(X)
+
+    y_native = native_space.Series([None] * n_samples) if y is None else native_space.Series(y)
+    return X.with_columns(__sklego_target__=nw.from_native(y_native, allow_series=True))
 
 
-def _data_format_checks(X, name):
+def _validate_groups_values(X: nw.DataFrame, groups: List[int] | List[str]) -> None:
+    X_cols = X.columns
+    unexisting_cols = [g for g in groups if g not in X_cols]
+
+    if len(unexisting_cols):
+        raise ValueError(f"The following groups are not available in X: {unexisting_cols}")
+
+    if X.select(nw.col(groups).is_null().any()).to_numpy().squeeze().any():
+        raise ValueError("Groups values have NaN")
+
+
+def _data_format_checks(X):
+    """Checks that X is not sparse nor has complex dtype"""
     _ensure_no_complex_data(X)
 
     if issparse(X):  # sklearn.validation._ensure_sparse_format to complicated
-        raise ValueError(f"The estimator {name} does not work on sparse matrices")
-
-
-def _check_grouping_columns(X_group, **kwargs) -> pd.DataFrame:
-    """Do basic checks on grouping columns"""
-    # Do regular checks on numeric columns
-    X_group_num = X_group.select_dtypes(include="number")
-    if X_group_num.shape[1]:
-        check_array(X_group_num, **kwargs)
-
-    # Only check missingness in object columns
-    if X_group.select_dtypes(exclude="number").isnull().any(axis=None):
-        raise ValueError("X has NaN values")
-
-    # The grouping part we always want as a DataFrame with range index
-    return X_group.reset_index(drop=True)
+        msg = "Estimator does not work on sparse matrices"
+        raise ValueError(msg)
