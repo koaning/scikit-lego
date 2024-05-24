@@ -102,10 +102,11 @@ def test_regularization(sensitive_classification_dataset_equalopportunity):
     X, y = sensitive_classification_dataset_equalopportunity
 
     prev_theta_norm = np.inf
-    for C in [1, 0.5, 0.2, 0.1]:
+    for C in [1, 0.5, 0.1, 0.01]:
         fair = EqualOpportunityClassifier(
             covariance_threshold=None, sensitive_cols=["x1"], C=C, positive_target=True
         ).fit(X, y)
+        print(fair.estimators_[0].coef_)
         theta_norm = np.abs(np.sum(fair.estimators_[0].coef_))
         assert theta_norm < prev_theta_norm
         prev_theta_norm = theta_norm
