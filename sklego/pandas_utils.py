@@ -272,6 +272,7 @@ def add_lags(X, cols, lags, drop_na=True):
     X = nw.from_native(X, strict=False)
     allowed_inputs = {
         nw.DataFrame: _add_lagged_dataframe_columns,
+        nw.LazyFrame: _add_lagged_dataframe_columns,
         np.ndarray: _add_lagged_numpy_columns,
     }
 

@@ -38,11 +38,15 @@ def test_add_lags_wrong_inputs(data, frame_func):
         add_lags(invalid_df, ["X1"], 1)
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pl.LazyFrame])
 def test_add_lags_correct_df(data, frame_func):
     test_df = frame_func(data)
     expected = frame_func({"X1": [1, 2], "X2": ["178", "154"], "X1-1": [0, 1]})
     ans = add_lags(test_df, "X1", -1)
+    if isinstance(ans, pl.LazyFrame):
+        ans = ans.collect()
+    if isinstance(expected, pl.LazyFrame):
+        expected = expected.collect()
     assert [x for x in ans.columns] == [x for x in expected.columns]
     assert (ans.to_numpy() == expected.to_numpy()).all()
 
