@@ -426,7 +426,7 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         A list of column names or column indexes in the input data that represent sensitive attributes.
     C : float, default=1.0
         Inverse of regularization strength; must be a positive float. Smaller values specify stronger regularization.
-    penalty : Literal["l1", "none"], default="l1"
+    penalty : Literal["l1", "l2", "none", None], default="l1"
         The type of penalty to apply to the model. "l1" applies L1 regularization, while "none" disables regularization.
     fit_intercept : bool, default=True
         Whether or not to fit an intercept term. If True, an intercept term is added to the model.
@@ -450,6 +450,8 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
 
     `_FairClassifier` should not be used directly; it serves as a base class for fair classification models.
     """
+
+    _ALLOWED_PENALTIES = ("l1", "l2", "none", None)
 
     def __init__(
         self,
@@ -487,10 +489,16 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         Raises
         ------
         ValueError
-            If `penalty` is not one of "l1" or "none".
+            If `penalty` is not one of "l1", "l2", "none" or None.
         """
-        if self.penalty not in ["l1", "none"]:
-            raise ValueError(f"penalty should be either 'l1' or 'none', got {self.penalty}")
+        if self.penalty not in self._ALLOWED_PENALTIES:
+            raise ValueError(f"penalty should be one of {self._ALLOWED_PENALTIES}, got {self.penalty}")
+
+        if self.penalty == "none":
+            warn(
+                "Please use `penalty=None` instead of `penalty='none'`, 'none' will be deprecated in future versions",
+                DeprecationWarning,
+            )
 
         self.sensitive_col_idx_ = self.sensitive_cols
         X = nw.from_native(X, eager_only=True, strict=False)
@@ -529,8 +537,12 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             cp.multiply(y, y_hat)
             - cp.log_sum_exp(cp.hstack([np.zeros((n_obs, 1)), cp.reshape(y_hat, (n_obs, 1))]), axis=1)
         )
+
         if self.penalty == "l1":
-            log_likelihood -= cp.sum((1 / self.C) * cp.norm(theta[1:]))
+            log_likelihood -= cp.norm(theta[int(self.fit_intercept) :], 1) / self.C
+
+        elif self.penalty == "l2":
+            log_likelihood -= cp.norm(theta[int(self.fit_intercept) :], 2) / self.C
 
         constraints = self.constraints(y_hat, y, sensitive, n_obs)
 
@@ -540,7 +552,7 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
             kwargs = {"max_iters": self.max_iter}
         else:
             if self.max_iter:
-                logging.warning("solver does not support `max_iters` and it `self.max_iter` will be ignored")
+                logging.warning("solver does not support `max_iters` and the argument will be ignored")
             kwargs = {}
 
         problem.solve(**kwargs)
@@ -552,7 +564,7 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
 
         if self.fit_intercept:
             self.coef_ = theta.value[np.newaxis, 1:]
-            self.intercept_ = theta.value[0:1]
+            self.intercept_ = theta.value[0]
         else:
             self.coef_ = theta.value[np.newaxis, :]
             self.intercept_ = np.array([0.0])
@@ -586,6 +598,7 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
     def _add_intercept(self, X):
         if self.fit_intercept:
             return np.c_[np.ones(len(X)), X]
+        return X
 
     def _more_tags(self):
         return {"poor_score": True}
