@@ -564,7 +564,7 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
 
         if self.fit_intercept:
             self.coef_ = theta.value[np.newaxis, 1:]
-            self.intercept_ = theta.value[0]
+            self.intercept_ = theta.value[0:1]
         else:
             self.coef_ = theta.value[np.newaxis, :]
             self.intercept_ = np.array([0.0])
