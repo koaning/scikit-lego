@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import warnings
 
 import narwhals as nw
@@ -10,26 +11,15 @@ from sklearn.utils.validation import check_is_fitted
 from sklego.common import as_list
 
 
-def _nw_match_dtype(dtype, selection):
+def _nw_match_dtype(selection):
     if selection == "number":
-        return dtype in (
-            nw.Int64,
-            nw.Int32,
-            nw.Int16,
-            nw.Int8,
-            nw.UInt64,
-            nw.UInt32,
-            nw.UInt16,
-            nw.UInt8,
-            nw.Float64,
-            nw.Float32,
-        )
+        return nw.selectors.numeric()
     if selection == "bool":
-        return dtype == nw.Boolean
+        return nw.selectors.boolean()
     if selection == "string":
-        return dtype == nw.String
+        return nw.selectors.string()
     if selection == "category":
-        return dtype == nw.Categorical
+        return nw.selectors.categorical()
     msg = f"Expected {{'number', 'bool', 'string', 'category'}}, got: {selection}, which is not (yet!) supported."
     raise ValueError(msg)
 
@@ -42,17 +32,17 @@ def _nw_select_dtypes(df, include: str | list[str], exclude: str | list[str]):
         include = [include]
     if isinstance(exclude, str):
         exclude = [exclude]
-
-    include = include or ["string", "number", "bool", "category"]
-    exclude = exclude or []
-
-    feature_names = [
-        name
-        for name, dtype in df.schema.items()
-        if any(_nw_match_dtype(dtype, _include) for _include in include)
-        and not any(_nw_match_dtype(dtype, _exclude) for _exclude in exclude)
-    ]
-    return df.select(feature_names)
+    if include:
+        include = [_nw_match_dtype(x) for x in include]
+    else:
+        include = [nw.selectors.all()]
+    if exclude:
+        exclude = [_nw_match_dtype(x) for x in exclude]
+    else:
+        exclude = []
+    if exclude:
+        return df.select(functools.reduce(lambda x, y: x | y, include) - functools.reduce(lambda x, y: x | y, exclude))
+    return df.select(functools.reduce(lambda x, y: x | y, include))
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
