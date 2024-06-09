@@ -80,8 +80,10 @@ def test_get_feature_names(frame_func):
 )
 def test_include_vs_exclude(frame_func, include, exclude, expected):
     df = frame_func({"a": [4, 5, 6], "b": [True, False, True], "c": [4.0, 5.0, 6.0], "d": ["a", "b", "c"]})
-    transformer_number = TypeSelector(include=include, exclude=exclude).fit(df)
-    assert transformer_number.get_feature_names() == expected
+    type_selector = TypeSelector(include=include, exclude=exclude).fit(df)
+    assert type_selector.get_feature_names() == expected
+    result = type_selector.transform(df)
+    assert isinstance(result, frame_func)
 
 
 @pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
