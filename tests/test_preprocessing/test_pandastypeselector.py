@@ -69,6 +69,24 @@ def test_get_feature_names(frame_func):
 
 
 @pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize(
+    ("include", "exclude", "expected"),
+    [
+        ("number", None, ["a", "c"]),
+        ("bool", None, ["b"]),
+        (None, "number", ["b", "d"]),
+        (None, ["number", "bool"], ["d"]),
+    ],
+)
+def test_include_vs_exclude(frame_func, include, exclude, expected):
+    df = frame_func({"a": [4, 5, 6], "b": [True, False, True], "c": [4.0, 5.0, 6.0], "d": ["a", "b", "c"]})
+    type_selector = TypeSelector(include=include, exclude=exclude).fit(df)
+    assert type_selector.get_feature_names() == expected
+    result = type_selector.transform(df)
+    assert isinstance(result, frame_func)
+
+
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
 def test_get_feature_names_deprecated(frame_func):
     df = frame_func({"a": [4, 5, 6], "b": ["4", "5", "6"]})
     with pytest.deprecated_call(match="Please use `from sklego.preprocessing import TypeSelector`"):
