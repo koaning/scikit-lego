@@ -81,3 +81,32 @@ def test_wrong_estimators_exceptions():
     with pytest.raises(ValueError, match="`regressor` has to be a regressor."):
         zir = ZeroInflatedRegressor(ExtraTreesClassifier(), ExtraTreesClassifier())
         zir.fit(X, y)
+
+
+def approx_lte(x, y):
+    return ((x <= y) | np.isclose(x, y)).all()
+
+
+def approx_gte(x, y):
+    return ((x >= y) | np.isclose(x, y)).all()
+
+
+def test_score_samples():
+    np.random.seed(0)
+    X = np.random.randn(1_000, 4)
+    y = ((X[:, 0] > 0) & (X[:, 1] > 0)) * np.abs(X[:, 2] * X[:, 3] ** 2)
+
+    zir = ZeroInflatedRegressor(
+        classifier=ExtraTreesClassifier(max_depth=20, random_state=0, n_jobs=-1),
+        regressor=ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
+    ).fit(X, y)
+
+    scores = zir.score_samples(X)
+    preds = zir.predict(X)
+
+    pred_is_non_zero = zir.classifier_.predict(X)
+
+    # Where the classifier prediction is non-zero, then the value is multiplied by something less than 1.
+    assert approx_lte(scores[pred_is_non_zero], preds[pred_is_non_zero])
+    # Where the classifier prediction is zero, then the score is by something greater than 0.
+    assert approx_gte(scores[~pred_is_non_zero], preds[~pred_is_non_zero])
