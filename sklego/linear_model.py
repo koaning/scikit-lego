@@ -427,7 +427,8 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
     C : float, default=1.0
         Inverse of regularization strength; must be a positive float. Smaller values specify stronger regularization.
     penalty : Literal["l1", "l2", "none", None], default="l1"
-        The type of penalty to apply to the model. "l1" applies L1 regularization, while "none" disables regularization.
+        The type of penalty to apply to the model. "l1" applies L1 regularization, "l2" applies L2 regularization,
+        while None (or "none") disables regularization.
     fit_intercept : bool, default=True
         Whether or not to fit an intercept term. If True, an intercept term is added to the model.
     max_iter : int, default=100
@@ -636,8 +637,9 @@ class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
     C : float, default=1.0
         Inverse of regularization strength; must be a positive float. Like in support vector machines, smaller values
         specify stronger regularization.
-    penalty : Literal["l1", "none"], default="l1"
-        Used to specify the norm used in the penalization.
+    penalty : Literal["l1", "l2", "none", None], default="l1"
+        The type of penalty to apply to the model. "l1" applies L1 regularization, "l2" applies L2 regularization,
+        while None (or "none") disables regularization.
     fit_intercept : bool, default=True
         Whether or not a constant term (a.k.a. bias or intercept) should be added to the decision function.
     max_iter : int, default=100
@@ -730,8 +732,9 @@ class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
     C : float, default=1.0
         Inverse of regularization strength; must be a positive float. Like in support vector machines, smaller values
         specify stronger regularization.
-    penalty : Literal["l1", "none"], default="l1"
-        Used to specify the norm used in the penalization.
+    penalty : Literal["l1", "l2", "none", None], default="l1"
+        The type of penalty to apply to the model. "l1" applies L1 regularization, "l2" applies L2 regularization,
+        while None (or "none") disables regularization.
     fit_intercept : bool, default=True
         Whether or not a constant term (a.k.a. bias or intercept) should be added to the decision function.
     max_iter : int, default=100
