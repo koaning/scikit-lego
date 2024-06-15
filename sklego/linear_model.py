@@ -502,15 +502,25 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
 
         self.sensitive_col_idx_ = self.sensitive_cols
         X = nw.from_native(X, eager_only=True, strict=False)
+
         if isinstance(X, nw.DataFrame):
             self.sensitive_col_idx_ = [i for i, name in enumerate(X.columns) if name in self.sensitive_cols]
+
         X, y = check_X_y(X, y, accept_large_sparse=False)
         sensitive = X[:, self.sensitive_col_idx_]
+
         if not self.train_sensitive_cols:
             X = np.delete(X, self.sensitive_col_idx_, axis=1)
 
-        X = self._add_intercept(X)
+        if self.fit_intercept:
+            X = np.c_[np.ones(len(X)), X]
+
+        if X.shape[1] == 0:
+            msg = "Cannot fit the model, at least 1 feature(s) is required."
+            raise ValueError(msg)
+
         column_or_1d(y)
+
         label_encoder = LabelEncoder().fit(y)
         y = label_encoder.transform(y)
         self.classes_ = label_encoder.classes_
@@ -594,11 +604,6 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         if not self.train_sensitive_cols:
             X = np.delete(X, self.sensitive_col_idx_, axis=1)
         return super().decision_function(X)
-
-    def _add_intercept(self, X):
-        if self.fit_intercept:
-            return np.c_[np.ones(len(X)), X]
-        return X
 
     def _more_tags(self):
         return {"poor_score": True}

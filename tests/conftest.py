@@ -62,26 +62,13 @@ def random_xy_dataset_multitarget(request):
     return X, y
 
 
-@pytest.fixture
-def sensitive_classification_dataset():
-    df = pd.DataFrame(
-        {
-            "x1": [1, 0, 1, 0, 1, 0, 1, 1],
-            "x2": [0, 0, 0, 0, 0, 1, 1, 1],
-            "y": [1, 1, 1, 0, 1, 0, 0, 0],
-        }
-    )
-
-    return df[["x1", "x2"]], df["y"]
-
-
 @pytest.fixture(params=[pd.DataFrame, pl.DataFrame])
 def funct(request):
     return request.param
 
 
 @pytest.fixture
-def sensitive_classification_dataset_equalopportunity(funct):
+def sensitive_classification_dataset(funct):
     df = funct(
         {
             "x1": [1, 0, 1, 0, 1, 0, 1, 1],
