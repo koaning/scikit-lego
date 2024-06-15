@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
+from sklearn.linear_model import RidgeClassifier
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
@@ -110,3 +111,18 @@ def test_score_samples():
     assert approx_lte(scores[pred_is_non_zero], preds[pred_is_non_zero])
     # Where the classifier prediction is zero, then the score is by something greater than 0.
     assert approx_gte(scores[~pred_is_non_zero], preds[~pred_is_non_zero])
+
+def test_no_predict_proba():
+
+    np.random.seed(0)
+    X = np.random.randn(1_000, 4)
+    y = ((X[:, 0] > 0) & (X[:, 1] > 0)) * np.abs(X[:, 2] * X[:, 3] ** 2)
+
+    zir = ZeroInflatedRegressor(
+        classifier=RidgeClassifier(),
+        regressor=ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
+    ).fit(X, y)
+
+    with pytest.raises(AttributeError, match="This 'ZeroInflatedRegressor' has no attribute 'score_samples'"):
+        zir.score_samples(X)
+    
