@@ -43,6 +43,21 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         The underlying UMAP model.
     offset_ : float
         The offset used for the decision function.
+
+    Examples
+    --------
+    ```py
+    import numpy as np
+    from sklego.decomposition import UMAPOutlierDetection
+
+    X = np.array([[-1, -1, -1], [-2, -1, -2], [5, -1, 0], [-1, -1, -1], [2, 1, 1], [3, 2, 3]])
+
+    umap_model = UMAPOutlierDetection(n_components=2, threshold=0.2, n_neighbors=5)
+    umap_model.fit(X)
+    umap_pred = umap_model.predict(X)
+    umap_pred
+    # [ 1  1 -1  1 -1 -1]
+    ```
     """
 
     def __init__(
