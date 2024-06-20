@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import warnings
+from typing import Any
 
 import narwhals as nw
 from narwhals.dependencies import get_pandas
@@ -34,7 +35,7 @@ def _nw_match_dtype(dtype, selection):
     raise ValueError(msg)
 
 
-def _nw_select_dtypes(df, include: str | list[str], exclude: str | list[str]):
+def _nw_select_dtypes(include: str | list[str], exclude: str | list[str], schema: dict[str, Any]):
     if not include and not exclude:
         raise ValueError("Must provide at least one of `include` or `exclude`")
 
@@ -43,16 +44,20 @@ def _nw_select_dtypes(df, include: str | list[str], exclude: str | list[str]):
     if isinstance(exclude, str):
         exclude = [exclude]
 
-    include = include or ["string", "number", "bool", "category"]
     exclude = exclude or []
 
-    feature_names = [
-        name
-        for name, dtype in df.schema.items()
-        if any(_nw_match_dtype(dtype, _include) for _include in include)
-        and not any(_nw_match_dtype(dtype, _exclude) for _exclude in exclude)
-    ]
-    return df.select(feature_names)
+    if include:
+        feature_names = [
+            name
+            for name, dtype in schema.items()
+            if any(_nw_match_dtype(dtype, _include) for _include in include)
+            and not any(_nw_match_dtype(dtype, _exclude) for _exclude in exclude)
+        ]
+    else:
+        feature_names = [
+            name for name, dtype in schema.items() if not any(_nw_match_dtype(dtype, _exclude) for _exclude in exclude)
+        ]
+    return feature_names
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
@@ -330,7 +335,7 @@ class TypeSelector(BaseEstimator, TransformerMixin):
         else:
             X = nw.from_native(X)
             self.X_dtypes_ = X.schema
-            self.feature_names_ = _nw_select_dtypes(X, include=self.include, exclude=self.exclude).columns
+            self.feature_names_ = _nw_select_dtypes(include=self.include, exclude=self.exclude, schema=self.X_dtypes_)
 
         if len(self.feature_names_) == 0:
             raise ValueError("Provided type(s) results in empty dataframe")
@@ -377,14 +382,17 @@ class TypeSelector(BaseEstimator, TransformerMixin):
             transformed_df = X.select_dtypes(include=self.include, exclude=self.exclude)
         else:
             X = nw.from_native(X)
-            if self.X_dtypes_ != X.schema:
+            X_schema = X.schema
+            if self.X_dtypes_ != X_schema:
                 raise ValueError(
                     f"Column dtypes were not equal during fit and transform. Fit types: \n"
                     f"{self.X_dtypes_}\n"
                     f"transform: \n"
                     f"{X.schema}"
                 )
-            transformed_df = _nw_select_dtypes(X, include=self.include, exclude=self.exclude)
+            transformed_df = X.select(
+                _nw_select_dtypes(include=self.include, exclude=self.exclude, schema=X_schema)
+            ).pipe(nw.to_native)
 
         return transformed_df
 
