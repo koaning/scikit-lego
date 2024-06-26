@@ -27,10 +27,7 @@ def test_X():
     return np.array([[-4, 2], [-2, 0], [4, -6]])
 
 
-@pytest.mark.parametrize("frame_func", [
-    pd.DataFrame,
-    lambda data: pl.DataFrame(data, strict=False)
-])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, lambda data: pl.DataFrame(data, strict=False)])
 def test_add_lags_wrong_inputs(data, frame_func):
     invalid_df = [[1, 2, 3], [4, 5, 6]]
     invalid_lags = ["1", "2"]
