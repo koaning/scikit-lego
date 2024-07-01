@@ -30,7 +30,7 @@ def test_p_percent_pandas_multiclass(sensitive_multiclass_classification_dataset
 
 def test_p_percent_numpy(sensitive_classification_dataset):
     X, y = sensitive_classification_dataset
-    X = X.values
+    X, y = X.to_numpy(), y.to_numpy()
     mod = LogisticRegression().fit(X, y)
     assert p_percent_score(1)(mod, X) == 0
 
