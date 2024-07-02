@@ -38,11 +38,10 @@ def test_add_lags_wrong_inputs(data, frame_func):
         add_lags(invalid_df, ["X1"], 1)
 
 
-@pytest.mark.parametrize("frame_func", [
-    pd.DataFrame,
-    lambda data: pl.DataFrame(data, strict=False),
-    lambda data: pl.LazyFrame(data, strict=False)
-])
+@pytest.mark.parametrize(
+    "frame_func",
+    [pd.DataFrame, lambda data: pl.DataFrame(data, strict=False), lambda data: pl.LazyFrame(data, strict=False)],
+)
 def test_add_lags_correct_df(data, frame_func):
     test_df = frame_func(data)
     expected = frame_func({"X1": [1, 2], "X2": ["178", "154"], "X1-1": [0, 1]})
