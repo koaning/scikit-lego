@@ -38,7 +38,11 @@ def test_add_lags_wrong_inputs(data, frame_func):
         add_lags(invalid_df, ["X1"], 1)
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pl.LazyFrame])
+@pytest.mark.parametrize("frame_func", [
+    pd.DataFrame,
+    lambda data: pl.DataFrame(data, strict=False),
+    lambda data: pl.LazyFrame(data, strict=False)
+])
 def test_add_lags_correct_df(data, frame_func):
     test_df = frame_func(data)
     expected = frame_func({"X1": [1, 2], "X2": ["178", "154"], "X1-1": [0, 1]})
@@ -56,7 +60,7 @@ def test_add_lags_correct_X(test_X):
     assert (add_lags(test_X, [0, 1], [1, 2]) == expected).all()
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, lambda data: pl.DataFrame(data, strict=False)])
 def test_add_lagged_dataframe_columns(data, frame_func):
     test_df = nw.from_native(frame_func(data))
     with pytest.raises(KeyError, match="The column does not exist"):
