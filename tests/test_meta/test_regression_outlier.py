@@ -27,7 +27,7 @@ def test_obvious_example():
     X = np.random.normal(0, 1, (100, 1))
     y = 1 + np.sum(X, axis=1).reshape(-1, 1) + np.random.normal(0, 0.2, (100, 1))
     for i in [20, 25, 50, 80]:
-        y[i] += 2
+        y[i] += 10
     X = np.concatenate([X, y], axis=1)
 
     # fit and plot
@@ -44,7 +44,7 @@ def test_obvious_example_dataframe(frame_func):
     x = np.random.normal(0, 1, 100)
     y = 1 + x + np.random.normal(0, 0.2, 100)
     for i in [20, 25, 50, 80]:
-        y[i] += 2
+        y[i] += 10
     X = frame_func({"x": x, "y": y})
 
     # fit and plot
