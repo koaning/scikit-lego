@@ -20,7 +20,7 @@ pytestmark = pytest.mark.cvxpy
             train_sensitive_cols=train_sensitive_cols,
         )
         for train_sensitive_cols in [True, False]
-        for penalty in ["none", "l1"]
+        for penalty in ["l1", "l2", None]
     ]
 )
 def test_sklearn_compatible_estimator(estimator, check):
@@ -97,23 +97,28 @@ def test_same_logistic_multiclass(random_xy_dataset_multiclf):
     _test_same(random_xy_dataset_multiclf)
 
 
-def test_regularization(sensitive_classification_dataset_equalopportunity):
+@pytest.mark.parametrize("penalty", ["l1", "l2"])
+def test_regularization(sensitive_classification_dataset, penalty):
     """Tests whether increasing regularization decreases the norm of the coefficient vector"""
-    X, y = sensitive_classification_dataset_equalopportunity
+    X, y = sensitive_classification_dataset
 
     prev_theta_norm = np.inf
     for C in [1, 0.5, 0.1, 0.05]:
         fair = EqualOpportunityClassifier(
-            covariance_threshold=None, sensitive_cols=["x1"], C=C, positive_target=True
+            covariance_threshold=None,
+            sensitive_cols=["x1"],
+            C=C,
+            positive_target=True,
+            penalty=penalty,
         ).fit(X, y)
-        theta_norm = np.sum(np.abs(fair.estimators_[0].coef_))
+        theta_norm = np.linalg.norm(fair.estimators_[0].coef_, ord=int(penalty[-1]))
         assert theta_norm < prev_theta_norm
         prev_theta_norm = theta_norm
 
 
-def test_fairness(sensitive_classification_dataset_equalopportunity):
+def test_fairness(sensitive_classification_dataset):
     """tests whether fairness (measured by p percent score) increases as we decrease the covariance threshold"""
-    X, y = sensitive_classification_dataset_equalopportunity
+    X, y = sensitive_classification_dataset
     scorer = equal_opportunity_score("x1")
 
     prev_fairness = -np.inf
