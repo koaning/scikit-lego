@@ -388,9 +388,14 @@ ZIR (RFC+RFR) r²: 0.8579468997736154
 RFR r²: 0.7691291933110612
 ```
 
-If the underlying classifier is able to predict the _probability_ of a sample to be zero (i.e. it implements a `predict_proba` method), then the `ZeroInflatedRegressor` can be used to predict the probability of a sample being non-zero times the expected value of such sample.
+If the underlying classifier is able to predict the _probability_ of a sample to be zero (i.e. it implements a `predict_proba` method), then the `ZeroInflatedRegressor` can be used to predict the probability of a sample being non-zero _times_doc the expected value of such sample.
 
 This quantity is sometimes called _risk estimate_ or _expected impact_, however, to adhere to scikit-learn convention, we made it accessible via the  `score_samples` method.
+
+!!! warning "About `predict_proba`"
+    The `predict_proba` method of the classifier does not always return actual probabilities.
+
+    For this reason if you want to use the `score_samples` method, it is recommended to train with a classifier wrapped by the [`CalibratedClassifierCV`][calibrated-classifier-api] class from scikit-learn to calibrate the probabilities.
 
 ```py title="score_samples"
 --8<-- "docs/_scripts/meta-models.py:zero-inflated-score-samples"
