@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-import narwhals as nw
+import narwhals.stable.v1 as nw
 import pandas as pd
 from scipy.sparse import issparse
 from sklearn.utils import check_array

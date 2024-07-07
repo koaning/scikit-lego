@@ -1,4 +1,4 @@
-import narwhals as nw
+import narwhals.stable.v1 as nw
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array

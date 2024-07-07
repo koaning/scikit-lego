@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from inspect import signature
 from warnings import warn
 
-import narwhals as nw
+import narwhals.stable.v1 as nw
 import numpy as np
 from scipy.optimize import minimize
 from scipy.special._ufuncs import expit

@@ -3,7 +3,7 @@ from __future__ import annotations
 import warnings
 from typing import Any
 
-import narwhals as nw
+import narwhals.stable.v1 as nw
 from narwhals.dependencies import get_pandas
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
