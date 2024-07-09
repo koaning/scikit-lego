@@ -1,6 +1,6 @@
 from typing import Union
 
-import narwhals as nw
+import narwhals.stable.v1 as nw
 import numpy as np
 from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted

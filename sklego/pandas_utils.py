@@ -2,7 +2,7 @@ import datetime as dt
 import inspect
 from functools import partial, wraps
 
-import narwhals as nw
+import narwhals.stable.v1 as nw
 import numpy as np
 from scipy.ndimage import shift
 
