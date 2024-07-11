@@ -50,3 +50,20 @@ def test_when_rbf_helper_receives_more_than_one_col_raises_value_error(df):
     rbf_helper_tf = _RepeatingBasisFunction()
     with pytest.raises(ValueError):
         rbf_helper_tf.fit(X, y)
+        
+def test_pandas_output(df):
+    X, y = df[["a", "b", "c", "d"]], df[["e"]]
+    tf = RepeatingBasisFunction(column=0, n_periods=4, remainder="passthrough")
+    tf.set_output(transform='pandas')
+    Z = tf.fit(X, y).transform(X)
+    assert isinstance(Z, pd.core.frame.DataFrame)
+
+def test_inverse_transform(df):
+    X, y = df[["a", "b", "c", "d"]], df[["e"]]
+    tf = RepeatingBasisFunction(column=0, n_periods=4, input_range=(0,7), remainder="drop")
+    Z = tf.fit(X, y).transform(X)
+    assert np.allclose(
+      X["a"], 
+      tf.pipeline_.named_transformers_['repeatingbasis'].inverse_transform(Z), 
+      rtol=1e-08, 
+      atol=1e-12)
