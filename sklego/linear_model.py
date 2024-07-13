@@ -51,7 +51,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         The target (training) values.
 
 
-    Example
+    Examples
     -------
     ```python
     from sklego.linear_model import LowessRegression
