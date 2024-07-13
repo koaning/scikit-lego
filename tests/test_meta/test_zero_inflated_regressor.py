@@ -112,8 +112,8 @@ def test_score_samples():
     # Where the classifier prediction is zero, then the score is by something greater than 0.
     assert approx_gte(scores[~pred_is_non_zero], preds[~pred_is_non_zero])
 
-def test_no_predict_proba():
 
+def test_no_predict_proba():
     np.random.seed(0)
     X = np.random.randn(1_000, 4)
     y = ((X[:, 0] > 0) & (X[:, 1] > 0)) * np.abs(X[:, 2] * X[:, 3] ** 2)
@@ -125,4 +125,3 @@ def test_no_predict_proba():
 
     with pytest.raises(AttributeError, match="This 'ZeroInflatedRegressor' has no attribute 'score_samples'"):
         zir.score_samples(X)
-    
