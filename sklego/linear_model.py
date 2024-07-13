@@ -49,6 +49,25 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         The training data.
     y_ : np.ndarray of shape (n_samples,)
         The target (training) values.
+
+
+    Examples
+    -------
+    ```python
+    from sklego.linear_model import LowessRegression
+    from sklearn.datasets import make_regression
+    from sklearn.model_selection import train_test_split
+
+    X, y = make_regression(n_samples=100, n_features=2, noise=10)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    lowess = LowessRegression(sigma=1, span=0.5)
+    lowess.fit(X_train, y_train)
+
+    y_pred = lowess.predict(X_test)
+    print(y_pred)
+    ```
     """
 
     def __init__(self, sigma=1, span=None):
