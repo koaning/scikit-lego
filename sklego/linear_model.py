@@ -147,6 +147,25 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
     coefs_ : np.ndarray, shape (n_columns,)
         Deprecated, please use `coef_` instead.
 
+    Example
+    -------
+    ```python
+    import numpy as np
+    from sklego.linear_model import ProbWeightRegression
+
+    X = np.array([[1, 2], [2, 3], [3, 4], [4, 5]])
+    y = np.array([1, 2, 3, 4])
+
+    pwr = ProbWeightRegression().fit(X, y)
+
+    # The weights sum up to 1
+    assert np.isclose(pwr.coef_.sum(), 1)
+
+    X_test = np.array([[5, 6], [6, 7]])
+
+    # The prediction is positive (all weights are positive, and features are positive)
+    assert all(pwr.predict(X_test) > 0)
+    ```
     !!! info
 
         This model requires [`cvxpy`](https://www.cvxpy.org/) to be installed. If you don't have it installed, you can
@@ -275,6 +294,23 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         The learned coefficients after fitting the model.
     coefs_ : np.ndarray, shape (n_columns,)
         Deprecated, please use `coef_` instead.
+
+    Example
+    -------
+
+    ```python
+    import numpy as np
+    from sklego.linear_model import DeadZoneRegressor
+
+    X = np.array([[1, 2], [2, 3], [3, 4], [4, 5]])
+    y = np.array([1, 2, 3, 4])
+
+    dzr = DeadZoneRegressor(threshold=0.5, relative=False, effect="quadratic").fit(X, y)
+
+    X_test = np.array([[5, 6], [6, 7]])
+    dzr.predict(X_test)
+
+
     """
 
     _ALLOWED_EFFECTS = ("linear", "quadratic", "constant")
