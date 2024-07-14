@@ -843,11 +843,19 @@ class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
     from sklearn.datasets import make_classification
     from sklearn.model_selection import train_test_split
 
-    X, y = make_classification(n_samples=100, n_features=2, n_informative=2, n_redundant=0, n_clusters_per_class=1)
+    X, y = make_classification(
+        n_samples=100,
+        n_features=2,
+        n_informative=2,
+        n_redundant=0,
+        n_clusters_per_class=1
+    )
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-    eo = EqualOpportunityClassifier(covariance_threshold=0.1, positive_target=1, sensitive_cols=[0]).fit(X_train, y_train)
+    eo = EqualOpportunityClassifier(
+        covariance_threshold=0.1, positive_target=1, sensitive_cols=[0]
+    ).fit(X_train, y_train)
 
     y_pred = eo.predict_proba(X_test)
 
