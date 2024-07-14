@@ -735,7 +735,9 @@ class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
-    dp = DemographicParityClassifier(covariance_threshold=0.1, sensitive_cols=[0]).fit(X_train, y_train)
+    dp = DemographicParityClassifier(
+        covariance_threshold=0.1, sensitive_cols=[0]
+    ).fit(X_train, y_train)
 
     y_pred = dp.predict_proba(X_test)
 
