@@ -52,7 +52,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
 
 
     Examples
-    -------
+    --------
     ```python
     from sklego.linear_model import LowessRegression
     from sklearn.datasets import make_regression
@@ -165,6 +165,29 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         The learned coefficients after fitting the model.
     coefs_ : np.ndarray, shape (n_columns,)
         Deprecated, please use `coef_` instead.
+
+    Examples
+    --------
+    ```python
+    import numpy as np
+    from sklego.linear_model import ProbWeightRegression
+
+    X = np.array([[1, 2], [2, 3], [3, 4], [4, 5]])
+    y = np.array([1, 2, 3, 4])
+
+    pwr = ProbWeightRegression().fit(X, y)
+
+    # The weights sum up to 1
+    assert np.isclose(pwr.coef_.sum(), 1)
+
+    X_test = np.array([[5, 6], [6, 7]])
+
+    # The prediction is positive (all weights are positive, and features are positive)
+    assert all(pwr.predict(X_test) > 0)
+
+    # The weights are positive
+    assert all(pwr.coef_ > -1e-8)
+    ```
 
     !!! info
 
@@ -294,6 +317,26 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         The learned coefficients after fitting the model.
     coefs_ : np.ndarray, shape (n_columns,)
         Deprecated, please use `coef_` instead.
+
+    Examples
+    --------
+
+    ```python
+    import numpy as np
+    from sklego.linear_model import DeadZoneRegressor
+
+    X = np.array([[1, 2], [2, 3], [3, 4], [4, 5]])
+    y = np.array([1, 2, 3, 4])
+
+    dzr = DeadZoneRegressor(threshold=0.5, relative=False, effect="quadratic").fit(X, y)
+
+    X_test = np.array([[5, 6], [6, 7]])
+    y_pred = dzr.predict(X_test)
+
+    print(y_pred)
+    ```
+
+
     """
 
     _ALLOWED_EFFECTS = ("linear", "quadratic", "constant")
@@ -673,6 +716,33 @@ class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
     Source
     ------
     M. Zafar et al. (2017), Fairness Constraints: Mechanisms for Fair Classification
+
+
+    Examples
+    --------
+    ```python
+    from sklego.linear_model import DemographicParityClassifier
+    from sklearn.datasets import make_classification
+    from sklearn.model_selection import train_test_split
+
+    X, y = make_classification(
+        n_samples=100,
+        n_features=2,
+        n_informative=2,
+        n_redundant=0,
+        n_clusters_per_class=1,
+    )
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    dp = DemographicParityClassifier(
+        covariance_threshold=0.1, sensitive_cols=[0]
+    ).fit(X_train, y_train)
+
+    y_pred = dp.predict_proba(X_test)
+
+    print(y_pred)
+    ```
     """
 
     def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
@@ -764,6 +834,33 @@ class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
         The method to use for multiclass predictions.
     n_jobs : int | None, default=1
         The amount of parallel jobs that should be used to fit the model.
+
+    Examples
+    --------
+
+    ```python
+    from sklego.linear_model import EqualOpportunityClassifier
+    from sklearn.datasets import make_classification
+    from sklearn.model_selection import train_test_split
+
+    X, y = make_classification(
+        n_samples=100,
+        n_features=2,
+        n_informative=2,
+        n_redundant=0,
+        n_clusters_per_class=1,
+    )
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    eo = EqualOpportunityClassifier(
+        covariance_threshold=0.1, positive_target=1, sensitive_cols=[0]
+    ).fit(X_train, y_train)
+
+    y_pred = eo.predict_proba(X_test)
+
+    print(y_pred)
+    ```
     """
 
     def __new__(cls, *args, multi_class="ovr", n_jobs=1, **kwargs):
