@@ -17,21 +17,15 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
-    - name: Install uv (Unix)
-      if: runner.os != 'Windows'
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
-    - name: Install uv (Windows)
-      if: runner.os == 'Windows'
-      run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        uv pip install wheel --system
-        uv pip install ${{ matrix.pre-release-dependencies }} --system -e ".[test-dep]"
-        uv pip freeze
+        python -m pip install wheel 
+        python -m pip install ${{ matrix.pre-release-dependencies }}  -e ".[test]"
+        python -m pip freeze
     - name: Test with pytest
       run: pytest -n auto --disable-warnings --cov=sklego -m "not cvxpy and not formulaic and not umap"
 
@@ -46,20 +40,14 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
-    - name: Install uv (Unix)
-      if: runner.os != 'Windows'
-      run: curl -LsSf https://astral.sh/uv/install.sh | sh
-    - name: Install uv (Windows)
-      if: runner.os == 'Windows'
-      run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        uv pip install wheel --system
-        uv pip install ${{ matrix.pre-release-dependencies }} -e ".[test-dep,${{ matrix.extra }}]" --system
-        uv pip freeze
+        python -m pip install wheel 
+        python -m pip install ${{ matrix.pre-release-dependencies }} -e ".[test,${{ matrix.extra }}]" 
+        python -m pip freeze
     - name: Test with pytest
       run: pytest -n auto --disable-warnings --cov=sklego -m "${{ matrix.extra }}"

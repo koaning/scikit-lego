@@ -4,26 +4,25 @@ from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.svm import OneClassSVM
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.meta import OutlierClassifier
 from sklego.mixture import GMMOutlierDetector
-from tests.conftest import general_checks, select_tests
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks]),
-        exclude=[
-            "check_sample_weights_invariance",
-        ],
-    ),
-)
-def test_estimator_checks(test_fn):
-    mod_quantile = GMMOutlierDetector(threshold=0.999, method="quantile")
-    clf_quantile = OutlierClassifier(mod_quantile)
-    test_fn("OutlierClassifier", clf_quantile)
+@parametrize_with_checks([OutlierClassifier(GMMOutlierDetector(threshold=0.1, method="quantile"))])
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        # Since `OutlierClassifier` is a classifier (`ClassifierMixin`), parametrize_with_checks feeds a classification
+        # dataset. However this is not how this classifier is supposed to be used.
+        "check_classifiers_train",
+        "check_classifiers_classes",
+        # Similarly, the original dataset could also be regression task depending on the outlier detection algo
+        "check_classifiers_regression_target",
+    }:
+        pytest.skip()
+
+    check(estimator)
 
 
 @pytest.fixture

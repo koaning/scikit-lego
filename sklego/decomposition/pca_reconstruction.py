@@ -108,13 +108,9 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         )
         self.pca_.fit(X, y)
         self.offset_ = -self.threshold
-        return self
 
-    def transform(self, X):
-        """Transform the data using the underlying PCA method."""
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ["pca_", "offset_"])
-        return self.pca_.transform(X)
+        self.n_features_in_ = X.shape[1]
+        return self
 
     def difference(self, X):
         """Return the calculated difference between original and reconstructed data. Row by row.

@@ -101,3 +101,6 @@ class RandomAdder(TrainOnlyTransformerMixin, BaseEstimator):
             DeprecationWarning,
         )
         return self.n_features_in_
+
+    def _more_tags(self):
+        return {"non_deterministic": True}

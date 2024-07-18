@@ -53,6 +53,8 @@ class DictMapper(TransformerMixin, BaseEstimator):
     ```
     """
 
+    _required_parameters = ["mapper", "default"]
+
     def __init__(self, mapper, default):
         self.mapper = mapper
         self.default = default
@@ -76,7 +78,7 @@ class DictMapper(TransformerMixin, BaseEstimator):
             X,
             copy=True,
             estimator=self,
-            force_all_finite=True,
+            force_all_finite=False,
             dtype=None,
             ensure_2d=True,
         )
@@ -106,7 +108,7 @@ class DictMapper(TransformerMixin, BaseEstimator):
             X,
             copy=True,
             estimator=self,
-            force_all_finite=True,
+            force_all_finite=False,
             dtype=None,
             ensure_2d=True,
         )
@@ -122,3 +124,6 @@ class DictMapper(TransformerMixin, BaseEstimator):
             DeprecationWarning,
         )
         return self.n_features_in_
+
+    def _more_tags(self):
+        return {"preserves_dtype": None, "allow_nan": True, "no_validation": True}

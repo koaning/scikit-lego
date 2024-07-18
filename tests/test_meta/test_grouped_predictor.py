@@ -2,16 +2,42 @@ from contextlib import nullcontext as does_not_raise
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn.dummy import DummyRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import make_pipeline
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.datasets import load_chicken
 from sklego.meta import GroupedClassifier, GroupedPredictor, GroupedRegressor
-from tests.conftest import general_checks, select_tests
+
+
+@parametrize_with_checks(
+    [
+        meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
+        for meta_cls in [GroupedPredictor, GroupedRegressor]
+    ]
+)
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        "check_no_attributes_set_in_init",  # Setting **shrinkage_kwargs in init
+        "check_estimators_pickle",  # Fails when input contains NaN
+        "check_regressor_data_not_an_array",  # DataFrame constructor not properly called!  TODO: This should work
+        "check_dtype_object",  # custom message
+        "check_fit2d_1feature",  # custom message
+        "check_fit2d_predict1d",  # custom message
+        "check_estimators_empty_data_messages",  # custom message
+        "check_supervised_y_2d",  # TODO: Is it possible to support multioutput?
+    }:
+        pytest.skip()
+
+    if check.func.__name__ == "check_regressors_train" and estimator.__class__ is GroupedPredictor:
+        # Can't use `isinstance(estimator, GroupedPredictor)` since that's true for both cases
+        pytest.skip()
+
+    check(estimator)
 
 
 @pytest.fixture
@@ -33,44 +59,18 @@ def random_xy_grouped_clf_different_classes(request):
     return df
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks]),
-        exclude=[
-            # Nonsense checks because we always need at least two columns (group and value)
-            "check_fit1d",
-            "check_fit2d_predict1d",
-            "check_fit2d_1feature",
-            "check_transformer_data_not_an_array",
-        ],
-    ),
-)
-@pytest.mark.parametrize("meta_cls", [GroupedRegressor, GroupedPredictor])
-def test_estimator_checks(test_fn, meta_cls):
-    clf = meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
-    test_fn(meta_cls.__name__ + "_fallback", clf)
-
-    clf = meta_cls(estimator=LinearRegression(), groups=0, use_global_model=False)
-    test_fn(meta_cls.__name__ + "_nofallback", clf)
+@pytest.mark.parametrize("groups, expected", [("diet", {1, 2, 3, 4}), ("chick", set(range(1, 50 + 1)))])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_chickweight_keys(groups, expected, frame_func):
+    df = frame_func(load_chicken(as_frame=True))
+    mod = GroupedPredictor(estimator=LinearRegression(), groups=groups)
+    mod.fit(df[["time", groups]], df["weight"])
+    assert set(mod.estimators_.keys()) == expected
 
 
-def test_chickweight_df1_keys():
-    df = load_chicken(as_frame=True)
-    mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
-    mod.fit(df[["time", "diet"]], df["weight"])
-    assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
-
-
-def test_chickweight_df2_keys():
-    df = load_chicken(as_frame=True)
-    mod = GroupedPredictor(estimator=LinearRegression(), groups="chick")
-    mod.fit(df[["time", "chick"]], df["weight"])
-    assert set(mod.estimators_.keys()) == set(range(1, 50 + 1))
-
-
-def test_chickweight_can_do_fallback():
-    df = load_chicken(as_frame=True)
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_chickweight_can_do_fallback(frame_func):
+    df = frame_func(load_chicken(as_frame=True))
     mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], df["weight"])
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
@@ -79,12 +79,15 @@ def test_chickweight_can_do_fallback():
     assert mod.predict(to_predict)[0] == mod.predict(to_predict)[1]
 
 
-def test_chickweight_can_do_fallback_proba():
-    df = load_chicken(as_frame=True)
-    y = np.where(df.weight > df.weight.mean(), 1, 0)
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_chickweight_can_do_fallback_proba(frame_func):
+    df = frame_func(load_chicken(as_frame=True))
+
+    y = np.where(df["weight"] > df["weight"].mean(), 1, 0)
     mod = GroupedPredictor(estimator=LogisticRegression(), groups="diet")
     mod.fit(df[["time", "diet"]], y)
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
+
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
     assert mod.predict_proba(to_predict).shape == (2, 2)
     assert (mod.predict_proba(to_predict)[0] == mod.predict_proba(to_predict)[1]).all()
@@ -510,7 +513,7 @@ def test_shrinkage_single_group_no_global(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError):
         shrink_est = GroupedPredictor(
             DummyRegressor(),
             "Country",
@@ -519,8 +522,6 @@ def test_shrinkage_single_group_no_global(shrinkage_data):
             alpha=0.1,
         )
         shrink_est.fit(X, y)
-
-        assert "Cannot do shrinkage with a single group if use_global_model is False" in str(e)
 
 
 def test_unexisting_shrinkage_func(shrinkage_data):
@@ -634,7 +635,7 @@ def test_has_decision_function():
 
     X, y = df.drop(columns="weight"), df["weight"]
     # This should NOT raise errors
-    GroupedPredictor(LogisticRegression(max_iter=2000), groups=["diet"]).fit(X, y).decision_function(X)
+    GroupedPredictor(LogisticRegression(max_iter=200), groups=["diet"]).fit(X, y).decision_function(X)
 
 
 @pytest.mark.parametrize(

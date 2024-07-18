@@ -2,19 +2,20 @@ import logging
 from inspect import signature
 
 import numpy as np
-from sklearn.base import BaseEstimator, RegressorMixin, clone, is_classifier, is_regressor
+from sklearn.base import BaseEstimator, MetaEstimatorMixin, RegressorMixin, clone, is_classifier, is_regressor
 from sklearn.exceptions import NotFittedError
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.metaestimators import available_if
+from sklearn.utils.validation import _check_sample_weight, check_array, check_is_fitted, check_X_y
 
 
-class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
+class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
     """A meta regressor for zero-inflated datasets, i.e. the targets contain a lot of zeroes.
 
     `ZeroInflatedRegressor` consists of a classifier and a regressor.
 
-        - The classifier's task is to find of if the target is zero or not.
-        - The regressor's task is to output a (usually positive) prediction whenever the classifier indicates that the
-        there should be a non-zero prediction.
+    - The classifier's task is to find of if the target is zero or not.
+    - The regressor's task is to output a (usually positive) prediction whenever the classifier indicates that the
+    there should be a non-zero prediction.
 
     The regressor is only trained on examples where the target is non-zero, which makes it easier for it to focus.
 
@@ -46,19 +47,21 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
     np.random.seed(0)
     X = np.random.randn(10000, 4)
     y = ((X[:, 0]>0) & (X[:, 1]>0)) * np.abs(X[:, 2] * X[:, 3]**2)
+
     model = ZeroInflatedRegressor(
-        classifier=ExtraTreesClassifier(random_state=0),
+        classifier=ExtraTreesClassifier(random_state=0, max_depth=10),
         regressor=ExtraTreesRegressor(random_state=0)
-        )
+    ).fit(X, y)
 
-    model.fit(X, y)
-    # ZeroInflatedRegressor(classifier=ExtraTreesClassifier(random_state=0),
-    #                       regressor=ExtraTreesRegressor(random_state=0))
-
-    model.predict(X)[:5]
+    model.predict(X[:5])
     # array([4.91483294, 0.        , 0.        , 0.04941909, 0.        ])
+
+    model.score_samples(X[:5]).round(2)
+    # array([3.73, 0.  , 0.11, 0.03, 0.06])
     ```
     """
+
+    _required_parameters = ["classifier", "regressor"]
 
     def __init__(self, classifier, regressor) -> None:
         self.classifier = classifier
@@ -96,6 +99,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
         if not is_regressor(self.regressor):
             raise ValueError(f"`regressor` has to be a regressor. Received instance of {type(self.regressor)} instead.")
 
+        sample_weight = _check_sample_weight(sample_weight, X)
         try:
             check_is_fitted(self.classifier)
             self.classifier_ = self.classifier
@@ -108,7 +112,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
                 logging.warning("Classifier ignores sample_weight.")
                 self.classifier_.fit(X, y != 0)
 
-        non_zero_indices = np.where(self.classifier_.predict(X) == 1)[0]
+        non_zero_indices = np.where(y != 0)[0]
 
         if non_zero_indices.size > 0:
             try:
@@ -162,3 +166,38 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin):
             output[non_zero_indices] = self.regressor_.predict(X[non_zero_indices])
 
         return output
+
+    @available_if(lambda self: hasattr(self.classifier_, "predict_proba"))
+    def score_samples(self, X):
+        r"""Predict risk estimate of `X` as the probability of `X` to not be zero times the expected value of `X`:
+
+        $$\text{score_sample(X)} = (1-P(X=0)) \cdot E[X]$$
+
+        where:
+
+        - $P(X=0)$ is calculated using the `.predict_proba()` method of the underlying classifier.
+        - $E[X]$ is the regressor prediction on `X`.
+
+        !!! info
+
+            This method requires the underlying classifier to implement `.predict_proba()` method.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to predict.
+
+        Returns
+        -------
+        array-like of shape (n_samples,)
+            The predicted risk.
+        """
+
+        check_is_fitted(self)
+        X = check_array(X)
+        self._check_n_features(X, reset=True)
+
+        non_zero_proba = self.classifier_.predict_proba(X)[:, 1]
+        expected_impact = self.regressor_.predict(X)
+
+        return non_zero_proba * expected_impact

@@ -85,6 +85,7 @@ class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
             # Computing target class prior
             self.priors_logp_[target_label] = np.log(len(x_subset) / len(X))
 
+        self.n_features_in_ = X.shape[1]
         return self
 
     def predict_proba(self, X):

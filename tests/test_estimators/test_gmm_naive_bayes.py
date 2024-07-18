@@ -1,32 +1,20 @@
 import numpy as np
 import pytest
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.naive_bayes import BayesianGaussianMixtureNB, GaussianMixtureNB
-from tests.conftest import general_checks, nonmeta_checks, select_tests
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([general_checks, nonmeta_checks]),
-        exclude=[
-            "check_sample_weights_invariance",
-            "check_non_transformer_estimators_n_iter",
-            "check_sample_weights_list",
-            "check_sample_weights_pandas_series",
-        ],
-    ),
+@parametrize_with_checks(
+    [
+        GaussianMixtureNB(),
+        GaussianMixtureNB(n_components=2),
+        BayesianGaussianMixtureNB(),
+        BayesianGaussianMixtureNB(n_components=2),
+    ],
 )
-def test_estimator_checks(test_fn):
-    clf1 = GaussianMixtureNB()
-    clf2 = GaussianMixtureNB(n_components=2)
-    clf3 = BayesianGaussianMixtureNB()
-    clf4 = BayesianGaussianMixtureNB(n_components=2)
-    test_fn(GaussianMixtureNB.__name__, clf1)
-    test_fn(GaussianMixtureNB.__name__ + "_components_5", clf2)
-    test_fn(BayesianGaussianMixtureNB.__name__, clf3)
-    test_fn(BayesianGaussianMixtureNB.__name__ + "_components_5", clf4)
+def test_sklearn_compatible_estimator(estimator, check):
+    check(estimator)
 
 
 @pytest.fixture

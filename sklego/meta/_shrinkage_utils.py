@@ -1,7 +1,10 @@
+from functools import partial
+
+import narwhals.stable.v1 as nw
 import numpy as np
 from sklearn.utils.validation import check_is_fitted
 
-from sklego.common import expanding_list
+from sklego.common import as_list, expanding_list
 
 
 def constant_shrinkage(group_sizes, alpha: float) -> np.ndarray:
@@ -45,6 +48,11 @@ def relative_shrinkage(group_sizes) -> np.ndarray:
         The weights for each group.
     """
     return np.asarray(group_sizes)
+
+
+def no_shrinkage_function(x, n):
+    # n = len(self.fitted_levels_[-1])
+    return np.pad([1], (len(x) - 1, n - len(x)), "constant", constant_values=(0))
 
 
 def min_n_obs_shrinkage(group_sizes, min_n_obs: int) -> np.ndarray:
@@ -117,7 +125,7 @@ class ShrinkageMixin:
 
         elif self.shrinkage is None:
             """Instead of keeping two different behaviors for shrinkage and non-shrinkage cases, this conditional block
-            maps no shrinkage to a constant shrinkage function, wit  all the weight on the grouped passed,
+            maps no shrinkage to a constant shrinkage function, with all the weight on the grouped passed,
             independently from the level sizes, as expected from the other shrinkage functions (*).
             This allows the rest of the code to be agnostic to the shrinkage function, and the shrinkage factors.
 
@@ -150,11 +158,7 @@ class ShrinkageMixin:
                 }
             """
 
-            def no_shrinkage_function(x):
-                n = len(self.fitted_levels_[-1])
-                return np.pad([1], (len(x) - 1, n - len(x)), "constant", constant_values=(0))
-
-            shrinkage_function_ = no_shrinkage_function
+            shrinkage_function_ = partial(no_shrinkage_function, n=self.n_fitted_levels_)
 
         else:
             raise ValueError(
@@ -190,20 +194,26 @@ class ShrinkageMixin:
             Whether to return only the shrinkage factors for the most granular group values.
         """
         check_is_fitted(self, ["estimators_", "shrinkage_function_"])
-        counts = frame.groupby(groups).size().rename("counts")
+        counts = frame.group_by(groups).agg(nw.len().alias("counts"))
         all_grp_values = list(self.estimators_.keys())
 
         if most_granular_only:
-            all_grp_values = [grp_value for grp_value in all_grp_values if len(grp_value) == len(groups)]
+            all_grp_values = [grp_value for grp_value in all_grp_values if len(as_list(grp_value)) == len(groups)]
 
         hierarchical_counts = {
-            grp_value: [counts.loc[subgroup].sum() for subgroup in expanding_list(grp_value, tuple)]
+            grp_value: [
+                # As zip is "zip shortest" and filter works with comma separate conditions:
+                counts.filter(*[nw.col(c) == v for c, v in zip(groups, subgroup)])
+                .select(nw.sum("counts"))
+                .to_numpy()[0][0]
+                for subgroup in expanding_list(grp_value, tuple)
+            ]
             for grp_value in all_grp_values
         }
 
         shrinkage_factors = {
-            grp_value: self.shrinkage_function_(counts, **self.shrinkage_kwargs)
-            for grp_value, counts in hierarchical_counts.items()
+            grp_value: self.shrinkage_function_(counts_, **self.shrinkage_kwargs)
+            for grp_value, counts_ in hierarchical_counts.items()
         }
 
         # Normalize and pad

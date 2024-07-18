@@ -5,6 +5,7 @@ except ImportError:
 
     umap = NotInstalledPackage("umap-learn")
 
+
 import numpy as np
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
@@ -100,8 +101,9 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
             - If `threshold` is `None`.
         """
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        if self.n_components < 2:
-            raise ValueError("Number of components must be at least two.")
+        if y is not None:
+            y = check_array(y, estimator=self, ensure_2d=False)
+
         if not self.threshold:
             raise ValueError("The `threshold` value cannot be `None`.")
 
@@ -114,13 +116,8 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         )
         self.umap_.fit(X, y)
         self.offset_ = -self.threshold
+        self.n_features_in_ = X.shape[1]
         return self
-
-    def transform(self, X):
-        """Transform the data using the underlying UMAP method."""
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        check_is_fitted(self, ["umap_", "offset_"])
-        return self.umap_.transform(X)
 
     def difference(self, X):
         """Return the calculated difference between original and reconstructed data. Row by row.
@@ -163,3 +160,15 @@ class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
         result = np.ones(X.shape[0])
         result[self.difference(X) > self.threshold] = -1
         return result.astype(int)
+
+    def decision_function(self, X):
+        """Calculate the decision function for the data as the difference between `threshold` and the `.difference(X)`
+        (which is the difference between original data and reconstructed data)."""
+        return self.threshold - self.difference(X)
+
+    def score_samples(self, X):
+        """Calculate the score for the samples"""
+        return -self.difference(X)
+
+    def _more_tags(self):
+        return {"non_deterministic": True}

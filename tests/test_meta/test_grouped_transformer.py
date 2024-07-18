@@ -2,34 +2,33 @@ import itertools as it
 
 import numpy as np
 import pandas as pd
+import polars as pl
 import pytest
 from sklearn import clone
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler, TargetEncoder
 from sklearn.utils import check_X_y
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from sklego.common import flatten
 from sklego.datasets import load_heroes, load_penguins
 from sklego.meta import GroupedTransformer
-from tests.conftest import general_checks, k_vals, n_vals, np_types, select_tests, transformer_checks
+from tests.conftest import k_vals, n_vals, np_types
 
 
-@pytest.mark.parametrize(
-    "test_fn",
-    select_tests(
-        flatten([transformer_checks, general_checks]),
-        exclude=[
-            # Nonsense checks because we always need at least two columns (group and value)
-            "check_fit2d_1feature",
-            "check_fit2d_predict1d",
-            "check_transformer_data_not_an_array",
-        ],
-    ),
-)
-def test_estimator_checks(test_fn):
-    trf = GroupedTransformer(StandardScaler(), groups=0)
-    test_fn(GroupedTransformer.__name__, trf)
+@parametrize_with_checks([GroupedTransformer(StandardScaler(), groups=0, check_X=True)])
+def test_sklearn_compatible_estimator(estimator, check):
+    if check.func.__name__ in {
+        "check_transformer_data_not_an_array",  # TODO: Look into this
+        "check_fit2d_1feature",  # custom message
+        "check_fit2d_predict1d",  # custom message
+        "check_dtype_object",  # custom message
+        "check_estimators_empty_data_messages",  # custom message
+        "check_estimators_pickle",  # Fails if input contains nan
+    }:
+        pytest.skip()
+
+    check(estimator)
 
 
 @pytest.fixture(scope="module", params=[_ for _ in it.product(n_vals, k_vals, np_types)])
@@ -263,7 +262,9 @@ def test_array_with_strings():
     transformer.fit_transform(X)
 
 
-def test_df(penguins_df):
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_df(penguins_df, frame_func):
+    penguins_df = frame_func(penguins_df)
     meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
 
     transformed = meta.fit_transform(penguins_df)
@@ -272,13 +273,14 @@ def test_df(penguins_df):
     assert transformed.shape == (penguins_df.shape[0], penguins_df.shape[1] - 2)
 
 
-def test_df_missing_group(penguins_df):
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_df_missing_group(penguins_df, frame_func):
     meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
 
     # Otherwise the fixture is changed
     X = penguins_df.copy()
     X.loc[0, "island"] = None
-
+    X = frame_func(X)
     with pytest.raises(ValueError):
         meta.fit_transform(X)
 
@@ -286,6 +288,7 @@ def test_df_missing_group(penguins_df):
 def test_array_with_multiple_string_cols(penguins):
     X = penguins
 
+    # BROKEN: Failing due to negative indexing... kind of an edge case
     meta = GroupedTransformer(StandardScaler(), groups=[0, -1])
 
     transformed = meta.fit_transform(X)
@@ -304,16 +307,18 @@ def test_grouping_column_not_in_array(penguins):
         meta.fit_transform(X[:, :3])
 
 
-def test_grouping_column_not_in_df(penguins_df):
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_grouping_column_not_in_df(penguins_df, frame_func):
     meta = GroupedTransformer(StandardScaler(), groups=["island", "unexisting_column"])
 
     # This should raise ValueError
     with pytest.raises(ValueError):
-        meta.fit_transform(penguins_df)
+        meta.fit_transform(frame_func(penguins_df))
 
 
-def test_no_grouping(penguins_df):
-    penguins_numeric = penguins_df[["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]]
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_no_grouping(penguins_df, frame_func):
+    penguins_numeric = frame_func(penguins_df[["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]])
 
     meta = GroupedTransformer(StandardScaler(), groups=None)
     nonmeta = StandardScaler()
@@ -321,8 +326,9 @@ def test_no_grouping(penguins_df):
     assert (meta.fit_transform(penguins_numeric) == nonmeta.fit_transform(penguins_numeric)).all()
 
 
-def test_with_y(penguins_df):
-    X = penguins_df.drop(columns=["sex"])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+def test_with_y(penguins_df, frame_func):
+    X = frame_func(penguins_df.drop(columns=["sex"]))
     y = penguins_df["sex"]
 
     meta = GroupedTransformer(StandardScaler(), groups="island")

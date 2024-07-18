@@ -2,8 +2,8 @@ import datetime as dt
 import inspect
 from functools import partial, wraps
 
+import narwhals.stable.v1 as nw
 import numpy as np
-import pandas as pd
 from scipy.ndimage import shift
 
 from sklego.common import as_list
@@ -199,13 +199,27 @@ def add_lags(X, cols, lags, drop_na=True):
 
     Returns
     -------
-    pd.DataFrame | np.ndarray
+    DataFrame | np.ndarray
         With only the selected cols.
 
     Raises
     ------
     ValueError
-        If the input is not a `pd.DataFrame` or `np.ndarray`.
+        If the input is not a supported DataFrame.
+
+    Notes
+    -----
+    Native cross-dataframe support is achieved using
+    [Narwhals](https://narwhals-dev.github.io/narwhals/){:target="_blank"}.
+    Supported dataframes are:
+
+    - pandas
+    - Polars (eager or lazy)
+    - Modin
+    - cuDF
+
+    See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/){:target="_blank"} for an up-to-date list
+    (and to learn how you can add your dataframe library to it!).
 
     Examples
     --------
@@ -255,8 +269,10 @@ def add_lags(X, cols, lags, drop_na=True):
 
     # The keys of the allowed_inputs dict contain the allowed
     # types, and the values contain the associated handlers
+    X = nw.from_native(X, strict=False)
     allowed_inputs = {
-        pd.core.frame.DataFrame: _add_lagged_pandas_columns,
+        nw.DataFrame: _add_lagged_dataframe_columns,
+        nw.LazyFrame: _add_lagged_dataframe_columns,
         np.ndarray: _add_lagged_numpy_columns,
     }
 
@@ -316,12 +332,12 @@ def _add_lagged_numpy_columns(X, cols, lags, drop_na):
     return answer
 
 
-def _add_lagged_pandas_columns(df, cols, lags, drop_na):
+def _add_lagged_dataframe_columns(df, cols, lags, drop_na):
     """Append a lag columns.
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : narwhals.DataFrame | narwhals.LazyFrame
         Data to be lagged.
     cols : str | List[str]
         Column name / names.
@@ -332,23 +348,19 @@ def _add_lagged_pandas_columns(df, cols, lags, drop_na):
 
     Returns
     -------
-    pd.DataFrame
+    DataFrame
         Dataframe with concatenated lagged cols.
     """
 
     cols = as_list(cols)
 
-    # Indexes are not supported as pandas column names may be
-    # integers themselves, introducing unexpected behaviour
-    if not all([col in df.columns.values for col in cols]):
+    if not all([col in df.columns for col in cols]):
         raise KeyError("The column does not exist")
 
-    combos = (df[col].shift(-lag).rename(col + str(lag)) for col in cols for lag in lags)
+    answer = df.with_columns(nw.col(col).shift(-lag).alias(col + str(lag)) for col in cols for lag in lags)
 
-    answer = pd.concat([df, *combos], axis=1)
-
-    # Remove rows that contain NA values when drop_na is truthy
+    # Remove rows that contain null values when drop_na is truthy
     if drop_na:
-        answer = answer.dropna()
+        answer = answer.drop_nulls()
 
-    return answer
+    return nw.to_native(answer)

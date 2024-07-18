@@ -374,8 +374,8 @@ Sure, you can get regions where you are close to zero, but modelling an output o
 
 What we can do circumvent these problems is the following:
 
-1. Train a classifier to tell us whether the target is zero, or not.
-2. Train a regressor on all samples with a non-zero target.
+1. Train a **classifier** to tell us whether the target is zero, or not.
+2. Train a **regressor** on all samples with a non-zero target.
 
 By putting these two together in an obvious way, we get the [`ZeroInflatedRegressor`][zero-inflated-api]. You can use it like this:
 
@@ -384,8 +384,26 @@ By putting these two together in an obvious way, we get the [`ZeroInflatedRegres
 ```
 
 ```console
-ZIR (RFC+RFR) r²: 0.8992404366385873
-RFR r²: 0.8516522752031502
+ZIR (RFC+RFR) r²: 0.8579468997736154
+RFR r²: 0.7691291933110612
+```
+
+If the underlying classifier is able to predict the _probability_ of a sample to be zero (i.e. it implements a `predict_proba` method), then the `ZeroInflatedRegressor` can be used to predict the probability of a sample being non-zero _times_doc the expected value of such sample.
+
+This quantity is sometimes called _risk estimate_ or _expected impact_, however, to adhere to scikit-learn convention, we made it accessible via the  `score_samples` method.
+
+!!! warning "About `predict_proba`"
+    The `predict_proba` method of the classifier does not always return actual probabilities.
+
+    For this reason if you want to use the `score_samples` method, it is recommended to train with a classifier wrapped by the [`CalibratedClassifierCV`][calibrated-classifier-api] class from scikit-learn to calibrate the probabilities.
+
+```py title="score_samples"
+--8<-- "docs/_scripts/meta-models.py:zero-inflated-score-samples"
+```
+
+```console
+Predict=[4.91 0.   0.   0.05 0.  ]
+Scores=[3.73 0.   0.11 0.03 0.06]
 ```
 
 ## Outlier Classifier

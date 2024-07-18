@@ -3,6 +3,7 @@ from datetime import timedelta
 from itertools import combinations
 from warnings import warn
 
+import narwhals.stable.v1 as nw
 import numpy as np
 import pandas as pd
 from sklearn.exceptions import NotFittedError
@@ -44,8 +45,10 @@ class TimeGapSplit:
 
     Parameters
     ----------
-    date_serie : pd.Series
+    date_serie : Series
         Series with the date, that should have all the indices of X used in the split() method.
+        If the Series is not pandas-like (for example, if it's a Polars Series, which does not have
+        an index) then it must the same same length as the `X` and `y` objects passed to `split`.
     valid_duration : datetime.timedelta
         Retraining period.
     train_duration : datetime.timedelta | None, default=None
@@ -65,6 +68,21 @@ class TimeGapSplit:
 
         - `"rolling"` window has fixed size and is shifted entirely.
         - `"expanding"` left side of window is fixed, right border increases each fold.
+
+    Notes
+    -----
+    Native cross-dataframe support is achieved using
+    [Narwhals](https://narwhals-dev.github.io/narwhals/){:target="_blank"}.
+    Supported dataframes are:
+
+    - pandas
+    - Polars (eager)
+    - Modin
+    - cuDF
+
+    See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/){:target="_blank"} for an up-to-date list
+    (and to learn how you can add your dataframe library to it!), though note that only those
+    convertible to `numpy` arrays will work with this class.
     """
 
     def __init__(
@@ -82,11 +100,7 @@ class TimeGapSplit:
         if (train_duration is not None) and (train_duration <= gap_duration):
             raise ValueError("gap_duration is longer than train_duration, it should be shorter.")
 
-        if not date_serie.index.is_unique:
-            raise ValueError("date_serie doesn't have a unique index")
-
-        self.date_serie = date_serie.copy()
-        self.date_serie = self.date_serie.rename("__date__")
+        self.date_serie = nw.from_native(date_serie, series_only=True).alias("__date__")
         self.train_duration = train_duration
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
@@ -98,13 +112,15 @@ class TimeGapSplit:
         index and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of
         sklearn.
 
+        If the user is working with index-less dataframes (e.g. Polars), then `self.date_series` needs to be the same
+        length as `X`.
+
         Parameters
         ----------
-        X : pd.DataFrame
+        X : DataFrame
             Dataframe with the data to split
         """
-        X_index_df = pd.DataFrame(range(len(X)), columns=["np_index"], index=X.index)
-        X_index_df = X_index_df.join(self.date_serie)
+        X_index_df = nw.maybe_align_index(self.date_serie, X).to_frame().with_row_index("np_index")
 
         return X_index_df
 
@@ -113,7 +129,7 @@ class TimeGapSplit:
 
         Parameters
         ----------
-        X : pd.DataFrame
+        X : DataFrame
             Dataframe with the data to split.
         y : array-like | None, default=None
             Ignored, present for compatibility.
@@ -126,8 +142,9 @@ class TimeGapSplit:
             Train and test indices of the same fold.
         """
 
+        X = nw.from_native(X, eager_only=True)
         X_index_df = self._join_date_and_x(X)
-        X_index_df = X_index_df.sort_values("__date__", ascending=True)
+        X_index_df = X_index_df.sort("__date__", descending=False)
 
         if len(X) != len(X_index_df):
             raise AssertionError(
@@ -167,23 +184,20 @@ class TimeGapSplit:
             if current_date + self.train_duration + time_shift + self.gap_duration > date_max:
                 break
 
-            X_train_df = X_index_df[
-                (X_index_df["__date__"] >= start_date) & (X_index_df["__date__"] < current_date + self.train_duration)
-            ]
-            X_valid_df = X_index_df[
-                (X_index_df["__date__"] >= current_date + self.train_duration + self.gap_duration)
-                & (
-                    X_index_df["__date__"]
-                    < current_date + self.train_duration + self.valid_duration + self.gap_duration
-                )
-            ]
+            X_train_df = X_index_df.filter(
+                nw.col("__date__") >= start_date, nw.col("__date__") < current_date + self.train_duration
+            )
+            X_valid_df = X_index_df.filter(
+                nw.col("__date__") >= current_date + self.train_duration + self.gap_duration,
+                nw.col("__date__") < current_date + self.train_duration + self.valid_duration + self.gap_duration,
+            )
 
             current_date = current_date + time_shift
             if self.window == "rolling":
                 start_date = current_date
             yield (
-                X_train_df["np_index"].values,
-                X_valid_df["np_index"].values,
+                X_train_df["np_index"].to_numpy(),
+                X_valid_df["np_index"].to_numpy(),
             )
 
     def get_n_splits(self, X=None, y=None, groups=None):
@@ -191,7 +205,7 @@ class TimeGapSplit:
 
         Parameters
         ----------
-        X : pd.DataFrame
+        X : DataFrame
             Dataframe with the data to split.
         y : array-like | None, default=None
             Ignored, present for compatibility.
@@ -210,42 +224,52 @@ class TimeGapSplit:
 
         Parameters
         ----------
-        X : pd.DataFrame
+        X : DataFrame
             Dataframe with the data to split.
 
         Returns
         -------
-        pd.DataFrame
+        DataFrame
             Summary of all folds.
         """
         summary = []
+        X = nw.from_native(X, eager_only=True)
         X_index_df = self._join_date_and_x(X)
 
-        def get_split_info(X, indices, j, part, summary):
-            dates = X_index_df.iloc[indices]["__date__"]
+        summary = {
+            "Start date": [],
+            "End date": [],
+            "Period": [],
+            "Unique days": [],
+            "nbr samples": [],
+            "part": [],
+            "fold": [],
+        }
+        native_namespace = nw.get_native_namespace(X)
+
+        def update_split_info(indices, j, part, summary):
+            dates = X_index_df["__date__"][indices]
             mindate = dates.min()
             maxdate = dates.max()
+            n_unique = dates.n_unique()
 
-            s = pd.Series(
-                {
-                    "Start date": mindate,
-                    "End date": maxdate,
-                    "Period": pd.to_datetime(maxdate, format="%Y%m%d") - pd.to_datetime(mindate, format="%Y%m%d"),
-                    "Unique days": len(dates.unique()),
-                    "nbr samples": len(indices),
-                },
-                name=(j, part),
-            )
-            summary.append(s)
-            return summary
+            summary["Start date"].append(mindate)
+            summary["End date"].append(maxdate)
+            summary["Period"].append(maxdate - mindate)
+            summary["Unique days"].append(n_unique)
+            summary["nbr samples"].append(len(indices))
+            summary["part"].append(part)
+            summary["fold"].append(j)
 
         j = 0
-        for i in self.split(X):
-            summary = get_split_info(X, i[0], j, "train", summary)
-            summary = get_split_info(X, i[1], j, "valid", summary)
+        for i in self.split(nw.to_native(X)):
+            update_split_info(native_namespace.Series(i[0]), j, "train", summary)
+            update_split_info(native_namespace.Series(i[1]), j, "valid", summary)
             j = j + 1
 
-        return pd.DataFrame(summary)
+        result = nw.from_native(native_namespace.DataFrame(summary))
+        result = nw.maybe_set_index(result, ["fold", "part"])
+        return nw.to_native(result)
 
 
 def KlusterFoldValidation(**kwargs):
@@ -546,7 +570,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         # initialize the index of the last split point, to reduce the amount of possible index split options
         last_split_index = len(self._grouped_df) - (
             self._grouped_df.assign(
-                observations=lambda df: df["observations"].values[::-1],
+                observations=lambda df: df["observations"].to_numpy()[::-1],
                 cumsum_obs=lambda df: df["observations"].cumsum(),
             )
             .reset_index()

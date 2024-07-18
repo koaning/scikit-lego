@@ -10,6 +10,7 @@ __all__ = [
     "OrthogonalTransformer",
     "OutlierRemover",
     "PandasTypeSelector",
+    "TypeSelector",
     "RandomAdder",
     "RepeatingBasisFunction",
 ]
@@ -20,7 +21,7 @@ from sklego.preprocessing.formulaictransformer import FormulaicTransformer
 from sklego.preprocessing.identitytransformer import IdentityTransformer
 from sklego.preprocessing.intervalencoder import IntervalEncoder
 from sklego.preprocessing.outlier_remover import OutlierRemover
-from sklego.preprocessing.pandastransformers import ColumnDropper, ColumnSelector, PandasTypeSelector
+from sklego.preprocessing.pandastransformers import ColumnDropper, ColumnSelector, PandasTypeSelector, TypeSelector
 from sklego.preprocessing.projections import InformationFilter, OrthogonalTransformer
 from sklego.preprocessing.randomadder import RandomAdder
 from sklego.preprocessing.repeatingbasis import RepeatingBasisFunction
