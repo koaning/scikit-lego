@@ -48,9 +48,11 @@ def test_add_lags_correct_df(data, frame_func):
     ans = add_lags(test_df, "X1", -1)
     if isinstance(ans, pl.LazyFrame):
         ans = ans.collect()
+    print("HERE\n", ans)
     if isinstance(expected, pl.LazyFrame):
         expected = expected.collect()
     assert [x for x in ans.columns] == [x for x in expected.columns]
+
     assert (ans.to_numpy() == expected.to_numpy()).all()
 
 
