@@ -135,7 +135,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     check_X : bool, default=True
         Whether to validate `X` to be non-empty 2D array of finite values and attempt to cast `X` to float.
         If disabled, the model/pipeline is expected to handle e.g. missing, non-numeric, or non-finite values.
-    **shrinkage_kwargs : dict
+    shrinkage_kwargs : dict
         Keyword arguments to the shrinkage function
 
     Attributes
@@ -210,7 +210,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         fallback_method="parent",
         n_jobs=None,
         check_X=True,
-        **shrinkage_kwargs,
+        shrinkage_kwargs=None,
     ):
         self.estimator = estimator
         self.groups = groups
