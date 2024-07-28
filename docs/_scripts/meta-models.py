@@ -132,7 +132,7 @@ feature_pipeline = Pipeline([
     ("datagrab", FeatureUnion([
          ("discrete", Pipeline([
              ("grab", ColumnSelector("diet")),
-             ("encode", OneHotEncoder(categories="auto", sparse=False))
+             ("encode", OneHotEncoder(categories="auto"))
          ])),
          ("continuous", Pipeline([
              ("grab", ColumnSelector("time")),
@@ -265,8 +265,15 @@ from sklego.meta import GroupedPredictor, DecayEstimator
 mod1 = (GroupedPredictor(DummyRegressor(), groups=["m"])
         .fit(df[["m"]], df["yt"]))
 
-mod2 = (GroupedPredictor(DecayEstimator(DummyRegressor(), decay_func="exponential", decay_rate=0.9), groups=["m"])
-        .fit(df[["index", "m"]], df["yt"]))
+mod2 = (GroupedPredictor(
+    estimator=DecayEstimator(
+        model=DummyRegressor(),
+        decay_func="exponential",
+        decay_kwargs={"decay_rate": 0.9}
+    ),
+    groups=["m"]
+    ).fit(df[["index", "m"]], df["yt"])
+)
 
 plt.figure(figsize=(12, 3))
 plt.plot(df["yt"], alpha=0.5);
@@ -494,12 +501,16 @@ with open(_static_path / "ordinal_data.md", "w") as f:
 from sklearn.linear_model import LogisticRegression
 from sklego.meta import OrdinalClassifier
 
-ord_clf = OrdinalClassifier(LogisticRegression(), n_jobs=-1, use_calibration=False)
-_ = ord_clf.fit(X, y)
-ord_clf.predict_proba(X[0])
+ord_clf = OrdinalClassifier(
+    LogisticRegression(),
+    n_jobs=-1,
+    use_calibration=False,
+    ).fit(X, y)
+
+ord_clf.predict_proba(X[:1])
 # --8<-- [end:ordinal-classifier]
 
-print(ord_clf.predict_proba(X[0]))
+print(ord_clf.predict_proba(X[:1]))
 
 # --8<-- [start:ordinal-classifier-with-calibration]
 from sklearn.calibration import CalibratedClassifierCV
