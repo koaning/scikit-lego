@@ -123,12 +123,13 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         if columns is None:
             columns = self._groups
 
+        to_drop = list(set(["__sklego_target__", *columns, *as_list(self.groups)]))
         grouped_estimators = {
             # Fit a clone of the estimators to each group
             (group_name[0] if len(group_name) == 1 else group_name): self.__fit_single_group(
                 group=(group_name[0] if len(group_name) == 1 else group_name),
-                X=nw.to_native(X_grp.drop(["__sklego_target__", *columns, *as_list(self.groups)])),
-                y=(nw.to_native(X_grp.select("__sklego_target__")).to_numpy().reshape(-1) if y is not None else None),
+                X=nw.to_native(X_grp.drop(to_drop)),
+                y=(X_grp.select("__sklego_target__").to_numpy().reshape(-1) if y is not None else None),
             )
             for group_name, X_grp in frame.group_by(columns)
         }
@@ -285,7 +286,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
                         (group_value[0] if len(group_value) == 1 else group_value),
                         nw.to_native(X_grp.drop(["__sklego_index__", *groups, *as_list(self.groups)])),
                         method=method,
-                    ).set_index(nw.to_native(X_grp["__sklego_index__"]).to_numpy().reshape(-1).astype(int))
+                    ).set_index(X_grp["__sklego_index__"].to_numpy().reshape(-1).astype(int))
                     for group_value, X_grp in frame.group_by(groups)
                 ],
                 axis=0,

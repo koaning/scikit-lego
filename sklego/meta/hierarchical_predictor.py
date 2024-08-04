@@ -346,7 +346,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         for level_idx, grp_names in enumerate(self.fitted_levels_):
             for grp_values, grp_frame in frame.group_by(grp_names):
-                grp_idx = nw.to_native(grp_frame.select(self._INDEX_NAME)).to_numpy().reshape(-1)
+                grp_idx = grp_frame.select(self._INDEX_NAME).to_numpy().reshape(-1)
 
                 _estimator, _level = _get_estimator(
                     estimators=self.estimators_,

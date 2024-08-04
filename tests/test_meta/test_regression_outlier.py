@@ -38,7 +38,7 @@ def test_obvious_example():
         assert preds[i] == -1
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.Table])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_obvious_example_dataframe(frame_func):
     # generate random data for illustrative example
     np.random.seed(42)
@@ -55,7 +55,7 @@ def test_obvious_example_dataframe(frame_func):
         assert preds[i] == -1
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.Table])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_raises_error(frame_func):
     # generate random data for illustrative example
     np.random.seed(42)

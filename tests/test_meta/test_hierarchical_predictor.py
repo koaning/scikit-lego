@@ -18,7 +18,7 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from sklego.meta import HierarchicalClassifier, HierarchicalRegressor
 
-frame_funcs = [pd.DataFrame, pl.DataFrame, pa.Table]
+frame_funcs = [pd.DataFrame, pl.DataFrame, pa.table]
 
 
 @parametrize_with_checks([HierarchicalRegressor(estimator=LinearRegression(), groups=0)])
@@ -61,14 +61,14 @@ def make_hierarchical_dataset(task, frame_func=pd.DataFrame):
     else:
         raise ValueError("Invalid task")
 
-    X_ = (
+    X_ = frame_func(
         pd.DataFrame(X, columns=[f"x_{i}" for i in range(X.shape[1])])
         .assign(
             g_0=1,
             g_1=["A"] * (n_samples // 2) + ["B"] * (n_samples // 2),
             g_2=["X"] * (n_samples // 4) + ["Y"] * (n_samples // 2) + ["Z"] * (n_samples // 4),
         )
-        .pipe(frame_func)
+        .to_dict(orient="list")
     )
     groups = ["g_0", "g_1", "g_2"]
 
@@ -163,7 +163,7 @@ def test_fallback(meta_cls, base_estimator, task, fallback_method, context):
     X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 2)])
 
     meta_model = meta_cls(estimator=base_estimator, groups=groups, fallback_method=fallback_method).fit(X, y)
-    X[groups] = np.ones((X.shape[0], len(groups))) * -1  # Shortcut assignment that works both in pandas and polars
+    X = nw.to_native(nw.from_native(X).with_columns(**{g: nw.lit(-1) for g in groups}))
 
     with context:
         meta_model.predict(X)
