@@ -1,8 +1,10 @@
 from contextlib import nullcontext as does_not_raise
 
+import narwhals.stable.v1 as nw
 import numpy as np
 import pandas as pd
 import polars as pl
+import pyarrow as pa
 import pytest
 from sklearn.dummy import DummyRegressor
 from sklearn.impute import SimpleImputer
@@ -60,32 +62,32 @@ def random_xy_grouped_clf_different_classes(request):
 
 
 @pytest.mark.parametrize("groups, expected", [("diet", {1, 2, 3, 4}), ("chick", set(range(1, 50 + 1)))])
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_chickweight_keys(groups, expected, frame_func):
-    df = frame_func(load_chicken(as_frame=True))
+    df = nw.from_native(frame_func(load_chicken(as_frame=True).to_dict(orient="list")))
     mod = GroupedPredictor(estimator=LinearRegression(), groups=groups)
-    mod.fit(df[["time", groups]], df["weight"])
+    mod.fit(nw.to_native(df.select("time", groups)), nw.to_native(df["weight"]))
     assert set(mod.estimators_.keys()) == expected
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_chickweight_can_do_fallback(frame_func):
-    df = frame_func(load_chicken(as_frame=True))
+    df = nw.from_native(frame_func(load_chicken(as_frame=True).to_dict(orient="list")))
     mod = GroupedPredictor(estimator=LinearRegression(), groups="diet")
-    mod.fit(df[["time", "diet"]], df["weight"])
+    mod.fit(nw.to_native(df.select("time", "diet")), nw.to_native(df["weight"]))
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})
     assert mod.predict(to_predict).shape == (2,)
     assert mod.predict(to_predict)[0] == mod.predict(to_predict)[1]
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_chickweight_can_do_fallback_proba(frame_func):
-    df = frame_func(load_chicken(as_frame=True))
+    df = nw.from_native(frame_func(load_chicken(as_frame=True).to_dict(orient="list")))
 
-    y = np.where(df["weight"] > df["weight"].mean(), 1, 0)
+    y = nw.to_native((df["weight"] > df["weight"].mean()).cast(nw.Int32))
     mod = GroupedPredictor(estimator=LogisticRegression(), groups="diet")
-    mod.fit(df[["time", "diet"]], y)
+    mod.fit(nw.to_native(df.select("time", "diet")), y)
     assert set(mod.estimators_.keys()) == {1, 2, 3, 4}
 
     to_predict = pd.DataFrame({"time": [21, 21], "diet": [5, 6]})

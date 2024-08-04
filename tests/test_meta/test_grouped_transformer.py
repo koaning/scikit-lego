@@ -3,6 +3,7 @@ import itertools as it
 import numpy as np
 import pandas as pd
 import polars as pl
+import pyarrow as pa
 import pytest
 from sklearn import clone
 from sklearn.linear_model import LinearRegression
@@ -262,7 +263,7 @@ def test_array_with_strings():
     transformer.fit_transform(X)
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.Table])
 def test_df(penguins_df, frame_func):
     penguins_df = frame_func(penguins_df)
     meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
@@ -273,7 +274,7 @@ def test_df(penguins_df, frame_func):
     assert transformed.shape == (penguins_df.shape[0], penguins_df.shape[1] - 2)
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.Table])
 def test_df_missing_group(penguins_df, frame_func):
     meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
 
@@ -307,7 +308,7 @@ def test_grouping_column_not_in_array(penguins):
         meta.fit_transform(X[:, :3])
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.Table])
 def test_grouping_column_not_in_df(penguins_df, frame_func):
     meta = GroupedTransformer(StandardScaler(), groups=["island", "unexisting_column"])
 
@@ -316,7 +317,7 @@ def test_grouping_column_not_in_df(penguins_df, frame_func):
         meta.fit_transform(frame_func(penguins_df))
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.Table])
 def test_no_grouping(penguins_df, frame_func):
     penguins_numeric = frame_func(penguins_df[["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]])
 
@@ -326,7 +327,7 @@ def test_no_grouping(penguins_df, frame_func):
     assert (meta.fit_transform(penguins_numeric) == nonmeta.fit_transform(penguins_numeric)).all()
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.Table])
 def test_with_y(penguins_df, frame_func):
     X = frame_func(penguins_df.drop(columns=["sex"]))
     y = penguins_df["sex"]

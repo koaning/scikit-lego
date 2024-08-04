@@ -5,6 +5,7 @@ import narwhals.stable.v1 as nw
 import numpy as np
 import pandas as pd
 import polars as pl
+import pyarrow as pa
 import pytest
 from sklearn import clone
 from sklearn.datasets import make_classification, make_regression
@@ -17,7 +18,7 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from sklego.meta import HierarchicalClassifier, HierarchicalRegressor
 
-frame_funcs = [pd.DataFrame, pl.DataFrame]
+frame_funcs = [pd.DataFrame, pl.DataFrame, pa.Table]
 
 
 @parametrize_with_checks([HierarchicalRegressor(estimator=LinearRegression(), groups=0)])
@@ -129,7 +130,7 @@ def test_fit_predict(meta_cls, base_estimator, task, fallback_method, shrinkage,
     """Tests that the model can be fit and predict with different configurations of fallback and shrinkage methods if
     X to predict contains same groups as X used to fit.
     """
-    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
+    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 2)])
 
     meta_model = meta_cls(
         estimator=base_estimator,
@@ -159,7 +160,7 @@ def test_fallback(meta_cls, base_estimator, task, fallback_method, context):
     """Tests that the model fails or not when predicting with different fallback methods if X to predict contains
     unseen group values.
     """
-    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
+    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 2)])
 
     meta_model = meta_cls(estimator=base_estimator, groups=groups, fallback_method=fallback_method).fit(X, y)
     X[groups] = np.ones((X.shape[0], len(groups))) * -1  # Shortcut assignment that works both in pandas and polars
@@ -190,7 +191,7 @@ def test_shrinkage(meta_cls, base_estimator, task, metric, shrinkage, kwargs):
     """Tests that the model performance is better than the base estimator when predicting with different shrinkage
     methods.
     """
-    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
+    X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 2)])
 
     X_ = nw.from_native(X).drop(groups).pipe(nw.to_native)
     meta_model = meta_cls(
