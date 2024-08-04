@@ -149,12 +149,12 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         if self.shrinkage is not None and self.use_global_model:
             n_samples = frame.shape[0]
-            native_space = nw.get_native_namespace(frame)
 
             frame = frame.select(
-                nw.from_native(native_space.Series([self._global_col_value] * n_samples), allow_series=True).alias(
-                    self._global_col_name
-                ),
+                nw.from_dict(
+                    data={self._global_col_name: [self._global_col_value] * n_samples},
+                    native_namespace=nw.get_native_namespace(frame),
+                )[self._global_col_name],
                 nw.all(),
             )
             groups = [self._global_col_name] if groups is None else [self._global_col_name, *groups]
