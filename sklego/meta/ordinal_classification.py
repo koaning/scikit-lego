@@ -95,7 +95,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
 
     is_multiclass = True
 
-    def __init__(self, estimator, *, n_jobs=None, use_calibration=False, **calibration_kwargs):
+    def __init__(self, estimator, *, n_jobs=None, use_calibration=False, calibration_kwargs=None):
         self.estimator = estimator
         self.n_jobs = n_jobs
         self.use_calibration = use_calibration
@@ -218,7 +218,9 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         """
         y_bin = (y <= y_label).astype(int)
         if self.use_calibration:
-            return CalibratedClassifierCV(estimator=clone(self.estimator), **self.calibration_kwargs).fit(X, y_bin)
+            return CalibratedClassifierCV(estimator=clone(self.estimator), **(self.calibration_kwargs or {})).fit(
+                X, y_bin
+            )
         else:
             return clone(self.estimator).fit(X, y_bin)
 

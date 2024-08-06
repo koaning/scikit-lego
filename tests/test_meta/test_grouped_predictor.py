@@ -249,7 +249,7 @@ def test_constant_shrinkage(shrinkage_data):
         ["Planet", "Country", "City"],
         shrinkage="constant",
         use_global_model=False,
-        alpha=0.1,
+        shrinkage_kwargs={"alpha": 0.1},
     )
 
     shrinkage_factors = np.array([0.01, 0.09, 0.9])
@@ -304,7 +304,7 @@ def test_min_n_obs_shrinkage(shrinkage_data):
         ["Planet", "Country", "City"],
         shrinkage="min_n_obs",
         use_global_model=False,
-        min_n_obs=2,
+        shrinkage_kwargs={"min_n_obs": 2},
     )
 
     shrink_est.fit(X, y)
@@ -327,7 +327,7 @@ def test_min_n_obs_shrinkage_too_little_obs(shrinkage_data):
         ["Planet", "Country", "City"],
         shrinkage="min_n_obs",
         use_global_model=False,
-        min_n_obs=too_big_n_obs,
+        shrinkage_kwargs={"min_n_obs": too_big_n_obs},
     )
 
     with pytest.raises(ValueError) as e:
@@ -459,7 +459,7 @@ def test_global_model_shrinkage(shrinkage_data):
         ["Planet", "Country", "City"],
         shrinkage="min_n_obs",
         use_global_model=False,
-        min_n_obs=2,
+        shrinkage_kwargs={"min_n_obs": 2},
     )
 
     shrink_est_with_global = GroupedPredictor(
@@ -467,7 +467,7 @@ def test_global_model_shrinkage(shrinkage_data):
         ["Country", "City"],
         shrinkage="min_n_obs",
         use_global_model=True,
-        min_n_obs=2,
+        shrinkage_kwargs={"min_n_obs": 2},
     )
 
     shrink_est_without_global.fit(X, y)
@@ -490,7 +490,7 @@ def test_shrinkage_single_group(shrinkage_data):
         "Country",
         shrinkage="constant",
         use_global_model=True,
-        alpha=0.1,
+        shrinkage_kwargs={"alpha": 0.1},
     )
 
     shrinkage_factors = np.array([0.1, 0.9])
@@ -519,7 +519,7 @@ def test_shrinkage_single_group_no_global(shrinkage_data):
             "Country",
             shrinkage="constant",
             use_global_model=False,
-            alpha=0.1,
+            shrinkage_kwargs={"alpha": 0.1},
         )
         shrink_est.fit(X, y)
 
@@ -548,7 +548,9 @@ def test_unseen_groups_shrinkage(shrinkage_data):
 
     X, y = df.drop(columns="Target"), df["Target"]
 
-    shrink_est = GroupedPredictor(DummyRegressor(), ["Planet", "Country", "City"], shrinkage="constant", alpha=0.1)
+    shrink_est = GroupedPredictor(
+        DummyRegressor(), ["Planet", "Country", "City"], shrinkage="constant", shrinkage_kwargs={"alpha": 0.1}
+    )
 
     shrink_est.fit(X, y)
 
@@ -569,7 +571,7 @@ def test_predict_missing_group_column(shrinkage_data):
         ["Planet", "Country", "City"],
         shrinkage="constant",
         use_global_model=False,
-        alpha=0.1,
+        shrinkage_kwargs={"alpha": 0.1},
     )
 
     shrink_est.fit(X, y)
@@ -592,7 +594,7 @@ def test_predict_missing_value_column(shrinkage_data):
         ["Planet", "Country", "City"],
         shrinkage="constant",
         use_global_model=False,
-        alpha=0.1,
+        shrinkage_kwargs={"alpha": 0.1},
     )
 
     shrink_est.fit(X, y)

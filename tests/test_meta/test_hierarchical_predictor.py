@@ -116,24 +116,28 @@ def make_hierarchical_dummy(frame_func):
 )
 @pytest.mark.parametrize("fallback_method", ["raise", "parent"])
 @pytest.mark.parametrize(
-    "shrinkage",
+    ("shrinkage", "kwargs"),
     [
-        {"shrinkage": None},
-        {"shrinkage": "equal"},
-        {"shrinkage": "relative"},
-        {"shrinkage": "min_n_obs", "min_n_obs": 10},
-        {"shrinkage": "constant", "alpha": 0.5},
+        (None, None),
+        ("equal", None),
+        ("relative", None),
+        ("min_n_obs", {"min_n_obs": 10}),
+        ("constant", {"alpha": 0.5}),
     ],
 )
-def test_fit_predict(meta_cls, base_estimator, task, fallback_method, shrinkage):
+def test_fit_predict(meta_cls, base_estimator, task, fallback_method, shrinkage, kwargs):
     """Tests that the model can be fit and predict with different configurations of fallback and shrinkage methods if
     X to predict contains same groups as X used to fit.
     """
     X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
 
-    meta_model = meta_cls(estimator=base_estimator, groups=groups, fallback_method=fallback_method, **shrinkage).fit(
-        X, y
-    )
+    meta_model = meta_cls(
+        estimator=base_estimator,
+        groups=groups,
+        fallback_method=fallback_method,
+        shrinkage=shrinkage,
+        shrinkage_kwargs=kwargs,
+    ).fit(X, y)
 
     assert meta_model.estimators_ is not None
     assert meta_model.predict(X) is not None
@@ -173,23 +177,25 @@ def test_fallback(meta_cls, base_estimator, task, fallback_method, context):
     ],
 )
 @pytest.mark.parametrize(
-    "shrinkage",
+    ("shrinkage", "kwargs"),
     [
-        {"shrinkage": None},
-        {"shrinkage": "equal"},
-        {"shrinkage": "relative"},
-        {"shrinkage": "min_n_obs", "min_n_obs": 10},
-        {"shrinkage": "constant", "alpha": 0.5},
+        (None, None),
+        ("equal", None),
+        ("relative", None),
+        ("min_n_obs", {"min_n_obs": 10}),
+        ("constant", {"alpha": 0.5}),
     ],
 )
-def test_shrinkage(meta_cls, base_estimator, task, metric, shrinkage):
+def test_shrinkage(meta_cls, base_estimator, task, metric, shrinkage, kwargs):
     """Tests that the model performance is better than the base estimator when predicting with different shrinkage
     methods.
     """
     X, y, groups = make_hierarchical_dataset(task, frame_func=frame_funcs[randint(0, 1)])
 
     X_ = nw.from_native(X).drop(groups).pipe(nw.to_native)
-    meta_model = meta_cls(estimator=clone(base_estimator), groups=groups, **shrinkage).fit(X, y)
+    meta_model = meta_cls(
+        estimator=clone(base_estimator), groups=groups, shrinkage=shrinkage, shrinkage_kwargs=kwargs
+    ).fit(X, y)
     base_model = clone(base_estimator).fit(X_, y)
 
     assert metric(y, base_model.predict(X_)) <= metric(y, meta_model.predict(X))

@@ -212,7 +212,7 @@ class ShrinkageMixin:
         }
 
         shrinkage_factors = {
-            grp_value: self.shrinkage_function_(counts_, **self.shrinkage_kwargs)
+            grp_value: self.shrinkage_function_(counts_, **(self.shrinkage_kwargs or {}))
             for grp_value, counts_ in hierarchical_counts.items()
         }
 

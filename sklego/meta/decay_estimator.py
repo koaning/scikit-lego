@@ -87,7 +87,7 @@ class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
 
     _required_parameters = ["model"]
 
-    def __init__(self, model, decay_func="exponential", check_input=False, **decay_kwargs):
+    def __init__(self, model, decay_func="exponential", check_input=False, decay_kwargs=None):
         self.model = model
         self.decay_func = decay_func
         self.check_input = check_input
@@ -128,7 +128,7 @@ class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
         else:
             raise ValueError(f"`decay_func` should be one of {self._ALLOWED_DECAYS.keys()} or a callable")
 
-        self.weights_ = self.decay_func_(X, y, **self.decay_kwargs)
+        self.weights_ = self.decay_func_(X, y, **(self.decay_kwargs or {}))
         self.estimator_ = clone(self.model)
 
         try:

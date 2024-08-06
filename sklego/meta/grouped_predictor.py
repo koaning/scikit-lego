@@ -99,7 +99,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         shrinkage=None,
         use_global_model=True,
         check_X=True,
-        **shrinkage_kwargs,
+        shrinkage_kwargs=None,
     ):
         self.estimator = estimator
         self.groups = groups
