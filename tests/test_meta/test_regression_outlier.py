@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import polars as pl
+import pyarrow as pa
 import pytest
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.utils.estimator_checks import parametrize_with_checks
@@ -37,7 +38,7 @@ def test_obvious_example():
         assert preds[i] == -1
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_obvious_example_dataframe(frame_func):
     # generate random data for illustrative example
     np.random.seed(42)
@@ -54,7 +55,7 @@ def test_obvious_example_dataframe(frame_func):
         assert preds[i] == -1
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_raises_error(frame_func):
     # generate random data for illustrative example
     np.random.seed(42)

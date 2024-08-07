@@ -33,10 +33,11 @@ def parse_X_y(X, y, groups, check_X=True, **kwargs) -> nw.DataFrame:
 
     # Convert y and assign it to the frame
     n_samples = X.shape[0]
-    native_space = nw.get_native_namespace(X)
+    y_series = nw.from_dict(
+        data={"tmp": [None] * n_samples if y is None else y}, native_namespace=nw.get_native_namespace(X)
+    )["tmp"]
 
-    y_native = native_space.Series([None] * n_samples) if y is None else native_space.Series(y)
-    return X.with_columns(__sklego_target__=nw.from_native(y_native, allow_series=True))
+    return X.with_columns(__sklego_target__=y_series)
 
 
 def _validate_groups_values(X: nw.DataFrame, groups: List[int] | List[str]) -> None:
