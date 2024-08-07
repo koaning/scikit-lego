@@ -283,7 +283,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         native_namespace = nw.get_native_namespace(X)
         target_series = nw.from_dict({self._TARGET_NAME: y}, native_namespace=native_namespace)[self._TARGET_NAME]
-        global_series = nw.from_dict({self._GLOBAL_NAME: [1] * n_samples}, native_namespace=native_namespace)[
+        global_series = nw.from_dict({self._GLOBAL_NAME: np.ones(n_samples)}, native_namespace=native_namespace)[
             self._GLOBAL_NAME
         ]
         frame = X.with_columns(
@@ -322,7 +322,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         n_samples = X.shape[0]
         native_namespace = nw.get_native_namespace(X)
-        global_series = nw.from_dict({self._GLOBAL_NAME: [1] * n_samples}, native_namespace=native_namespace)[
+        global_series = nw.from_dict({self._GLOBAL_NAME: np.ones(n_samples)}, native_namespace=native_namespace)[
             self._GLOBAL_NAME
         ]
 

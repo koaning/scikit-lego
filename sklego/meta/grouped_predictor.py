@@ -153,7 +153,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
             frame = frame.select(
                 nw.from_dict(
-                    data={self._global_col_name: [self._global_col_value] * n_samples},
+                    data={self._global_col_name: np.full(shape=n_samples, fill_value=self._global_col_value)},
                     native_namespace=nw.get_native_namespace(frame),
                 )[self._global_col_name],
                 nw.all(),
