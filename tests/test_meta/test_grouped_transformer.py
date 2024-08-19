@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 import pytest
+import sklearn
 from sklearn import clone
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
@@ -394,6 +395,9 @@ def test_transform_with_y(transformer):
 
 @pytest.mark.parametrize(("frame_func", "transform_output"), [(pd.DataFrame, "pandas"), (pl.DataFrame, "polars")])
 def test_set_output(penguins_df, frame_func, transform_output):
+    if transform_output == "polars" and sklearn.__version__ < "1.4.0":
+        pytest.skip()
+
     X = frame_func(penguins_df.drop(columns=["sex"]))
     y = penguins_df["sex"]
 
