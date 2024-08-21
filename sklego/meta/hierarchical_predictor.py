@@ -281,12 +281,15 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             msg = "Found 0 features, while a minimum of 1 if required."
             raise ValueError(msg)
 
-        native_space = nw.get_native_namespace(X)
-
+        native_namespace = nw.get_native_namespace(X)
+        target_series = nw.from_dict({self._TARGET_NAME: y}, native_namespace=native_namespace)[self._TARGET_NAME]
+        global_series = nw.from_dict({self._GLOBAL_NAME: np.ones(n_samples)}, native_namespace=native_namespace)[
+            self._GLOBAL_NAME
+        ]
         frame = X.with_columns(
             **{
-                self._TARGET_NAME: nw.from_native(native_space.Series(y), allow_series=True),
-                self._GLOBAL_NAME: nw.from_native(native_space.Series([1] * n_samples), allow_series=True),
+                self._TARGET_NAME: target_series,
+                self._GLOBAL_NAME: global_series,
             }
         ).pipe(self.__validate_frame)
 
@@ -318,11 +321,14 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             X = nw.from_native(pd.DataFrame(X))
 
         n_samples = X.shape[0]
-        native_space = nw.get_native_namespace(X)
+        native_namespace = nw.get_native_namespace(X)
+        global_series = nw.from_dict({self._GLOBAL_NAME: np.ones(n_samples)}, native_namespace=native_namespace)[
+            self._GLOBAL_NAME
+        ]
 
         frame = X.with_columns(
             **{
-                self._GLOBAL_NAME: nw.from_native(native_space.Series([1] * n_samples), allow_series=True),
+                self._GLOBAL_NAME: global_series,
                 self._INDEX_NAME: np.arange(n_samples),
             }
         ).pipe(self.__validate_frame)
@@ -340,7 +346,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         for level_idx, grp_names in enumerate(self.fitted_levels_):
             for grp_values, grp_frame in frame.group_by(grp_names):
-                grp_idx = nw.to_native(grp_frame.select(self._INDEX_NAME)).to_numpy().reshape(-1)
+                grp_idx = grp_frame.select(self._INDEX_NAME).to_numpy().reshape(-1)
 
                 _estimator, _level = _get_estimator(
                     estimators=self.estimators_,

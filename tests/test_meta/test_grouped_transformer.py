@@ -3,6 +3,7 @@ import itertools as it
 import numpy as np
 import pandas as pd
 import polars as pl
+import pyarrow as pa
 import pytest
 import sklearn
 from sklearn import clone
@@ -264,9 +265,9 @@ def test_array_with_strings():
     transformer.fit_transform(X)
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_df(penguins_df, frame_func):
-    penguins_df = frame_func(penguins_df)
+    penguins_df = frame_func(penguins_df.to_dict(orient="list"))
     meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
 
     transformed = meta.fit_transform(penguins_df)
@@ -275,14 +276,14 @@ def test_df(penguins_df, frame_func):
     assert transformed.shape == (penguins_df.shape[0], penguins_df.shape[1] - 2)
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_df_missing_group(penguins_df, frame_func):
     meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
 
     # Otherwise the fixture is changed
     X = penguins_df.copy()
     X.loc[0, "island"] = None
-    X = frame_func(X)
+    X = frame_func(X.to_dict(orient="list"))
     with pytest.raises(ValueError):
         meta.fit_transform(X)
 
@@ -309,18 +310,20 @@ def test_grouping_column_not_in_array(penguins):
         meta.fit_transform(X[:, :3])
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_grouping_column_not_in_df(penguins_df, frame_func):
     meta = GroupedTransformer(StandardScaler(), groups=["island", "unexisting_column"])
 
     # This should raise ValueError
     with pytest.raises(ValueError):
-        meta.fit_transform(frame_func(penguins_df))
+        meta.fit_transform(frame_func(penguins_df.to_dict(orient="list")))
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_no_grouping(penguins_df, frame_func):
-    penguins_numeric = frame_func(penguins_df[["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]])
+    penguins_numeric = frame_func(
+        penguins_df[["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]].to_dict(orient="list")
+    )
 
     meta = GroupedTransformer(StandardScaler(), groups=None)
     nonmeta = StandardScaler()
@@ -328,10 +331,10 @@ def test_no_grouping(penguins_df, frame_func):
     assert (meta.fit_transform(penguins_numeric) == nonmeta.fit_transform(penguins_numeric)).all()
 
 
-@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
 def test_with_y(penguins_df, frame_func):
-    X = frame_func(penguins_df.drop(columns=["sex"]))
-    y = penguins_df["sex"]
+    X = frame_func(penguins_df.drop(columns=["sex"]).to_dict(orient="list"))
+    y = penguins_df["sex"].to_numpy()
 
     meta = GroupedTransformer(StandardScaler(), groups="island")
 

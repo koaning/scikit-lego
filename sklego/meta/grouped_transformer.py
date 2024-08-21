@@ -164,7 +164,7 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
         results = [
             (
-                nw.to_native(X_grp.select("__sklego_index__")).to_numpy().squeeze().astype(int),
+                X_grp.select("__sklego_index__").to_numpy().squeeze().astype(int),
                 self.__transform_single_group(
                     group_name, nw.to_native(X_grp.drop(["__sklego_index__", *self.groups_]))
                 ),
