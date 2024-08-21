@@ -25,7 +25,7 @@ def parse_X_y(X, y, groups, check_X=True, **kwargs) -> nw.DataFrame:
         X = nw.from_native(pd.DataFrame(X))
 
     # Check groups and feaures values
-    if groups is not None:
+    if groups:
         _validate_groups_values(X, groups)
 
         if check_X:

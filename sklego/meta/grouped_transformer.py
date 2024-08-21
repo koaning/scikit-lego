@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Union
 
 import narwhals.stable.v1 as nw
 import numpy as np
@@ -108,14 +108,19 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         """
         self.__check_transformer()
         self.fallback_ = None
-        self.groups_ = as_list(self.groups) if self.groups is not None else None
+        self.groups_ = as_list(self.groups) if self.groups is not None else []
 
         X = nw.from_native(X, strict=False, eager_only=True)
-        if not isinstance(X, nw.DataFrame) and self.groups_ is not None:
+
+        if isinstance(X, nw.DataFrame):
+            self.feature_names_out_ = [c for c in X.columns if c not in self.groups_]
+
+        else:
             # Accounts for negative indices if X is an array
             self.groups_ = [
                 X.shape[1] + group if isinstance(group, int) and group < 0 else group for group in self.groups_
             ]
+            self.feature_names_out_ = [f"x{i}" for i in range(X.shape[1] - len(self.groups_))]
 
         frame = parse_X_y(X, y, self.groups_, check_X=self.check_X, **self._check_kwargs)
 
@@ -203,3 +208,7 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
     def _more_tags(self):
         return {"allow_nan": True}
+
+    def get_feature_names_out(self) -> List[str]:
+        "Alias for the `feature_names_out_` attribute defined during fit."
+        return self.feature_names_out_

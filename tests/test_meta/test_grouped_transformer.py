@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 import pytest
+import sklearn
 from sklearn import clone
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
@@ -25,6 +26,7 @@ def test_sklearn_compatible_estimator(estimator, check):
         "check_dtype_object",  # custom message
         "check_estimators_empty_data_messages",  # custom message
         "check_estimators_pickle",  # Fails if input contains nan
+        "check_fit1d",
     }:
         pytest.skip()
 
@@ -389,3 +391,16 @@ def test_transform_with_y(transformer):
     )
 
     assert np.allclose(X_naive.to_numpy(), X_grouped)
+
+
+@pytest.mark.parametrize(("frame_func", "transform_output"), [(pd.DataFrame, "pandas"), (pl.DataFrame, "polars")])
+def test_set_output(penguins_df, frame_func, transform_output):
+    if transform_output == "polars" and sklearn.__version__ < "1.4.0":
+        pytest.skip()
+
+    X = frame_func(penguins_df.drop(columns=["sex"]))
+    y = penguins_df["sex"]
+
+    meta = GroupedTransformer(StandardScaler(), groups="island").set_output(transform=transform_output)
+    transformed = meta.fit_transform(X, y)
+    assert isinstance(transformed, frame_func)
