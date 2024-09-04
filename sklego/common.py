@@ -81,7 +81,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
         if y is None:
             check_array(X, estimator=self)
         else:
-            check_X_y(X, y, estimator=self)
+            check_X_y(X, y, estimator=self, multi_output=True)
         self.X_hash_ = self._hash(X)
         self.n_features_in_ = X.shape[1]
         return self
