@@ -65,6 +65,10 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         self.n_periods = n_periods
         self.input_range = input_range
         self.width = width
+    
+    def get_feature_names_out(self, input_features=None):
+      feature_names = self.pipeline_.get_feature_names_out()
+      return feature_names
 
     def fit(self, X, y=None):
         """Fit `RepeatingBasisFunction` transformer on input data `X`.
@@ -82,6 +86,7 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         self : RepeatingBasisFunction
             The fitted transformer.
         """
+        
         self.pipeline_ = ColumnTransformer(
             [
                 (
@@ -95,6 +100,7 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
                 )
             ],
             remainder=self.remainder,
+            verbose_feature_names_out = False
         )
 
         self.pipeline_.fit(X, y)
@@ -116,6 +122,31 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self, ["pipeline_"])
         return self.pipeline_.transform(X)
+      
+    def inverse_transform(self, X):
+        """Transform RBF features back to the input range. Outputs a numpy array. 
+
+        Parameters
+        ----------
+        X : 2D array-like of shape (n_samples, n_features)
+            Can be either a pandas.DataFrame or a numpy array.
+            The RBF columns to transform back must appear first.
+
+        Returns
+        -------
+        X_transformed : array-like with the reconstruction of the original values
+                        in input_range in the first column. Will be of the same type as X.
+        """
+        
+        check_is_fitted(self, ["pipeline_"])
+        
+        if isinstance(X,np.ndarray):
+          Xarr = check_array(X[:,:self.n_periods], estimator=self, ensure_2d=True)
+          new_x = self.pipeline_.named_transformers_['repeatingbasis'].inverse_transform(Xarr)
+          Xarr = np.hstack((new_x.reshape(-1, 1),X[:,self.n_periods:]))
+          return Xarr
+        else:
+          raise TypeError("X must be a numpy array.")
 
 
 class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
@@ -147,7 +178,10 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         self.n_periods = n_periods
         self.input_range = input_range
         self.width = width
-
+    
+    def get_feature_names_out(self, input_features=None):
+      return [f"{input_features[0]}_rbf{str(i)}" for i in range(self.n_periods)]
+    
     def fit(self, X, y=None):
         """Fit the transformer to the input data and compute the basis functions.
 
@@ -163,6 +197,7 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         self : _RepeatingBasisFunction
             The fitted transformer.
         """
+        
         X = check_array(X, estimator=self)
 
         # find min and max for standardization if not given explicitly
@@ -208,7 +243,27 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
 
         # apply rbf function to series for each basis
         return self._rbf(base_distances)
-
+    
+    def inverse_transform(self, X):
+        """Transform features back to the input range.
+        """
+        
+        X = check_array(X, estimator=self, ensure_2d=True)
+        check_is_fitted(self, ["bases_", "width_"])
+        if X.shape[1] != self.n_periods:
+            raise ValueError(f"X should have exactly one column for each period, it has: {X.shape[1]}")
+        # Convert back to distances:
+        X = self.width_*np.sqrt(-np.log(X))
+        # Find closest base for each row:
+        min_col_indices = np.argmin(X, axis=1)
+        # Find direction by comparing distance to next and previous base (modulo circularity)
+        directions = np.sign([X[i,(min_col_indices[i] - 1) % self.n_periods]-X[i,(min_col_indices[i] + 1) % self.n_periods] for i in range(X.shape[0])])
+        # Retrieve original value
+        Y = self.bases_[min_col_indices] + directions*[X[i,min_col_indices[i]] for i in range(X.shape[0])]
+        Y[Y < 0] += 1
+        Y = (self.input_range[1] - self.input_range[0])*Y + self.input_range[0]
+        return Y
+    
     def _array_base_distance(self, arr: np.ndarray, base: float) -> np.ndarray:
         """Calculate the distances between all array values and the base, where 0 and 1 are assumed to be at the same
         positions
