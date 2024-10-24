@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
-  
+
 
 jobs:
   cron-base:
@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       if: always()
       run: |
-        python -m pip install wheel 
+        python -m pip install wheel
         python -m pip install ${{ matrix.pre-release-dependencies }}  -e ".[test]"
         python -m pip freeze
     - name: Test with pytest
@@ -37,7 +37,10 @@ jobs:
       matrix:
         python-version: ["3.10"]
         os: [macos-latest, ubuntu-latest, windows-latest]
-        pre-release-dependencies: ["--pre", ""]
+        pre-release-dependencies: [
+          # "--pre",
+          "",
+        ]
         extra: ["cvxpy", "formulaic", "umap"]
     steps:
     - name: Checkout source code
@@ -49,8 +52,8 @@ jobs:
     - name: Install dependencies
       if: always()
       run: |
-        python -m pip install wheel 
-        python -m pip install ${{ matrix.pre-release-dependencies }} -e ".[test,${{ matrix.extra }}]" 
+        python -m pip install wheel
+        python -m pip install ${{ matrix.pre-release-dependencies }} -e ".[test,${{ matrix.extra }}]"
         python -m pip freeze
     - name: Test with pytest
       if: always()
