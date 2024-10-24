@@ -158,3 +158,6 @@ nav:
 
 not_in_nav: |
   _static
+
+hooks:
+  - docs/generate_this_content.py
