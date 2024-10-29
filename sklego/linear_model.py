@@ -141,7 +141,17 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["X_", "y_"])
 
-        results = np.stack([np.average(self.y_, weights=self._calc_wts(x_i=x_i)) for x_i in X])
+        try:
+            results = np.stack([np.average(self.y_, weights=self._calc_wts(x_i=x_i)) for x_i in X])
+        except ZeroDivisionError:
+            msg = (
+                "Weights, resulting from `np.exp(-(distances**2) / self.sigma)`, are all zero. "
+                "Try to increase the value of `sigma` or to normalize the input data.\n\n"
+                "`distances` refer to the distance between each sample `x_i` with all the"
+                "training samples."
+            )
+            raise ValueError(msg)
+
         return results
 
 
