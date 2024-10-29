@@ -29,4 +29,7 @@ def test_custom_error_for_zero_division():
     with pytest.raises(
         ValueError, match=re.escape("Weights, resulting from `np.exp(-(distances**2) / self.sigma)`, are all zero.")
     ):
-        estimator.predict(X[:10] + 0.5)
+        # Adding an offset, otherwise X to predict would be the same as X in fit method,
+        # leading to weight of 1 for the corresponding value.
+        X_pred = X[:10] + 0.5
+        estimator.predict(X_pred)
