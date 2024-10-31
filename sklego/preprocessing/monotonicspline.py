@@ -97,4 +97,4 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
         for col in range(X.shape[1]):
             mapping = np.interp(X[:, col], self.sorted_X[col], self.sorted_idx_).astype(int)
             out.append(self.sorted_X_output_[col][mapping])
-        return np.concatenate(out, axis=0)
+        return np.concatenate(out, axis=1)
