@@ -329,8 +329,6 @@ plt.clf()
 
 ######################################## Monotonic Spline #######################################
 
-print("Monotonic Spline")
-
 # --8<-- [start:monotonic-spline]
 import matplotlib.pylab as plt
 import numpy as np
