@@ -203,6 +203,31 @@ To explore this idea we've also implemented a `DecayEstimator`. For more informa
 
 The [`MonotonicSplineTransformer`][monotonic-spline-api] is a transformer that fits a monotonic spline to the input data. This can be useful when you want to capture non-linear relationships between features and the target variable, while ensuring that the relationship is monotonic. The technique is based on [this blogpost by Mate Kadlicsko](https://matekadlicsko.github.io/posts/monotonic-splines/).
 
+To demonstrate how this works let's first generate some data.
+
+```py
+--8<-- "docs/_scripts/preprocessing.py:monotonic-spline"
+```
+
+
+![monotonic-spline](../_static/preprocessing/monotonic-spline.png)
+
+Next, lets show what the transformed data looks like.
+
+```py
+--8<-- "docs/_scripts/preprocessing.py:monotonic-spline-transform"
+```
+
+![monotonic-spline-transform](../_static/preprocessing/monotonic-spline-transform.png)
+
+Finally, let's show how these features might compare with an isotonic regression.
+
+```py
+--8<-- "docs/_scripts/preprocessing.py:monotonic-spline-regr"
+```
+
+![monotonic-spline-regr](../_static/preprocessing/monotonic-spline-regr.png)
+
 ## Interval Encoders
 
 Sometimes a linear regression doesn't entirely do what you'd like. Take this pattern;
