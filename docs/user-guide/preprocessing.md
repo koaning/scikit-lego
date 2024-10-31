@@ -228,6 +228,11 @@ Finally, let's show how these features might compare with an isotonic regression
 
 ![monotonic-spline-regr](../_static/preprocessing/monotonic-spline-regr.png)
 
+While the `IsotonicRegression` gives a similar result, there are a few reasons why the monotonic spline might be preferred:
+
+1. The monotonic model can result in a smoother model when followed up by a linear model. The linear model can still guarantee monotonicity, but the `IsotonicRegression` might result in a spiky output.
+2. When datasets get big, especially when there are many features involved, the monotonic spline might be faster to compute. This is because the `IsotonicRegression` demands a more complex solver that might not scale as well as a linear model.
+
 ## Interval Encoders
 
 Sometimes a linear regression doesn't entirely do what you'd like. Take this pattern;
