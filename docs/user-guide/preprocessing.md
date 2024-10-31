@@ -199,6 +199,10 @@ Note that you can make this approach even more powerful for timeseries by choosi
 
 To explore this idea we've also implemented a `DecayEstimator`. For more information see the [section on meta estimators][decay-section] for this.
 
+## Monotonic Spline Transformer
+
+The [`MonotonicSplineTransformer`][monotonic-spline-api] is a transformer that fits a monotonic spline to the input data. This can be useful when you want to capture non-linear relationships between features and the target variable, while ensuring that the relationship is monotonic. The technique is based on [this blogpost by Mate Kadlicsko](https://matekadlicsko.github.io/posts/monotonic-splines/).
+
 ## Interval Encoders
 
 Sometimes a linear regression doesn't entirely do what you'd like. Take this pattern;
