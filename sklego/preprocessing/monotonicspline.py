@@ -78,7 +78,6 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
         check_is_fitted(self, "spline_transformer_")
         X = check_array(
             X,
-            copy=self.copy,
             force_all_finite=False,
             dtype=FLOAT_DTYPES,
             estimator=self,
