@@ -83,6 +83,22 @@ def test_wrong_estimators_exceptions():
         zir = ZeroInflatedRegressor(ExtraTreesClassifier(), ExtraTreesClassifier())
         zir.fit(X, y)
 
+    with pytest.raises(ValueError, match=f"'handle_zero' has to be one of 'ignore' or 'error'"):
+        zir = ZeroInflatedRegressor(
+            classifier=ExtraTreesClassifier(max_depth=20, random_state=0, n_jobs=-1),
+            regressor=ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
+        )
+        zir.fit(X, y, handle_zero='ignor')
+
+    error_text = """The predicted training labels are all zero, making the regressor obsolete. Change the classifier
+                    or use a plain regressor instead. Alternatively, you can choose to ignore that predicted labels are 
+                    all zero by setting flag handle_zero = 'ignore'"""
+    with pytest.raises(ValueError,  match=error_text):
+        zir = ZeroInflatedRegressor(
+            classifier=ExtraTreesClassifier(max_depth=20, random_state=0, n_jobs=-1),
+            regressor=ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
+        )
+        zir.fit(X, y) # default is handle_zero = 'error'
 
 def approx_lte(x, y):
     return ((x <= y) | np.isclose(x, y)).all()
