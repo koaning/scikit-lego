@@ -61,6 +61,12 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
             )
             for col in range(X.shape[1])
         }
+        self.sorted_X = {col: np.sort(X[:, col]) for col in range(X.shape[1])}
+        self.sorted_X_output_ = {
+            col: self.spline_transformer_[col].transform(np.sort(X[:, col]).reshape(-1, 1)).cumsum(axis=0)
+            for col in range(X.shape[1])
+        }
+        self.sorted_idx_ = np.arange(X.shape[0]).astype(int)
         return self
 
     def transform(self, X):
@@ -89,10 +95,6 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
         )
         out = []
         for col in range(X.shape[1]):
-            out.append(
-                np.cumsum(
-                    self.spline_transformer_[col].transform(X[:, [col]])[:, ::-1],
-                    axis=1,
-                )
-            )
+            mapping = np.interp(X[:, col], self.sorted_X[col], self.sorted_idx_).astype(int)
+            out.append(self.sorted_X_output_[col][mapping])
         return np.concatenate(out, axis=1)
