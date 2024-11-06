@@ -61,6 +61,7 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
             )
             for col in range(X.shape[1])
         }
+        self.n_features_in_ = X.shape[1]
         return self
 
     def transform(self, X):
@@ -87,6 +88,9 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
             dtype=FLOAT_DTYPES,
             estimator=self,
         )
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError("Number of features going into .transform() do not match number going into .fit().")
+
         out = []
         for col in range(X.shape[1]):
             out.append(
