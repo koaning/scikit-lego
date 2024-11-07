@@ -347,7 +347,6 @@ plt.savefig(_static_path / "monotonic-spline.png")
 plt.clf()
 
 # --8<-- [start:monotonic-spline-transform]
-from sklearn.preprocessing import SplineTransformer
 from sklego.preprocessing import MonotonicSplineTransformer
 
 X_plt = np.sort(X)
