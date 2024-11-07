@@ -6,7 +6,7 @@ from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 
 
 class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
-    """The `MonotonicSplineTransformer` integrates the output of the `SplineTransformer` in an attempt to make monotonic features.
+    """The `MonotonicSplineTransformer` integrates the output of the [scikit-learn `SplineTransformer`](https://scikit-learn.org/dev/modules/generated/sklearn.preprocessing.SplineTransformer.html#sklearn.preprocessing.SplineTransformer) in an attempt to make monotonic features.
 
     This estimator is heavily inspired by [this blogpost](https://matekadlicsko.github.io/posts/monotonic-splines/) by Mate Kadlicsko.
 
@@ -15,7 +15,9 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
     n_knots : int, default=3
         The number of knots to use in the spline transformation.
     degree : int, default=3
-    knots: str, default="uniform"
+        The polynomial degree to use in the spline transformation
+    knots : Literal['uniform', 'quantile'], default="uniform"
+        Knots argument of spline transformer
 
     Attributes
     ----------

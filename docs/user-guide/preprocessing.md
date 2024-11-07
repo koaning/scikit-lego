@@ -201,7 +201,7 @@ To explore this idea we've also implemented a `DecayEstimator`. For more informa
 
 ## Monotonic Spline Transformer
 
-The `MonotonicSplineTransformer` is a transformer that fits a monotonic spline to the input data. This can be useful when you want to capture non-linear relationships between features and the target variable, while ensuring that the relationship is monotonic. The technique is based on [this blogpost by Mate Kadlicsko](https://matekadlicsko.github.io/posts/monotonic-splines/).
+The `MonotonicSplineTransformer` is a transformer that fits a monotonic spline to the input data. This can be useful when you want to capture non-linear relationships between features and the target variable, while ensuring that the relationship is monotonic. The technique is based on [_Fitting monotonic curves using splines_ blogpost by Mate Kadlicsko](https://matekadlicsko.github.io/posts/monotonic-splines/).
 
 To demonstrate how this works let's first generate some data.
 
@@ -212,7 +212,7 @@ To demonstrate how this works let's first generate some data.
 
 ![monotonic-spline](../_static/preprocessing/monotonic-spline.png)
 
-Next, lets show what the transformed data looks like.
+Next, let's show what the transformed data looks like.
 
 ```py
 --8<-- "docs/_scripts/preprocessing.py:monotonic-spline-transform"
