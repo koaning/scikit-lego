@@ -57,7 +57,7 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
         # If X contains infs, we need to replace them by nans before computing quantiles
         self.spline_transformer_ = {
             col: SplineTransformer(n_knots=self.n_knots, degree=self.degree, knots=self.knots).fit(
-                X[:, col].reshape(-1, 1)
+                X[:, [col]]
             )
             for col in range(X.shape[1])
         }
