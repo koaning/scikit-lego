@@ -22,7 +22,6 @@ def test_monotonic_spline_transformer(n_knots, degree, knots):
     transformer_sk.fit(X)
     out = transformer.transform(X)
     out_sk = transformer_sk.transform(X)
-    print(out.shape, out_sk.shape)
 
     # Both should have the same shape
     assert out.shape == out_sk.shape
