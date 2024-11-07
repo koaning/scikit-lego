@@ -6,7 +6,7 @@ from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 
 
 class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
-    """The `MonotonicSplineTransformer` integrates the output of the [scikit-learn `SplineTransformer`](https://scikit-learn.org/dev/modules/generated/sklearn.preprocessing.SplineTransformer.html#sklearn.preprocessing.SplineTransformer) in an attempt to make monotonic features.
+    """The `MonotonicSplineTransformer` integrates the output of the `SplineTransformer` in an attempt to make monotonic features.
 
     This estimator is heavily inspired by [this blogpost](https://matekadlicsko.github.io/posts/monotonic-splines/) by Mate Kadlicsko.
 
@@ -15,18 +15,14 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
     n_knots : int, default=3
         The number of knots to use in the spline transformation.
     degree : int, default=3
-        The polynomial degree to use in the spline transformation
-    knots : Literal['uniform', 'quantile'], default="uniform"
-        Knots argument of spline transformer
+    knots: str, default="uniform"
 
     Attributes
     ----------
     spline_transformer_ : trained SplineTransformer
+    features_in_ : int
+        The number of features seen in the training data.
 
-    Examples
-    --------
-    ```py
-    ```
     """
 
     def __init__(self, n_knots=3, degree=3, knots="uniform"):
@@ -59,7 +55,7 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
         # If X contains infs, we need to replace them by nans before computing quantiles
         self.spline_transformer_ = {
             col: SplineTransformer(n_knots=self.n_knots, degree=self.degree, knots=self.knots).fit(
-                X[:, [col]]
+                X[:, col].reshape(-1, 1)
             )
             for col in range(X.shape[1])
         }

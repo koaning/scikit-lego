@@ -40,6 +40,11 @@
         show_root_full_path: true
         show_root_heading: true
 
+:::sklego.preprocessing.monotonicspline.MonotonicSplineTransformer
+    options:
+        show_root_full_path: true
+        show_root_heading: true
+
 :::sklego.preprocessing.projections.OrthogonalTransformer
     options:
         show_root_full_path: true
@@ -66,11 +71,6 @@
         show_root_heading: true
 
 :::sklego.preprocessing.pandastransformers.TypeSelector
-    options:
-        show_root_full_path: true
-        show_root_heading: true
-
-:::sklego.preprocessing.monotonicspline.MonotonicSplineTransformer
     options:
         show_root_full_path: true
         show_root_heading: true
