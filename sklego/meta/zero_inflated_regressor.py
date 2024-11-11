@@ -79,9 +79,11 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
             The target values.
         sample_weight : array-like of shape (n_samples, ), default=None
             Individual weights for each sample.
-        handle_zero : string, one of 'error' and 'ignore', default='error
-            In the case that all train set output consists of zero values only, whether to ignor and continue ('ignore')
-            or to throw ValueError ('error)
+        handle_zero : Literal["error", "ignore"], default='error
+            How to behave in the case that all train set output consists of zero values only.
+            
+            - `handle_zero = 'error'`: will raise a `ValueError` (default)
+            - `handle_zero = 'ignore'`: will continue to train the regressor on the entire dataset
 s
         Returns
         -------
@@ -92,8 +94,8 @@ s
         ------
         ValueError
             If `classifier` is not a classifier
-            If`regressor` is not a regressor
-            If all train set output is 0 and we do not choose to ignore this
+            If `regressor` is not a regressor
+            If all train target entirely consists of zeros and `handle_zero="error"`
         """
         X, y = check_X_y(X, y)
         self._check_n_features(X, reset=True)
@@ -107,7 +109,7 @@ s
             )
         if not handle_zero in ['ignore', 'error']:
             raise ValueError(
-                f" 'handle_zero' has to be one of 'ignore' or 'error'. Received {handle_zero} instead."
+                f"`handle_zero` has to be one of {'ignore', 'error'}. Received '{handle_zero}' instead."
             )
         
         sample_weight = _check_sample_weight(sample_weight, X)
@@ -125,7 +127,7 @@ s
 
         indices_for_training = np.where(y != 0)[0] # these are the non-zero indices
         if (handle_zero == 'ignore') & (indices_for_training.size == 0): # if we choose to ignore that all train set output is 0
-            logging.warning("Regressor ignores that all train set output consists of zero values.")
+            logging.warning("Regressor will be training on `y` consisting of zero values only.")
             indices_for_training = np.where(y == 0)[0] #use the whole train set
 
         if indices_for_training.size > 0:
