@@ -107,7 +107,7 @@ s
             )
         if not handle_zero in ['ignore', 'error']:
             raise ValueError(
-                f" 'handle_zero' has to be one of 'ignore' or 'error'. Received {handle_zero} instead."
+                f"`handle_zero` has to be one of {'ignore', 'error'}. Received '{handle_zero}' instead."
             )
         
         sample_weight = _check_sample_weight(sample_weight, X)

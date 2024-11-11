@@ -83,7 +83,7 @@ def test_wrong_estimators_exceptions():
         zir = ZeroInflatedRegressor(ExtraTreesClassifier(), ExtraTreesClassifier())
         zir.fit(X, y)
 
-    with pytest.raises(ValueError, match="'handle_zero' has to be one of 'ignore' or 'error'"):
+    with pytest.raises(ValueError, match="`handle_zero` has to be one of \('ignore', 'error'\). Received 'ignor' instead."):
         zir = ZeroInflatedRegressor(
             classifier=ExtraTreesClassifier(max_depth=20, random_state=0, n_jobs=-1),
             regressor=ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
