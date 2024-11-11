@@ -70,6 +70,20 @@ def test_zero_inflated_with_sample_weights_example(classifier, regressor, perfor
 
     assert zir_score > performance
 
+def test_zero_inflated_with_handle_zero_ignore_example():
+    """Test that if handle_zero='ignore and all y are 0, no Exception will be thrown"""
+
+    np.random.seed(0)
+    X = np.random.randn(10000, 4)
+    y = np.zeros(10000) # all outputs are 0
+
+    zir = ZeroInflatedRegressor(
+        classifier=ExtraTreesClassifier(max_depth=20, random_state=0, n_jobs=-1),
+        regressor=ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
+    ).fit(X, y, handle_zero='ignore')
+
+    # The predicted values should all be 0
+    assert (zir.predict(X) ==  np.zeros(10000)).all()
 
 def test_wrong_estimators_exceptions():
     X = np.array([[0.0]])
