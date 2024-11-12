@@ -129,7 +129,7 @@ To use `GroupTimeSeriesSplit` with sklearn's [GridSearchCV](https://scikit-learn
 
 ## Cluster-Kfold
 
-The [ClusterFoldValidation](clusterfold-api) object is a cross-validator that splits the data into `n_splits` folds, where each fold is determined by a clustering algorithm. This is not a common pattern, probably more like an anti-pattern really, but it might be useful when you want to make sure that the train and test sets are very distinct. This can be seen as a way to make it harder for the algorithm perform well, because the training sets are sampled differently than the test sets.
+The [ClusterFoldValidation][clusterfold-api] object is a cross-validator that splits the data into `n_splits` folds, where each fold is determined by a clustering algorithm. This is not a common pattern, probably more like an anti-pattern really, but it might be useful when you want to make sure that the train and test sets are very distinct. This can be seen as a way to make it harder for the algorithm perform well, because the training sets are sampled differently than the test sets.
 
 ### Example
 
