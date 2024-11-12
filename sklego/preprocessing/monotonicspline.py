@@ -15,7 +15,9 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
     n_knots : int, default=3
         The number of knots to use in the spline transformation.
     degree : int, default=3
-    knots: str, default="uniform"
+        The polynomial degree to use in the spline transformation
+    knots : Literal['uniform', 'quantile'], default="uniform"
+        Knots argument of spline transformer
 
     Attributes
     ----------
