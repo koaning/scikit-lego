@@ -102,7 +102,7 @@ line-length = 120
 exclude = ["docs"]
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = ["I", "T201"]
 ignore = [
     "E731",  # do not assign a `lambda` expression, use a `def`
     ]
