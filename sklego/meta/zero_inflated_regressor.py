@@ -29,6 +29,11 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
     regressor : scikit-learn compatible regressor
         A regressor for predicting the target. Its prediction is only used if `classifier` says that the output is
         non-zero.
+    handle_zero : Literal["error", "ignore"], default="error"
+            How to behave in the case that all train set output consists of zero values only.
+
+            - `handle_zero = 'error'`: will raise a `ValueError` (default).
+            - `handle_zero = 'ignore'`: will continue to train the regressor on the entire dataset.
 
     Attributes
     ----------
@@ -63,11 +68,12 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
 
     _required_parameters = ["classifier", "regressor"]
 
-    def __init__(self, classifier, regressor) -> None:
+    def __init__(self, classifier, regressor, handle_zero="error") -> None:
         self.classifier = classifier
         self.regressor = regressor
+        self.handle_zero = handle_zero
 
-    def fit(self, X, y, sample_weight=None, handle_zero = 'error'):
+    def fit(self, X, y, sample_weight=None):
         """Fit the underlying classifier and regressor using `X` and `y` as training data. The regressor is only trained
         on examples where the target is non-zero.
 
@@ -79,12 +85,7 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
             The target values.
         sample_weight : array-like of shape (n_samples, ), default=None
             Individual weights for each sample.
-        handle_zero : Literal["error", "ignore"], default='error
-            How to behave in the case that all train set output consists of zero values only.
-            
-            - `handle_zero = 'error'`: will raise a `ValueError` (default)
-            - `handle_zero = 'ignore'`: will continue to train the regressor on the entire dataset
-s
+
         Returns
         -------
         self : ZeroInflatedRegressor
@@ -104,14 +105,12 @@ s
                 f"`classifier` has to be a classifier. Received instance of {type(self.classifier)} instead."
             )
         if not is_regressor(self.regressor):
+            raise ValueError(f"`regressor` has to be a regressor. Received instance of {type(self.regressor)} instead.")
+        if self.handle_zero not in {"ignore", "error"}:
             raise ValueError(
-                f"`regressor` has to be a regressor. Received instance of {type(self.regressor)} instead."
+                f"`handle_zero` has to be one of {'ignore', 'error'}. Received '{self.handle_zero}' instead."
             )
-        if not handle_zero in ['ignore', 'error']:
-            raise ValueError(
-                f"`handle_zero` has to be one of {'ignore', 'error'}. Received '{handle_zero}' instead."
-            )
-        
+
         sample_weight = _check_sample_weight(sample_weight, X)
         try:
             check_is_fitted(self.classifier)
@@ -125,10 +124,12 @@ s
                 logging.warning("Classifier ignores sample_weight.")
                 self.classifier_.fit(X, y != 0)
 
-        indices_for_training = np.where(y != 0)[0] # these are the non-zero indices
-        if (handle_zero == 'ignore') & (indices_for_training.size == 0): # if we choose to ignore that all train set output is 0
+        indices_for_training = np.where(y != 0)[0]  # these are the non-zero indices
+        if (self.handle_zero == "ignore") & (
+            indices_for_training.size == 0
+        ):  # if we choose to ignore that all train set output is 0
             logging.warning("Regressor will be training on `y` consisting of zero values only.")
-            indices_for_training = np.where(y == 0)[0] #use the whole train set
+            indices_for_training = np.where(y == 0)[0]  # use the whole train set
 
         if indices_for_training.size > 0:
             try:
@@ -152,7 +153,7 @@ s
         else:
             raise ValueError(
                 """The predicted training labels are all zero, making the regressor obsolete. Change the classifier
-                or use a plain regressor instead. Alternatively, you can choose to ignore that predicted labels are 
+                or use a plain regressor instead. Alternatively, you can choose to ignore that predicted labels are
                 all zero by setting flag handle_zero = 'ignore'"""
             )
 
