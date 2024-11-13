@@ -36,4 +36,4 @@ if you understand the solution better than the problem,
 you're doing it wrong.
 """
 
-print(poem)
+print(poem)  # noqa: T201

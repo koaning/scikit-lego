@@ -51,7 +51,6 @@ def test_monotonicity_decreasing(data_init):
     X, y = generate_dataset(start=data_init)
     encoder = IntervalEncoder(n_chunks=40, method="decreasing")
     y_transformed = encoder.fit_transform(X, y).reshape(-1).round(4)
-    print(y_transformed.reshape(-1))
     for i in range(len(y_transformed) - 1):
         assert y_transformed[i] >= y_transformed[i + 1]
 

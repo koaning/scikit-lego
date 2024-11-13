@@ -92,7 +92,7 @@ def test_timegapsplit_too_big_gap():
             gap_duration=timedelta(days=5),
         )
     except ValueError:
-        print("Successfully failed")
+        print("Successfully failed")  # noqa: T201
 
 
 def test_timegapsplit_using_splits():

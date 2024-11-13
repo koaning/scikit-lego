@@ -199,6 +199,40 @@ Note that you can make this approach even more powerful for timeseries by choosi
 
 To explore this idea we've also implemented a `DecayEstimator`. For more information see the [section on meta estimators][decay-section] for this.
 
+## Monotonic Spline Transformer
+
+The `MonotonicSplineTransformer` is a transformer that fits a monotonic spline to the input data. This can be useful when you want to capture non-linear relationships between features and the target variable, while ensuring that the relationship is monotonic. The technique is based on [_Fitting monotonic curves using splines_ blogpost by Mate Kadlicsko](https://matekadlicsko.github.io/posts/monotonic-splines/).
+
+To demonstrate how this works let's first generate some data.
+
+```py
+--8<-- "docs/_scripts/preprocessing.py:monotonic-spline"
+```
+
+
+![monotonic-spline](../_static/preprocessing/monotonic-spline.png)
+
+Next, let's show what the transformed data looks like.
+
+```py
+--8<-- "docs/_scripts/preprocessing.py:monotonic-spline-transform"
+```
+
+![monotonic-spline-transform](../_static/preprocessing/monotonic-spline-transform.png)
+
+Finally, let's show how these features might compare with an isotonic regression.
+
+```py
+--8<-- "docs/_scripts/preprocessing.py:monotonic-spline-regr"
+```
+
+![monotonic-spline-regr](../_static/preprocessing/monotonic-spline-regr.png)
+
+While the `IsotonicRegression` gives a similar result, there are a few reasons why the monotonic spline might be preferred:
+
+1. The monotonic model can result in a smoother model when followed up by a linear model. The linear model can still guarantee monotonicity, but the `IsotonicRegression` might result in a spiky output.
+2. When datasets get big, especially when there are many features involved, the monotonic spline might be faster to compute. This is because the `IsotonicRegression` demands a more complex solver that might not scale as well as a linear model.
+
 ## Interval Encoders
 
 Sometimes a linear regression doesn't entirely do what you'd like. Take this pattern;
