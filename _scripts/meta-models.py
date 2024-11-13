@@ -132,7 +132,7 @@ feature_pipeline = Pipeline([
     ("datagrab", FeatureUnion([
          ("discrete", Pipeline([
              ("grab", ColumnSelector("diet")),
-             ("encode", OneHotEncoder(categories="auto", sparse=False))
+             ("encode", OneHotEncoder(categories="auto"))
          ])),
          ("continuous", Pipeline([
              ("grab", ColumnSelector("time")),
@@ -265,8 +265,15 @@ from sklego.meta import GroupedPredictor, DecayEstimator
 mod1 = (GroupedPredictor(DummyRegressor(), groups=["m"])
         .fit(df[["m"]], df["yt"]))
 
-mod2 = (GroupedPredictor(DecayEstimator(DummyRegressor(), decay_func="exponential", decay_rate=0.9), groups=["m"])
-        .fit(df[["index", "m"]], df["yt"]))
+mod2 = (GroupedPredictor(
+    estimator=DecayEstimator(
+        model=DummyRegressor(),
+        decay_func="exponential",
+        decay_kwargs={"decay_rate": 0.9}
+    ),
+    groups=["m"]
+    ).fit(df[["index", "m"]], df["yt"])
+)
 
 plt.figure(figsize=(12, 3))
 plt.plot(df["yt"], alpha=0.5);
@@ -400,22 +407,30 @@ plt.clf()
 
 # --8<-- [start:zero-inflated]
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
 from sklearn.model_selection import cross_val_score
+
 from sklego.meta import ZeroInflatedRegressor
 
 np.random.seed(0)
 X = np.random.randn(10000, 4)
-y = ((X[:, 0]>0) & (X[:, 1]>0)) * np.abs(X[:, 2] * X[:, 3]**2) # many zeroes here, in about 75% of the cases.
+y = ((X[:, 0]>0) & (X[:, 1]>0)) * np.abs(X[:, 2] * X[:, 3]**2)
 
 zir = ZeroInflatedRegressor(
-    classifier=RandomForestClassifier(random_state=0),
-    regressor=RandomForestRegressor(random_state=0)
+    classifier=ExtraTreesClassifier(random_state=0, max_depth=10),
+    regressor=ExtraTreesRegressor(random_state=0)
 )
 
 print("ZIR (RFC+RFR) r²:", cross_val_score(zir, X, y).mean())
-print("RFR r²:", cross_val_score(RandomForestRegressor(random_state=0), X, y).mean())
+print("RFR r²:", cross_val_score(ExtraTreesRegressor(random_state=0), X, y).mean())
 # --8<-- [end:zero-inflated]
+
+
+# --8<-- [start:zero-inflated-score-samples]
+_ = zir.fit(X, y)
+print(f"Predict={zir.predict(X[:5]).round(2)}")
+print(f"Scores={zir.score_samples(X[:5]).round(2)}")
+# --8<-- [end:zero-inflated-score-samples]
 
 # --8<-- [start:outlier-classifier]
 import numpy as np
@@ -486,12 +501,16 @@ with open(_static_path / "ordinal_data.md", "w") as f:
 from sklearn.linear_model import LogisticRegression
 from sklego.meta import OrdinalClassifier
 
-ord_clf = OrdinalClassifier(LogisticRegression(), n_jobs=-1, use_calibration=False)
-_ = ord_clf.fit(X, y)
-ord_clf.predict_proba(X[0])
+ord_clf = OrdinalClassifier(
+    LogisticRegression(),
+    n_jobs=-1,
+    use_calibration=False,
+    ).fit(X, y)
+
+ord_clf.predict_proba(X[:1])
 # --8<-- [end:ordinal-classifier]
 
-print(ord_clf.predict_proba(X[0]))
+print(ord_clf.predict_proba(X[:1]))
 
 # --8<-- [start:ordinal-classifier-with-calibration]
 from sklearn.calibration import CalibratedClassifierCV

@@ -325,3 +325,66 @@ for method in ['increasing', 'decreasing']:
 
 plt.savefig(_static_path / "monotonic-3.png")
 plt.clf()
+
+
+######################################## Monotonic Spline #######################################
+
+# --8<-- [start:monotonic-spline]
+import matplotlib.pylab as plt
+import numpy as np
+
+N = 1000
+
+np.random.seed(42)
+X = np.random.uniform(0, 1, size=N)
+y =  X ** 2 + .1 * np.sin(20 * X) + 1 + .1 * np.random.randn(N)
+
+plt.figure(figsize=(10, 4))
+plt.scatter(X, y)
+# --8<-- [end:monotonic-spline]
+
+plt.savefig(_static_path / "monotonic-spline.png")
+plt.clf()
+
+# --8<-- [start:monotonic-spline-transform]
+from sklego.preprocessing import MonotonicSplineTransformer
+
+X_plt = np.sort(X)
+
+plt.figure(figsize=(10, 4))
+tfm = MonotonicSplineTransformer(n_knots=10)
+X_out = tfm.fit_transform(X_plt.reshape(-1, 1))
+plt.plot(X_out);
+# --8<-- [end:monotonic-spline-transform]
+
+plt.savefig(_static_path / "monotonic-spline-transform.png")
+plt.clf()
+
+# --8<-- [start:monotonic-spline-regr]
+from sklearn.pipeline import make_pipeline
+from sklearn.linear_model import Ridge
+from sklearn.isotonic import IsotonicRegression
+from sklego.preprocessing import MonotonicSplineTransformer
+
+pipe = make_pipeline(
+    MonotonicSplineTransformer(n_knots=10),
+    Ridge(positive=True),
+)
+pipe.fit(X.reshape(-1, 1), y)
+
+iso = IsotonicRegression(out_of_bounds="clip")
+iso.fit(X, y)
+
+X_test = np.linspace(-0.2, 1.2, 100)[:, None]
+
+plt.figure(figsize=(10, 4))
+plt.plot(X_test[:, 0], pipe.predict(X_test), color="orange", linewidth=2, label="MonotonicSpline")
+plt.plot(
+    X_test[:, 0], iso.predict(X_test), color="green", linewidth=2, label="Isotonic"
+)
+plt.scatter(X, y, alpha=0.3, label="Data")
+plt.legend()
+# --8<-- [end:monotonic-spline-regr]
+
+plt.savefig(_static_path / "monotonic-spline-regr.png")
+plt.clf()
