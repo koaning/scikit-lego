@@ -125,6 +125,7 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.RepeatingBasisFunction` repeating feature engineering, useful for timeseries
 - `sklego.preprocessing.DictMapper` assign numeric values on categorical columns
 - `sklego.preprocessing.OutlierRemover` experimental method to remove outliers during training
+- `sklego.preprocessing.MonotonicSplineTransformer` re-uses `SplineTransformer` in an attempt to make monotonic features
 - `sklego.model_selection.GroupTimeSeriesSplit` timeseries Kfold for groups with different amount of observations per group
 - `sklego.model_selection.KlusterFoldValidation` experimental feature that does K folds based on clustering
 - `sklego.model_selection.TimeGapSplit` timeseries Kfold with a gap between train/test
