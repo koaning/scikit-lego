@@ -11,7 +11,7 @@ from sklearn.utils.validation import (
 )
 
 
-class RandomRegressor(BaseEstimator, RegressorMixin):
+class RandomRegressor(RegressorMixin, BaseEstimator):
     """A `RandomRegressor` makes random predictions only based on the `y` value that is seen.
 
     The goal is that such a regressor can be used for benchmarking. It _should be_ easily beatable.
@@ -101,7 +101,7 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
 
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         if X.shape[1] != self.n_features_in_:
-            raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.dim_}")
+            raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}")
 
         if self.strategy == "normal":
             return rs.normal(self.mu_, self.sigma_, X.shape[0])
@@ -127,3 +127,14 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
 
     def _more_tags(self):
         return {"poor_score": True, "non_deterministic": True}
+
+    def __sklearn_tags__(self):
+        from sklego import SKLEARN_VERSION
+
+        if SKLEARN_VERSION >= (1, 6):
+            tags = super().__sklearn_tags__()
+            tags.non_deterministic = True
+            tags.regressor_tags.poor_score = True
+            return tags
+        else:
+            pass

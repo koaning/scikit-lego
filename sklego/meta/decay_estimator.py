@@ -5,7 +5,7 @@ from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
 from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay
 
 
-class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
+class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
     """Morphs an estimator such that the training weights can be adapted to ensure that points that are far away have
     less weight.
 
@@ -97,10 +97,16 @@ class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
         """Checks if the wrapped estimator is a classifier."""
         return any(["ClassifierMixin" in p.__name__ for p in type(self.model).__bases__])
 
+    def _is_regressor(self):
+        """Checks if the wrapped estimator is a regressor."""
+        return any(["RegressorMixin" in p.__name__ for p in type(self.model).__bases__])
+
     @property
     def _estimator_type(self):
         """Computes `_estimator_type` dynamically from the wrapped model."""
-        return self.model._estimator_type
+        from sklego import SKLEARN_VERSION
+
+        return self.model.__sklearn_tags__().estimator_type if SKLEARN_VERSION >= (1, 6) else self.model._estimator_type
 
     def fit(self, X, y):
         """Fit the underlying estimator on the training data `X` and `y` using the calculated sample weights.
@@ -165,3 +171,6 @@ class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
     def score(self, X, y):
         """Alias for `.score()` method of the underlying estimator."""
         return self.estimator_.score(X, y)
+
+    def __sklearn_tags__(self):
+        return self.model.__sklearn_tags__()

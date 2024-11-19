@@ -127,3 +127,15 @@ class DictMapper(TransformerMixin, BaseEstimator):
 
     def _more_tags(self):
         return {"preserves_dtype": None, "allow_nan": True, "no_validation": True}
+
+    def __sklearn_tags__(self):
+        from sklego import SKLEARN_VERSION
+
+        if SKLEARN_VERSION >= (1, 6):
+            tags = super().__sklearn_tags__()
+            tags.transformer_tags.preserves_dtype = []
+            tags.input_tags.allow_nan = True
+            tags.no_validation = True
+            return tags
+        else:
+            pass

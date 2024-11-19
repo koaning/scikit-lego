@@ -5,12 +5,14 @@ import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import NotFittedError
+from sklearn.utils.multiclass import type_of_target
 from sklearn.utils.validation import _check_sample_weight, check_is_fitted, check_X_y
 
+from sklego import SKLEARN_VERSION
 from sklego.base import ProbabilisticClassifier
 
 
-class Thresholder(BaseEstimator, ClassifierMixin):
+class Thresholder(ClassifierMixin, BaseEstimator):
     """Takes a binary classifier and moves the threshold. This way you might design the algorithm to only accept a
     certain class if the probability for it is larger than, say, 90% instead of 50%.
 
@@ -103,8 +105,11 @@ class Thresholder(BaseEstimator, ClassifierMixin):
 
         self.n_features_in_ = X.shape[1]
         self.classes_ = self.estimator_.classes_
-        if len(self.classes_) != 2:
-            raise ValueError("The `Thresholder` meta model only works on models with two classes.")
+
+        extra_args = {"raise_unknown": True} if SKLEARN_VERSION >= (1, 6) else {}
+        y_type = type_of_target(y, input_name="y", **extra_args)
+        if y_type != "binary":
+            raise ValueError("Only binary classification is supported. The type of the target " f"is {y_type}.")
 
         return self
 
@@ -139,3 +144,13 @@ class Thresholder(BaseEstimator, ClassifierMixin):
         return {
             "binary_only": True,
         }
+
+    def __sklearn_tags__(self):
+        from sklego import SKLEARN_VERSION
+
+        if SKLEARN_VERSION >= (1, 6):
+            tags = super().__sklearn_tags__()
+            tags.classifier_tags.multi_class = False
+            return tags
+        else:
+            pass

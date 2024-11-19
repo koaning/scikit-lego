@@ -7,7 +7,7 @@ from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted,
 from sklego.base import ProbabilisticClassifier
 
 
-class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin, ClassifierMixin):
+class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     r"""The `ConfusionBalancer` estimator attempts to give it's child estimator a more balanced output by learning from
     the confusion matrix during training.
 

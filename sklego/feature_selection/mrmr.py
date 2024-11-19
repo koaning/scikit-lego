@@ -4,7 +4,9 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.feature_selection import f_classif, f_regression
 from sklearn.feature_selection._base import SelectorMixin
-from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
+
+from sklego.common import validate_data
 
 
 def _redundancy_pearson(X, selected, left):
@@ -201,7 +203,8 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
                 k parameter is not integer type or is < n_features_in (X.shape[1]) or < 1
         """
-        X, y = check_X_y(X, y, dtype="numeric", y_numeric=True)
+        X, y = validate_data(self, X, y, dtype="numeric", y_numeric=True)
+
         self._y_dtype = y.dtype
 
         relevance = self._get_relevance

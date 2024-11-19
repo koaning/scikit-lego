@@ -1,10 +1,12 @@
 import numpy as np
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.decomposition import PCA
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+
+from sklego.common import validate_data
 
 
-class PCAOutlierDetection(BaseEstimator, OutlierMixin):
+class PCAOutlierDetection(OutlierMixin, BaseEstimator):
     """`PCAOutlierDetection` is an outlier detector based on the reconstruction error from PCA.
 
     If the difference between original and reconstructed data is larger than the `threshold`, the point is
@@ -94,7 +96,7 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         ValueError
             If `threshold` is `None`.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES)
         if not self.threshold:
             raise ValueError("The `threshold` value cannot be `None`.")
 
@@ -157,7 +159,7 @@ class PCAOutlierDetection(BaseEstimator, OutlierMixin):
         array-like of shape (n_samples,)
             The predicted data. 1 for inliers, -1 for outliers.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["pca_", "offset_"])
         result = np.ones(X.shape[0])
         result[self.difference(X) > self.threshold] = -1

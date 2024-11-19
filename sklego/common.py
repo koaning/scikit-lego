@@ -4,11 +4,13 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-from sklearn.base import TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
+from sklego import SKLEARN_VERSION
 
-class TrainOnlyTransformerMixin(TransformerMixin):
+
+class TrainOnlyTransformerMixin(TransformerMixin, BaseEstimator):
     """Mixin class for transformers that can handle training and test data differently.
 
     This mixin allows using a separate function for transforming training and test data.
@@ -79,9 +81,9 @@ class TrainOnlyTransformerMixin(TransformerMixin):
             The fitted transformer.
         """
         if y is None:
-            check_array(X, estimator=self)
+            validate_data(self, X)
         else:
-            check_X_y(X, y, estimator=self, multi_output=True)
+            validate_data(self, X, y, multi_output=True)
         self.X_hash_ = self._hash(X)
         self.n_features_in_ = X.shape[1]
         return self
@@ -145,7 +147,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
             If the input dimension does not match the training dimension.
         """
         check_is_fitted(self, ["X_hash_", "n_features_in_"])
-        check_array(X, estimator=self)
+        X = validate_data(self, X, reset=False)
 
         if X.shape[1] != self.n_features_in_:
             raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}")
@@ -339,3 +341,32 @@ def sliding_window(sequence, window_size, step_size):
     ```
     """
     return (sequence[pos : pos + window_size] for pos in range(0, len(sequence), step_size))
+
+
+def validate_data(
+    estimator,
+    X="no_validation",
+    y="no_validation",
+    reset=True,
+    validate_separately=False,
+    skip_check_array=False,
+    **check_params,
+):
+    if SKLEARN_VERSION >= (1, 6):
+        from sklearn.utils.validation import validate_data
+
+        return validate_data(
+            estimator,
+            X=X,
+            y=y,
+            reset=reset,
+            validate_separately=validate_separately,
+            skip_check_array=skip_check_array,
+            **check_params,
+        )
+
+    else:
+        if y == "no_validation":
+            return check_array(arr=X, estimator=estimator, **check_params)
+        else:
+            return check_X_y(X=X, y=y, estimator=estimator, **check_params)
