@@ -111,7 +111,7 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         if self.evidence not in self._ALLOWED_EVIDENCE:
             raise ValueError(f"Invalid evidence: the provided evidence should be one of {self._ALLOWED_EVIDENCE}")
 
-        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
         if set(y) - set(self.prior.keys()):
             raise ValueError(
                 f"Training data is inconsistent with prior: no prior defined for classes "

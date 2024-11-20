@@ -68,7 +68,7 @@ class RandomAdder(TrainOnlyTransformerMixin, BaseEstimator):
             The fitted transformer.
         """
         super().fit(X, y)
-        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES)
         self.n_features_in_ = X.shape[1]
 
         return self

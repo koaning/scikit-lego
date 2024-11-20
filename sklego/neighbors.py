@@ -63,7 +63,7 @@ class BayesianKernelDensityClassifier(ClassifierMixin, BaseEstimator):
         self : BayesianKernelDensityClassifier
             The fitted estimator.
         """
-        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
 
         self.classes_ = unique_labels(y)
         self.models_, self.priors_logp_ = {}, {}

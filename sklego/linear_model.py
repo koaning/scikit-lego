@@ -98,7 +98,7 @@ class LowessRegression(RegressorMixin, BaseEstimator):
             - If `span` is not between 0 and 1.
             - If `sigma` is negative.
         """
-        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
         if self.span is not None:
             if not 0 <= self.span <= 1:
                 raise ValueError(f"Param `span` must be 0 <= span <= 1, got: {self.span}")
@@ -225,7 +225,7 @@ class ProbWeightRegression(RegressorMixin, BaseEstimator):
         self : ProbWeightRegression
             The fitted estimator.
         """
-        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
 
         # Construct the problem.
         betas = cp.Variable(X.shape[1])
@@ -373,7 +373,7 @@ class DeadZoneRegressor(RegressorMixin, BaseEstimator):
         ValueError
             If `effect` is not one of "linear", "quadratic" or "constant".
         """
-        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
         if self.effect not in self._ALLOWED_EFFECTS:
             raise ValueError(f"effect {self.effect} must be in {self._ALLOWED_EFFECTS}")
 
@@ -1054,7 +1054,7 @@ class BaseScipyMinimizeRegressor(RegressorMixin, BaseEstimator, ABC):
         This method is called by `fit` to prepare the inputs for the optimization problem. It adds an intercept column
         to `X` if `fit_intercept=True`, and returns the loss function and its gradient.
         """
-        X, y = validate_data(self, X, y, y_numeric=True)
+        X, y = validate_data(self, X, y, y_numeric=True, y_required=True)
         sample_weight = _check_sample_weight(sample_weight, X)
         self.n_features_in_ = X.shape[1]
 

@@ -88,7 +88,10 @@ class OutlierClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
                 f"Passed model {self.model} does not have a `decision_function` "
                 f"method. This is required for `predict_proba` estimation."
             )
-        X, y = validate_data(self, X, y)
+        if y is not None:
+            X, y = validate_data(self, X, y)
+        else:
+            X = validate_data(self, X)
         self.estimator_ = clone(self.model).fit(X, y)
         self.n_features_in_ = self.estimator_.n_features_in_
         self.classes_ = np.array([0, 1])

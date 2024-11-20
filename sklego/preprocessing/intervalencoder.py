@@ -157,7 +157,7 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
 
         # these two matrices will have shape (columns, quantiles)
         # quantiles indicate where the interval split occurs
-        X, y = validate_data(self, X, y)
+        X, y = validate_data(self, X, y, y_required=True)
         self.quantiles_ = np.zeros((X.shape[1], self.n_chunks))
         # heights indicate what heights these intervals will have
         self.heights_ = np.zeros((X.shape[1], self.n_chunks))

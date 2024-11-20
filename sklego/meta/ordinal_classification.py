@@ -131,7 +131,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         if not hasattr(self.estimator, "predict_proba"):
             raise ValueError("The estimator must implement `.predict_proba()` method.")
 
-        X, y = validate_data(self, X, y, ensure_min_samples=2, ensure_2d=True)
+        X, y = validate_data(self, X, y, ensure_min_samples=2, ensure_2d=True, y_required=True)
 
         self.classes_ = np.sort(np.unique(y))
         self.n_features_in_ = X.shape[1]

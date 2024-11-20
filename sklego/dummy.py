@@ -72,7 +72,7 @@ class RandomRegressor(RegressorMixin, BaseEstimator):
         """
         if self.strategy not in self._ALLOWED_STRATEGIES:
             raise ValueError(f"strategy {self.strategy} is not in {self._ALLOWED_STRATEGIES}")
-        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
         self.n_features_in_ = X.shape[1]
 
         self.min_ = np.min(y)

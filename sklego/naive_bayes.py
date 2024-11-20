@@ -74,7 +74,7 @@ class GaussianMixtureNB(ClassifierMixin, BaseEstimator):
         self : GaussianMixtureNB
             The fitted estimator.
         """
-        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
@@ -239,7 +239,7 @@ class BayesianGaussianMixtureNB(ClassifierMixin, BaseEstimator):
         self : BayesianGaussianMixtureNB
             The fitted estimator.
         """
-        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
 
         if X.ndim == 1:
             X = np.expand_dims(X, 1)

@@ -203,7 +203,7 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
 
                 k parameter is not integer type or is < n_features_in (X.shape[1]) or < 1
         """
-        X, y = validate_data(self, X, y, dtype="numeric", y_numeric=True)
+        X, y = validate_data(self, X, y, dtype="numeric", y_numeric=True, y_required=True)
 
         self._y_dtype = y.dtype
 

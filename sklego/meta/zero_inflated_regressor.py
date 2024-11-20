@@ -92,7 +92,7 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
         ValueError
             If `classifier` is not a classifier or `regressor` is not a regressor.
         """
-        X, y = validate_data(self, X, y)
+        X, y = validate_data(self, X, y, y_required=True)
 
         self.n_features_in_ = X.shape[1]
 

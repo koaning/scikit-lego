@@ -54,7 +54,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         """
 
         if self.check_input:
-            X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, multi_output=True)
+            X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, multi_output=True, y_required=True)
 
         self.multi_output_ = len(y.shape) > 1
         self.estimator_ = clone(self.estimator)

@@ -64,7 +64,7 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             If the underlying estimator does not have a `predict_proba` method.
         """
 
-        X, y = validate_data(self.estimator, X, y, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self.estimator, X, y, dtype=FLOAT_DTYPES, y_required=True)
         if not isinstance(self.estimator, ProbabilisticClassifier):
             raise ValueError(
                 "The ConfusionBalancer meta model only works on classification models with .predict_proba."
