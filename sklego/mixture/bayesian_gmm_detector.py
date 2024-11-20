@@ -5,7 +5,9 @@ from scipy.optimize import minimize_scalar
 from scipy.stats import gaussian_kde
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.mixture import BayesianGaussianMixture
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+
+from sklego.common import validate_data
 
 
 class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
@@ -109,7 +111,7 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
         """
 
         # GMM sometimes throws an error if you don't do this
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES)
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
 
@@ -160,8 +162,8 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
 
     def score_samples(self, X):
         """Compute the log likelihood for each sample and return the negative value."""
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["gmm_", "likelihood_threshold_"])
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
 

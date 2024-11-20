@@ -2,9 +2,10 @@ import numpy as np
 from scipy.special import softmax
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import GaussianMixture
-from sklearn.utils import check_X_y
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+
+from sklego.common import validate_data
 
 
 class GMMClassifier(ClassifierMixin, BaseEstimator):
@@ -72,7 +73,7 @@ class GMMClassifier(ClassifierMixin, BaseEstimator):
         self : GMMClassifier
             The fitted estimator.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES)
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
@@ -117,7 +118,7 @@ class GMMClassifier(ClassifierMixin, BaseEstimator):
             The predicted data.
         """
         check_is_fitted(self, ["gmms_", "classes_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     def predict_proba(self, X):
@@ -133,8 +134,8 @@ class GMMClassifier(ClassifierMixin, BaseEstimator):
         array-like of shape (n_samples, n_classes)
             The predicted probabilities.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["gmms_", "classes_"])
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         res = np.zeros((X.shape[0], self.classes_.shape[0]))
         for idx, c in enumerate(self.classes_):
             res[:, idx] = self.gmms_[c].score_samples(X)

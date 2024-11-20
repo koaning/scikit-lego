@@ -2,8 +2,10 @@ from warnings import warn
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils import check_array
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+
+from sklego import SKLEARN_VERSION
+from sklego.common import validate_data
 
 
 class ColumnCapper(TransformerMixin, BaseEstimator):
@@ -123,7 +125,9 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         """
         self._check_quantile_range(self.quantile_range)
         self._check_interpolation(self.interpolation)
-        X = check_array(X, copy=True, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
+
+        kwargs = {"force_all_finite": False} if SKLEARN_VERSION < (1, 6) else {"ensure_all_finite": False}
+        X = validate_data(self, X, copy=True, dtype=FLOAT_DTYPES, **kwargs)
 
         # If X contains infs, we need to replace them by nans before computing quantiles
         np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
@@ -162,13 +166,9 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             If the number of columns from `X` differs from the number of columns when fitting.
         """
         check_is_fitted(self, "quantiles_")
-        X = check_array(
-            X,
-            copy=self.copy,
-            force_all_finite=False,
-            dtype=FLOAT_DTYPES,
-            estimator=self,
-        )
+
+        kwargs = {"force_all_finite": False} if SKLEARN_VERSION < (1, 6) else {"ensure_all_finite": False}
+        X = validate_data(self, X, copy=self.copy, dtype=FLOAT_DTYPES, reset=False, **kwargs)
 
         if X.shape[1] != self.n_features_in_:
             raise ValueError("X must have the same number of columns in fit and transform")

@@ -5,7 +5,9 @@ import numpy as np
 from sklearn.base import BaseEstimator, MetaEstimatorMixin, RegressorMixin, clone, is_classifier, is_regressor
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.metaestimators import available_if
-from sklearn.utils.validation import _check_sample_weight, check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted
+
+from sklego.common import validate_data
 
 
 class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
@@ -90,7 +92,8 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
         ValueError
             If `classifier` is not a classifier or `regressor` is not a regressor.
         """
-        X, y = check_X_y(X, y)
+        X, y = validate_data(self, X, y)
+
         self.n_features_in_ = X.shape[1]
 
         if not is_classifier(self.classifier):
@@ -157,7 +160,7 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self, ["n_features_in_", "classifier_", "regressor_"])
-        X = check_array(X)
+        X = validate_data(self, X, reset=False)
         if X.shape[1] != self.n_features_in_:
             msg = f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}"
             raise ValueError(msg)
@@ -197,7 +200,7 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
         """
 
         check_is_fitted(self)
-        X = check_array(X)
+        X = validate_data(self, X, reset=False)
         if X.shape[1] != self.n_features_in_:
             msg = f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}"
             raise ValueError(msg)

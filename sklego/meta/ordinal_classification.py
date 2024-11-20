@@ -3,7 +3,9 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, MultiOutputMixin, is_classifier
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
+
+from sklego.common import validate_data
 
 
 class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
@@ -129,7 +131,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         if not hasattr(self.estimator, "predict_proba"):
             raise ValueError("The estimator must implement `.predict_proba()` method.")
 
-        X, y = check_X_y(X, y, estimator=self, ensure_min_samples=2)
+        X, y = validate_data(self, X, y, ensure_min_samples=2, ensure_2d=True)
 
         self.classes_ = np.sort(np.unique(y))
         self.n_features_in_ = X.shape[1]
@@ -172,7 +174,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
             If `X` has a different number of features than the one seen during `fit`.
         """
         check_is_fitted(self, ["estimators_", "classes_"])
-        X = check_array(X, ensure_2d=True, estimator=self)
+        X = validate_data(self, X, ensure_min_samples=2, ensure_2d=True, reset=False)
 
         if X.shape[1] != self.n_features_in_:
             raise ValueError(f"X has {X.shape[1]} features, expected {self.n_features_in_} features.")
@@ -197,6 +199,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
             The predicted class labels.
         """
         check_is_fitted(self, ["estimators_", "classes_"])
+        X = validate_data(self, X, ensure_min_samples=2, ensure_2d=True, reset=False)
         return self.classes_[np.argmax(self.predict_proba(X), axis=1)]
 
     def _fit_binary_estimator(self, X, y, y_label):

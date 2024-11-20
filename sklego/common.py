@@ -366,7 +366,7 @@ def validate_data(
         )
 
     else:
-        if y == "no_validation":
-            return check_array(arr=X, estimator=estimator, **check_params)
+        if y is None or (isinstance(y, str) and y == "no_validation"):
+            return check_array(X, estimator=estimator, **check_params)
         else:
             return check_X_y(X=X, y=y, estimator=estimator, **check_params)
