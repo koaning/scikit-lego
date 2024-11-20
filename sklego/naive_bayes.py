@@ -3,12 +3,13 @@ from warnings import warn
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import BayesianGaussianMixture, GaussianMixture
-from sklearn.utils import check_X_y
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+
+from sklego.common import validate_data
 
 
-class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
+class GaussianMixtureNB(ClassifierMixin, BaseEstimator):
     """The `GaussianMixtureNB` estimator is a naive bayes classifier that uses a mixture of gaussians instead of
     merely a single one. In particular it trains a `GaussianMixture` model for each class in the target and for each
     feature in the data, on the subset of `X` where `y == class`.
@@ -73,7 +74,7 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         self : GaussianMixtureNB
             The fitted estimator.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
@@ -117,7 +118,10 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
             The predicted data.
         """
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
+
+        if self.n_features_in_ != X.shape[1]:
+            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     def predict_proba(self, X: np.ndarray):
@@ -135,7 +139,8 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
             The predicted probabilities.
         """
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
+
         if self.n_features_in_ != X.shape[1]:
             raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
         check_is_fitted(self, ["gmms_", "classes_"])
@@ -158,7 +163,7 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         return self.n_features_in_
 
 
-class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
+class BayesianGaussianMixtureNB(ClassifierMixin, BaseEstimator):
     """The `BayesianGaussianMixtureNB` estimator is a naive bayes classifier that uses a bayesian mixture of gaussians
     instead of merely a single one. In particular it trains a `BayesianGaussianMixture` model for each class in the
     target and for each feature in the data, on the subset of `X` where `y == class`.
@@ -234,7 +239,8 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
         self : BayesianGaussianMixtureNB
             The fitted estimator.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
+
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
@@ -283,7 +289,11 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
             The predicted data.
         """
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
+
+        if self.n_features_in_ != X.shape[1]:
+            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
+
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     def predict_proba(self, X: np.ndarray):
@@ -301,7 +311,7 @@ class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
             The predicted probabilities.
         """
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         if self.n_features_in_ != X.shape[1]:
             raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
         check_is_fitted(self, ["gmms_", "classes_"])

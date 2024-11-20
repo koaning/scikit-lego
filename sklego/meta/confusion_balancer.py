@@ -2,12 +2,13 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 
 from sklego.base import ProbabilisticClassifier
+from sklego.common import validate_data
 
 
-class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin, ClassifierMixin):
+class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     r"""The `ConfusionBalancer` estimator attempts to give it's child estimator a more balanced output by learning from
     the confusion matrix during training.
 
@@ -63,7 +64,7 @@ class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin, ClassifierMixin):
             If the underlying estimator does not have a `predict_proba` method.
         """
 
-        X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self.estimator, X, y, dtype=FLOAT_DTYPES, y_required=True)
         if not isinstance(self.estimator, ProbabilisticClassifier):
             raise ValueError(
                 "The ConfusionBalancer meta model only works on classification models with .predict_proba."
@@ -90,7 +91,7 @@ class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin, ClassifierMixin):
             The predicted values.
         """
         check_is_fitted(self, ["cfm_", "classes_", "estimator_"])
-        X = check_array(X, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         preds = self.estimator_.predict_proba(X)
         return (1 - self.alpha) * preds + self.alpha * preds @ self.cfm_
 
@@ -108,5 +109,5 @@ class ConfusionBalancer(BaseEstimator, MetaEstimatorMixin, ClassifierMixin):
             The predicted values.
         """
         check_is_fitted(self, ["cfm_", "classes_", "estimator_"])
-        X = check_array(X, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]

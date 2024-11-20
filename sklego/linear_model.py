@@ -17,17 +17,19 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.linear_model._base import LinearClassifierMixin
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils import check_X_y
 from sklearn.utils.validation import (
     FLOAT_DTYPES,
     _check_sample_weight,
     check_array,
     check_is_fitted,
+    check_X_y,
     column_or_1d,
 )
 
+from sklego.common import validate_data
 
-class LowessRegression(BaseEstimator, RegressorMixin):
+
+class LowessRegression(RegressorMixin, BaseEstimator):
     """`LowessRegression` estimator: LOWESS (Locally Weighted Scatterplot Smoothing) is a type of
     [local regression](https://en.wikipedia.org/wiki/Local_regression).
 
@@ -96,7 +98,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
             - If `span` is not between 0 and 1.
             - If `sigma` is negative.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
         if self.span is not None:
             if not 0 <= self.span <= 1:
                 raise ValueError(f"Param `span` must be 0 <= span <= 1, got: {self.span}")
@@ -138,7 +140,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         array-like of shape (n_samples,)
             The predicted values.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         check_is_fitted(self, ["X_", "y_"])
 
         try:
@@ -155,7 +157,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         return results
 
 
-class ProbWeightRegression(BaseEstimator, RegressorMixin):
+class ProbWeightRegression(RegressorMixin, BaseEstimator):
     """`ProbWeightRegression` assumes that all input signals in `X` need to be reweighted with weights that sum up to
     one in order to predict `y`.
 
@@ -233,7 +235,7 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         self : ProbWeightRegression
             The fitted estimator.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
 
         # Construct the problem.
         betas = cp.Variable(X.shape[1])
@@ -263,7 +265,7 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         array-like of shape (n_samples,)
             The predicted data.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         check_is_fitted(self, ["coef_"])
         return np.dot(X, self.coef_)
 
@@ -276,7 +278,7 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         return self.coef_
 
 
-class DeadZoneRegressor(BaseEstimator, RegressorMixin):
+class DeadZoneRegressor(RegressorMixin, BaseEstimator):
     r"""The `DeadZoneRegressor` estimator implements a regression model that incorporates a _dead zone effect_ for
     improving the robustness of regression predictions.
 
@@ -381,7 +383,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         ValueError
             If `effect` is not one of "linear", "quadratic" or "constant".
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
         if self.effect not in self._ALLOWED_EFFECTS:
             raise ValueError(f"effect {self.effect} must be in {self._ALLOWED_EFFECTS}")
 
@@ -458,7 +460,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         array-like of shape (n_samples,)
             The predicted data.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         check_is_fitted(self, ["coef_"])
         return np.dot(X, self.coef_)
 
@@ -480,7 +482,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         return self._ALLOWED_EFFECTS
 
 
-class _FairClassifier(BaseEstimator, LinearClassifierMixin):
+class _FairClassifier(LinearClassifierMixin, BaseEstimator):
     """Base class for fair classifiers that address sensitive attribute fairness.
 
     This base class provides a foundation for fair classifiers that aim to mitigate bias and discrimination by taking
@@ -579,7 +581,7 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         if isinstance(X, nw.DataFrame):
             self.sensitive_col_idx_ = [i for i, name in enumerate(X.columns) if name in self.sensitive_cols]
 
-        X, y = check_X_y(X, y, accept_large_sparse=False)
+        X, y = check_X_y(X, y, accept_large_sparse=False, estimator=self)
         sensitive = X[:, self.sensitive_col_idx_]
 
         if not self.train_sensitive_cols:
@@ -681,8 +683,18 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
     def _more_tags(self):
         return {"poor_score": True}
 
+    def __sklearn_tags__(self):
+        from sklego import SKLEARN_VERSION
 
-class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
+        if SKLEARN_VERSION >= (1, 6):
+            tags = super().__sklearn_tags__()
+            tags.classifier_tags.poor_score = True
+            return tags
+        else:
+            pass
+
+
+class DemographicParityClassifier(LinearClassifierMixin, BaseEstimator):
     r"""`DemographicParityClassifier` is a logistic regression classifier which can be constrained on demographic
     parity (p% score).
 
@@ -800,7 +812,7 @@ class _DemographicParityClassifier(_FairClassifier):
             return []
 
 
-class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
+class EqualOpportunityClassifier(LinearClassifierMixin, BaseEstimator):
     r"""`EqualOpportunityClassifier` is a logistic regression classifier which can be constrained on equal opportunity
     score.
 
@@ -914,7 +926,7 @@ class _EqualOpportunityClassifier(_FairClassifier):
             return []
 
 
-class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
+class BaseScipyMinimizeRegressor(RegressorMixin, BaseEstimator, ABC):
     """Abstract base class for regressors relying on Scipy's
     [minimize method](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html) to minimize a
     (custom) loss function.
@@ -970,8 +982,6 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         self.fit_intercept = fit_intercept
         self.copy_X = copy_X
         self.positive = positive
-        if method not in ("SLSQP", "TNC", "L-BFGS-B"):
-            raise ValueError(f'method should be one of "SLSQP", "TNC", "L-BFGS-B", ' f"got {method} instead")
         self.method = method
 
     @abstractmethod
@@ -1021,6 +1031,9 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         self : BaseScipyMinimizeRegressor
             Fitted linear model.
         """
+        if self.method not in {"SLSQP", "TNC", "L-BFGS-B"}:
+            msg = f"method should be one of 'SLSQP', 'TNC', 'L-BFGS-B', got {self.method} instead"
+            raise ValueError(msg)
         X_, grad_loss, loss = self._prepare_inputs(X, sample_weight, y)
 
         d = X_.shape[1] - self.n_features_in_  # This is either zero or one.
@@ -1051,7 +1064,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
         This method is called by `fit` to prepare the inputs for the optimization problem. It adds an intercept column
         to `X` if `fit_intercept=True`, and returns the loss function and its gradient.
         """
-        X, y = check_X_y(X, y, y_numeric=True)
+        X, y = validate_data(self, X, y, y_numeric=True, y_required=True)
         sample_weight = _check_sample_weight(sample_weight, X)
         self.n_features_in_ = X.shape[1]
 
@@ -1081,7 +1094,7 @@ class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
             The predicted data.
         """
         check_is_fitted(self)
-        X = check_array(X)
+        X = validate_data(self, X, reset=False)
 
         return X @ self.coef_ + self.intercept_
 

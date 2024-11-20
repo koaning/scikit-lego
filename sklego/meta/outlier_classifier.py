@@ -2,12 +2,13 @@ import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.calibration import _SigmoidCalibration
-from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
 
 from sklego.base import OutlierModel
+from sklego.common import validate_data
 
 
-class OutlierClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
+class OutlierClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     """Morphs an outlier detection model into a classifier.
 
     When an outlier is detected it will output 1 and 0 otherwise. This way you can use familiar metrics again and this
@@ -87,7 +88,10 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
                 f"Passed model {self.model} does not have a `decision_function` "
                 f"method. This is required for `predict_proba` estimation."
             )
-        X, y = check_X_y(X, y)
+        if y is not None:
+            X, y = validate_data(self, X, y)
+        else:
+            X = validate_data(self, X)
         self.estimator_ = clone(self.model).fit(X, y)
         self.n_features_in_ = self.estimator_.n_features_in_
         self.classes_ = np.array([0, 1])
@@ -112,6 +116,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             The predicted values. 0 for inliers, 1 for outliers.
         """
         check_is_fitted(self, ["estimator_", "classes_"])
+        X = validate_data(self, X, reset=False)
         preds = self.estimator_.predict(X)
         result = (preds == -1).astype(int)
         return result

@@ -1,13 +1,12 @@
 import narwhals.stable.v1 as nw
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from sklego.common import as_list
+from sklego.common import as_list, validate_data
 
 
-class OrthogonalTransformer(BaseEstimator, TransformerMixin):
+class OrthogonalTransformer(TransformerMixin, BaseEstimator):
     r"""The `OrthogonalTransformer` transforms the columns of a dataframe or numpy array to orthogonal (or
     orthonormal if `normalize=True`) matrix.
 
@@ -66,7 +65,7 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
         self : OrthogonalTransformer
             The fitted transformer.
         """
-        X = check_array(X, estimator=self)
+        X = validate_data(self, X)
 
         if not X.shape[0] > 1:
             raise ValueError("Orthogonal transformation not valid for one sample")
@@ -95,12 +94,12 @@ class OrthogonalTransformer(BaseEstimator, TransformerMixin):
         array-like of shape (n_samples, n_features)
             The transformed data.
         """
+        X = validate_data(self, X, reset=False)
+
         if self.normalize:
             check_is_fitted(self, ["inv_R_", "normalization_vector_"])
         else:
             check_is_fitted(self, ["inv_R_"])
-
-        X = check_array(X, estimator=self)
 
         return X @ self.inv_R_ / self.normalization_vector_
 
@@ -113,7 +112,7 @@ def vector_projection(vec, unto):
     return scalar_projection(vec, unto) * unto
 
 
-class InformationFilter(BaseEstimator, TransformerMixin):
+class InformationFilter(TransformerMixin, BaseEstimator):
     r"""The `InformationFilter` transformer uses a variant of the
     [Gram-Schmidt process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process) to filter information out of the
     dataset.
@@ -235,7 +234,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         """
         self._check_coltype(X)
         self.col_ids_ = [v if isinstance(v, int) else self._col_idx(X, v) for v in as_list(self.columns)]
-        X = check_array(X, estimator=self)
+        X = validate_data(self, X)
         X_fair = X.copy()
         v_vectors = self._make_v_vectors(X, self.col_ids_)
         # gram smidt process but only on sensitive attributes
@@ -269,7 +268,7 @@ class InformationFilter(BaseEstimator, TransformerMixin):
         """
         check_is_fitted(self, ["projection_", "col_ids_"])
         self._check_coltype(X)
-        X = check_array(X, estimator=self)
+        X = validate_data(self, X, reset=False)
         # apply the projection and remove the column we won't need
         X_fair = X @ self.projection_
         X_removed = np.delete(X_fair, self.col_ids_, axis=1)

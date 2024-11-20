@@ -3,10 +3,12 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import normalize
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+
+from sklego.common import validate_data
 
 
-class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
+class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     """Corrects predictions of the inner classifier by taking into account a (subjective) prior distribution of the
     classes.
 
@@ -109,7 +111,7 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
         if self.evidence not in self._ALLOWED_EVIDENCE:
             raise ValueError(f"Invalid evidence: the provided evidence should be one of {self._ALLOWED_EVIDENCE}")
 
-        X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
         if set(y) - set(self.prior.keys()):
             raise ValueError(
                 f"Training data is inconsistent with prior: no prior defined for classes "
@@ -147,7 +149,7 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             The predicted probabilities.
         """
         check_is_fitted(self, ["posterior_matrix_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         y_hats = self.estimator_.predict_proba(X)  # these are ignorant of the prior
 
         if self.evidence == "predict_proba":
@@ -171,7 +173,6 @@ class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             The predicted class.
         """
         check_is_fitted(self, ["posterior_matrix_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     @property

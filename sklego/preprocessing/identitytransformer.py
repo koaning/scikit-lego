@@ -1,9 +1,10 @@
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from sklego.common import validate_data
 
-class IdentityTransformer(BaseEstimator, TransformerMixin):
+
+class IdentityTransformer(TransformerMixin, BaseEstimator):
     """The `IdentityTransformer` returns what it is fed. Does not apply any transformation.
 
     The reason for having it is because you can build more expressive pipelines.
@@ -68,7 +69,7 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
             The fitted transformer.
         """
         if self.check_X:
-            X = check_array(X, copy=True, estimator=self)
+            X = validate_data(self, X, copy=True)
         self.n_samples_, self.n_features_in_ = X.shape
         return self
 
@@ -91,7 +92,7 @@ class IdentityTransformer(BaseEstimator, TransformerMixin):
             If the number of columns from `X` differs from the number of columns when fitting.
         """
         if self.check_X:
-            X = check_array(X, copy=True, estimator=self)
+            X = validate_data(self, X, copy=True, reset=False)
         check_is_fitted(self, "n_features_in_")
         if X.shape[1] != self.n_features_in_:
             raise ValueError(

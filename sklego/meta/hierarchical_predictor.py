@@ -179,7 +179,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         Number of features in the training data.
     n_features_ : int
         Number of features used by the estimators.
-    n_levels_ : int
+    n_fitted_levels_ : int
         Number of hierarchical levels in the grouping.
     """
 
@@ -341,8 +341,8 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             else:  # binary case with `method_name = "decision_function"`
                 n_out = 1
 
-        preds = np.zeros((X.shape[0], self.n_levels_, n_out), dtype=float)
-        shrinkage = np.zeros((X.shape[0], self.n_levels_), dtype=float)
+        preds = np.zeros((X.shape[0], self.n_fitted_levels_, n_out), dtype=float)
+        shrinkage = np.zeros((X.shape[0], self.n_fitted_levels_), dtype=float)
 
         for level_idx, grp_names in enumerate(self.fitted_levels_):
             for grp_values, grp_frame in frame.group_by(grp_names):
@@ -363,7 +363,10 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
                 preds[np.ix_(grp_idx, [level_idx], last_dim_ix)] = np.atleast_3d(raw_pred[:, None])
                 shrinkage[np.ix_(grp_idx)] = np.pad(
-                    _shrinkage_factor, (0, self.n_levels_ - len(_shrinkage_factor)), "constant", constant_values=(0)
+                    _shrinkage_factor,
+                    (0, self.n_fitted_levels_ - len(_shrinkage_factor)),
+                    "constant",
+                    constant_values=(0),
                 )
 
         return (preds * np.atleast_3d(shrinkage)).sum(axis=1).squeeze()
@@ -423,8 +426,18 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     def _more_tags(self):
         return {"allow_nan": True}
 
+    def __sklearn_tags__(self):
+        from sklego import SKLEARN_VERSION
 
-class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
+        if SKLEARN_VERSION >= (1, 6):
+            tags = super().__sklearn_tags__()
+            tags.input_tags.allow_nan = True
+            return tags
+        else:
+            pass
+
+
+class HierarchicalRegressor(RegressorMixin, HierarchicalPredictor):
     """A hierarchical regressor that predicts values using hierarchical grouping.
 
     This class extends [`HierarchicalPredictor`][sklego.meta.hierarchical_predictor.HierarchicalPredictor] and adds
@@ -537,7 +550,7 @@ class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
         return self._predict_estimators(X, "predict")
 
 
-class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
+class HierarchicalClassifier(ClassifierMixin, HierarchicalPredictor):
     """A hierarchical classifier that predicts labels using hierarchical grouping.
 
     This class extends [`HierarchicalPredictor`][sklego.meta.hierarchical_predictor.HierarchicalPredictor] and adds
