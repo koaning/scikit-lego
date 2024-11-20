@@ -147,7 +147,7 @@ class TrainOnlyTransformerMixin(TransformerMixin, BaseEstimator):
             If the input dimension does not match the training dimension.
         """
         check_is_fitted(self, ["X_hash_", "n_features_in_"])
-        X = validate_data(self, X, reset=False)
+        validate_data(self, X, reset=False)
 
         if X.shape[1] != self.n_features_in_:
             raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}")

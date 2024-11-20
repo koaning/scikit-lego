@@ -20,7 +20,9 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.utils.validation import (
     FLOAT_DTYPES,
     _check_sample_weight,
+    check_array,
     check_is_fitted,
+    check_X_y,
     column_or_1d,
 )
 
@@ -138,7 +140,7 @@ class LowessRegression(RegressorMixin, BaseEstimator):
         array-like of shape (n_samples,)
             The predicted values.
         """
-        X = validate_data(self, X, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         check_is_fitted(self, ["X_", "y_"])
 
         results = np.stack([np.average(self.y_, weights=self._calc_wts(x_i=x_i)) for x_i in X])
@@ -569,7 +571,7 @@ class _FairClassifier(LinearClassifierMixin, BaseEstimator):
         if isinstance(X, nw.DataFrame):
             self.sensitive_col_idx_ = [i for i, name in enumerate(X.columns) if name in self.sensitive_cols]
 
-        X, y = validate_data(self, X, y, accept_large_sparse=False)
+        X, y = check_X_y(X, y, accept_large_sparse=False, estimator=self)
         sensitive = X[:, self.sensitive_col_idx_]
 
         if not self.train_sensitive_cols:
@@ -662,7 +664,7 @@ class _FairClassifier(LinearClassifierMixin, BaseEstimator):
         return expit(decision_2d)
 
     def decision_function(self, X):
-        X = validate_data(self, X, reset=False)
+        X = check_array(X)
 
         if not self.train_sensitive_cols:
             X = np.delete(X, self.sensitive_col_idx_, axis=1)

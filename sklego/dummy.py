@@ -99,7 +99,7 @@ class RandomRegressor(RegressorMixin, BaseEstimator):
         rs = check_random_state(self.random_state)
         check_is_fitted(self, ["n_features_in_", "min_", "max_", "mu_", "sigma_"])
 
-        X = validate_data(self, X, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         if X.shape[1] != self.n_features_in_:
             raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}")
 

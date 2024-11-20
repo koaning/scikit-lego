@@ -11,13 +11,18 @@ from sklego.meta import DecayEstimator
 
 @parametrize_with_checks(
     [
-        DecayEstimator(LinearRegression(), check_input=True, decay_func=decay_func)
+        DecayEstimator(
+            model=LinearRegression(),
+            decay_func=decay_func,
+            check_input=True,
+        )
         for decay_func in ("linear", "exponential", "sigmoid")
     ]
 )
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_no_attributes_set_in_init",  # Setting **kwargs in init
+        "check_regressor_multioutput",  # incompatible between pre and post 1.6
     }:
         pytest.skip()
 
