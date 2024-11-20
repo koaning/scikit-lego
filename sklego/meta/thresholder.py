@@ -101,7 +101,7 @@ class Thresholder(ClassifierMixin, BaseEstimator):
 
         if self.check_input:
             kwargs = {"force_all_finite": False} if SKLEARN_VERSION < (1, 6) else {"ensure_all_finite": False}
-            X, y = validate_data(self, X, y, ensure_min_features=0, **kwargs)
+            X, y = validate_data(self, X, y, ensure_min_features=0, y_required=True, **kwargs)
 
         self._handle_refit(X, y, sample_weight)
 

@@ -350,6 +350,7 @@ def validate_data(
     reset=True,
     validate_separately=False,
     skip_check_array=False,
+    y_required=False,
     **check_params,
 ):
     if SKLEARN_VERSION >= (1, 6):
@@ -366,6 +367,10 @@ def validate_data(
         )
 
     else:
+        if y is None and y_required:
+            msg = f"This {estimator.__class__.__name__} estimator requires y to be passed, but the target y is None."
+            raise ValueError(msg)
+
         if y is None or (isinstance(y, str) and y == "no_validation"):
             return check_array(X, estimator=estimator, **check_params)
         else:

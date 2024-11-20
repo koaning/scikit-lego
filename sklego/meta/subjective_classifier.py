@@ -173,7 +173,6 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted class.
         """
         check_is_fitted(self, ["posterior_matrix_"])
-        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     @property

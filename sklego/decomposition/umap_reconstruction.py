@@ -158,7 +158,7 @@ class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
         array-like of shape (n_samples,)
             The predicted data. 1 for inliers, -1 for outliers.
         """
-        X = validate_data(self, X, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         check_is_fitted(self, ["umap_", "offset_"])
         result = np.ones(X.shape[0])
         result[self.difference(X) > self.threshold] = -1

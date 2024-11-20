@@ -111,6 +111,7 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         self.groups_ = as_list(self.groups) if self.groups is not None else []
 
         X = nw.from_native(X, strict=False, eager_only=True)
+        self.n_features_in_ = X.shape[1]
 
         if isinstance(X, nw.DataFrame):
             self.feature_names_out_ = [c for c in X.columns if c not in self.groups_]
@@ -141,7 +142,6 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
             )
             self.fallback_ = clone(self.transformer).fit(X_, y_)
 
-        self.n_features_in_ = X.shape[1]
         return self
 
     def __transform_single_group(self, group, X):
@@ -193,9 +193,12 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         array-like of shape (n_samples, n_features)
             Data transformed per group.
         """
-        check_is_fitted(self, ["fallback_", "transformers_"])
+        check_is_fitted(self, ["n_features_in_", "transformers_"])
 
         X = nw.from_native(X, strict=False, eager_only=True)
+        if X.shape[1] != self.n_features_in_:
+            raise ValueError(f"X has {X.shape[1]} features, expected {self.n_features_in_} features.")
+
         frame = parse_X_y(X, y=None, groups=self.groups_, check_X=self.check_X, **self._check_kwargs).drop(
             "__sklego_target__"
         )

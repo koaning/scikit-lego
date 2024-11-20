@@ -79,7 +79,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
         check_is_fitted(self, "estimator_")
         if self.check_input:
-            X = validate_data(self, X, dtype=FLOAT_DTYPES, multi_output=True, reset=False)
+            X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
 
         output = getattr(self.estimator_, self.predict_func)(X)
         return output if self.multi_output_ else output.reshape(-1, 1)
