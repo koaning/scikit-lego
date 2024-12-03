@@ -23,6 +23,49 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         A dictionary of Gaussian Mixture Models, one for each class.
     classes_ : np.ndarray of shape (n_classes,)
         The classes seen during `fit`.
+
+       Examples
+    --------
+
+    ```python
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from sklego.mixture import GMMClassifier
+
+    # Generate datset
+    np.random.seed(1)
+    group0 = np.random.normal(0, 3, (1000, 2))
+    group1 = np.random.normal(2.5, 2, (500, 2))
+    data = np.vstack([group0, group1])
+
+    y = np.hstack([np.zeros((group0.shape[0],), dtype=int), np.ones((group1.shape[0],), dtype=int)])
+
+    # Create and fit the GMMClassifier model
+    gmm = GMMClassifier(n_components=2, random_state=1)
+    gmm.fit(data, y)
+
+    # Classify the train dataset into two clusters (n_components=2)
+    labels = gmm.predict(data)
+
+    # Classify a new point into one of two clusters
+    p = np.array([[1.5, 0.5]])
+    p_prob= gmm.predict_proba(p) # predict the probabilities p belongs to each cluster
+    print(f'Probability point p belongs to group1 is {p_prob[0,0]:.2f}')
+    print(f'Probability point p belongs to group2 is {p_prob[0,1]:.2f}')
+
+    print(f'It is more probable that point p belongs to group{np.argmax(p_prob)}')
+
+    plt.scatter(group0[:,0], group0[:,1], c='y', label='group0')
+    plt.scatter(group1[:,0], group1[:,1], c='r', label='group1')
+    plt.scatter(p[:,0], p[:,1], c='black', marker='x', label='new datapoint')
+    plt.title('Distribution of dataset')
+    plt.legend()
+    plt.show()
+
+    ### Probability point p belongs to group1 is 0.41
+    ### Probability point p belongs to group2 is 0.59
+    ### It is more probable that point p belongs to group1
+    ```
     """
 
     def __init__(
