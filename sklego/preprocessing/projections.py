@@ -7,7 +7,7 @@ from sklearn.utils.validation import check_is_fitted
 from sklego.common import as_list
 
 
-class OrthogonalTransformer(BaseEstimator, TransformerMixin):
+class OrthogonalTransformer(TransformerMixin, BaseEstimator):
     r"""The `OrthogonalTransformer` transforms the columns of a dataframe or numpy array to orthogonal (or
     orthonormal if `normalize=True`) matrix.
 
@@ -113,7 +113,7 @@ def vector_projection(vec, unto):
     return scalar_projection(vec, unto) * unto
 
 
-class InformationFilter(BaseEstimator, TransformerMixin):
+class InformationFilter(TransformerMixin, BaseEstimator):
     r"""The `InformationFilter` transformer uses a variant of the
     [Gram-Schmidt process](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process) to filter information out of the
     dataset.
