@@ -38,6 +38,43 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
         The trained Bayesian Gaussian Mixture Model.
     likelihood_threshold_ : float
         The threshold value used to determine if something is an outlier.
+
+    Examples
+    --------
+
+    ```python
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from sklego.mixture import BayesianGMMOutlierDetector
+
+    # Generate datset, it consists of two clusters
+    np.random.seed(1)
+    group0 = np.random.normal(0, 3, (10, 2))
+    group1 = np.random.normal(2.5, 2, (5, 2))
+    data = np.vstack([group0, group1])
+
+    y = np.hstack([np.zeros((group0.shape[0],), dtype=int), np.ones((group1.shape[0],), dtype=int)])
+
+    # Create and fit the BayesianGMMOutlierDetector model with threshold=0.9
+    bgmm = BayesianGMMOutlierDetector(threshold=0.9, n_components=2, random_state=1)
+    bgmm.fit(data, y)
+
+    # Classify a new point as outlier or not
+    p = np.array([[4.5, 0.5]])
+    p_pred= bgmm.predict(p) # predict the probabilities p belongs to each cluster
+    print('The point is an outlier if the score is -1, inlier if the score is 1')
+    print(f'The score for this point is {p_pred}.')
+
+    plt.scatter(data[:,0], data[:,1], c='y', label='train set')
+    plt.scatter(p[:,0], p[:,1], c='black', marker='x', label='new datapoint')
+    plt.title('Distribution of dataset')
+    plt.legend()
+    plt.show()
+
+    ### The point is an outlier if the score is -1, inlier if the score is 1
+    ### The score for this point is [1].
+    ```
     """
 
     _ALLOWED_METHODS = ("quantile", "stddev")
