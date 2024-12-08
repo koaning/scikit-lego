@@ -8,7 +8,7 @@ from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import _check_sample_weight, check_array, check_is_fitted, check_X_y
 
 
-class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
+class ZeroInflatedRegressor(RegressorMixin, BaseEstimator, MetaEstimatorMixin):
     """A meta regressor for zero-inflated datasets, i.e. the targets contain a lot of zeroes.
 
     `ZeroInflatedRegressor` consists of a classifier and a regressor.

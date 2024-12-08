@@ -8,7 +8,7 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
 
 
-class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
+class GaussianMixtureNB(ClassifierMixin, BaseEstimator):
     """The `GaussianMixtureNB` estimator is a naive bayes classifier that uses a mixture of gaussians instead of
     merely a single one. In particular it trains a `GaussianMixture` model for each class in the target and for each
     feature in the data, on the subset of `X` where `y == class`.
@@ -158,7 +158,7 @@ class GaussianMixtureNB(BaseEstimator, ClassifierMixin):
         return self.n_features_in_
 
 
-class BayesianGaussianMixtureNB(BaseEstimator, ClassifierMixin):
+class BayesianGaussianMixtureNB(ClassifierMixin, BaseEstimator):
     """The `BayesianGaussianMixtureNB` estimator is a naive bayes classifier that uses a bayesian mixture of gaussians
     instead of merely a single one. In particular it trains a `BayesianGaussianMixture` model for each class in the
     target and for each feature in the data, on the subset of `X` where `y == class`.

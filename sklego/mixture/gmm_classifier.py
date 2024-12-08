@@ -7,7 +7,7 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
 
 
-class GMMClassifier(BaseEstimator, ClassifierMixin):
+class GMMClassifier(ClassifierMixin, BaseEstimator):
     """The `GMMClassifier` trains a Gaussian Mixture Model for each class in `y` on a dataset `X`. Once a density is
     trained for each class we can evaluate the likelihood scores to see which class is more likely.
 

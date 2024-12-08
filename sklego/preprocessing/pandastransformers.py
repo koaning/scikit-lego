@@ -60,7 +60,7 @@ def _nw_select_dtypes(include: str | list[str], exclude: str | list[str], schema
     return feature_names
 
 
-class ColumnDropper(BaseEstimator, TransformerMixin):
+class ColumnDropper(TransformerMixin, BaseEstimator):
     """The `ColumnDropper` transformer allows dropping specific columns from a DataFrame by name.
     Can be useful in a sklearn Pipeline.
 
@@ -226,7 +226,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
             raise KeyError(f"{list(non_existent_columns)} column(s) not in DataFrame")
 
 
-class TypeSelector(BaseEstimator, TransformerMixin):
+class TypeSelector(TransformerMixin, BaseEstimator):
     """The `TypeSelector` transformer allows to select columns in a DataFrame based on their type.
     Can be useful in a sklearn Pipeline.
 
@@ -412,7 +412,7 @@ class PandasTypeSelector(TypeSelector):
         super().__init__(include=include, exclude=exclude)
 
 
-class ColumnSelector(BaseEstimator, TransformerMixin):
+class ColumnSelector(TransformerMixin, BaseEstimator):
     """The `ColumnSelector` transformer allows selecting specific columns from a DataFrame by name.
     Can be useful in a sklearn Pipeline.
 

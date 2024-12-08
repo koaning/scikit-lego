@@ -282,10 +282,10 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             raise ValueError(msg)
 
         native_namespace = nw.get_native_namespace(X)
-        target_series = nw.from_dict({self._TARGET_NAME: y}, native_namespace=native_namespace)[self._TARGET_NAME]
-        global_series = nw.from_dict({self._GLOBAL_NAME: np.ones(n_samples)}, native_namespace=native_namespace)[
-            self._GLOBAL_NAME
-        ]
+        target_series = nw.new_series(name=self._TARGET_NAME, values=y, native_namespace=native_namespace)
+        global_series = nw.new_series(
+            name=self._GLOBAL_NAME, values=np.ones(n_samples), native_namespace=native_namespace
+        )
         frame = X.with_columns(
             **{
                 self._TARGET_NAME: target_series,
@@ -322,9 +322,9 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         n_samples = X.shape[0]
         native_namespace = nw.get_native_namespace(X)
-        global_series = nw.from_dict({self._GLOBAL_NAME: np.ones(n_samples)}, native_namespace=native_namespace)[
-            self._GLOBAL_NAME
-        ]
+        global_series = nw.new_series(
+            name=self._GLOBAL_NAME, values=np.ones(n_samples), native_namespace=native_namespace
+        )
 
         frame = X.with_columns(
             **{
@@ -424,7 +424,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         return {"allow_nan": True}
 
 
-class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
+class HierarchicalRegressor(RegressorMixin, HierarchicalPredictor):
     """A hierarchical regressor that predicts values using hierarchical grouping.
 
     This class extends [`HierarchicalPredictor`][sklego.meta.hierarchical_predictor.HierarchicalPredictor] and adds
@@ -537,7 +537,7 @@ class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
         return self._predict_estimators(X, "predict")
 
 
-class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
+class HierarchicalClassifier(ClassifierMixin, HierarchicalPredictor):
     """A hierarchical classifier that predicts labels using hierarchical grouping.
 
     This class extends [`HierarchicalPredictor`][sklego.meta.hierarchical_predictor.HierarchicalPredictor] and adds

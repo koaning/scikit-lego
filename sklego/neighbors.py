@@ -6,7 +6,7 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
 
 
-class BayesianKernelDensityClassifier(BaseEstimator, ClassifierMixin):
+class BayesianKernelDensityClassifier(ClassifierMixin, BaseEstimator):
     """The `BayesianKernelDensityClassifier` estimator trains using Kernel Density estimations to generate the joint
     distribution.
 

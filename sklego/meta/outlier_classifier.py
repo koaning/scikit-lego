@@ -7,7 +7,7 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 from sklego.base import OutlierModel
 
 
-class OutlierClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
+class OutlierClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     """Morphs an outlier detection model into a classifier.
 
     When an outlier is detected it will output 1 and 0 otherwise. This way you can use familiar metrics again and this
