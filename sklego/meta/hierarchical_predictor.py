@@ -424,7 +424,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         return {"allow_nan": True}
 
 
-class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
+class HierarchicalRegressor(RegressorMixin, HierarchicalPredictor):
     """A hierarchical regressor that predicts values using hierarchical grouping.
 
     This class extends [`HierarchicalPredictor`][sklego.meta.hierarchical_predictor.HierarchicalPredictor] and adds
@@ -537,7 +537,7 @@ class HierarchicalRegressor(HierarchicalPredictor, RegressorMixin):
         return self._predict_estimators(X, "predict")
 
 
-class HierarchicalClassifier(HierarchicalPredictor, ClassifierMixin):
+class HierarchicalClassifier(ClassifierMixin, HierarchicalPredictor):
     """A hierarchical classifier that predicts labels using hierarchical grouping.
 
     This class extends [`HierarchicalPredictor`][sklego.meta.hierarchical_predictor.HierarchicalPredictor] and adds

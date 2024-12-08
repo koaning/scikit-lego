@@ -27,7 +27,7 @@ from sklearn.utils.validation import (
 )
 
 
-class LowessRegression(BaseEstimator, RegressorMixin):
+class LowessRegression(RegressorMixin, BaseEstimator):
     """`LowessRegression` estimator: LOWESS (Locally Weighted Scatterplot Smoothing) is a type of
     [local regression](https://en.wikipedia.org/wiki/Local_regression).
 
@@ -155,7 +155,7 @@ class LowessRegression(BaseEstimator, RegressorMixin):
         return results
 
 
-class ProbWeightRegression(BaseEstimator, RegressorMixin):
+class ProbWeightRegression(RegressorMixin, BaseEstimator):
     """`ProbWeightRegression` assumes that all input signals in `X` need to be reweighted with weights that sum up to
     one in order to predict `y`.
 
@@ -276,7 +276,7 @@ class ProbWeightRegression(BaseEstimator, RegressorMixin):
         return self.coef_
 
 
-class DeadZoneRegressor(BaseEstimator, RegressorMixin):
+class DeadZoneRegressor(RegressorMixin, BaseEstimator):
     r"""The `DeadZoneRegressor` estimator implements a regression model that incorporates a _dead zone effect_ for
     improving the robustness of regression predictions.
 
@@ -480,7 +480,7 @@ class DeadZoneRegressor(BaseEstimator, RegressorMixin):
         return self._ALLOWED_EFFECTS
 
 
-class _FairClassifier(BaseEstimator, LinearClassifierMixin):
+class _FairClassifier(LinearClassifierMixin, BaseEstimator):
     """Base class for fair classifiers that address sensitive attribute fairness.
 
     This base class provides a foundation for fair classifiers that aim to mitigate bias and discrimination by taking
@@ -682,7 +682,7 @@ class _FairClassifier(BaseEstimator, LinearClassifierMixin):
         return {"poor_score": True}
 
 
-class DemographicParityClassifier(BaseEstimator, LinearClassifierMixin):
+class DemographicParityClassifier(LinearClassifierMixin, BaseEstimator):
     r"""`DemographicParityClassifier` is a logistic regression classifier which can be constrained on demographic
     parity (p% score).
 
@@ -800,7 +800,7 @@ class _DemographicParityClassifier(_FairClassifier):
             return []
 
 
-class EqualOpportunityClassifier(BaseEstimator, LinearClassifierMixin):
+class EqualOpportunityClassifier(LinearClassifierMixin, BaseEstimator):
     r"""`EqualOpportunityClassifier` is a logistic regression classifier which can be constrained on equal opportunity
     score.
 
@@ -914,7 +914,7 @@ class _EqualOpportunityClassifier(_FairClassifier):
             return []
 
 
-class BaseScipyMinimizeRegressor(BaseEstimator, RegressorMixin, ABC):
+class BaseScipyMinimizeRegressor(RegressorMixin, BaseEstimator, ABC):
     """Abstract base class for regressors relying on Scipy's
     [minimize method](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html) to minimize a
     (custom) loss function.

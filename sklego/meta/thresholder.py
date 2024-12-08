@@ -10,7 +10,7 @@ from sklearn.utils.validation import _check_sample_weight, check_is_fitted, chec
 from sklego.base import ProbabilisticClassifier
 
 
-class Thresholder(BaseEstimator, ClassifierMixin):
+class Thresholder(ClassifierMixin, BaseEstimator):
     """Takes a binary classifier and moves the threshold. This way you might design the algorithm to only accept a
     certain class if the probability for it is larger than, say, 90% instead of 50%.
 
