@@ -44,7 +44,6 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
 
     ```python
     import numpy as np
-    import matplotlib.pyplot as plt
     from sklego.mixture import GMMOutlierDetector
 
     # Generate datset, it consists of two clusters
@@ -61,17 +60,11 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
 
     # Classify a new point as outlier or not
     p = np.array([[4.5, 0.5]])
-    p_pred= gmm.predict(p) # predict the probabilities p belongs to each cluster
+    p_pred = gmm.predict(p) # predict the probabilities p belongs to each cluster
     print('The point is an outlier if the score is -1, inlier if the score is 1')
-    print(f'The score for this point is {p_pred}.')
-
-    plt.scatter(data[:,0], data[:,1], c='y', label='train set')
-    plt.scatter(p[:,0], p[:,1], c='black', marker='x', label='new datapoint')
-    plt.title('Distribution of dataset')
-    plt.legend()
-    plt.show()
-
     ### The point is an outlier if the score is -1, inlier if the score is 1
+
+    print(f'The score for this point is {p_pred}.')
     ### The score for this point is [-1].
     ```
     """
