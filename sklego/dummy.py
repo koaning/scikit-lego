@@ -11,7 +11,7 @@ from sklearn.utils.validation import (
 )
 
 
-class RandomRegressor(BaseEstimator, RegressorMixin):
+class RandomRegressor(RegressorMixin, BaseEstimator):
     """A `RandomRegressor` makes random predictions only based on the `y` value that is seen.
 
     The goal is that such a regressor can be used for benchmarking. It _should be_ easily beatable.

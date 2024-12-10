@@ -3,7 +3,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 
-class IdentityTransformer(BaseEstimator, TransformerMixin):
+class IdentityTransformer(TransformerMixin, BaseEstimator):
     """The `IdentityTransformer` returns what it is fed. Does not apply any transformation.
 
     The reason for having it is because you can build more expressive pipelines.

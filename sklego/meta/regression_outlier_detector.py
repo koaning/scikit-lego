@@ -5,7 +5,7 @@ from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.utils.validation import check_array, check_is_fitted
 
 
-class RegressionOutlierDetector(BaseEstimator, OutlierMixin):
+class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
     """Morphs a regression estimator into one that can detect outliers. We will try to predict `column` in X.
 
     Parameters

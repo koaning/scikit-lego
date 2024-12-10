@@ -4,11 +4,11 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-from sklearn.base import TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
 
 
-class TrainOnlyTransformerMixin(TransformerMixin):
+class TrainOnlyTransformerMixin(TransformerMixin, BaseEstimator):
     """Mixin class for transformers that can handle training and test data differently.
 
     This mixin allows using a separate function for transforming training and test data.

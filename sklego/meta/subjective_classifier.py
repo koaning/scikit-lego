@@ -6,7 +6,7 @@ from sklearn.preprocessing import normalize
 from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted, check_X_y
 
 
-class SubjectiveClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
+class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     """Corrects predictions of the inner classifier by taking into account a (subjective) prior distribution of the
     classes.
 

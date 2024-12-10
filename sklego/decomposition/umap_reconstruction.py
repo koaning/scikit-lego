@@ -11,7 +11,7 @@ from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
 
 
-class UMAPOutlierDetection(BaseEstimator, OutlierMixin):
+class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
     """`UMAPOutlierDetection` is an outlier detector based on the reconstruction error from UMAP.
 
     If the difference between original and reconstructed data is larger than the `threshold`, the point is
