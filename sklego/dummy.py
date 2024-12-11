@@ -2,13 +2,13 @@ from warnings import warn
 
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
-from sklearn.utils import check_X_y
 from sklearn.utils.validation import (
     FLOAT_DTYPES,
-    check_array,
     check_is_fitted,
     check_random_state,
 )
+
+from sklego.common import validate_data
 
 
 class RandomRegressor(RegressorMixin, BaseEstimator):
@@ -72,7 +72,7 @@ class RandomRegressor(RegressorMixin, BaseEstimator):
         """
         if self.strategy not in self._ALLOWED_STRATEGIES:
             raise ValueError(f"strategy {self.strategy} is not in {self._ALLOWED_STRATEGIES}")
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, y_required=True)
         self.n_features_in_ = X.shape[1]
 
         self.min_ = np.min(y)
@@ -99,9 +99,9 @@ class RandomRegressor(RegressorMixin, BaseEstimator):
         rs = check_random_state(self.random_state)
         check_is_fitted(self, ["n_features_in_", "min_", "max_", "mu_", "sigma_"])
 
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
         if X.shape[1] != self.n_features_in_:
-            raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.dim_}")
+            raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}")
 
         if self.strategy == "normal":
             return rs.normal(self.mu_, self.sigma_, X.shape[0])
@@ -127,3 +127,14 @@ class RandomRegressor(RegressorMixin, BaseEstimator):
 
     def _more_tags(self):
         return {"poor_score": True, "non_deterministic": True}
+
+    def __sklearn_tags__(self):
+        from sklego import SKLEARN_VERSION
+
+        if SKLEARN_VERSION >= (1, 6):
+            tags = super().__sklearn_tags__()
+            tags.non_deterministic = True
+            tags.regressor_tags.poor_score = True
+            return tags
+        else:
+            pass

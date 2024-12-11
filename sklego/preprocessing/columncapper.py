@@ -2,8 +2,10 @@ from warnings import warn
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils import check_array
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+
+from sklego import SKLEARN_VERSION
+from sklego.common import validate_data
 
 
 class ColumnCapper(TransformerMixin, BaseEstimator):
@@ -96,9 +98,6 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         discard_infs=False,
         copy=True,
     ):
-        self._check_quantile_range(quantile_range)
-        self._check_interpolation(interpolation)
-
         self.quantile_range = quantile_range
         self.interpolation = interpolation
         self.discard_infs = discard_infs
@@ -124,7 +123,11 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         ValueError
             If `X` contains non-numeric columns.
         """
-        X = check_array(X, copy=True, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
+        self._check_quantile_range(self.quantile_range)
+        self._check_interpolation(self.interpolation)
+
+        kwargs = {"force_all_finite": False} if SKLEARN_VERSION < (1, 6) else {"ensure_all_finite": False}
+        X = validate_data(self, X, copy=True, dtype=FLOAT_DTYPES, **kwargs)
 
         # If X contains infs, we need to replace them by nans before computing quantiles
         np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
@@ -163,13 +166,9 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             If the number of columns from `X` differs from the number of columns when fitting.
         """
         check_is_fitted(self, "quantiles_")
-        X = check_array(
-            X,
-            copy=self.copy,
-            force_all_finite=False,
-            dtype=FLOAT_DTYPES,
-            estimator=self,
-        )
+
+        kwargs = {"force_all_finite": False} if SKLEARN_VERSION < (1, 6) else {"ensure_all_finite": False}
+        X = validate_data(self, X, copy=self.copy, dtype=FLOAT_DTYPES, reset=False, **kwargs)
 
         if X.shape[1] != self.n_features_in_:
             raise ValueError("X must have the same number of columns in fit and transform")
@@ -245,3 +244,13 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
 
     def _more_tags(self):
         return {"allow_nan": True}
+
+    def __sklearn_tags__(self):
+        from sklego import SKLEARN_VERSION
+
+        if SKLEARN_VERSION >= (1, 6):
+            tags = super().__sklearn_tags__()
+            tags.input_tags.allow_nan = True
+            return tags
+        else:
+            pass

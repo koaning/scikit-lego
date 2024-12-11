@@ -28,6 +28,7 @@ def test_sklearn_compatible_estimator(estimator, check):
         "check_estimators_empty_data_messages",  # custom message
         "check_estimators_pickle",  # Fails if input contains nan
         "check_fit1d",
+        "check_n_features_in_after_fitting",  # custom check without validate_data
     }:
         pytest.skip()
 

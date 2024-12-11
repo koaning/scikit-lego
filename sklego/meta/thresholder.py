@@ -5,9 +5,12 @@ import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import NotFittedError
-from sklearn.utils.validation import _check_sample_weight, check_is_fitted, check_X_y
+from sklearn.utils.multiclass import type_of_target
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 
+from sklego import SKLEARN_VERSION
 from sklego.base import ProbabilisticClassifier
+from sklego.common import validate_data
 
 
 class Thresholder(ClassifierMixin, BaseEstimator):
@@ -97,14 +100,18 @@ class Thresholder(ClassifierMixin, BaseEstimator):
             raise ValueError("The Thresholder meta model only works on classification models with .predict_proba.")
 
         if self.check_input:
-            X, y = check_X_y(X, y, force_all_finite=False, ensure_min_features=0, estimator=self)
+            kwargs = {"force_all_finite": False} if SKLEARN_VERSION < (1, 6) else {"ensure_all_finite": False}
+            X, y = validate_data(self, X, y, ensure_min_features=0, y_required=True, **kwargs)
 
         self._handle_refit(X, y, sample_weight)
 
         self.n_features_in_ = X.shape[1]
         self.classes_ = self.estimator_.classes_
-        if len(self.classes_) != 2:
-            raise ValueError("The `Thresholder` meta model only works on models with two classes.")
+
+        extra_args = {"raise_unknown": True} if SKLEARN_VERSION >= (1, 6) else {}
+        y_type = type_of_target(y, input_name="y", **extra_args)
+        if y_type != "binary":
+            raise ValueError("Only binary classification is supported. The type of the target " f"is {y_type}.")
 
         return self
 
@@ -122,6 +129,10 @@ class Thresholder(ClassifierMixin, BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self, ["classes_", "estimator_"])
+        if self.check_input:
+            kwargs = {"force_all_finite": False} if SKLEARN_VERSION < (1, 6) else {"ensure_all_finite": False}
+            X = validate_data(self, X, ensure_min_features=0, reset=False, **kwargs)
+
         predicate = self.estimator_.predict_proba(X)[:, 1] > self.threshold
         return np.where(predicate, self.classes_[1], self.classes_[0])
 
@@ -133,9 +144,23 @@ class Thresholder(ClassifierMixin, BaseEstimator):
     def score(self, X, y):
         """Alias for `.score()` method of the underlying estimator."""
         check_is_fitted(self, ["classes_", "estimator_"])
+        if self.check_input:
+            kwargs = {"force_all_finite": False} if SKLEARN_VERSION < (1, 6) else {"ensure_all_finite": False}
+            X = validate_data(self, X, ensure_min_features=0, reset=False, **kwargs)
+
         return self.estimator_.score(X, y)
 
     def _more_tags(self):
         return {
             "binary_only": True,
         }
+
+    def __sklearn_tags__(self):
+        from sklego import SKLEARN_VERSION
+
+        if SKLEARN_VERSION >= (1, 6):
+            tags = super().__sklearn_tags__()
+            tags.classifier_tags.multi_class = False
+            return tags
+        else:
+            pass

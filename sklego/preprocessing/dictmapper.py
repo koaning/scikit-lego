@@ -2,8 +2,10 @@ from warnings import warn
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+
+from sklego import SKLEARN_VERSION
+from sklego.common import validate_data
 
 
 class DictMapper(TransformerMixin, BaseEstimator):
@@ -74,14 +76,8 @@ class DictMapper(TransformerMixin, BaseEstimator):
         self : DictMapper
             The fitted transformer.
         """
-        X = check_array(
-            X,
-            copy=True,
-            estimator=self,
-            force_all_finite=False,
-            dtype=None,
-            ensure_2d=True,
-        )
+        kwargs = {"force_all_finite": False} if SKLEARN_VERSION < (1, 6) else {"ensure_all_finite": False}
+        X = validate_data(self, X, copy=True, dtype=None, ensure_2d=True, **kwargs)
         self.n_features_in_ = X.shape[1]
         return self
 
@@ -104,14 +100,9 @@ class DictMapper(TransformerMixin, BaseEstimator):
             If the number of columns from `X` differs from the number of columns when fitting.
         """
         check_is_fitted(self, ["n_features_in_"])
-        X = check_array(
-            X,
-            copy=True,
-            estimator=self,
-            force_all_finite=False,
-            dtype=None,
-            ensure_2d=True,
-        )
+
+        kwargs = {"force_all_finite": False} if SKLEARN_VERSION < (1, 6) else {"ensure_all_finite": False}
+        X = validate_data(self, X, copy=True, dtype=None, ensure_2d=True, reset=False, **kwargs)
 
         if X.shape[1] != self.n_features_in_:
             raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
@@ -127,3 +118,15 @@ class DictMapper(TransformerMixin, BaseEstimator):
 
     def _more_tags(self):
         return {"preserves_dtype": None, "allow_nan": True, "no_validation": True}
+
+    def __sklearn_tags__(self):
+        from sklego import SKLEARN_VERSION
+
+        if SKLEARN_VERSION >= (1, 6):
+            tags = super().__sklearn_tags__()
+            tags.transformer_tags.preserves_dtype = []
+            tags.input_tags.allow_nan = True
+            tags.no_validation = True
+            return tags
+        else:
+            pass
