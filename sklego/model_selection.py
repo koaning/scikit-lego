@@ -263,8 +263,8 @@ class TimeGapSplit:
 
         j = 0
         for i in self.split(nw.to_native(X)):
-            train_info = nw.to_native(nw.from_dict({"tmp": i[0]}, native_namespace=native_namespace)["tmp"])
-            valid_info = nw.to_native(nw.from_dict({"tmp": i[1]}, native_namespace=native_namespace)["tmp"])
+            train_info = nw.to_native(nw.new_series(name="tmp", values=i[0], native_namespace=native_namespace))
+            valid_info = nw.to_native(nw.new_series(name="tmp", values=i[1], native_namespace=native_namespace))
             update_split_info(train_info, j, "train", summary)
             update_split_info(valid_info, j, "valid", summary)
             j = j + 1

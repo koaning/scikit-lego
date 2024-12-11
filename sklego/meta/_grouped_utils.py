@@ -33,9 +33,9 @@ def parse_X_y(X, y, groups, check_X=True, **kwargs) -> nw.DataFrame:
 
     # Convert y and assign it to the frame
     n_samples = X.shape[0]
-    y_series = nw.from_dict(
-        data={"tmp": [None] * n_samples if y is None else y}, native_namespace=nw.get_native_namespace(X)
-    )["tmp"]
+    y_series = nw.new_series(
+        name="tmp", values=[None] * n_samples if y is None else y, native_namespace=nw.get_native_namespace(X)
+    )
 
     return X.with_columns(__sklego_target__=y_series)
 

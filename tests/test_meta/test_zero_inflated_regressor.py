@@ -75,6 +75,24 @@ def test_zero_inflated_with_sample_weights_example(classifier, regressor, perfor
     assert zir_score > performance
 
 
+def test_zero_inflated_with_handle_zero_ignore_example():
+    """Test that if handle_zero='ignore' and all y are 0, no Exception will be thrown"""
+
+    np.random.seed(0)
+    size = 1_000
+    X = np.random.randn(size, 4)
+    y = np.zeros(size)  # all outputs are 0
+
+    zir = ZeroInflatedRegressor(
+        classifier=ExtraTreesClassifier(max_depth=20, random_state=0, n_jobs=-1),
+        regressor=ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
+        handle_zero="ignore",
+    ).fit(X, y)
+
+    # The predicted values should all be 0
+    assert (zir.predict(X) == np.zeros(size)).all()
+
+
 def test_wrong_estimators_exceptions():
     X = np.array([[0.0]])
     y = np.array([0.0])
@@ -86,6 +104,27 @@ def test_wrong_estimators_exceptions():
     with pytest.raises(ValueError, match="`regressor` has to be a regressor."):
         zir = ZeroInflatedRegressor(ExtraTreesClassifier(), ExtraTreesClassifier())
         zir.fit(X, y)
+
+    with pytest.raises(
+        ValueError, match="`handle_zero` has to be one of \('ignore', 'error'\). Received 'ignor' instead."
+    ):
+        zir = ZeroInflatedRegressor(
+            classifier=ExtraTreesClassifier(max_depth=20, random_state=0, n_jobs=-1),
+            regressor=ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
+            handle_zero="ignor",
+        )
+        zir.fit(X, y)
+
+    error_text = """The predicted training labels are all zero, making the regressor obsolete\. Change the classifier
+                or use a plain regressor instead\. Alternatively, you can choose to ignore that predicted labels are
+                all zero by setting flag handle_zero = 'ignore'"""
+
+    with pytest.raises(ValueError, match=error_text):
+        zir = ZeroInflatedRegressor(
+            classifier=ExtraTreesClassifier(max_depth=20, random_state=0, n_jobs=-1),
+            regressor=ExtraTreesRegressor(max_depth=20, random_state=0, n_jobs=-1),
+        )
+        zir.fit(X, y)  # default is handle_zero = 'error'
 
 
 def approx_lte(x, y):

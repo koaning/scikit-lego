@@ -15,8 +15,8 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
 
     `ZeroInflatedRegressor` consists of a classifier and a regressor.
 
-    - The classifier's task is to find of if the target is zero or not.
-    - The regressor's task is to output a (usually positive) prediction whenever the classifier indicates that the
+    - The classifier's task is to find if the target is zero or not.
+    - The regressor's task is to output a (usually positive) prediction whenever the classifier indicates that
     there should be a non-zero prediction.
 
     The regressor is only trained on examples where the target is non-zero, which makes it easier for it to focus.
@@ -31,6 +31,11 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
     regressor : scikit-learn compatible regressor
         A regressor for predicting the target. Its prediction is only used if `classifier` says that the output is
         non-zero.
+    handle_zero : Literal["error", "ignore"], default="error"
+            How to behave in the case that all train set output consists of zero values only.
+
+            - `handle_zero = 'error'`: will raise a `ValueError` (default).
+            - `handle_zero = 'ignore'`: will continue to train the regressor on the entire dataset.
 
     Attributes
     ----------
@@ -65,9 +70,10 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
 
     _required_parameters = ["classifier", "regressor"]
 
-    def __init__(self, classifier, regressor) -> None:
+    def __init__(self, classifier, regressor, handle_zero="error") -> None:
         self.classifier = classifier
         self.regressor = regressor
+        self.handle_zero = handle_zero
 
     def fit(self, X, y, sample_weight=None):
         """Fit the underlying classifier and regressor using `X` and `y` as training data. The regressor is only trained
@@ -90,7 +96,9 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
         Raises
         ------
         ValueError
-            If `classifier` is not a classifier or `regressor` is not a regressor.
+            If `classifier` is not a classifier
+            If `regressor` is not a regressor
+            If all train target entirely consists of zeros and `handle_zero="error"`
         """
         X, y = validate_data(self, X, y, y_required=True)
 
@@ -102,6 +110,10 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
             )
         if not is_regressor(self.regressor):
             raise ValueError(f"`regressor` has to be a regressor. Received instance of {type(self.regressor)} instead.")
+        if self.handle_zero not in {"ignore", "error"}:
+            raise ValueError(
+                f"`handle_zero` has to be one of {'ignore', 'error'}. Received '{self.handle_zero}' instead."
+            )
 
         sample_weight = _check_sample_weight(sample_weight, X)
         try:
@@ -116,9 +128,14 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
                 logging.warning("Classifier ignores sample_weight.")
                 self.classifier_.fit(X, y != 0)
 
-        non_zero_indices = np.where(y != 0)[0]
+        indices_for_training = np.where(y != 0)[0]  # these are the non-zero indices
+        if (self.handle_zero == "ignore") & (
+            indices_for_training.size == 0
+        ):  # if we choose to ignore that all train set output is 0
+            logging.warning("Regressor will be training on `y` consisting of zero values only.")
+            indices_for_training = np.where(y == 0)[0]  # use the whole train set
 
-        if non_zero_indices.size > 0:
+        if indices_for_training.size > 0:
             try:
                 check_is_fitted(self.regressor)
                 self.regressor_ = self.regressor
@@ -127,20 +144,21 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
 
                 if "sample_weight" in signature(self.regressor_.fit).parameters:
                     self.regressor_.fit(
-                        X[non_zero_indices],
-                        y[non_zero_indices],
-                        sample_weight=sample_weight[non_zero_indices] if sample_weight is not None else None,
+                        X[indices_for_training],
+                        y[indices_for_training],
+                        sample_weight=sample_weight[indices_for_training] if sample_weight is not None else None,
                     )
                 else:
                     logging.warning("Regressor ignores sample_weight.")
                     self.regressor_.fit(
-                        X[non_zero_indices],
-                        y[non_zero_indices],
+                        X[indices_for_training],
+                        y[indices_for_training],
                     )
         else:
             raise ValueError(
                 """The predicted training labels are all zero, making the regressor obsolete. Change the classifier
-                or use a plain regressor instead."""
+                or use a plain regressor instead. Alternatively, you can choose to ignore that predicted labels are
+                all zero by setting flag handle_zero = 'ignore'"""
             )
 
         return self
