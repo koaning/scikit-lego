@@ -97,6 +97,10 @@ class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
         """Checks if the wrapped estimator is a classifier."""
         return any(["ClassifierMixin" in p.__name__ for p in type(self.model).__bases__])
 
+    def _is_regressor(self):
+        """Checks if the wrapped estimator is a regressor."""
+        return any(["RegressorMixin" in p.__name__ for p in type(self.model).__bases__])
+
     @property
     def _estimator_type(self):
         """Computes `_estimator_type` dynamically from the wrapped model."""

@@ -970,8 +970,6 @@ class BaseScipyMinimizeRegressor(RegressorMixin, BaseEstimator, ABC):
         self.fit_intercept = fit_intercept
         self.copy_X = copy_X
         self.positive = positive
-        if method not in ("SLSQP", "TNC", "L-BFGS-B"):
-            raise ValueError(f'method should be one of "SLSQP", "TNC", "L-BFGS-B", ' f"got {method} instead")
         self.method = method
 
     @abstractmethod
@@ -1021,6 +1019,10 @@ class BaseScipyMinimizeRegressor(RegressorMixin, BaseEstimator, ABC):
         self : BaseScipyMinimizeRegressor
             Fitted linear model.
         """
+        if self.method not in {"SLSQP", "TNC", "L-BFGS-B"}:
+            msg = f"method should be one of 'SLSQP', 'TNC', 'L-BFGS-B', got {self.method} instead"
+            raise ValueError(msg)
+
         X_, grad_loss, loss = self._prepare_inputs(X, sample_weight, y)
 
         d = X_.shape[1] - self.n_features_in_  # This is either zero or one.

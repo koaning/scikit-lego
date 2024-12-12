@@ -96,9 +96,6 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         discard_infs=False,
         copy=True,
     ):
-        self._check_quantile_range(quantile_range)
-        self._check_interpolation(interpolation)
-
         self.quantile_range = quantile_range
         self.interpolation = interpolation
         self.discard_infs = discard_infs
@@ -124,6 +121,8 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         ValueError
             If `X` contains non-numeric columns.
         """
+        self._check_quantile_range(self.quantile_range)
+        self._check_interpolation(self.interpolation)
         X = check_array(X, copy=True, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
 
         # If X contains infs, we need to replace them by nans before computing quantiles

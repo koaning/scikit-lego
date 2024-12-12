@@ -118,6 +118,10 @@ class GaussianMixtureNB(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+
+        if self.n_features_in_ != X.shape[1]:
+            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
+
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     def predict_proba(self, X: np.ndarray):
@@ -284,6 +288,10 @@ class BayesianGaussianMixtureNB(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
         X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+
+        if self.n_features_in_ != X.shape[1]:
+            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
+
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     def predict_proba(self, X: np.ndarray):

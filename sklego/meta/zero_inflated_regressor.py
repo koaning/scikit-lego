@@ -99,7 +99,8 @@ class ZeroInflatedRegressor(RegressorMixin, BaseEstimator, MetaEstimatorMixin):
             If all train target entirely consists of zeros and `handle_zero="error"`
         """
         X, y = check_X_y(X, y)
-        self._check_n_features(X, reset=True)
+        self.n_features_in_ = X.shape[1]
+
         if not is_classifier(self.classifier):
             raise ValueError(
                 f"`classifier` has to be a classifier. Received instance of {type(self.classifier)} instead."
@@ -173,9 +174,12 @@ class ZeroInflatedRegressor(RegressorMixin, BaseEstimator, MetaEstimatorMixin):
         array-like of shape (n_samples,)
             The predicted values.
         """
-        check_is_fitted(self)
+        check_is_fitted(self, ["n_features_in_", "classifier_", "regressor_"])
         X = check_array(X)
-        self._check_n_features(X, reset=False)
+
+        if X.shape[1] != self.n_features_in_:
+            msg = f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}"
+            raise ValueError(msg)
 
         output = np.zeros(len(X))
         non_zero_indices = np.where(self.classifier_.predict(X))[0]
@@ -211,9 +215,12 @@ class ZeroInflatedRegressor(RegressorMixin, BaseEstimator, MetaEstimatorMixin):
             The predicted risk.
         """
 
-        check_is_fitted(self)
+        check_is_fitted(self, ["n_features_in_", "classifier_", "regressor_"])
         X = check_array(X)
-        self._check_n_features(X, reset=True)
+
+        if X.shape[1] != self.n_features_in_:
+            msg = f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}"
+            raise ValueError(msg)
 
         non_zero_proba = self.classifier_.predict_proba(X)[:, 1]
         expected_impact = self.regressor_.predict(X)
