@@ -1,7 +1,8 @@
 from sklearn import clone
 from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin
-from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
+
+from sklego._sklearn_compat import _check_n_features, check_array
 
 
 class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
@@ -53,7 +54,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         """
 
         if self.check_input:
-            X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, multi_output=True, reset=True)
+            X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, multi_output=True)
 
         _check_n_features(self, X, reset=True)
 
@@ -80,7 +81,7 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
         check_is_fitted(self, "estimator_")
         if self.check_input:
-            X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+            X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=False)
 
         output = getattr(self.estimator_, self.predict_func)(X)

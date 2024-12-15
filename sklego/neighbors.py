@@ -2,8 +2,9 @@ import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.neighbors import KernelDensity
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
+
+from sklego._sklearn_compat import _check_n_features, check_array
 
 
 class BayesianKernelDensityClassifier(ClassifierMixin, BaseEstimator):
@@ -62,7 +63,7 @@ class BayesianKernelDensityClassifier(ClassifierMixin, BaseEstimator):
         self : BayesianKernelDensityClassifier
             The fitted estimator.
         """
-        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=True)
 
         self.classes_ = unique_labels(y)
@@ -105,7 +106,7 @@ class BayesianKernelDensityClassifier(ClassifierMixin, BaseEstimator):
             The predicted probabilities for each class, ordered as in `self.classes_`.
         """
         check_is_fitted(self, ["classes_", "models_"])
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=False)
 
         log_prior = np.array([self.priors_logp_[target_label] for target_label in self.classes_])
@@ -132,7 +133,7 @@ class BayesianKernelDensityClassifier(ClassifierMixin, BaseEstimator):
             The predicted data.
         """
         check_is_fitted(self, ["classes_", "models_"])
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=False)
 
         return self.classes_[np.argmax(self.predict_proba(X), 1)]

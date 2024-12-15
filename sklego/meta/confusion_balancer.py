@@ -2,9 +2,9 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
 
+from sklego._sklearn_compat import _check_n_features, check_array
 from sklego.base import ProbabilisticClassifier
 
 
@@ -64,7 +64,7 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             If the underlying estimator does not have a `predict_proba` method.
         """
 
-        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=True)
 
         if not isinstance(self.estimator, ProbabilisticClassifier):
@@ -92,7 +92,7 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self, ["cfm_", "classes_", "estimator_"])
-        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self.estimator_, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=False)
         preds = self.estimator_.predict_proba(X)
         return (1 - self.alpha) * preds + self.alpha * preds @ self.cfm_
@@ -111,6 +111,6 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self, ["cfm_", "classes_", "estimator_"])
-        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self.estimator_, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=False)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]

@@ -5,8 +5,9 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+from sklearn.utils.validation import check_is_fitted, check_X_y
+
+from sklego._sklearn_compat import _check_n_features, check_array
 
 
 class TrainOnlyTransformerMixin(TransformerMixin, BaseEstimator):
@@ -80,9 +81,9 @@ class TrainOnlyTransformerMixin(TransformerMixin, BaseEstimator):
             The fitted transformer.
         """
         if y is None:
-            validate_data(self, X=X, reset=True)
+            check_array(X, estimator=self)
         else:
-            validate_data(self, X=X, y=y, multi_output=True, reset=True)
+            check_X_y(X, y, estimator=self, multi_output=True)
         _check_n_features(self, X, reset=True)
         self.X_hash_ = self._hash(X)
         self.n_features_in_ = X.shape[1]
@@ -147,7 +148,7 @@ class TrainOnlyTransformerMixin(TransformerMixin, BaseEstimator):
             If the input dimension does not match the training dimension.
         """
         check_is_fitted(self, ["X_hash_", "n_features_in_"])
-        validate_data(self, X=X, reset=False)
+        check_array(X, estimator=self)
         _check_n_features(self, X, reset=False)
 
         if self._hash(X) == self.X_hash_:

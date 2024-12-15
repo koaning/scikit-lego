@@ -5,10 +5,9 @@ import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import NotFittedError
-from sklearn.utils.multiclass import type_of_target
-from sklearn.utils.validation import _check_sample_weight, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted, check_X_y
 
+from sklego._sklearn_compat import _check_n_features, check_array, type_of_target
 from sklego.base import ProbabilisticClassifier
 
 
@@ -99,13 +98,13 @@ class Thresholder(ClassifierMixin, BaseEstimator):
             raise ValueError("The Thresholder meta model only works on classification models with .predict_proba.")
 
         if self.check_input:
-            X, y = validate_data(self, X=X, y=y, ensure_all_finite=False, ensure_min_features=0, reset=True)
+            X, y = check_X_y(X, y, estimator=self, ensure_all_finite=False, ensure_min_features=0)
 
         _check_n_features(self, X, reset=True)
         self._handle_refit(X, y, sample_weight)
 
         self.classes_ = self.estimator_.classes_
-        y_type = type_of_target(y, input_name="y")
+        y_type = type_of_target(y, input_name="y", raise_unknown=True)
         if y_type != "binary":
             raise ValueError("Only binary classification is supported. The type of the target " f"is {y_type}.")
 
@@ -126,7 +125,7 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["classes_", "estimator_"])
         if self.check_input:
-            X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
+            X = check_array(X, estimator=self, ensure_min_features=0, ensure_all_finite=False)
         _check_n_features(self, X, reset=False)
 
         predicate = self.estimator_.predict_proba(X)[:, 1] > self.threshold
@@ -136,7 +135,7 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         """Alias for `.predict_proba()` method of the underlying estimator."""
         check_is_fitted(self, ["classes_", "estimator_"])
         if self.check_input:
-            X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
+            X = check_array(X, estimator=self, ensure_min_features=0, ensure_all_finite=False)
         _check_n_features(self, X, reset=False)
 
         return self.estimator_.predict_proba(X)
@@ -145,7 +144,7 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         """Alias for `.score()` method of the underlying estimator."""
         check_is_fitted(self, ["classes_", "estimator_"])
         if self.check_input:
-            X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
+            X = check_array(X, estimator=self, ensure_min_features=0, ensure_all_finite=False)
         _check_n_features(self, X, reset=False)
 
         return self.estimator_.score(X, y)

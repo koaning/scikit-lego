@@ -2,12 +2,9 @@ from warnings import warn
 
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
-from sklearn.utils.validation import (
-    FLOAT_DTYPES,
-    check_is_fitted,
-    check_random_state,
-)
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_random_state, check_X_y
+
+from ._sklearn_compat import _check_n_features, check_array
 
 
 class RandomRegressor(RegressorMixin, BaseEstimator):
@@ -71,7 +68,7 @@ class RandomRegressor(RegressorMixin, BaseEstimator):
         """
         if self.strategy not in self._ALLOWED_STRATEGIES:
             raise ValueError(f"strategy {self.strategy} is not in {self._ALLOWED_STRATEGIES}")
-        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=True)
 
         self.min_ = np.min(y)
@@ -98,7 +95,7 @@ class RandomRegressor(RegressorMixin, BaseEstimator):
         rs = check_random_state(self.random_state)
         check_is_fitted(self, ["n_features_in_", "min_", "max_", "mu_", "sigma_"])
 
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=False)
 
         if self.strategy == "normal":

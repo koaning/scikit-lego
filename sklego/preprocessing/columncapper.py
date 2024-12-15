@@ -3,7 +3,8 @@ from warnings import warn
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+
+from sklego._sklearn_compat import _check_n_features, check_array
 
 
 class ColumnCapper(TransformerMixin, BaseEstimator):
@@ -124,7 +125,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         self._check_quantile_range(self.quantile_range)
         self._check_interpolation(self.interpolation)
 
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, copy=True, ensure_all_finite=False, reset=True)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES, copy=True, ensure_all_finite=False)
         _check_n_features(self, X, reset=True)
 
         # If X contains infs, we need to replace them by nans before computing quantiles
@@ -161,7 +162,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             If the number of columns from `X` differs from the number of columns when fitting.
         """
         check_is_fitted(self, ["quantiles_"])
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, copy=self.copy, ensure_all_finite=False, reset=False)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES, copy=self.copy, ensure_all_finite=False)
         _check_n_features(self, X, reset=False)
 
         if self.discard_infs:

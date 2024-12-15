@@ -9,7 +9,8 @@ except ImportError:
 import numpy as np
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+
+from sklego._sklearn_compat import _check_n_features, check_array
 
 
 class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
@@ -101,10 +102,10 @@ class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
             - If `n_components` is less than 2.
             - If `threshold` is `None`.
         """
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=True)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES, ensure_2d=True)
         _check_n_features(self, X, reset=True)
         if y is not None:
-            y = validate_data(self, y=y, reset=True)
+            y = check_array(y, estimator=self)
 
         if not self.threshold:
             raise ValueError("The `threshold` value cannot be `None`.")
@@ -135,7 +136,7 @@ class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
             The calculated difference.
         """
         check_is_fitted(self, ["umap_", "offset_"])
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES, ensure_2d=True)
         _check_n_features(self, X, reset=False)
 
         reduced = self.umap_.transform(X)
@@ -161,7 +162,7 @@ class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
             The predicted data. 1 for inliers, -1 for outliers.
         """
         check_is_fitted(self, ["umap_", "offset_"])
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES, ensure_2d=True)
         _check_n_features(self, X, reset=False)
         result = np.ones(X.shape[0])
         result[self.difference(X) > self.threshold] = -1

@@ -17,15 +17,9 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.linear_model._base import LinearClassifierMixin
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils import check_X_y
-from sklearn.utils.validation import (
-    FLOAT_DTYPES,
-    _check_sample_weight,
-    check_array,
-    check_is_fitted,
-    column_or_1d,
-)
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+from sklearn.utils.validation import FLOAT_DTYPES, _check_sample_weight, check_is_fitted, check_X_y, column_or_1d
+
+from sklego._sklearn_compat import _check_n_features, check_array
 
 
 class LowessRegression(RegressorMixin, BaseEstimator):
@@ -97,7 +91,7 @@ class LowessRegression(RegressorMixin, BaseEstimator):
             - If `span` is not between 0 and 1.
             - If `sigma` is negative.
         """
-        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=True)
         if self.span is not None:
             if not 0 <= self.span <= 1:
@@ -141,7 +135,7 @@ class LowessRegression(RegressorMixin, BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self, ["X_", "y_"])
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=False)
 
         try:
@@ -236,7 +230,7 @@ class ProbWeightRegression(RegressorMixin, BaseEstimator):
         self : ProbWeightRegression
             The fitted estimator.
         """
-        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=True)
 
         # Construct the problem.
@@ -268,7 +262,7 @@ class ProbWeightRegression(RegressorMixin, BaseEstimator):
             The predicted data.
         """
         check_is_fitted(self, ["coef_"])
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=False)
 
         return np.dot(X, self.coef_)
@@ -387,7 +381,7 @@ class DeadZoneRegressor(RegressorMixin, BaseEstimator):
         ValueError
             If `effect` is not one of "linear", "quadratic" or "constant".
         """
-        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=True)
 
         if self.effect not in self._ALLOWED_EFFECTS:
@@ -467,7 +461,7 @@ class DeadZoneRegressor(RegressorMixin, BaseEstimator):
             The predicted data.
         """
         check_is_fitted(self, ["coef_"])
-        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=False)
 
         return np.dot(X, self.coef_)
@@ -1063,7 +1057,7 @@ class BaseScipyMinimizeRegressor(RegressorMixin, BaseEstimator, ABC):
         This method is called by `fit` to prepare the inputs for the optimization problem. It adds an intercept column
         to `X` if `fit_intercept=True`, and returns the loss function and its gradient.
         """
-        X, y = validate_data(self, X=X, y=y, y_numeric=True, reset=True)
+        X, y = check_X_y(X, y, estimator=self, y_numeric=True)
         _check_n_features(self, X, reset=True)
 
         sample_weight = _check_sample_weight(sample_weight, X)
@@ -1095,7 +1089,7 @@ class BaseScipyMinimizeRegressor(RegressorMixin, BaseEstimator, ABC):
             The predicted data.
         """
         check_is_fitted(self)
-        X = validate_data(self, X=X, reset=False)
+        X = check_array(X, estimator=self)
         _check_n_features(self, X, reset=False)
 
         return X @ self.coef_ + self.intercept_

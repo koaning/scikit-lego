@@ -2,7 +2,8 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import SplineTransformer
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+
+from sklego._sklearn_compat import _check_n_features, check_array
 
 
 class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
@@ -52,7 +53,7 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
         ValueError
             If `X` contains non-numeric columns.
         """
-        X = validate_data(self, X=X, copy=True, ensure_all_finite=False, dtype=FLOAT_DTYPES, reset=True)
+        X = check_array(X, estimator=self, copy=True, ensure_all_finite=False, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=True)
         # If X contains infs, we need to replace them by nans before computing quantiles
         self.spline_transformer_ = {
@@ -81,7 +82,7 @@ class MonotonicSplineTransformer(TransformerMixin, BaseEstimator):
             If the number of columns from `X` differs from the number of columns when fitting.
         """
         check_is_fitted(self, "spline_transformer_")
-        X = validate_data(self, X=X, ensure_all_finite=False, dtype=FLOAT_DTYPES, reset=False)
+        X = check_array(X, estimator=self, ensure_all_finite=False, dtype=FLOAT_DTYPES)
         _check_n_features(self, X, reset=False)
         out = []
         for col in range(X.shape[1]):

@@ -3,8 +3,9 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, MultiOutputMixin, is_classifier
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.utils.validation import check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+from sklearn.utils.validation import check_is_fitted, check_X_y
+
+from sklego._sklearn_compat import _check_n_features, check_array
 
 
 class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
@@ -130,7 +131,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         if not hasattr(self.estimator, "predict_proba"):
             raise ValueError("The estimator must implement `.predict_proba()` method.")
 
-        X, y = validate_data(self, X=X, y=y, ensure_min_samples=2, ensure_2d=True, reset=True)
+        X, y = check_X_y(X, y, estimator=self, ensure_min_samples=2, ensure_2d=True)
         _check_n_features(self, X, reset=True)
 
         self.classes_ = np.sort(np.unique(y))
@@ -173,7 +174,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
             If `X` has a different number of features than the one seen during `fit`.
         """
         check_is_fitted(self, ["estimators_", "classes_"])
-        X = validate_data(self, X=X, ensure_2d=True, reset=False)
+        X = check_array(X, estimator=self, ensure_2d=True)
         _check_n_features(self, X, reset=False)
 
         raw_proba = np.array([estimator.predict_proba(X)[:, 1] for estimator in self.estimators_.values()]).T
@@ -196,7 +197,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
             The predicted class labels.
         """
         check_is_fitted(self, ["estimators_", "classes_"])
-        X = validate_data(self, X=X, ensure_2d=True, reset=False)
+        X = check_array(X, estimator=self, ensure_2d=True)
         return self.classes_[np.argmax(self.predict_proba(X), axis=1)]
 
     def _fit_binary_estimator(self, X, y, y_label):
