@@ -1,7 +1,8 @@
 import numpy as np
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.decomposition import PCA
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 
 class PCAOutlierDetection(OutlierMixin, BaseEstimator):
@@ -94,7 +95,8 @@ class PCAOutlierDetection(OutlierMixin, BaseEstimator):
         ValueError
             If `threshold` is `None`.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=True)
+        _check_n_features(self, X, reset=True)
         if not self.threshold:
             raise ValueError("The `threshold` value cannot be `None`.")
 
@@ -108,8 +110,6 @@ class PCAOutlierDetection(OutlierMixin, BaseEstimator):
         )
         self.pca_.fit(X, y)
         self.offset_ = -self.threshold
-
-        self.n_features_in_ = X.shape[1]
         return self
 
     def difference(self, X):
@@ -126,6 +126,9 @@ class PCAOutlierDetection(OutlierMixin, BaseEstimator):
             The calculated difference.
         """
         check_is_fitted(self, ["pca_", "offset_"])
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        _check_n_features(self, X, reset=False)
+
         reduced = self.pca_.transform(X)
         diff = np.sum(np.abs(self.pca_.inverse_transform(reduced) - X), axis=1)
         if self.variant == "relative":
@@ -157,8 +160,9 @@ class PCAOutlierDetection(OutlierMixin, BaseEstimator):
         array-like of shape (n_samples,)
             The predicted data. 1 for inliers, -1 for outliers.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["pca_", "offset_"])
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        _check_n_features(self, X, reset=False)
         result = np.ones(X.shape[0])
         result[self.difference(X) > self.threshold] = -1
         return result.astype(int)
