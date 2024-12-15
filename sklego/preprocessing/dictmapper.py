@@ -2,8 +2,8 @@ from warnings import warn
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 
 class DictMapper(TransformerMixin, BaseEstimator):
@@ -74,15 +74,9 @@ class DictMapper(TransformerMixin, BaseEstimator):
         self : DictMapper
             The fitted transformer.
         """
-        X = check_array(
-            X,
-            copy=True,
-            estimator=self,
-            force_all_finite=False,
-            dtype=None,
-            ensure_2d=True,
-        )
-        self.n_features_in_ = X.shape[1]
+        X = validate_data(self, X=X, copy=True, dtype=None, ensure_2d=True, ensure_all_finite=False, reset=True)
+        _check_n_features(self, X, reset=True)
+
         return self
 
     def transform(self, X):
@@ -104,17 +98,8 @@ class DictMapper(TransformerMixin, BaseEstimator):
             If the number of columns from `X` differs from the number of columns when fitting.
         """
         check_is_fitted(self, ["n_features_in_"])
-        X = check_array(
-            X,
-            copy=True,
-            estimator=self,
-            force_all_finite=False,
-            dtype=None,
-            ensure_2d=True,
-        )
-
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
+        X = validate_data(self, X=X, copy=True, dtype=None, ensure_2d=True, ensure_all_finite=False, reset=False)
+        _check_n_features(self, X, reset=False)
         return np.vectorize(self.mapper.get, otypes=[int])(X, self.default)
 
     @property
@@ -127,3 +112,10 @@ class DictMapper(TransformerMixin, BaseEstimator):
 
     def _more_tags(self):
         return {"preserves_dtype": None, "allow_nan": True, "no_validation": True}
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.transformer_tags.preserves_dtype = []
+        tags.input_tags.allow_nan = True
+        tags.no_validation = True
+        return tags

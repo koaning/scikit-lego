@@ -1,6 +1,7 @@
 from sklearn import clone
 from sklearn.base import BaseEstimator
-from sklearn.utils.validation import check_array, check_is_fitted
+from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 from sklego.common import TrainOnlyTransformerMixin
 
@@ -68,6 +69,7 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
         if self.refit:
             super().fit(X, y)
             self.estimator_.fit(X, y)
+        _check_n_features(self, X, reset=True)
         return self
 
     def transform_train(self, X):
@@ -84,6 +86,9 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
             The data with the outliers removed, where `n_not_outliers = n_samples - n_outliers`.
         """
         check_is_fitted(self, "estimator_")
+        _check_n_features(self, X, reset=False)
+
         predictions = self.estimator_.predict(X)
-        check_array(predictions, estimator=self.outlier_detector, ensure_2d=False)
+        validate_data(self.outlier_detector, X=predictions, ensure_2d=False, reset=False)
+
         return X[predictions != -1]

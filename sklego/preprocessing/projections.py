@@ -1,8 +1,8 @@
 import narwhals.stable.v1 as nw
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 from sklego.common import as_list
 
@@ -66,10 +66,8 @@ class OrthogonalTransformer(TransformerMixin, BaseEstimator):
         self : OrthogonalTransformer
             The fitted transformer.
         """
-        X = check_array(X, estimator=self)
-
-        if not X.shape[0] > 1:
-            raise ValueError("Orthogonal transformation not valid for one sample")
+        X = validate_data(self, X=X, ensure_min_samples=2, reset=True)
+        _check_n_features(self, X, reset=True)
 
         # Q, R such that X = Q*R, with Q orthogonal, from which follows Q = X*inv(R)
         Q, R = np.linalg.qr(X)
@@ -95,12 +93,14 @@ class OrthogonalTransformer(TransformerMixin, BaseEstimator):
         array-like of shape (n_samples, n_features)
             The transformed data.
         """
+
         if self.normalize:
             check_is_fitted(self, ["inv_R_", "normalization_vector_"])
         else:
             check_is_fitted(self, ["inv_R_"])
 
-        X = check_array(X, estimator=self)
+        X = validate_data(self, X=X, reset=False)
+        _check_n_features(self, X, reset=False)
 
         return X @ self.inv_R_ / self.normalization_vector_
 
@@ -235,7 +235,9 @@ class InformationFilter(TransformerMixin, BaseEstimator):
         """
         self._check_coltype(X)
         self.col_ids_ = [v if isinstance(v, int) else self._col_idx(X, v) for v in as_list(self.columns)]
-        X = check_array(X, estimator=self)
+        X = validate_data(self, X=X, reset=True)
+        _check_n_features(self, X, reset=True)
+
         X_fair = X.copy()
         v_vectors = self._make_v_vectors(X, self.col_ids_)
         # gram smidt process but only on sensitive attributes
@@ -269,7 +271,9 @@ class InformationFilter(TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self, ["projection_", "col_ids_"])
         self._check_coltype(X)
-        X = check_array(X, estimator=self)
+        X = validate_data(self, X=X, reset=False)
+        _check_n_features(self, X, reset=False)
+
         # apply the projection and remove the column we won't need
         X_fair = X @ self.projection_
         X_removed = np.delete(X_fair, self.col_ids_, axis=1)
