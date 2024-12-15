@@ -2,7 +2,8 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 from sklego.base import ProbabilisticClassifier
 
@@ -63,7 +64,9 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             If the underlying estimator does not have a `predict_proba` method.
         """
 
-        X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        _check_n_features(self, X, reset=True)
+
         if not isinstance(self.estimator, ProbabilisticClassifier):
             raise ValueError(
                 "The ConfusionBalancer meta model only works on classification models with .predict_proba."
@@ -72,7 +75,6 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         self.classes_ = unique_labels(y)
         cfm = confusion_matrix(y, self.estimator_.predict(X)).T + self.cfm_smooth
         self.cfm_ = cfm / cfm.sum(axis=1).reshape(-1, 1)
-        self.n_features_in_ = X.shape[1]
         return self
 
     def predict_proba(self, X):
@@ -90,7 +92,8 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self, ["cfm_", "classes_", "estimator_"])
-        X = check_array(X, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
+        _check_n_features(self, X, reset=False)
         preds = self.estimator_.predict_proba(X)
         return (1 - self.alpha) * preds + self.alpha * preds @ self.cfm_
 
@@ -108,5 +111,6 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self, ["cfm_", "classes_", "estimator_"])
-        X = check_array(X, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X, dtype=FLOAT_DTYPES, reset=False)
+        _check_n_features(self, X, reset=False)
         return self.classes_[self.predict_proba(X).argmax(axis=1)]

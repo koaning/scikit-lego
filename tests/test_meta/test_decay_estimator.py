@@ -18,6 +18,7 @@ from sklego.meta import DecayEstimator
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_no_attributes_set_in_init",  # Setting **kwargs in init
+        "check_regressor_multioutput",  # incompatible between pre and post 1.6
     }:
         pytest.skip()
 

@@ -2,7 +2,8 @@ import narwhals.stable.v1 as nw
 import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator, OutlierMixin
-from sklearn.utils.validation import check_array, check_is_fitted
+from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 
 class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
@@ -135,9 +136,8 @@ class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
         """
         X = nw.from_native(X, eager_only=True, strict=False)
         self.idx_ = np.argmax([i == self.column for i in X.columns]) if isinstance(X, nw.DataFrame) else self.column
-        X = check_array(nw.to_native(X, strict=False), estimator=self)
-
-        self.n_features_in_ = X.shape[1]
+        X = validate_data(self, nw.to_native(X, strict=False), reset=True)
+        _check_n_features(self, X, reset=True)
 
         if not self._is_regression_model():
             raise ValueError("Passed model must be regression!")
@@ -164,7 +164,9 @@ class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
             The predicted values. 1 for inliers, -1 for outliers.
         """
         check_is_fitted(self, ["estimator_", "sd_", "idx_"])
-        X = check_array(X, estimator=self)
+        X = validate_data(self, X=X, reset=False)
+        _check_n_features(self, X, reset=False)
+
         X, y = self.to_x_y(X)
         preds = self.estimator_.predict(X)
         return self._handle_thresholds(y, preds)
@@ -190,7 +192,9 @@ class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
             If `method` is not one of "sd", "relative", or "absolute".
         """
         check_is_fitted(self, ["estimator_", "sd_", "idx_"])
-        X = check_array(X, estimator=self)
+        X = validate_data(self, X=X, reset=False)
+        _check_n_features(self, X, reset=False)
+
         X, y_true = self.to_x_y(X)
         y_pred = self.estimator_.predict(X)
         difference = y_true - y_pred

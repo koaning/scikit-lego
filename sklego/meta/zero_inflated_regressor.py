@@ -5,10 +5,11 @@ import numpy as np
 from sklearn.base import BaseEstimator, MetaEstimatorMixin, RegressorMixin, clone, is_classifier, is_regressor
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.metaestimators import available_if
-from sklearn.utils.validation import _check_sample_weight, check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 
-class ZeroInflatedRegressor(RegressorMixin, BaseEstimator, MetaEstimatorMixin):
+class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
     """A meta regressor for zero-inflated datasets, i.e. the targets contain a lot of zeroes.
 
     `ZeroInflatedRegressor` consists of a classifier and a regressor.
@@ -98,8 +99,8 @@ class ZeroInflatedRegressor(RegressorMixin, BaseEstimator, MetaEstimatorMixin):
             If `regressor` is not a regressor
             If all train target entirely consists of zeros and `handle_zero="error"`
         """
-        X, y = check_X_y(X, y)
-        self.n_features_in_ = X.shape[1]
+        X, y = validate_data(self, X=X, y=y, reset=True)
+        _check_n_features(self, X, reset=True)
 
         if not is_classifier(self.classifier):
             raise ValueError(
@@ -175,11 +176,8 @@ class ZeroInflatedRegressor(RegressorMixin, BaseEstimator, MetaEstimatorMixin):
             The predicted values.
         """
         check_is_fitted(self, ["n_features_in_", "classifier_", "regressor_"])
-        X = check_array(X)
-
-        if X.shape[1] != self.n_features_in_:
-            msg = f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}"
-            raise ValueError(msg)
+        X = validate_data(self, X=X, reset=False)
+        _check_n_features(self, X, reset=False)
 
         output = np.zeros(len(X))
         non_zero_indices = np.where(self.classifier_.predict(X))[0]
@@ -216,11 +214,8 @@ class ZeroInflatedRegressor(RegressorMixin, BaseEstimator, MetaEstimatorMixin):
         """
 
         check_is_fitted(self, ["n_features_in_", "classifier_", "regressor_"])
-        X = check_array(X)
-
-        if X.shape[1] != self.n_features_in_:
-            msg = f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}"
-            raise ValueError(msg)
+        X = validate_data(self, X=X, reset=False)
+        _check_n_features(self, X, reset=False)
 
         non_zero_proba = self.classifier_.predict_proba(X)[:, 1]
         expected_impact = self.regressor_.predict(X)

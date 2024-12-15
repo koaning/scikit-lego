@@ -141,6 +141,10 @@ def test_weighted_proba(weights, y_hats, expected_probas):
     ],
 )
 def test_predict_proba(mocker, evidence_type, expected_probas):
+    subjective_model = SubjectiveClassifier(
+        estimator=RandomForestClassifier(), prior={0: 0.8, 1: 0.2}, evidence=evidence_type
+    )
+
     def mock_confusion_matrix(y, y_pred):
         return np.array([[80, 20], [10, 90]])
 
@@ -151,11 +155,7 @@ def test_predict_proba(mocker, evidence_type, expected_probas):
         new_callable=mocker.PropertyMock,
         return_value=np.array(classes),
     )
-    mock_inner_estimator = mocker.MagicMock(RandomForestClassifier)
-
-    mock_inner_estimator.classes_ = np.array(classes)
-    subjective_model = SubjectiveClassifier(mock_inner_estimator, {0: 0.8, 1: 0.2}, evidence=evidence_type)
-    subjective_model.fit(np.zeros((10, 10)), np.zeros(10))
+    subjective_model.fit(np.zeros((10, 2)), np.zeros(10))
 
     subjective_model.estimator_.predict_proba = lambda X: np.array([[0.8, 0.2], [1, 0], [0.5, 0.5], [0.2, 0.8]])
     posterior_probabilities = subjective_model.predict_proba(np.zeros((4, 2)))

@@ -401,6 +401,11 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     def _more_tags(self):
         return {"allow_nan": True}
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
+        return tags
+
 
 class GroupedRegressor(RegressorMixin, GroupedPredictor):
     """`GroupedRegressor` is a meta-estimator that fits a separate regressor for each group in the input data.

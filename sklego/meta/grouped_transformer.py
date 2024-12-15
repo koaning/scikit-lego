@@ -213,6 +213,11 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     def _more_tags(self):
         return {"allow_nan": True}
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
+        return tags
+
     def get_feature_names_out(self) -> List[str]:
         "Alias for the `feature_names_out_` attribute defined during fit."
         return self.feature_names_out_
