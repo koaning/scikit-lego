@@ -5,7 +5,8 @@ from scipy.optimize import minimize_scalar
 from scipy.stats import gaussian_kde
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.mixture import BayesianGaussianMixture
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 
 class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
@@ -109,9 +110,11 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
         """
 
         # GMM sometimes throws an error if you don't do this
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=True)
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
+
+        _check_n_features(self, X, reset=True)
 
         if (self.method == "quantile") and ((self.threshold > 1) or (self.threshold < 0)):
             raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1")
@@ -154,13 +157,14 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
             self.likelihood_threshold_ = mean_likelihood - (self.threshold * new_likelihoods_std)
 
         self.n_iter_ = self.gmm_.n_iter_
-        self.n_features_in_ = X.shape[1]
         self.offset_ = self.likelihood_threshold_
         return self
 
     def score_samples(self, X):
         """Compute the log likelihood for each sample and return the negative value."""
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        _check_n_features(self, X, reset=False)
+
         check_is_fitted(self, ["gmm_", "likelihood_threshold_"])
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
