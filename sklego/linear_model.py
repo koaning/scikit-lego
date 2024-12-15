@@ -25,6 +25,7 @@ from sklearn.utils.validation import (
     check_is_fitted,
     column_or_1d,
 )
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 
 class LowessRegression(RegressorMixin, BaseEstimator):
@@ -96,7 +97,8 @@ class LowessRegression(RegressorMixin, BaseEstimator):
             - If `span` is not between 0 and 1.
             - If `sigma` is negative.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        _check_n_features(self, X, reset=True)
         if self.span is not None:
             if not 0 <= self.span <= 1:
                 raise ValueError(f"Param `span` must be 0 <= span <= 1, got: {self.span}")
@@ -138,8 +140,9 @@ class LowessRegression(RegressorMixin, BaseEstimator):
         array-like of shape (n_samples,)
             The predicted values.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["X_", "y_"])
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        _check_n_features(self, X, reset=False)
 
         try:
             results = np.stack([np.average(self.y_, weights=self._calc_wts(x_i=x_i)) for x_i in X])
@@ -233,7 +236,8 @@ class ProbWeightRegression(RegressorMixin, BaseEstimator):
         self : ProbWeightRegression
             The fitted estimator.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        _check_n_features(self, X, reset=True)
 
         # Construct the problem.
         betas = cp.Variable(X.shape[1])
@@ -263,8 +267,10 @@ class ProbWeightRegression(RegressorMixin, BaseEstimator):
         array-like of shape (n_samples,)
             The predicted data.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["coef_"])
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        _check_n_features(self, X, reset=False)
+
         return np.dot(X, self.coef_)
 
     @property
@@ -381,7 +387,9 @@ class DeadZoneRegressor(RegressorMixin, BaseEstimator):
         ValueError
             If `effect` is not one of "linear", "quadratic" or "constant".
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        _check_n_features(self, X, reset=True)
+
         if self.effect not in self._ALLOWED_EFFECTS:
             raise ValueError(f"effect {self.effect} must be in {self._ALLOWED_EFFECTS}")
 
@@ -458,8 +466,10 @@ class DeadZoneRegressor(RegressorMixin, BaseEstimator):
         array-like of shape (n_samples,)
             The predicted data.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["coef_"])
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+        _check_n_features(self, X, reset=False)
+
         return np.dot(X, self.coef_)
 
     @property
@@ -1053,7 +1063,9 @@ class BaseScipyMinimizeRegressor(RegressorMixin, BaseEstimator, ABC):
         This method is called by `fit` to prepare the inputs for the optimization problem. It adds an intercept column
         to `X` if `fit_intercept=True`, and returns the loss function and its gradient.
         """
-        X, y = check_X_y(X, y, y_numeric=True)
+        X, y = validate_data(self, X=X, y=y, y_numeric=True, reset=True)
+        _check_n_features(self, X, reset=True)
+
         sample_weight = _check_sample_weight(sample_weight, X)
         self.n_features_in_ = X.shape[1]
 
@@ -1083,7 +1095,8 @@ class BaseScipyMinimizeRegressor(RegressorMixin, BaseEstimator, ABC):
             The predicted data.
         """
         check_is_fitted(self)
-        X = check_array(X)
+        X = validate_data(self, X=X, reset=False)
+        _check_n_features(self, X, reset=False)
 
         return X @ self.coef_ + self.intercept_
 

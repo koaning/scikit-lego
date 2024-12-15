@@ -7,8 +7,9 @@ import narwhals.stable.v1 as nw
 import numpy as np
 import pandas as pd
 from sklearn.exceptions import NotFittedError
-from sklearn.model_selection._split import _BaseKFold, check_array
+from sklearn.model_selection._split import _BaseKFold
 from sklearn.utils.validation import indexable
+from sklearn_compat.utils.validation import validate_data
 
 from sklego.base import Clusterer
 from sklego.common import sliding_window
@@ -320,7 +321,7 @@ class ClusterFoldValidation:
             Train and test indices of the same fold.
         """
 
-        X = check_array(X)
+        X = validate_data(self, X=X, reset=True)
 
         if not self._method_is_fitted(X):
             self.cluster_method.fit(X)
