@@ -1,8 +1,8 @@
 from sklearn import clone
 from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin
-from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array
+from sklego._sklearn_compat import _check_n_features, check_array, check_X_y
 
 
 class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):

@@ -2,9 +2,9 @@ from warnings import warn
 
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
-from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_random_state, check_X_y
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_random_state
 
-from ._sklearn_compat import _check_n_features, check_array
+from ._sklearn_compat import _check_n_features, check_array, check_X_y
 
 
 class RandomRegressor(RegressorMixin, BaseEstimator):

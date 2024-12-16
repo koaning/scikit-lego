@@ -5,9 +5,9 @@ import numpy as np
 from sklearn.base import BaseEstimator, MetaEstimatorMixin, RegressorMixin, clone, is_classifier, is_regressor
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.metaestimators import available_if
-from sklearn.utils.validation import _check_sample_weight, check_is_fitted, check_X_y
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array
+from sklego._sklearn_compat import _check_n_features, check_array, check_X_y
 
 
 class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):

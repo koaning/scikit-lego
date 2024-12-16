@@ -3,9 +3,9 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, MultiOutputMixin, is_classifier
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array
+from sklego._sklearn_compat import _check_n_features, check_array, check_X_y
 
 
 class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, BaseEstimator):

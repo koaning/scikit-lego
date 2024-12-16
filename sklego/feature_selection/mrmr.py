@@ -4,9 +4,9 @@ import numpy as np
 from sklearn.base import BaseEstimator
 from sklearn.feature_selection import f_classif, f_regression
 from sklearn.feature_selection._base import SelectorMixin
-from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features
+from sklego._sklearn_compat import _check_n_features, check_X_y
 
 
 def _redundancy_pearson(X, selected, left):

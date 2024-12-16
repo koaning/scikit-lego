@@ -17,9 +17,9 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.linear_model._base import LinearClassifierMixin
 from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
 from sklearn.preprocessing import LabelEncoder
-from sklearn.utils.validation import FLOAT_DTYPES, _check_sample_weight, check_is_fitted, check_X_y, column_or_1d
+from sklearn.utils.validation import FLOAT_DTYPES, _check_sample_weight, check_is_fitted, column_or_1d
 
-from sklego._sklearn_compat import _check_n_features, check_array
+from sklego._sklearn_compat import _check_n_features, check_array, check_X_y
 
 
 class LowessRegression(RegressorMixin, BaseEstimator):

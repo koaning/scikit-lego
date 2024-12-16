@@ -102,10 +102,17 @@ class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
             - If `n_components` is less than 2.
             - If `threshold` is `None`.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES, ensure_2d=True)
+        X = check_array(
+            X,
+            estimator=self,
+            dtype=FLOAT_DTYPES,
+            ensure_2d=True,
+            ensure_min_features=self.n_components,
+            ensure_min_samples=2,
+        )
         _check_n_features(self, X, reset=True)
         if y is not None:
-            y = check_array(y, estimator=self)
+            y = check_array(y, estimator=self, ensure_2d=False)
 
         if not self.threshold:
             raise ValueError("The `threshold` value cannot be `None`.")
@@ -119,7 +126,6 @@ class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
         )
         self.umap_.fit(X, y)
         self.offset_ = -self.threshold
-        self.n_features_in_ = X.shape[1]
         return self
 
     def difference(self, X):

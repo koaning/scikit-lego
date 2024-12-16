@@ -5,9 +5,9 @@ import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import NotFittedError
-from sklearn.utils.validation import _check_sample_weight, check_is_fitted, check_X_y
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array, type_of_target
+from sklego._sklearn_compat import _check_n_features, check_array, check_X_y, type_of_target
 from sklego.base import ProbabilisticClassifier
 
 
