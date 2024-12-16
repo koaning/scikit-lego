@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array
+from sklego._sklearn_compat import validate_data
 from sklego.common import as_list
 
 
@@ -66,8 +66,7 @@ class OrthogonalTransformer(TransformerMixin, BaseEstimator):
         self : OrthogonalTransformer
             The fitted transformer.
         """
-        X = check_array(X, estimator=self, ensure_min_samples=2)
-        _check_n_features(self, X, reset=True)
+        X = validate_data(self, X=X, ensure_min_samples=2, reset=True)
 
         # Q, R such that X = Q*R, with Q orthogonal, from which follows Q = X*inv(R)
         Q, R = np.linalg.qr(X)
@@ -99,8 +98,7 @@ class OrthogonalTransformer(TransformerMixin, BaseEstimator):
         else:
             check_is_fitted(self, ["inv_R_"])
 
-        X = check_array(X, estimator=self)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, reset=False)
 
         return X @ self.inv_R_ / self.normalization_vector_
 
@@ -235,8 +233,7 @@ class InformationFilter(TransformerMixin, BaseEstimator):
         """
         self._check_coltype(X)
         self.col_ids_ = [v if isinstance(v, int) else self._col_idx(X, v) for v in as_list(self.columns)]
-        X = check_array(X, estimator=self)
-        _check_n_features(self, X, reset=True)
+        X = validate_data(self, X=X, reset=True)
 
         X_fair = X.copy()
         v_vectors = self._make_v_vectors(X, self.col_ids_)
@@ -271,8 +268,7 @@ class InformationFilter(TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self, ["projection_", "col_ids_"])
         self._check_coltype(X)
-        X = check_array(X, estimator=self)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, reset=False)
 
         # apply the projection and remove the column we won't need
         X_fair = X @ self.projection_

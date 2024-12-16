@@ -7,7 +7,7 @@ from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.mixture import GaussianMixture
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array
+from sklego._sklearn_compat import validate_data
 
 
 class GMMOutlierDetector(OutlierMixin, BaseEstimator):
@@ -104,10 +104,9 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
             - If `method` is not in `["quantile", "stddev"]`.
         """
         # GMM sometimes throws an error if you don't do this
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=True)
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
-        _check_n_features(self, X, reset=True)
 
         if (self.method == "quantile") and ((self.threshold > 1) or (self.threshold < 0)):
             raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1")
@@ -154,11 +153,10 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
     def score_samples(self, X):
         """Compute the log likelihood for each sample and return the negative value."""
         check_is_fitted(self, ["gmm_", "likelihood_threshold_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
 
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
-        _check_n_features(self, X, reset=False)
 
         return self.gmm_.score_samples(X)
 

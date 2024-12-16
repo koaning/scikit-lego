@@ -10,7 +10,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array
+from sklego._sklearn_compat import validate_data
 
 
 class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
@@ -102,17 +102,10 @@ class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
             - If `n_components` is less than 2.
             - If `threshold` is `None`.
         """
-        X = check_array(
-            X,
-            estimator=self,
-            dtype=FLOAT_DTYPES,
-            ensure_2d=True,
-            ensure_min_features=self.n_components,
-            ensure_min_samples=2,
-        )
-        _check_n_features(self, X, reset=True)
         if y is not None:
-            y = check_array(y, estimator=self, ensure_2d=False)
+            X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+        else:
+            X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=True)
 
         if not self.threshold:
             raise ValueError("The `threshold` value cannot be `None`.")
@@ -142,8 +135,7 @@ class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
             The calculated difference.
         """
         check_is_fitted(self, ["umap_", "offset_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES, ensure_2d=True)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
 
         reduced = self.umap_.transform(X)
         diff = np.sum(np.abs(self.umap_.inverse_transform(reduced) - X), axis=1)
@@ -168,8 +160,7 @@ class UMAPOutlierDetection(OutlierMixin, BaseEstimator):
             The predicted data. 1 for inliers, -1 for outliers.
         """
         check_is_fitted(self, ["umap_", "offset_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES, ensure_2d=True)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
         result = np.ones(X.shape[0])
         result[self.difference(X) > self.threshold] = -1
         return result.astype(int)

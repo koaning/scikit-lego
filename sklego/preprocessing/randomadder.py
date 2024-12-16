@@ -3,7 +3,7 @@ from warnings import warn
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_random_state
 
-from sklego._sklearn_compat import _check_n_features, check_array, check_X_y
+from sklego._sklearn_compat import validate_data
 from sklego.common import TrainOnlyTransformerMixin
 
 
@@ -69,8 +69,7 @@ class RandomAdder(TrainOnlyTransformerMixin, BaseEstimator):
             The fitted transformer.
         """
         super().fit(X, y)
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        _check_n_features(self, X, reset=True)
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
 
         return self
 
@@ -89,8 +88,7 @@ class RandomAdder(TrainOnlyTransformerMixin, BaseEstimator):
         """
         rs = check_random_state(self.random_state)
         check_is_fitted(self, ["n_features_in_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
 
         return X + rs.normal(0, self.noise, size=X.shape)
 

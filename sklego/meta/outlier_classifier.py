@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.calibration import _SigmoidCalibration
 from sklearn.utils.validation import check_is_fitted
 
-from sklego._sklearn_compat import check_array, check_X_y
+from sklego._sklearn_compat import validate_data
 from sklego.base import OutlierModel
 
 
@@ -89,9 +89,10 @@ class OutlierClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
                 f"method. This is required for `predict_proba` estimation."
             )
         if y is not None:
-            X, y = check_X_y(estimator=self, X=X, y=y)
+            X, y = validate_data(self, X=X, y=y, reset=True)
         else:
-            X = check_array(X, estimator=self)
+            X = validate_data(self, X=X, reset=True)
+
         self.estimator_ = clone(self.model).fit(X, y)
         self.n_features_in_ = self.estimator_.n_features_in_
         self.classes_ = np.array([0, 1])
@@ -116,7 +117,7 @@ class OutlierClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted values. 0 for inliers, 1 for outliers.
         """
         check_is_fitted(self, ["estimator_", "classes_"])
-        X = check_array(X, estimator=self)
+        X = validate_data(self, X=X, reset=False)
         preds = self.estimator_.predict(X)
         result = (preds == -1).astype(int)
         return result
@@ -135,7 +136,7 @@ class OutlierClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted probabilities.
         """
         check_is_fitted(self, ["estimator_", "classes_"])
-        X = check_array(X, estimator=self)
+        X = validate_data(self, X=X, reset=False)
         decision_function_scores = self.estimator_.decision_function(X)
         probabilities = self._predict_proba_sigmoid.predict(decision_function_scores).reshape(-1, 1)
         complement = np.ones_like(probabilities) - probabilities

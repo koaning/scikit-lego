@@ -7,7 +7,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array, check_X_y, type_of_target
+from sklego._sklearn_compat import _check_n_features, type_of_target, validate_data
 from sklego.base import ProbabilisticClassifier
 
 
@@ -98,9 +98,10 @@ class Thresholder(ClassifierMixin, BaseEstimator):
             raise ValueError("The Thresholder meta model only works on classification models with .predict_proba.")
 
         if self.check_input:
-            X, y = check_X_y(X, y, estimator=self, ensure_all_finite=False, ensure_min_features=0)
+            X, y = validate_data(self, X=X, y=y, ensure_all_finite=False, ensure_min_features=0, reset=True)
+        else:
+            _check_n_features(self, X, reset=True)
 
-        _check_n_features(self, X, reset=True)
         self._handle_refit(X, y, sample_weight)
 
         self.classes_ = self.estimator_.classes_
@@ -125,8 +126,9 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["classes_", "estimator_"])
         if self.check_input:
-            X = check_array(X, estimator=self, ensure_min_features=0, ensure_all_finite=False)
-        _check_n_features(self, X, reset=False)
+            X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
 
         predicate = self.estimator_.predict_proba(X)[:, 1] > self.threshold
         return np.where(predicate, self.classes_[1], self.classes_[0])
@@ -135,8 +137,9 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         """Alias for `.predict_proba()` method of the underlying estimator."""
         check_is_fitted(self, ["classes_", "estimator_"])
         if self.check_input:
-            X = check_array(X, estimator=self, ensure_min_features=0, ensure_all_finite=False)
-        _check_n_features(self, X, reset=False)
+            X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
 
         return self.estimator_.predict_proba(X)
 
@@ -144,8 +147,9 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         """Alias for `.score()` method of the underlying estimator."""
         check_is_fitted(self, ["classes_", "estimator_"])
         if self.check_input:
-            X = check_array(X, estimator=self, ensure_min_features=0, ensure_all_finite=False)
-        _check_n_features(self, X, reset=False)
+            X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
 
         return self.estimator_.score(X, y)
 

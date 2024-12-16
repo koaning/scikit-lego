@@ -321,7 +321,7 @@ class ClusterFoldValidation:
             Train and test indices of the same fold.
         """
 
-        X = check_array(X, estimator=self)
+        X = check_array(X)
 
         if not self._method_is_fitted(X):
             self.cluster_method.fit(X)

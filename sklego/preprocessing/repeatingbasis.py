@@ -3,7 +3,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.utils.validation import check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array
+from sklego._sklearn_compat import validate_data
 
 
 class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
@@ -164,8 +164,7 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         self : _RepeatingBasisFunction
             The fitted transformer.
         """
-        X = check_array(X, estimator=self, ensure_2d=True)
-        _check_n_features(self, X, reset=True)
+        X = validate_data(self, X=X, ensure_2d=True, reset=True)
 
         # find min and max for standardization if not given explicitly
         if self.input_range is None:
@@ -198,8 +197,7 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
             If X has more than one column, as this transformer only accepts one feature as input.
         """
         check_is_fitted(self, ["bases_", "width_"])
-        X = check_array(X, estimator=self, ensure_2d=True)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, ensure_2d=True, reset=False)
 
         # MinMax Scale to 0-1
         X = (X - self.input_range[0]) / (self.input_range[1] - self.input_range[0])

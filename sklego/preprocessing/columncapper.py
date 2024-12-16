@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array
+from sklego._sklearn_compat import validate_data
 
 
 class ColumnCapper(TransformerMixin, BaseEstimator):
@@ -125,8 +125,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         self._check_quantile_range(self.quantile_range)
         self._check_interpolation(self.interpolation)
 
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES, copy=True, ensure_all_finite=False)
-        _check_n_features(self, X, reset=True)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, copy=True, ensure_all_finite=False, reset=True)
 
         # If X contains infs, we need to replace them by nans before computing quantiles
         np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
@@ -162,8 +161,7 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
             If the number of columns from `X` differs from the number of columns when fitting.
         """
         check_is_fitted(self, ["quantiles_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES, copy=self.copy, ensure_all_finite=False)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, copy=self.copy, ensure_all_finite=False, reset=False)
 
         if self.discard_infs:
             np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)

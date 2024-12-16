@@ -7,7 +7,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array, check_X_y
+from sklego._sklearn_compat import validate_data
 
 
 class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
@@ -100,8 +100,7 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
             If `regressor` is not a regressor
             If all train target entirely consists of zeros and `handle_zero="error"`
         """
-        X, y = check_X_y(estimator=self, X=X, y=y)
-        _check_n_features(self, X, reset=True)
+        X, y = validate_data(self, X=X, y=y, reset=True)
 
         if not is_classifier(self.classifier):
             raise ValueError(
@@ -177,8 +176,7 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self, ["n_features_in_", "classifier_", "regressor_"])
-        X = check_array(X, estimator=self)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, reset=False)
 
         output = np.zeros(len(X))
         non_zero_indices = np.where(self.classifier_.predict(X))[0]
@@ -215,8 +213,7 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
         """
 
         check_is_fitted(self, ["n_features_in_", "classifier_", "regressor_"])
-        X = check_array(X, estimator=self)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, reset=False)
 
         non_zero_proba = self.classifier_.predict_proba(X)[:, 1]
         expected_impact = self.regressor_.predict(X)

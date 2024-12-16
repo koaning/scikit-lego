@@ -6,7 +6,7 @@ from sklearn.mixture import BayesianGaussianMixture, GaussianMixture
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array, check_X_y
+from sklego._sklearn_compat import validate_data
 
 
 class GaussianMixtureNB(ClassifierMixin, BaseEstimator):
@@ -74,11 +74,9 @@ class GaussianMixtureNB(ClassifierMixin, BaseEstimator):
         self : GaussianMixtureNB
             The fitted estimator.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
-
-        _check_n_features(self, X, reset=True)
 
         self.gmms_ = {}
         self.classes_ = unique_labels(y)
@@ -120,8 +118,7 @@ class GaussianMixtureNB(ClassifierMixin, BaseEstimator):
             The predicted data.
         """
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
         # if self.n_features_in_ != X.shape[1]:
         #     raise ValueError(f"number of columns {X.shape[1]} does not match fit size {self.n_features_in_}")
 
@@ -142,8 +139,7 @@ class GaussianMixtureNB(ClassifierMixin, BaseEstimator):
             The predicted probabilities.
         """
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        _check_n_features(self, X=X, reset=False)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
 
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():
@@ -240,11 +236,10 @@ class BayesianGaussianMixtureNB(ClassifierMixin, BaseEstimator):
         self : BayesianGaussianMixtureNB
             The fitted estimator.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
-        _check_n_features(self, X, reset=True)
         self.gmms_ = {}
         self.classes_ = unique_labels(y)
         self.n_features_in_ = X.shape[1]
@@ -290,9 +285,7 @@ class BayesianGaussianMixtureNB(ClassifierMixin, BaseEstimator):
             The predicted data.
         """
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
 
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
@@ -311,8 +304,7 @@ class BayesianGaussianMixtureNB(ClassifierMixin, BaseEstimator):
             The predicted probabilities.
         """
         check_is_fitted(self, ["gmms_", "classes_", "n_features_in_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
 
         probs = np.zeros((X.shape[0], len(self.classes_)))
         for k, v in self.gmms_.items():

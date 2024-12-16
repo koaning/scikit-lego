@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array
+from sklego._sklearn_compat import validate_data
 
 
 class DictMapper(TransformerMixin, BaseEstimator):
@@ -75,9 +75,7 @@ class DictMapper(TransformerMixin, BaseEstimator):
         self : DictMapper
             The fitted transformer.
         """
-        X = check_array(X, estimator=self, copy=True, dtype=None, ensure_2d=True, ensure_all_finite=False)
-        _check_n_features(self, X, reset=True)
-
+        X = validate_data(self, X=X, copy=True, dtype=None, ensure_2d=True, ensure_all_finite=False, reset=True)
         return self
 
     def transform(self, X):
@@ -99,8 +97,7 @@ class DictMapper(TransformerMixin, BaseEstimator):
             If the number of columns from `X` differs from the number of columns when fitting.
         """
         check_is_fitted(self, ["n_features_in_"])
-        X = check_array(X, estimator=self, copy=True, dtype=None, ensure_2d=True, ensure_all_finite=False)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, copy=True, dtype=None, ensure_2d=True, ensure_all_finite=False, reset=False)
         return np.vectorize(self.mapper.get, otypes=[int])(X, self.default)
 
     @property

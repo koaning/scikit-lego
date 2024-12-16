@@ -217,57 +217,6 @@ if sklearn_version < parse_version("1.6"):
             **kwargs,
         )
 
-    def check_X_y(
-        X,
-        y,
-        accept_sparse=False,
-        *,
-        accept_large_sparse=True,
-        dtype="numeric",
-        order=None,
-        copy=False,
-        force_writeable=False,
-        ensure_all_finite=True,
-        ensure_2d=True,
-        allow_nd=False,
-        multi_output=False,
-        ensure_min_samples=1,
-        ensure_min_features=1,
-        y_numeric=False,
-        estimator=None,
-    ):
-        from sklearn.utils.validation import _check_estimator_name, _check_y, check_consistent_length
-
-        if y is None:
-            if estimator is None:
-                estimator_name = "estimator"
-            else:
-                estimator_name = _check_estimator_name(estimator)
-            raise ValueError(f"{estimator_name} requires y to be passed, but the target y is None")
-
-        X = check_array(
-            X,
-            accept_sparse=accept_sparse,
-            accept_large_sparse=accept_large_sparse,
-            dtype=dtype,
-            order=order,
-            copy=copy,
-            force_writeable=force_writeable,
-            ensure_all_finite=ensure_all_finite,
-            ensure_2d=ensure_2d,
-            allow_nd=allow_nd,
-            ensure_min_samples=ensure_min_samples,
-            ensure_min_features=ensure_min_features,
-            estimator=estimator,
-            input_name="X",
-        )
-
-        y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric, estimator=estimator)
-
-        check_consistent_length(X, y)
-
-        return X, y
-
     # tags infrastructure
     @dataclass(**_dataclass_args())
     class InputTags:
@@ -567,6 +516,5 @@ else:
         _check_feature_names,  # noqa: F401
         _check_n_features,  # noqa: F401
         check_array,  # noqa: F401
-        check_X_y,  # noqa: F401
         validate_data,  # noqa: F401
     )

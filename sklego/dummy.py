@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_random_state
 
-from ._sklearn_compat import _check_n_features, check_array, check_X_y
+from sklego._sklearn_compat import validate_data
 
 
 class RandomRegressor(RegressorMixin, BaseEstimator):
@@ -68,8 +68,7 @@ class RandomRegressor(RegressorMixin, BaseEstimator):
         """
         if self.strategy not in self._ALLOWED_STRATEGIES:
             raise ValueError(f"strategy {self.strategy} is not in {self._ALLOWED_STRATEGIES}")
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        _check_n_features(self, X, reset=True)
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
 
         self.min_ = np.min(y)
         self.max_ = np.max(y)
@@ -95,8 +94,7 @@ class RandomRegressor(RegressorMixin, BaseEstimator):
         rs = check_random_state(self.random_state)
         check_is_fitted(self, ["n_features_in_", "min_", "max_", "mu_", "sigma_"])
 
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
 
         if self.strategy == "normal":
             return rs.normal(self.mu_, self.sigma_, X.shape[0])

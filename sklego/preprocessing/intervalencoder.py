@@ -11,7 +11,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 
-from sklego._sklearn_compat import _check_n_features, check_array, check_X_y
+from sklego._sklearn_compat import validate_data
 
 
 def _mk_monotonic_average(xs, ys, intervals, method="increasing", **kwargs):
@@ -157,8 +157,7 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
 
         # these two matrices will have shape (columns, quantiles)
         # quantiles indicate where the interval split occurs
-        X, y = check_X_y(estimator=self, X=X, y=y)
-        _check_n_features(self, X, reset=True)
+        X, y = validate_data(self, X=X, y=y, reset=True)
 
         self.quantiles_ = np.zeros((X.shape[1], self.n_chunks))
         # heights indicate what heights these intervals will have
@@ -197,8 +196,7 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
             If the number of columns from `X` differs from the number of columns when fitting.
         """
         check_is_fitted(self, ["quantiles_", "heights_", "n_features_in_"])
-        X = check_array(X, estimator=self)
-        _check_n_features(self, X, reset=False)
+        X = validate_data(self, X=X, reset=False)
 
         transformed = np.zeros(X.shape)
         for col in range(transformed.shape[1]):
