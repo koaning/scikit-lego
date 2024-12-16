@@ -4,7 +4,8 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, MultiOutputMixin, is_classifier
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.utils.validation import check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+
+from sklego._sklearn_compat import validate_data
 
 
 class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
@@ -131,8 +132,6 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
             raise ValueError("The estimator must implement `.predict_proba()` method.")
 
         X, y = validate_data(self, X=X, y=y, ensure_min_samples=2, ensure_2d=True, reset=True)
-        _check_n_features(self, X, reset=True)
-
         self.classes_ = np.sort(np.unique(y))
 
         if self.n_classes_ < 3:
@@ -174,7 +173,6 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         """
         check_is_fitted(self, ["estimators_", "classes_"])
         X = validate_data(self, X=X, ensure_2d=True, reset=False)
-        _check_n_features(self, X, reset=False)
 
         raw_proba = np.array([estimator.predict_proba(X)[:, 1] for estimator in self.estimators_.values()]).T
         p_y_le = np.column_stack((np.zeros(X.shape[0]), raw_proba, np.ones(X.shape[0])))

@@ -1,8 +1,8 @@
 from sklearn import clone
 from sklearn.base import BaseEstimator, MetaEstimatorMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
 
+from sklego._sklearn_compat import validate_data
 from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay
 
 
@@ -124,8 +124,7 @@ class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
         """
 
         if self.check_input:
-            X, y = validate_data(self, X, y, dtype=FLOAT_DTYPES, reset=True)
-        _check_n_features(self, X, reset=True)
+            X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
 
         if self.decay_func in self._ALLOWED_DECAYS.keys():
             self.decay_func_ = self._ALLOWED_DECAYS[self.decay_func]

@@ -4,7 +4,8 @@ from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import normalize
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+
+from sklego._sklearn_compat import validate_data
 
 
 class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
@@ -111,7 +112,6 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             raise ValueError(f"Invalid evidence: the provided evidence should be one of {self._ALLOWED_EVIDENCE}")
 
         X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
-        _check_n_features(self, X, reset=True)
 
         if set(y) - set(self.prior.keys()):
             raise ValueError(
@@ -150,7 +150,6 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         """
         check_is_fitted(self, ["posterior_matrix_"])
         X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
-        _check_n_features(self, X, reset=False)
 
         y_hats = self.estimator_.predict_proba(X)  # these are ignorant of the prior
 
@@ -176,7 +175,6 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         """
         check_is_fitted(self, ["posterior_matrix_"])
         X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
-        _check_n_features(self, X, reset=False)
 
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 

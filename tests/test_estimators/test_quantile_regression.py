@@ -34,6 +34,7 @@ def _create_dataset(coefs, intercept, noise=0.0):
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_sample_weight_equivalence_on_dense_data",
+        "check_sample_weights_invariance",
     }:
         pytest.skip()
     check(estimator)

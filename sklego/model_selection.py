@@ -9,8 +9,8 @@ import pandas as pd
 from sklearn.exceptions import NotFittedError
 from sklearn.model_selection._split import _BaseKFold
 from sklearn.utils.validation import indexable
-from sklearn_compat.utils.validation import validate_data
 
+from sklego._sklearn_compat import check_array
 from sklego.base import Clusterer
 from sklego.common import sliding_window
 
@@ -321,7 +321,7 @@ class ClusterFoldValidation:
             Train and test indices of the same fold.
         """
 
-        X = validate_data(self, X=X, reset=True)
+        X = check_array(X)
 
         if not self._method_is_fitted(X):
             self.cluster_method.fit(X)

@@ -2,7 +2,8 @@ import numpy as np
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.decomposition import PCA
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+
+from sklego._sklearn_compat import validate_data
 
 
 class PCAOutlierDetection(OutlierMixin, BaseEstimator):
@@ -96,7 +97,6 @@ class PCAOutlierDetection(OutlierMixin, BaseEstimator):
             If `threshold` is `None`.
         """
         X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=True)
-        _check_n_features(self, X, reset=True)
         if not self.threshold:
             raise ValueError("The `threshold` value cannot be `None`.")
 
@@ -127,7 +127,6 @@ class PCAOutlierDetection(OutlierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["pca_", "offset_"])
         X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
-        _check_n_features(self, X, reset=False)
 
         reduced = self.pca_.transform(X)
         diff = np.sum(np.abs(self.pca_.inverse_transform(reduced) - X), axis=1)
@@ -162,7 +161,6 @@ class PCAOutlierDetection(OutlierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["pca_", "offset_"])
         X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
-        _check_n_features(self, X, reset=False)
         result = np.ones(X.shape[0])
         result[self.difference(X) > self.threshold] = -1
         return result.astype(int)

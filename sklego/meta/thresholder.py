@@ -100,8 +100,9 @@ class Thresholder(ClassifierMixin, BaseEstimator):
 
         if self.check_input:
             X, y = validate_data(self, X=X, y=y, ensure_all_finite=False, ensure_min_features=0, reset=True)
+        else:
+            _check_n_features(self, X, reset=True)
 
-        _check_n_features(self, X, reset=True)
         self._handle_refit(X, y, sample_weight)
 
         self.classes_ = self.estimator_.classes_
@@ -127,7 +128,8 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         check_is_fitted(self, ["classes_", "estimator_"])
         if self.check_input:
             X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
-        _check_n_features(self, X, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
 
         predicate = self.estimator_.predict_proba(X)[:, 1] > self.threshold
         return np.where(predicate, self.classes_[1], self.classes_[0])
@@ -137,7 +139,8 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         check_is_fitted(self, ["classes_", "estimator_"])
         if self.check_input:
             X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
-        _check_n_features(self, X, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
 
         return self.estimator_.predict_proba(X)
 
@@ -146,7 +149,8 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         check_is_fitted(self, ["classes_", "estimator_"])
         if self.check_input:
             X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
-        _check_n_features(self, X, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
 
         return self.estimator_.score(X, y)
 

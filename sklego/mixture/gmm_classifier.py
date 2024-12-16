@@ -4,7 +4,8 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import GaussianMixture
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+
+from sklego._sklearn_compat import validate_data
 
 
 class GMMClassifier(ClassifierMixin, BaseEstimator):
@@ -75,7 +76,6 @@ class GMMClassifier(ClassifierMixin, BaseEstimator):
         X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
-        _check_n_features(self, X, reset=True)
 
         self.gmms_ = {}
         self.classes_ = unique_labels(y)
@@ -118,7 +118,6 @@ class GMMClassifier(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["gmms_", "classes_"])
         X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
-        _check_n_features(self, X, reset=False)
 
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
@@ -137,7 +136,6 @@ class GMMClassifier(ClassifierMixin, BaseEstimator):
         """
         check_is_fitted(self, ["gmms_", "classes_"])
         X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
-        _check_n_features(self, X, reset=False)
 
         res = np.zeros((X.shape[0], self.classes_.shape[0]))
         for idx, c in enumerate(self.classes_):

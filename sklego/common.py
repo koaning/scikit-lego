@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+
+from sklego._sklearn_compat import validate_data
 
 
 class TrainOnlyTransformerMixin(TransformerMixin, BaseEstimator):
@@ -83,9 +84,8 @@ class TrainOnlyTransformerMixin(TransformerMixin, BaseEstimator):
             validate_data(self, X=X, reset=True)
         else:
             validate_data(self, X=X, y=y, multi_output=True, reset=True)
-        _check_n_features(self, X, reset=True)
+
         self.X_hash_ = self._hash(X)
-        self.n_features_in_ = X.shape[1]
         return self
 
     @staticmethod
@@ -148,7 +148,6 @@ class TrainOnlyTransformerMixin(TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self, ["X_hash_", "n_features_in_"])
         validate_data(self, X=X, reset=False)
-        _check_n_features(self, X, reset=False)
 
         if self._hash(X) == self.X_hash_:
             return self.transform_train(X)

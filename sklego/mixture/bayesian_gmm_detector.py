@@ -6,7 +6,8 @@ from scipy.stats import gaussian_kde
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-from sklearn_compat.utils.validation import _check_n_features, validate_data
+
+from sklego._sklearn_compat import validate_data
 
 
 class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
@@ -114,8 +115,6 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
         if len(X.shape) == 1:
             X = np.expand_dims(X, 1)
 
-        _check_n_features(self, X, reset=True)
-
         if (self.method == "quantile") and ((self.threshold > 1) or (self.threshold < 0)):
             raise ValueError(f"Threshold {self.threshold} with method {self.method} needs to be 0 < threshold < 1")
         if (self.method == "stddev") and (self.threshold < 0):
@@ -163,7 +162,6 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
     def score_samples(self, X):
         """Compute the log likelihood for each sample and return the negative value."""
         X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
-        _check_n_features(self, X, reset=False)
 
         check_is_fitted(self, ["gmm_", "likelihood_threshold_"])
         if len(X.shape) == 1:

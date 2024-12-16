@@ -69,7 +69,8 @@ class IdentityTransformer(TransformerMixin, BaseEstimator):
         """
         if self.check_X:
             X = validate_data(self, X=X, copy=True, reset=True)
-        _check_n_features(self, X, reset=True)
+        else:
+            _check_n_features(self, X, reset=True)
         self.n_samples_, self.n_features_in_ = X.shape
         return self
 
@@ -95,7 +96,8 @@ class IdentityTransformer(TransformerMixin, BaseEstimator):
 
         if self.check_X:
             X = validate_data(self, X=X, copy=True, reset=False)
-        _check_n_features(self, X, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
         return X
 
     @property
