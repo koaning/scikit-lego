@@ -15,11 +15,11 @@ def test_sklearn_compatible_estimator(estimator, check):
 def test_quantile_range():
     def expect_type_error(quantile_range):
         with pytest.raises(TypeError):
-            ColumnCapper(quantile_range)
+            ColumnCapper(quantile_range).fit([])
 
     def expect_value_error(quantile_range):
         with pytest.raises(ValueError):
-            ColumnCapper(quantile_range)
+            ColumnCapper(quantile_range).fit([])
 
     # Testing quantile_range type
     expect_type_error(quantile_range=1)
@@ -49,7 +49,7 @@ def test_interpolation():
 
     for interpolation in invalid_interpolations:
         with pytest.raises(ValueError):
-            ColumnCapper(interpolation=interpolation)
+            ColumnCapper(interpolation=interpolation).fit([])
 
 
 @pytest.fixture()

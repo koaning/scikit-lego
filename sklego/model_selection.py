@@ -7,9 +7,10 @@ import narwhals.stable.v1 as nw
 import numpy as np
 import pandas as pd
 from sklearn.exceptions import NotFittedError
-from sklearn.model_selection._split import _BaseKFold, check_array
+from sklearn.model_selection._split import _BaseKFold
 from sklearn.utils.validation import indexable
 
+from sklego._sklearn_compat import check_array
 from sklego.base import Clusterer
 from sklego.common import sliding_window
 

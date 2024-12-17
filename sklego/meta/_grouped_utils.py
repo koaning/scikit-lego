@@ -5,8 +5,9 @@ from typing import List
 import narwhals.stable.v1 as nw
 import pandas as pd
 from scipy.sparse import issparse
-from sklearn.utils import check_array
 from sklearn.utils.validation import _ensure_no_complex_data
+
+from sklego._sklearn_compat import check_array
 
 
 def parse_X_y(X, y, groups, check_X=True, **kwargs) -> nw.DataFrame:

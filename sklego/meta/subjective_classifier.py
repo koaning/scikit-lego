@@ -3,7 +3,9 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import normalize
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+
+from sklego._sklearn_compat import validate_data
 
 
 class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
@@ -109,7 +111,8 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         if self.evidence not in self._ALLOWED_EVIDENCE:
             raise ValueError(f"Invalid evidence: the provided evidence should be one of {self._ALLOWED_EVIDENCE}")
 
-        X, y = check_X_y(X, y, estimator=self.estimator, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+
         if set(y) - set(self.prior.keys()):
             raise ValueError(
                 f"Training data is inconsistent with prior: no prior defined for classes "
@@ -120,7 +123,6 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         self.posterior_matrix_ = np.array(
             [[self._posterior(y, y_hat, cfm) for y_hat in range(cfm.shape[0])] for y in range(cfm.shape[0])]
         )
-        self.n_features_in_ = X.shape[1]
         return self
 
     @staticmethod
@@ -147,7 +149,8 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted probabilities.
         """
         check_is_fitted(self, ["posterior_matrix_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+
         y_hats = self.estimator_.predict_proba(X)  # these are ignorant of the prior
 
         if self.evidence == "predict_proba":
@@ -171,7 +174,8 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
             The predicted class.
         """
         check_is_fitted(self, ["posterior_matrix_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     @property

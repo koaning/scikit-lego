@@ -14,8 +14,9 @@ from sklearn.base import (
     is_regressor,
 )
 from sklearn.utils.metaestimators import available_if
-from sklearn.utils.validation import check_array, check_is_fitted
+from sklearn.utils.validation import check_is_fitted
 
+from sklego._sklearn_compat import check_array
 from sklego.common import as_list, expanding_list
 from sklego.meta._grouped_utils import _data_format_checks, _validate_groups_values
 from sklego.meta._shrinkage_utils import (
@@ -179,7 +180,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         Number of features in the training data.
     n_features_ : int
         Number of features used by the estimators.
-    n_levels_ : int
+    n_fitted_levels_  : int
         Number of hierarchical levels in the grouping.
     """
 
@@ -341,8 +342,8 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             else:  # binary case with `method_name = "decision_function"`
                 n_out = 1
 
-        preds = np.zeros((X.shape[0], self.n_levels_, n_out), dtype=float)
-        shrinkage = np.zeros((X.shape[0], self.n_levels_), dtype=float)
+        preds = np.zeros((X.shape[0], self.n_fitted_levels_, n_out), dtype=float)
+        shrinkage = np.zeros((X.shape[0], self.n_fitted_levels_), dtype=float)
 
         for level_idx, grp_names in enumerate(self.fitted_levels_):
             for grp_values, grp_frame in frame.group_by(grp_names):
@@ -363,7 +364,10 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
                 preds[np.ix_(grp_idx, [level_idx], last_dim_ix)] = np.atleast_3d(raw_pred[:, None])
                 shrinkage[np.ix_(grp_idx)] = np.pad(
-                    _shrinkage_factor, (0, self.n_levels_ - len(_shrinkage_factor)), "constant", constant_values=(0)
+                    _shrinkage_factor,
+                    (0, self.n_fitted_levels_ - len(_shrinkage_factor)),
+                    "constant",
+                    constant_values=(0),
                 )
 
         return (preds * np.atleast_3d(shrinkage)).sum(axis=1).squeeze()
@@ -422,6 +426,11 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
     def _more_tags(self):
         return {"allow_nan": True}
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
+        return tags
 
 
 class HierarchicalRegressor(RegressorMixin, HierarchicalPredictor):

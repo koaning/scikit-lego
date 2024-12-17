@@ -1,6 +1,7 @@
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+
+from sklego._sklearn_compat import _check_n_features, validate_data
 
 
 class IdentityTransformer(TransformerMixin, BaseEstimator):
@@ -68,7 +69,9 @@ class IdentityTransformer(TransformerMixin, BaseEstimator):
             The fitted transformer.
         """
         if self.check_X:
-            X = check_array(X, copy=True, estimator=self)
+            X = validate_data(self, X=X, copy=True, reset=True)
+        else:
+            _check_n_features(self, X, reset=True)
         self.n_samples_, self.n_features_in_ = X.shape
         return self
 
@@ -90,13 +93,12 @@ class IdentityTransformer(TransformerMixin, BaseEstimator):
         ValueError
             If the number of columns from `X` differs from the number of columns when fitting.
         """
-        if self.check_X:
-            X = check_array(X, copy=True, estimator=self)
         check_is_fitted(self, "n_features_in_")
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError(
-                f"Wrong shape is passed to transform. Trained on {self.n_features_in_} cols got {X.shape[1]}"
-            )
+
+        if self.check_X:
+            X = validate_data(self, X=X, copy=True, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
         return X
 
     @property

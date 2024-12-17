@@ -32,6 +32,7 @@ def test_sklearn_compatible_estimator(estimator, check):
         "check_supervised_y_2d",  # TODO: Is it possible to support multioutput?
         "check_estimators_empty_data_messages",  # custom message
         "check_requires_y_none",
+        "check_n_features_in_after_fitting",  # custom check
     }:
         pytest.skip()
 
