@@ -3,7 +3,9 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, MultiOutputMixin, is_classifier
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
+
+from sklego._sklearn_compat import validate_data
 
 
 class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
@@ -129,10 +131,8 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
         if not hasattr(self.estimator, "predict_proba"):
             raise ValueError("The estimator must implement `.predict_proba()` method.")
 
-        X, y = check_X_y(X, y, estimator=self, ensure_min_samples=2)
-
+        X, y = validate_data(self, X=X, y=y, ensure_min_samples=2, ensure_2d=True, reset=True)
         self.classes_ = np.sort(np.unique(y))
-        self.n_features_in_ = X.shape[1]
 
         if self.n_classes_ < 3:
             raise ValueError("`OrdinalClassifier` can't train when less than 3 classes are present.")
@@ -172,10 +172,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
             If `X` has a different number of features than the one seen during `fit`.
         """
         check_is_fitted(self, ["estimators_", "classes_"])
-        X = check_array(X, ensure_2d=True, estimator=self)
-
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError(f"X has {X.shape[1]} features, expected {self.n_features_in_} features.")
+        X = validate_data(self, X=X, ensure_2d=True, reset=False)
 
         raw_proba = np.array([estimator.predict_proba(X)[:, 1] for estimator in self.estimators_.values()]).T
         p_y_le = np.column_stack((np.zeros(X.shape[0]), raw_proba, np.ones(X.shape[0])))
@@ -197,6 +194,7 @@ class OrdinalClassifier(MultiOutputMixin, ClassifierMixin, MetaEstimatorMixin, B
             The predicted class labels.
         """
         check_is_fitted(self, ["estimators_", "classes_"])
+        X = validate_data(self, X=X, ensure_2d=True, reset=False)
         return self.classes_[np.argmax(self.predict_proba(X), axis=1)]
 
     def _fit_binary_estimator(self, X, y, y_label):

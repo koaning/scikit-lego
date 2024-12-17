@@ -5,8 +5,9 @@ import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import NotFittedError
-from sklearn.utils.validation import _check_sample_weight, check_is_fitted, check_X_y
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 
+from sklego._sklearn_compat import _check_n_features, type_of_target, validate_data
 from sklego.base import ProbabilisticClassifier
 
 
@@ -97,14 +98,16 @@ class Thresholder(ClassifierMixin, BaseEstimator):
             raise ValueError("The Thresholder meta model only works on classification models with .predict_proba.")
 
         if self.check_input:
-            X, y = check_X_y(X, y, force_all_finite=False, ensure_min_features=0, estimator=self)
+            X, y = validate_data(self, X=X, y=y, ensure_all_finite=False, ensure_min_features=0, reset=True)
+        else:
+            _check_n_features(self, X, reset=True)
 
         self._handle_refit(X, y, sample_weight)
 
-        self.n_features_in_ = X.shape[1]
         self.classes_ = self.estimator_.classes_
-        if len(self.classes_) != 2:
-            raise ValueError("The `Thresholder` meta model only works on models with two classes.")
+        y_type = type_of_target(y, input_name="y", raise_unknown=True)
+        if y_type != "binary":
+            raise ValueError("Only binary classification is supported. The type of the target " f"is {y_type}.")
 
         return self
 
@@ -122,20 +125,40 @@ class Thresholder(ClassifierMixin, BaseEstimator):
             The predicted values.
         """
         check_is_fitted(self, ["classes_", "estimator_"])
+        if self.check_input:
+            X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
+
         predicate = self.estimator_.predict_proba(X)[:, 1] > self.threshold
         return np.where(predicate, self.classes_[1], self.classes_[0])
 
     def predict_proba(self, X):
         """Alias for `.predict_proba()` method of the underlying estimator."""
         check_is_fitted(self, ["classes_", "estimator_"])
+        if self.check_input:
+            X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
+
         return self.estimator_.predict_proba(X)
 
     def score(self, X, y):
         """Alias for `.score()` method of the underlying estimator."""
         check_is_fitted(self, ["classes_", "estimator_"])
+        if self.check_input:
+            X = validate_data(self, X=X, ensure_min_features=0, ensure_all_finite=False, reset=False)
+        else:
+            _check_n_features(self, X, reset=False)
+
         return self.estimator_.score(X, y)
 
     def _more_tags(self):
         return {
             "binary_only": True,
         }
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.classifier_tags.multi_class = False
+        return tags
