@@ -52,7 +52,7 @@ class BayesianGMMClassifier(ClassifierMixin, BaseEstimator):
     ### Probability point p belongs to group1 is 0.38
     print(f'Probability point p belongs to group2 is {p_prob[0,1]:.2f}')
     ### Probability point p belongs to group2 is 0.62
-    
+
     print(f'It is more probable that point p belongs to group{np.argmax(p_prob)}')
     ### It is more probable that point p belongs to group1
     ```

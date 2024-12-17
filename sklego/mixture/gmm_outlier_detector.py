@@ -41,9 +41,8 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
     likelihood_threshold_ : float
         The threshold value used to determine if something is an outlier.
 
-      Examples
+    Examples
     --------
-
     ```python
     import numpy as np
     from sklego.mixture import GMMOutlierDetector
