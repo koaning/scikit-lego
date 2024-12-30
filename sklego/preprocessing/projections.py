@@ -2,8 +2,8 @@ import narwhals.stable.v1 as nw
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils.validation import validate_data
 
-from sklego._sklearn_compat import validate_data
 from sklego.common import as_list
 
 

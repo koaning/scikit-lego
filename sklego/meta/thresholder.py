@@ -6,8 +6,9 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import _check_sample_weight, check_is_fitted
+from sklearn_compat.utils.multiclass import type_of_target
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
-from sklego._sklearn_compat import _check_n_features, type_of_target, validate_data
 from sklego.base import ProbabilisticClassifier
 
 

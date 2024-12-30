@@ -3,8 +3,7 @@ from warnings import warn
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_random_state
-
-from sklego._sklearn_compat import validate_data
+from sklearn_compat.utils.validation import validate_data
 
 
 class RandomRegressor(RegressorMixin, BaseEstimator):

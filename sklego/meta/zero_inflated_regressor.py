@@ -6,8 +6,7 @@ from sklearn.base import BaseEstimator, MetaEstimatorMixin, RegressorMixin, clon
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import _check_sample_weight, check_is_fitted
-
-from sklego._sklearn_compat import validate_data
+from sklearn_compat.utils.validation import validate_data
 
 
 class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):

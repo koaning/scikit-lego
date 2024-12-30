@@ -24,8 +24,7 @@ from sklearn.utils.validation import (
     check_is_fitted,
     column_or_1d,
 )
-
-from sklego._sklearn_compat import check_array, validate_data
+from sklearn_compat.utils.validation import check_array, validate_data
 
 
 class LowessRegression(RegressorMixin, BaseEstimator):
