@@ -2,8 +2,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.decomposition import PCA
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-
-from sklego._sklearn_compat import validate_data
+from sklearn_compat.utils.validation import validate_data
 
 
 class PCAOutlierDetection(OutlierMixin, BaseEstimator):

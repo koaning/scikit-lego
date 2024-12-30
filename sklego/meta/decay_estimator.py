@@ -1,8 +1,8 @@
 from sklearn import clone
 from sklearn.base import BaseEstimator, MetaEstimatorMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
-from sklego._sklearn_compat import _check_n_features, validate_data
 from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay
 
 

@@ -3,8 +3,8 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.calibration import _SigmoidCalibration
 from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils.validation import validate_data
 
-from sklego._sklearn_compat import validate_data
 from sklego.base import OutlierModel
 
 

@@ -1,8 +1,8 @@
 from sklearn import clone
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, check_array
 
-from sklego._sklearn_compat import _check_n_features, check_array
 from sklego.common import TrainOnlyTransformerMixin
 
 

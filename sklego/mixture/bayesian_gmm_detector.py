@@ -6,8 +6,7 @@ from scipy.stats import gaussian_kde
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.mixture import BayesianGaussianMixture
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
-
-from sklego._sklearn_compat import validate_data
+from sklearn_compat.utils.validation import validate_data
 
 
 class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):

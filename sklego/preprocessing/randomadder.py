@@ -2,8 +2,8 @@ from warnings import warn
 
 from sklearn.base import BaseEstimator
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_random_state
+from sklearn_compat.utils.validation import validate_data
 
-from sklego._sklearn_compat import validate_data
 from sklego.common import TrainOnlyTransformerMixin
 
 

@@ -15,8 +15,8 @@ from sklearn.base import (
 )
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils.validation import check_array
 
-from sklego._sklearn_compat import check_array
 from sklego.common import as_list, expanding_list
 from sklego.meta._grouped_utils import _data_format_checks, _validate_groups_values
 from sklego.meta._shrinkage_utils import (

@@ -9,8 +9,8 @@ import pandas as pd
 from sklearn.exceptions import NotFittedError
 from sklearn.model_selection._split import _BaseKFold
 from sklearn.utils.validation import indexable
+from sklearn_compat.utils.validation import check_array
 
-from sklego._sklearn_compat import check_array
 from sklego.base import Clusterer
 from sklego.common import sliding_window
 

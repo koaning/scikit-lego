@@ -1,7 +1,6 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.validation import check_is_fitted
-
-from sklego._sklearn_compat import _check_n_features, validate_data
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 
 class IdentityTransformer(TransformerMixin, BaseEstimator):
