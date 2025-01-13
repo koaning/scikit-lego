@@ -124,7 +124,7 @@ class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
         """
 
         if self.check_input:
-            X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
+            X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, accept_sparse=True, reset=True)
         else:
             _check_n_features(self, X, reset=True)
 
