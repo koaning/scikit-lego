@@ -37,6 +37,10 @@ def parse_X_y(X, y, groups, check_X=True, **kwargs) -> nw.DataFrame:
         name="tmp", values=[None] * n_samples if y is None else y, native_namespace=nw.get_native_namespace(X)
     )
 
+    if len(y_series) != n_samples:
+        msg = f"Found input variables with inconsistent numbers of samples: {[n_samples, len(y_series)]}"
+        raise ValueError(msg)
+
     return X.with_columns(__sklego_target__=y_series)
 
 
