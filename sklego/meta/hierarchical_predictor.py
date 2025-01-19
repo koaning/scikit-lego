@@ -287,6 +287,10 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         global_series = nw.new_series(
             name=self._GLOBAL_NAME, values=np.ones(n_samples), native_namespace=native_namespace
         )
+        if len(target_series) != n_samples:
+            msg = f"Found input variables with inconsistent numbers of samples: {[n_samples, len(target_series)]}"
+            raise ValueError(msg)
+
         frame = X.with_columns(
             **{
                 self._TARGET_NAME: target_series,
