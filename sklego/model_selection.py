@@ -49,7 +49,7 @@ class TimeGapSplit:
     date_serie : Series
         Series with the date, that should have all the indices of X used in the split() method.
         If the Series is not pandas-like (for example, if it's a Polars Series, which does not have
-        an index) then it must the same same length as the `X` and `y` objects passed to `split`.
+        an index) then it must the same length as the `X` and `y` objects passed to `split`.
     valid_duration : datetime.timedelta
         Retraining period.
     train_duration : datetime.timedelta | None, default=None
@@ -60,7 +60,7 @@ class TimeGapSplit:
 
         This period is dropped at the end of your training folds due to lack of recent data.
 
-        In production you would have not been able to create the target for that period, and you would have drop it from
+        In production you would have not been able to create the target for that period, and you would have to drop it from
         the training data.
     n_splits : int | None, default=None
         Number of splits.
@@ -84,6 +84,48 @@ class TimeGapSplit:
     See [Narwhals docs](https://narwhals-dev.github.io/narwhals/extending/){:target="_blank"} for an up-to-date list
     (and to learn how you can add your dataframe library to it!), though note that only those
     convertible to `numpy` arrays will work with this class.
+
+    Examples
+    --------
+    ```py
+    from datetime import timedelta
+    import numpy as np
+    import pandas as pd
+    from sklego.model_selection import TimeGapSplit
+
+    # Create dataset
+    np.random.seed(1)
+    num_rows = 30
+    df = pd.DataFrame(np.random.randn(num_rows, 4)).rename(columns={0: 'c1', 1: 'c2', 2: 'c3', 3: 'c4'})
+    df['date'] = pd.date_range("2024-01-01", periods=num_rows, freq="s")
+
+    # Define parameters
+    td = timedelta(seconds=10)
+    vd = timedelta(seconds=5)
+    gd = timedelta(seconds=2)
+
+    tgs = TimeGapSplit(date_serie=df['date'], train_duration=td, valid_duration=vd, gap_duration=gd)
+    # Print the summary of the first fold
+    print(tgs.summary(df).iloc[0])
+
+    ### Start date     2024-01-01 00:00:00
+    ### End date       2024-01-01 00:00:09
+    ### Period             0 days 00:00:09
+    ### Unique days                     10
+    ### nbr samples                     10
+    ### Name: (0, train), dtype: object
+
+    # Generate the folds
+    tg_cv = tgs.split(df)
+
+    # Print train/test groups in each fold
+    for i, (train_index, test_index) in enumerate(tg_cv):
+        print(f'Fold {i}: Train indices: {train_index}, Test indices: {test_index}')
+
+    ### Fold 0: Train indices: [0 1 2 3 4 5 6 7 8 9], Test indices: [12 13 14 15 16]
+    ### Fold 1: Train indices: [ 5  6  7  8  9 10 11 12 13 14], Test indices: [17 18 19 20 21]
+    ### Fold 2: Train indices: [10 11 12 13 14 15 16 17 18 19], Test indices: [22 23 24 25 26]
+    ```
     """
 
     def __init__(
@@ -294,6 +336,32 @@ class ClusterFoldValidation:
     ----------
     cluster_method : Clusterer
         Clustering method to use for the fold validation.
+
+    Examples
+    --------
+    ```py
+    from sklearn.cluster import KMeans
+    from sklearn.datasets import make_blobs
+    from sklego.model_selection import ClusterFoldValidation
+
+    # Create dataset
+    num_clusters = 2
+    X, y = make_blobs(n_samples=8, centers=num_clusters, random_state=1)
+
+    # Create clusters using KMeans clustering
+    kmeans = KMeans(n_clusters=num_clusters, random_state=1).fit(X)
+    clusterCV = ClusterFoldValidation(kmeans)
+
+    # Split into folds
+    cv_idx = clusterCV.split(X)
+
+    # Print train/test groups in each fold
+    for i, (train_index, test_index) in enumerate(cv_idx):
+        print(f'Fold {i}: Train indices: {train_index}, Test indices: {test_index}')
+
+    ### Fold 0: Train indices: [1 2 5 7], Test indices: [0 3 4 6]
+    ### Fold 1: Train indices: [0 3 4 6], Test indices: [1 2 5 7]
+    ```
     """
 
     def __init__(self, cluster_method=None):
@@ -377,6 +445,44 @@ class GroupTimeSeriesSplit(_BaseKFold):
     ----------
     n_splits : int
         Amount of (train, test) splits to generate.
+
+    Examples
+    --------
+    ```py
+    import numpy as np
+    from sklego.model_selection import GroupTimeSeriesSplit
+
+    # The example reflects the table provided in the class description
+
+    # Create dataset
+    np.random.seed(1)
+    X = np.random.randn(11, 4)
+    y = np.abs(X[:, 2] * X[:, 3])
+    groups = np.array([2021, 2021, 2021, 2022, 2022, 2022, 2023, 2023, 2023, 2024, 2024]) # years
+
+    # Split into folds
+    n_splits = 3
+    cv = GroupTimeSeriesSplit(n_splits)
+    ts_grouped_cv = cv.split(X, y, groups)
+
+    print(cv.summary().iloc[3]) # print summary
+
+    ### index                         2024
+    ### observations                     2
+    ### group                            3
+    ### obs_per_group                    2
+    ### ideal_group_size                 3
+    ### diff_from_ideal_group_size      -1
+    ### Name: 3, dtype: int64
+
+    # Print train/test groups in each fold
+    for i, (train_index, test_index) in enumerate(ts_grouped_cv):
+        print(f'Fold {i}: Train indices: {train_index}, Test indices: {test_index}')
+
+    ### Fold 0: Train indices: [0 1 2], Test indices: [3 4 5]
+    ### Fold 1: Train indices: [3 4 5], Test indices: [6 7 8]
+    ### Fold 2: Train indices: [6 7 8], Test indices: [ 9 10]
+    ```
     """
 
     # table above inspired by sktime
