@@ -95,24 +95,25 @@ class TimeGapSplit:
 
     # Create dataset
     np.random.seed(1)
-    num_rows = 30
+    num_rows = 50
     df = pd.DataFrame(np.random.randn(num_rows, 4)).rename(columns={0: 'c1', 1: 'c2', 2: 'c3', 3: 'c4'})
-    df['date'] = pd.date_range("2024-01-01", periods=num_rows, freq="s")
+    df['date'] = pd.date_range("2024-01-01", periods=num_rows, freq="h")
 
     # Define parameters
-    td = timedelta(seconds=10)
-    vd = timedelta(seconds=5)
-    gd = timedelta(seconds=2)
+    td = timedelta(hours=15)
+    vd = timedelta(hours=6)
+    gd = timedelta(hours=4)
 
     tgs = TimeGapSplit(date_serie=df['date'], train_duration=td, valid_duration=vd, gap_duration=gd)
     # Print the summary of the first fold
     print(tgs.summary(df).iloc[0])
 
     ### Start date     2024-01-01 00:00:00
-    ### End date       2024-01-01 00:00:09
-    ### Period             0 days 00:00:09
-    ### Unique days                     10
-    ### nbr samples                     10
+    ### End date       2024-01-01 14:00:00
+    ### Period             0 days 14:00:00
+    ### frequency                        h
+    ### Unique days                      1
+    ### nbr samples                     15
     ### Name: (0, train), dtype: object
 
     # Generate the folds
@@ -122,9 +123,11 @@ class TimeGapSplit:
     for i, (train_index, test_index) in enumerate(tg_cv):
         print(f'Fold {i}: Train indices: {train_index}, Test indices: {test_index}')
 
-    ### Fold 0: Train indices: [0 1 2 3 4 5 6 7 8 9], Test indices: [12 13 14 15 16]
-    ### Fold 1: Train indices: [ 5  6  7  8  9 10 11 12 13 14], Test indices: [17 18 19 20 21]
-    ### Fold 2: Train indices: [10 11 12 13 14 15 16 17 18 19], Test indices: [22 23 24 25 26]
+    ### Fold 0: Train indices: [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14], Test indices: [19 20 21 22 23 24]
+    ### Fold 1: Train indices: [ 6  7  8  9 10 11 12 13 14 15 16 17 18 19 20], Test indices: [25 26 27 28 29 30]
+    ### Fold 2: Train indices: [12 13 14 15 16 17 18 19 20 21 22 23 24 25 26], Test indices: [31 32 33 34 35 36]
+    ### Fold 3: Train indices: [18 19 20 21 22 23 24 25 26 27 28 29 30 31 32], Test indices: [37 38 39 40 41 42]
+    ### Fold 4: Train indices: [24 25 26 27 28 29 30 31 32 33 34 35 36 37 38], Test indices: [43 44 45 46 47 48]
     ```
     """
 
@@ -275,7 +278,6 @@ class TimeGapSplit:
         DataFrame
             Summary of all folds.
         """
-        summary = []
         X = nw.from_native(X, eager_only=True)
         X_index_df = self._join_date_and_x(X)
 
@@ -283,6 +285,7 @@ class TimeGapSplit:
             "Start date": [],
             "End date": [],
             "Period": [],
+            "frequency": [],
             "Unique days": [],
             "nbr samples": [],
             "part": [],
@@ -294,11 +297,22 @@ class TimeGapSplit:
             dates = X_index_df["__date__"][indices]
             mindate = dates.min()
             maxdate = dates.max()
-            n_unique = dates.n_unique()
 
+            try:
+                n_unique = dates.dt.date().n_unique()
+            except NotImplementedError:
+                # Added convert_dtypes to avoid NotImplementedError if pandas default backend is being used (we are using a pandas dataframe).
+                dates_converted = nw.from_native(nw.to_native(dates).convert_dtypes(dtype_backend="pyarrow"), eager_only = True,series_only = True)
+                n_unique = dates_converted.dt.date().n_unique()
+
+            # Calculate the frequency of data as the mode of the difference of successive data points
+            freq = pd.tseries.frequencies.to_offset(dates.diff().to_pandas().value_counts().index[0]).freqstr
+
+            # Populate the summary dictionary for current fold
             summary["Start date"].append(mindate)
             summary["End date"].append(maxdate)
             summary["Period"].append(maxdate - mindate)
+            summary["frequency"].append(freq)
             summary["Unique days"].append(n_unique)
             summary["nbr samples"].append(len(indices))
             summary["part"].append(part)
