@@ -309,6 +309,23 @@ class DebugPipeline(Pipeline):
         if self._log_callback == "default":
             self._log_callback = default_log_callback
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        if hasattr(self._memory, "_cache"):
+            self._memory.cache = self._memory._cache
+            del self._memory._cache
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        if self._log_callback is not None:
+            self._memory = check_memory(self._memory)
+            if not hasattr(self._memory, "_cache"):
+                self._memory._cache = self._memory.cache
+            self._memory.cache = _cache_with_function_log_statement(self._log_callback).__get__(
+                self._memory, self._memory.__class__
+            )
+
 
 def make_debug_pipeline(*steps, **kwargs):
     """Construct a `DebugPipeline` from the given estimators.
