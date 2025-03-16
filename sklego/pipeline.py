@@ -310,6 +310,19 @@ class DebugPipeline(Pipeline):
             self._log_callback = default_log_callback
 
     def __getstate__(self):
+        """
+        Prepare the state of the object for pickling.
+
+        This method is called when the object is being pickled. It ensures that the `Memory` object is in its original
+        state by temporarily restoring the original `cache` method and removing the custom `_cache` attribute. This is
+        necessary because the custom `_cache` attribute is not picklable and would cause errors during the pickling
+        process.
+
+        Returns
+        -------
+        dict
+            The state of the object to be pickled.
+        """
         state = self.__dict__.copy()
         if hasattr(self._memory, "_cache"):
             self._memory.cache = self._memory._cache
@@ -317,6 +330,18 @@ class DebugPipeline(Pipeline):
         return state
 
     def __setstate__(self, state):
+        """
+        Restore the state of the object from the pickled state.
+
+        This method is called when the object is being unpickled. It restores the state of the object and re-applies the
+        custom `_cache` attribute by wrapping the `cache` method with the logging wrapper (`_cache_with_function_log_statement`).
+        This ensures that the `Memory` object has the custom `_cache` attribute after unpickling.
+
+        Parameters
+        ----------
+        state : dict
+            The state of the object to be restored.
+        """
         self.__dict__.update(state)
         if self._log_callback is not None:
             self._memory = check_memory(self._memory)
