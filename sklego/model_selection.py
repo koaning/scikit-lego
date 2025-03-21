@@ -30,11 +30,11 @@ class TimeGapSplit:
     Each validation fold doesn't overlap. The entire `window` moves by 1 `valid_duration` until there is not enough
     data.
 
-    If this would lead to more splits then specified with `n_splits`, the `window` moves by `valid_duration` times the
+    If this would lead to more splits than specified with `n_splits`, the `window` moves by `valid_duration` times the
     fraction of possible splits and requested splits:
 
-    - `n_possible_splits = (total_length - train_duration-gap_duration) // valid_duration`
-    - `time_shift = valid_duration * n_possible_splits / n_slits`
+    - `n_possible_splits = (total_length - train_duration - gap_duration) // valid_duration`
+    - `time_shift = valid_duration * n_possible_splits / n_splits`
 
     so the CV spans the whole dataset.
 
@@ -49,19 +49,17 @@ class TimeGapSplit:
     date_serie : Series
         Series with the date, that should have all the indices of X used in the split() method.
         If the Series is not pandas-like (for example, if it's a Polars Series, which does not have
-        an index) then it must the same same length as the `X` and `y` objects passed to `split`.
+        an index) then it must the same length as the `X` and `y` objects passed to `split`.
     valid_duration : datetime.timedelta
         Retraining period.
+    stride_duration : datetime.timedelta
+        The time shift for the training period
     train_duration : datetime.timedelta | None, default=None
         Historical training data.
     gap_duration : datetime.timedelta, default=timedelta(0)
-        Forward looking window of the target. The period of the forward looking window necessary to create your target
-        variable.
-
-        This period is dropped at the end of your training folds due to lack of recent data.
-
-        In production you would have not been able to create the target for that period, and you would have drop it from
-        the training data.
+        Forward-looking window of the target. The period of the forward-looking window necessary to create your target
+        variable. This period is dropped at the end of your training folds due to lack of recent data. In production you
+        would have not been able to create the target for that period, and you would have to drop it from the training data.
     n_splits : int | None, default=None
         Number of splits.
     window : Literal["rolling", "expanding"], default="rolling"
@@ -90,21 +88,31 @@ class TimeGapSplit:
         self,
         date_serie,
         valid_duration,
+        stride_duration = None,
         train_duration=None,
         gap_duration=timedelta(0),
         n_splits=None,
         window="rolling",
     ):
+
+        # If stride length is not defined, set it equal to the length validation set
+        if stride_duration is None:
+            stride_duration = valid_duration
+
         if (train_duration is None) and (n_splits is None):
             raise ValueError("Either train_duration or n_splits have to be defined")
 
         if (train_duration is not None) and (train_duration <= gap_duration):
             raise ValueError("gap_duration is longer than train_duration, it should be shorter.")
 
+        if (train_duration is not None) and (train_duration <= stride_duration):
+            raise ValueError("stride_duration is longer than train_duration, it should be shorter.")
+
         self.date_serie = nw.from_native(date_serie, series_only=True).alias("__date__")
         self.train_duration = train_duration
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
+        self.stride_duration = stride_duration
         self.n_splits = n_splits
         self.window = window
 
@@ -157,30 +165,34 @@ class TimeGapSplit:
         date_length = X_index_df["__date__"].max() - X_index_df["__date__"].min()
 
         if (self.train_duration is None) and (self.n_splits is not None):
-            self.train_duration = date_length - (self.gap_duration + self.valid_duration * self.n_splits)
+            # self.train_duration = date_length - (self.gap_duration + self.valid_duration * self.n_splits)
+            self.train_duration = date_length - (self.gap_duration + self.valid_duration + (self.n_splits - 1) * self.stride_duration)
 
         if (self.train_duration is not None) and (self.train_duration <= self.gap_duration):
             raise ValueError("gap_duration is longer than train_duration, it should be shorter.")
 
-        n_split_max = (date_length - self.train_duration - self.gap_duration) / self.valid_duration
+        # n_split_max = (date_length - self.train_duration - self.gap_duration) / self.valid_duration
+        n_split_max = 1 + (date_length - self.train_duration - self.gap_duration - self.valid_duration) / self.stride_duration
+
         if self.n_splits:
             if n_split_max < self.n_splits:
                 raise ValueError(
                     (
                         "Number of folds requested = {1} are greater"
-                        " than maximum  ={0} possible without"
-                        " overlapping validation sets."
+                        " than maximum  ={0} possible"
+                        " based on the given values."
                     ).format(n_split_max, self.n_splits)
                 )
 
         current_date = date_min
         start_date = date_min
-        # if the n_splits is smaller than what would usually be done for train val and gap duration,
-        # the next fold is slightly further in time than just valid_duration
+        # if the n_splits is smaller than what would usually be done for train, validation, stride and gap duration,
+        # the next fold is slightly further in time than just stride_duration
         if self.n_splits is not None:
-            time_shift = self.valid_duration * n_split_max / self.n_splits
+            time_shift = self.stride_duration * n_split_max / self.n_splits
         else:
-            time_shift = self.valid_duration
+            # time_shift = self.valid_duration
+            time_shift = self.stride_duration
         while True:
             if current_date + self.train_duration + time_shift + self.gap_duration > date_max:
                 break
