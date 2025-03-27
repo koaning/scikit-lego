@@ -29,6 +29,7 @@ def test_timegapsplit():
         date_serie=df["date"],
         train_duration=timedelta(days=5),
         valid_duration=timedelta(days=3),
+        stride_duration=timedelta(days=3),
         gap_duration=timedelta(days=0),
     )
 
@@ -128,7 +129,6 @@ def test_timegapsplit_train_or_nsplit():
             n_splits=None,
         )
 
-
 def test_timegapsplit_without_train_duration():
     cv = TimeGapSplit(
         date_serie=df["date"],
@@ -161,6 +161,46 @@ def test_timegapsplit_with_a_gap():
         assert train_mindate <= train_maxdate <= valid_mindate <= valid_maxdate
         assert valid_mindate - train_maxdate >= gap_duration
 
+def test_timegapsplit_stride_is_zero():
+    with pytest.raises(ValueError):
+        _ = TimeGapSplit(
+            date_serie=df["date"],
+            train_duration=timedelta(days=5),
+            stride_duration=timedelta(days=0),
+            valid_duration=timedelta(days=3),
+            gap_duration=timedelta(days=5),
+            n_splits=None,
+        )
+
+def test_timegapsplit_stride_longer_than_train():
+    with pytest.raises(ValueError):
+        _ = TimeGapSplit(
+            date_serie=df["date"],
+            train_duration=timedelta(days=5),
+            stride_duration=timedelta(days=6),
+            valid_duration=timedelta(days=3),
+            gap_duration=timedelta(days=5),
+            n_splits=None,
+        )
+
+def test_timegapsplit_with_stride():
+    stride_duration = timedelta(days=2)
+    cv_gap = TimeGapSplit(
+        date_serie=df["date"],
+        train_duration=timedelta(days=5),
+        stride_duration=stride_duration,
+        valid_duration=timedelta(days=3),
+        gap_duration=timedelta(days=1),
+    )
+
+    for i, indices in enumerate(cv_gap.split(X_train, y_train)):
+        train_mindate = df.loc[X_train.iloc[indices[0]].index]["date"].min()
+        train_maxdate = df.loc[X_train.iloc[indices[0]].index]["date"].max()
+        valid_mindate = df.loc[X_train.iloc[indices[1]].index]["date"].min()
+        valid_maxdate = df.loc[X_train.iloc[indices[1]].index]["date"].max()
+
+        assert train_mindate <= train_maxdate <= valid_mindate <= valid_maxdate
+        assert valid_mindate - train_maxdate >= stride_duration
 
 def test_timegapsplit_with_gridsearch():
     cv = TimeGapSplit(

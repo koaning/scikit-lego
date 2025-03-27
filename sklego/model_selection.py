@@ -99,6 +99,9 @@ class TimeGapSplit:
         if stride_duration is None:
             stride_duration = valid_duration
 
+        if stride_duration == timedelta(0):
+            raise ValueError("stride_duration should be longer than 0")
+
         if (train_duration is None) and (n_splits is None):
             raise ValueError("Either train_duration or n_splits have to be defined")
 
@@ -165,13 +168,11 @@ class TimeGapSplit:
         date_length = X_index_df["__date__"].max() - X_index_df["__date__"].min()
 
         if (self.train_duration is None) and (self.n_splits is not None):
-            # self.train_duration = date_length - (self.gap_duration + self.valid_duration * self.n_splits)
             self.train_duration = date_length - (self.gap_duration + self.valid_duration + (self.n_splits - 1) * self.stride_duration)
 
         if (self.train_duration is not None) and (self.train_duration <= self.gap_duration):
             raise ValueError("gap_duration is longer than train_duration, it should be shorter.")
 
-        # n_split_max = (date_length - self.train_duration - self.gap_duration) / self.valid_duration
         n_split_max = 1 + (date_length - self.train_duration - self.gap_duration - self.valid_duration) / self.stride_duration
 
         if self.n_splits:
@@ -191,7 +192,6 @@ class TimeGapSplit:
         if self.n_splits is not None:
             time_shift = self.stride_duration * n_split_max / self.n_splits
         else:
-            # time_shift = self.valid_duration
             time_shift = self.stride_duration
         while True:
             if current_date + self.train_duration + time_shift + self.gap_duration > date_max:
