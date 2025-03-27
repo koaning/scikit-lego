@@ -88,13 +88,12 @@ class TimeGapSplit:
         self,
         date_serie,
         valid_duration,
-        stride_duration = None,
+        stride_duration=None,
         train_duration=None,
         gap_duration=timedelta(0),
         n_splits=None,
         window="rolling",
     ):
-
         # If stride length is not defined, set it equal to the length validation set
         if stride_duration is None:
             stride_duration = valid_duration
@@ -160,7 +159,7 @@ class TimeGapSplit:
 
         if len(X) != len(X_index_df):
             raise AssertionError(
-                "X and X_index_df are not the same length, " "there must be some index missing in 'self.date_serie'"
+                "X and X_index_df are not the same length, there must be some index missing in 'self.date_serie'"
             )
 
         date_min = X_index_df["__date__"].min()
@@ -168,12 +167,16 @@ class TimeGapSplit:
         date_length = X_index_df["__date__"].max() - X_index_df["__date__"].min()
 
         if (self.train_duration is None) and (self.n_splits is not None):
-            self.train_duration = date_length - (self.gap_duration + self.valid_duration + (self.n_splits - 1) * self.stride_duration)
+            self.train_duration = date_length - (
+                self.gap_duration + self.valid_duration + (self.n_splits - 1) * self.stride_duration
+            )
 
         if (self.train_duration is not None) and (self.train_duration <= self.gap_duration):
             raise ValueError("gap_duration is longer than train_duration, it should be shorter.")
 
-        n_split_max = 1 + (date_length - self.train_duration - self.gap_duration - self.valid_duration) / self.stride_duration
+        n_split_max = (
+            1 + (date_length - self.train_duration - self.gap_duration - self.valid_duration) / self.stride_duration
+        )
 
         if self.n_splits:
             if n_split_max < self.n_splits:
@@ -396,8 +399,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
     def __init__(self, n_splits):
         if not isinstance(n_splits, numbers.Integral):
             raise ValueError(
-                "The number of folds must be of Integral type. "
-                "%s of type %s was passed." % (n_splits, type(n_splits))
+                "The number of folds must be of Integral type. %s of type %s was passed." % (n_splits, type(n_splits))
             )
         n_splits = int(n_splits)
 
@@ -454,7 +456,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         n_groups = np.unique(groups).shape[0]
         if self.n_splits >= n_groups:
             raise ValueError(
-                ("n_splits({0}) must be less than the amount" " of unique groups({1}).").format(self.n_splits, n_groups)
+                ("n_splits({0}) must be less than the amount of unique groups({1}).").format(self.n_splits, n_groups)
             )
         return list(self._iter_test_indices(X, y, groups))
 
@@ -493,9 +495,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         """
         unique_groups = len(set(groups))
         warning = (
-            "Finding the optimal split points"
-            " with {0} unique groups and n_splits at {1}"
-            " can take several minutes."
+            "Finding the optimal split points with {0} unique groups and n_splits at {1} can take several minutes."
         ).format(unique_groups, self.n_splits)
         if self.n_splits == 4 and unique_groups > 250:
             warn(
