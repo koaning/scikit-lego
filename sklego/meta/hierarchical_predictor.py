@@ -222,11 +222,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         self.n_jobs = n_jobs
         self.check_X = check_X
         self.shrinkage_kwargs = shrinkage_kwargs
-        try:
-            self.estimator_supports_sample_weight = "sample_weight" in inspect.signature(self.estimator.fit).parameters
-        except Exception:
-            self.estimator_supports_sample_weight = False
-
+        
     @property
     def _estimator_type(self):
         """Computes `_estimator_type` dynamically from the wrapped model."""
@@ -290,9 +286,14 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             msg = "Found 0 features, while a minimum of 1 if required."
             raise ValueError(msg)
         
+        try:
+            self.estimator_supports_sample_weight_ = "sample_weight" in inspect.signature(self.estimator.fit).parameters
+        except Exception:
+            self.estimator_supports_sample_weight_ = False
+
         self.has_sw_ = sample_weight is not None
         
-        if self.has_sw_ and not self.estimator_supports_sample_weight:
+        if self.has_sw_ and not self.estimator_supports_sample_weight_:
             msg = f"Estimator does not support sample_weight."
             raise ValueError(msg)
         sample_weight = _check_sample_weight(sample_weight, X.to_native(), ensure_non_negative=True)
@@ -403,7 +404,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         _y = nw.to_native(grp_frame[self._TARGET_NAME])
         
         args = [_X, _y]
-        if self.estimator_supports_sample_weight:
+        if self.estimator_supports_sample_weight_:
             _sample_weight = nw.to_native(grp_frame[self._SAMPLE_WEIGHT_NAME])
             args.append(_sample_weight)
         
