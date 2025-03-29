@@ -295,7 +295,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         if self.has_sw_ and not self.estimator_supports_sample_weight:
             msg = f"Estimator does not support sample_weight."
             raise ValueError(msg)
-        sample_weight = _check_sample_weight(sample_weight, X, None, ensure_non_negative=True)
+        sample_weight = _check_sample_weight(sample_weight, X.to_native(), ensure_non_negative=True)
 
         native_namespace = nw.get_native_namespace(X)
         target_series = nw.new_series(name=self._TARGET_NAME, values=y, native_namespace=native_namespace)
