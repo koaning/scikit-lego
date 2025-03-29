@@ -403,7 +403,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         _y = nw.to_native(grp_frame[self._TARGET_NAME])
         
         args = [_X, _y]
-        if self.estimator_supports_sample_weight and self.has_sw_:
+        if self.estimator_supports_sample_weight:
             _sample_weight = nw.to_native(grp_frame[self._SAMPLE_WEIGHT_NAME])
             args.append(_sample_weight)
         
