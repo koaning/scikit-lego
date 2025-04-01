@@ -52,8 +52,8 @@ class TimeGapSplit:
         an index) then it must the same length as the `X` and `y` objects passed to `split`.
     valid_duration : datetime.timedelta
         Retraining period.
-    stride_duration : datetime.timedelta
-        The time shift for the training period
+    stride_duration : datetime.timedelta | None
+        The time shift for the training period. If `None`, then it fallbacks to `valid_duration` value.
     train_duration : datetime.timedelta | None, default=None
         Historical training data.
     gap_duration : datetime.timedelta, default=timedelta(0)
@@ -98,8 +98,9 @@ class TimeGapSplit:
         if stride_duration is None:
             stride_duration = valid_duration
 
-        if stride_duration == timedelta(0):
-            raise ValueError("stride_duration should be longer than 0")
+        if stride_duration <= timedelta(milliseconds=0):
+            msg = f"`stride_duration` should be a positive timedelta, found {stride_duration}"
+            raise ValueError(msg)
 
         if (train_duration is None) and (n_splits is None):
             raise ValueError("Either train_duration or n_splits have to be defined")
