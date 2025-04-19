@@ -14,7 +14,7 @@ from sklearn.base import (
     is_regressor,
 )
 from sklearn.utils.metaestimators import available_if
-from sklearn.utils.validation import check_is_fitted, _check_sample_weight
+from sklearn.utils.validation import check_is_fitted
 from sklearn_compat.utils.validation import check_array
 
 from sklego.common import as_list, expanding_list
@@ -26,7 +26,6 @@ from sklego.meta._shrinkage_utils import (
     min_n_obs_shrinkage,
     relative_shrinkage,
 )
-import inspect
 
 
 def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_method):
@@ -199,7 +198,6 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
     _GLOBAL_NAME = "__sklego_global_estimator__"
     _TARGET_NAME = "__sklego_target_value__"
-    _SAMPLE_WEIGHT_NAME = "__sklego_sample_weight__"
     _INDEX_NAME = "__sklego_index__"
 
     _required_parameters = ["estimator", "groups"]
@@ -222,13 +220,13 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         self.n_jobs = n_jobs
         self.check_X = check_X
         self.shrinkage_kwargs = shrinkage_kwargs
-        
+
     @property
     def _estimator_type(self):
         """Computes `_estimator_type` dynamically from the wrapped model."""
         return self.estimator._estimator_type
 
-    def fit(self, X, y=None, sample_weight=None):
+    def fit(self, X, y=None):
         """Fit one estimator for each hierarchical group of training data `X` and `y`.
 
         Will also learn the groups that exist within the training dataset.
@@ -239,8 +237,6 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             Training data.
         y : array-like of shape (n_samples,), default=None
             Target values, if applicable.
-        sample_weight : array-like of shape (n_samples,), default=None
-            Sample weight values, if applicable.
 
         Returns
         -------
@@ -285,28 +281,11 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         if self.n_features_in_ < 1:
             msg = "Found 0 features, while a minimum of 1 if required."
             raise ValueError(msg)
-        
-        try:
-            self.estimator_supports_sample_weight_ = "sample_weight" in inspect.signature(self.estimator.fit).parameters
-        except Exception:
-            self.estimator_supports_sample_weight_ = False
-
-        self.has_sw_ = sample_weight is not None
-        
-        if self.has_sw_ and not self.estimator_supports_sample_weight_:
-            msg = f"Estimator does not support sample_weight."
-            raise ValueError(msg)
-        sample_weight = _check_sample_weight(sample_weight, X.to_native(), ensure_non_negative=True)
 
         native_namespace = nw.get_native_namespace(X)
         target_series = nw.new_series(name=self._TARGET_NAME, values=y, native_namespace=native_namespace)
         global_series = nw.new_series(
             name=self._GLOBAL_NAME, values=np.ones(n_samples), native_namespace=native_namespace
-        )
-        sample_weight_series = nw.new_series(
-            name=self._SAMPLE_WEIGHT_NAME,
-            values=sample_weight,
-            native_namespace=native_namespace,
         )
         if len(target_series) != n_samples:
             msg = f"Found input variables with inconsistent numbers of samples: {[n_samples, len(target_series)]}"
@@ -316,7 +295,6 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             **{
                 self._TARGET_NAME: target_series,
                 self._GLOBAL_NAME: global_series,
-                self._SAMPLE_WEIGHT_NAME: sample_weight_series,
             }
         ).pipe(self.__validate_frame)
 
@@ -400,15 +378,10 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
     def _fit_single_estimator(self, grp_frame):
         """Shortcut to fit an estimator on a single group"""
-        _X = nw.to_native(grp_frame.drop([*self.groups_, self._TARGET_NAME, self._SAMPLE_WEIGHT_NAME]))
+        _X = nw.to_native(grp_frame.drop([*self.groups_, self._TARGET_NAME]))
         _y = nw.to_native(grp_frame[self._TARGET_NAME])
-        
-        args = [_X, _y]
-        if self.estimator_supports_sample_weight_:
-            _sample_weight = nw.to_native(grp_frame[self._SAMPLE_WEIGHT_NAME])
-            args.append(_sample_weight)
-        
-        return clone(self.estimator).fit(*args)
+
+        return clone(self.estimator).fit(_X, _y)
 
     def _fit_estimators(self, frame: nw.DataFrame):
         """Fits one estimator per level of the group column(s), and returns a dictionary of the fitted estimators.
@@ -533,7 +506,7 @@ class HierarchicalRegressor(RegressorMixin, HierarchicalPredictor):
     ```
     """
 
-    def fit(self, X, y, sample_weight=None):
+    def fit(self, X, y):
         """Fit one regressor for each hierarchical group of training data `X` and `y`.
 
         Will also learn the groups that exist within the training dataset.
@@ -544,8 +517,6 @@ class HierarchicalRegressor(RegressorMixin, HierarchicalPredictor):
             Training data.
         y : array-like of shape (n_samples,)
             Target values.
-        sample_weight : array-like of shape (n_samples,), default=None
-            Sample weight values, if applicable.
 
         Returns
         -------
@@ -560,7 +531,7 @@ class HierarchicalRegressor(RegressorMixin, HierarchicalPredictor):
         if not is_regressor(self.estimator):
             raise ValueError("The supplied estimator should be a regressor")
 
-        super().fit(X, y, sample_weight)
+        super().fit(X, y)
         return self
 
     def predict(self, X):
@@ -654,7 +625,7 @@ class HierarchicalClassifier(ClassifierMixin, HierarchicalPredictor):
     ```
     """
 
-    def fit(self, X, y, sample_weight=None):
+    def fit(self, X, y):
         """Fit one classifier for each hierarchical group of training data `X` and `y`.
 
         Will also learn the groups that exist within the training dataset, the classes and the number of classes in the
@@ -666,8 +637,6 @@ class HierarchicalClassifier(ClassifierMixin, HierarchicalPredictor):
             Training data.
         y : array-like of shape (n_samples,)
             Target values.
-        sample_weight : array-like of shape (n_samples,), default=None
-            Sample weight values, if applicable.
 
         Returns
         -------
@@ -688,7 +657,7 @@ class HierarchicalClassifier(ClassifierMixin, HierarchicalPredictor):
         self.classes_ = np.unique(y)
         self.n_classes_ = len(self.classes_)
 
-        super().fit(X, y, sample_weight)
+        super().fit(X, y)
         return self
 
     def predict(self, X):
