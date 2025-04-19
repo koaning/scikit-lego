@@ -64,9 +64,7 @@ def test_zero_inflated_with_sample_weights_example(classifier, regressor, perfor
     y = ((X[:, 0] > 0) & (X[:, 1] > 0)) * np.abs(X[:, 2] * X[:, 3] ** 2)  # many zeroes here, in about 75% of the cases.
 
     zir = ZeroInflatedRegressor(classifier=classifier, regressor=regressor)
-
-    zir_score = cross_val_score(zir, X, y, fit_params={"sample_weight": np.arange(len(y))}).mean()
-    # TODO: fit_params -> params in future versions
+    zir_score = cross_val_score(zir, X, y, params={"sample_weight": np.arange(len(y))}).mean()
 
     assert zir_score > performance
 

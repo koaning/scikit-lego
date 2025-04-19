@@ -5,8 +5,8 @@ from typing import List
 import narwhals.stable.v1 as nw
 import pandas as pd
 from scipy.sparse import issparse
-from sklearn.utils import check_array
 from sklearn.utils.validation import _ensure_no_complex_data
+from sklearn_compat.utils.validation import check_array
 
 
 def parse_X_y(X, y, groups, check_X=True, **kwargs) -> nw.DataFrame:
@@ -33,9 +33,13 @@ def parse_X_y(X, y, groups, check_X=True, **kwargs) -> nw.DataFrame:
 
     # Convert y and assign it to the frame
     n_samples = X.shape[0]
-    y_series = nw.from_dict(
-        data={"tmp": [None] * n_samples if y is None else y}, native_namespace=nw.get_native_namespace(X)
-    )["tmp"]
+    y_series = nw.new_series(
+        name="tmp", values=[None] * n_samples if y is None else y, native_namespace=nw.get_native_namespace(X)
+    )
+
+    if len(y_series) != n_samples:
+        msg = f"Found input variables with inconsistent numbers of samples: {[n_samples, len(y_series)]}"
+        raise ValueError(msg)
 
     return X.with_columns(__sklego_target__=y_series)
 

@@ -7,8 +7,9 @@ import narwhals.stable.v1 as nw
 import numpy as np
 import pandas as pd
 from sklearn.exceptions import NotFittedError
-from sklearn.model_selection._split import _BaseKFold, check_array
+from sklearn.model_selection._split import _BaseKFold
 from sklearn.utils.validation import indexable
+from sklearn_compat.utils.validation import check_array
 
 from sklego.base import Clusterer
 from sklego.common import sliding_window
@@ -263,8 +264,8 @@ class TimeGapSplit:
 
         j = 0
         for i in self.split(nw.to_native(X)):
-            train_info = nw.to_native(nw.from_dict({"tmp": i[0]}, native_namespace=native_namespace)["tmp"])
-            valid_info = nw.to_native(nw.from_dict({"tmp": i[1]}, native_namespace=native_namespace)["tmp"])
+            train_info = nw.to_native(nw.new_series(name="tmp", values=i[0], native_namespace=native_namespace))
+            valid_info = nw.to_native(nw.new_series(name="tmp", values=i[1], native_namespace=native_namespace))
             update_split_info(train_info, j, "train", summary)
             update_split_info(valid_info, j, "valid", summary)
             j = j + 1

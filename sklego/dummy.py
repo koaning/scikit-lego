@@ -2,16 +2,11 @@ from warnings import warn
 
 import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
-from sklearn.utils import check_X_y
-from sklearn.utils.validation import (
-    FLOAT_DTYPES,
-    check_array,
-    check_is_fitted,
-    check_random_state,
-)
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_random_state
+from sklearn_compat.utils.validation import validate_data
 
 
-class RandomRegressor(BaseEstimator, RegressorMixin):
+class RandomRegressor(RegressorMixin, BaseEstimator):
     """A `RandomRegressor` makes random predictions only based on the `y` value that is seen.
 
     The goal is that such a regressor can be used for benchmarking. It _should be_ easily beatable.
@@ -72,8 +67,7 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         """
         if self.strategy not in self._ALLOWED_STRATEGIES:
             raise ValueError(f"strategy {self.strategy} is not in {self._ALLOWED_STRATEGIES}")
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
-        self.n_features_in_ = X.shape[1]
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
 
         self.min_ = np.min(y)
         self.max_ = np.max(y)
@@ -99,9 +93,7 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
         rs = check_random_state(self.random_state)
         check_is_fitted(self, ["n_features_in_", "min_", "max_", "mu_", "sigma_"])
 
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.dim_}")
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
 
         if self.strategy == "normal":
             return rs.normal(self.mu_, self.sigma_, X.shape[0])
@@ -127,3 +119,9 @@ class RandomRegressor(BaseEstimator, RegressorMixin):
 
     def _more_tags(self):
         return {"poor_score": True, "non_deterministic": True}
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.non_deterministic = True
+        tags.regressor_tags.poor_score = True
+        return tags

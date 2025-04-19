@@ -2,12 +2,12 @@ import numpy as np
 from scipy.special import softmax
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import GaussianMixture
-from sklearn.utils import check_X_y
 from sklearn.utils.multiclass import unique_labels
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+from sklearn_compat.utils.validation import validate_data
 
 
-class GMMClassifier(BaseEstimator, ClassifierMixin):
+class GMMClassifier(ClassifierMixin, BaseEstimator):
     """The `GMMClassifier` trains a Gaussian Mixture Model for each class in `y` on a dataset `X`. Once a density is
     trained for each class we can evaluate the likelihood scores to see which class is more likely.
 
@@ -23,6 +23,40 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         A dictionary of Gaussian Mixture Models, one for each class.
     classes_ : np.ndarray of shape (n_classes,)
         The classes seen during `fit`.
+
+    Examples
+    --------
+
+    ```python
+    import numpy as np
+    from sklego.mixture import GMMClassifier
+
+    # Generate datset
+    np.random.seed(1)
+    group0 = np.random.normal(0, 3, (1000, 2))
+    group1 = np.random.normal(2.5, 2, (500, 2))
+    data = np.vstack([group0, group1])
+
+    y = np.hstack([np.zeros((group0.shape[0],), dtype=int), np.ones((group1.shape[0],), dtype=int)])
+
+    # Create and fit the GMMClassifier model
+    gmm = GMMClassifier(n_components=2, random_state=1)
+    gmm.fit(data, y)
+
+    # Classify the train dataset into two clusters (n_components=2)
+    labels = gmm.predict(data)
+
+    # Classify a new point into one of two clusters
+    p = np.array([[1.5, 0.5]])
+    p_prob = gmm.predict_proba(p) # predict the probabilities p belongs to each cluster
+    print(f'Probability point p belongs to group1 is {p_prob[0,0]:.2f}')
+    ### Probability point p belongs to group1 is 0.41
+    print(f'Probability point p belongs to group2 is {p_prob[0,1]:.2f}')
+    ### Probability point p belongs to group2 is 0.59
+
+    print(f'It is more probable that point p belongs to group{np.argmax(p_prob)}')
+    ### It is more probable that point p belongs to group1
+    ```
     """
 
     def __init__(
@@ -72,7 +106,7 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         self : GMMClassifier
             The fitted estimator.
         """
-        X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES)
+        X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, reset=True)
         if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
@@ -98,7 +132,6 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
             )
             self.gmms_[c] = mixture.fit(subset_x, subset_y)
 
-        self.n_features_in_ = X.shape[1]
         self.n_iter_ = sum(mixture.n_iter_ for mixture in self.gmms_.values())
 
         return self
@@ -117,7 +150,8 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
             The predicted data.
         """
         check_is_fitted(self, ["gmms_", "classes_"])
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     def predict_proba(self, X):
@@ -133,8 +167,9 @@ class GMMClassifier(BaseEstimator, ClassifierMixin):
         array-like of shape (n_samples, n_classes)
             The predicted probabilities.
         """
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["gmms_", "classes_"])
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+
         res = np.zeros((X.shape[0], self.classes_.shape[0]))
         for idx, c in enumerate(self.classes_):
             res[:, idx] = self.gmms_[c].score_samples(X)

@@ -401,8 +401,13 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     def _more_tags(self):
         return {"allow_nan": True}
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
+        return tags
 
-class GroupedRegressor(GroupedPredictor, RegressorMixin):
+
+class GroupedRegressor(RegressorMixin, GroupedPredictor):
     """`GroupedRegressor` is a meta-estimator that fits a separate regressor for each group in the input data.
 
     Its spec is the same as [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor] but it is available
@@ -439,7 +444,7 @@ class GroupedRegressor(GroupedPredictor, RegressorMixin):
         return super().fit(X, y)
 
 
-class GroupedClassifier(GroupedPredictor, ClassifierMixin):
+class GroupedClassifier(ClassifierMixin, GroupedPredictor):
     """`GroupedClassifier` is a meta-estimator that fits a separate classifier for each group in the input data.
 
     Its equivalent to [`GroupedPredictor`][sklego.meta.grouped_predictor.GroupedPredictor] with `shrinkage=None`

@@ -1,11 +1,12 @@
 from sklearn import clone
 from sklearn.base import BaseEstimator, MetaEstimatorMixin
-from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted, check_X_y
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay
 
 
-class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
+class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
     """Morphs an estimator such that the training weights can be adapted to ensure that points that are far away have
     less weight.
 
@@ -97,6 +98,10 @@ class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
         """Checks if the wrapped estimator is a classifier."""
         return any(["ClassifierMixin" in p.__name__ for p in type(self.model).__bases__])
 
+    def _is_regressor(self):
+        """Checks if the wrapped estimator is a regressor."""
+        return any(["RegressorMixin" in p.__name__ for p in type(self.model).__bases__])
+
     @property
     def _estimator_type(self):
         """Computes `_estimator_type` dynamically from the wrapped model."""
@@ -119,7 +124,9 @@ class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
         """
 
         if self.check_input:
-            X, y = check_X_y(X, y, estimator=self, dtype=FLOAT_DTYPES, ensure_min_features=0)
+            X, y = validate_data(self, X=X, y=y, dtype=FLOAT_DTYPES, accept_sparse=True, reset=True)
+        else:
+            _check_n_features(self, X, reset=True)
 
         if self.decay_func in self._ALLOWED_DECAYS.keys():
             self.decay_func_ = self._ALLOWED_DECAYS[self.decay_func]
@@ -140,7 +147,6 @@ class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
         if self._is_classifier():
             self.classes_ = self.estimator_.classes_
 
-        self.n_features_in_ = X.shape[1]
         return self
 
     def predict(self, X):
@@ -165,3 +171,6 @@ class DecayEstimator(BaseEstimator, MetaEstimatorMixin):
     def score(self, X, y):
         """Alias for `.score()` method of the underlying estimator."""
         return self.estimator_.score(X, y)
+
+    def __sklearn_tags__(self):
+        return self.model.__sklearn_tags__()

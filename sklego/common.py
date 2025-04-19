@@ -4,11 +4,12 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-from sklearn.base import TransformerMixin
-from sklearn.utils.validation import check_array, check_is_fitted, check_X_y
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils.validation import validate_data
 
 
-class TrainOnlyTransformerMixin(TransformerMixin):
+class TrainOnlyTransformerMixin(TransformerMixin, BaseEstimator):
     """Mixin class for transformers that can handle training and test data differently.
 
     This mixin allows using a separate function for transforming training and test data.
@@ -79,11 +80,11 @@ class TrainOnlyTransformerMixin(TransformerMixin):
             The fitted transformer.
         """
         if y is None:
-            check_array(X, estimator=self)
+            validate_data(self, X=X, reset=True)
         else:
-            check_X_y(X, y, estimator=self, multi_output=True)
+            validate_data(self, X=X, y=y, multi_output=True, reset=True)
+
         self.X_hash_ = self._hash(X)
-        self.n_features_in_ = X.shape[1]
         return self
 
     @staticmethod
@@ -145,10 +146,7 @@ class TrainOnlyTransformerMixin(TransformerMixin):
             If the input dimension does not match the training dimension.
         """
         check_is_fitted(self, ["X_hash_", "n_features_in_"])
-        check_array(X, estimator=self)
-
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError(f"Unexpected input dimension {X.shape[1]}, expected {self.n_features_in_}")
+        validate_data(self, X=X, reset=False)
 
         if self._hash(X) == self.X_hash_:
             return self.transform_train(X)

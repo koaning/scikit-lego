@@ -2,8 +2,8 @@ from warnings import warn
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils import check_array
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+from sklearn_compat.utils.validation import validate_data
 
 
 class ColumnCapper(TransformerMixin, BaseEstimator):
@@ -96,9 +96,6 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         discard_infs=False,
         copy=True,
     ):
-        self._check_quantile_range(quantile_range)
-        self._check_interpolation(interpolation)
-
         self.quantile_range = quantile_range
         self.interpolation = interpolation
         self.discard_infs = discard_infs
@@ -124,7 +121,10 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         ValueError
             If `X` contains non-numeric columns.
         """
-        X = check_array(X, copy=True, force_all_finite=False, dtype=FLOAT_DTYPES, estimator=self)
+        self._check_quantile_range(self.quantile_range)
+        self._check_interpolation(self.interpolation)
+
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, copy=True, ensure_all_finite=False, reset=True)
 
         # If X contains infs, we need to replace them by nans before computing quantiles
         np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
@@ -138,9 +138,6 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
 
         q = [quantile_limit / 100 for quantile_limit in self.quantile_range]
         self.quantiles_ = np.nanquantile(a=X, q=q, axis=0, overwrite_input=True, method=self.interpolation)
-
-        # Saving the number of columns to ensure coherence between fit and transform inputs
-        self.n_features_in_ = X.shape[1]
 
         return self
 
@@ -162,17 +159,8 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
         ValueError
             If the number of columns from `X` differs from the number of columns when fitting.
         """
-        check_is_fitted(self, "quantiles_")
-        X = check_array(
-            X,
-            copy=self.copy,
-            force_all_finite=False,
-            dtype=FLOAT_DTYPES,
-            estimator=self,
-        )
-
-        if X.shape[1] != self.n_features_in_:
-            raise ValueError("X must have the same number of columns in fit and transform")
+        check_is_fitted(self, ["quantiles_"])
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, copy=self.copy, ensure_all_finite=False, reset=False)
 
         if self.discard_infs:
             np.putmask(X, (X == np.inf) | (X == -np.inf), np.nan)
@@ -245,3 +233,8 @@ class ColumnCapper(TransformerMixin, BaseEstimator):
 
     def _more_tags(self):
         return {"allow_nan": True}
+
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.input_tags.allow_nan = True
+        return tags

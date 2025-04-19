@@ -2,12 +2,13 @@ import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.calibration import _SigmoidCalibration
-from sklearn.utils.validation import check_is_fitted, check_X_y
+from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils.validation import validate_data
 
 from sklego.base import OutlierModel
 
 
-class OutlierClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
+class OutlierClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     """Morphs an outlier detection model into a classifier.
 
     When an outlier is detected it will output 1 and 0 otherwise. This way you can use familiar metrics again and this
@@ -87,7 +88,11 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
                 f"Passed model {self.model} does not have a `decision_function` "
                 f"method. This is required for `predict_proba` estimation."
             )
-        X, y = check_X_y(X, y)
+        if y is not None:
+            X, y = validate_data(self, X=X, y=y, reset=True)
+        else:
+            X = validate_data(self, X=X, reset=True)
+
         self.estimator_ = clone(self.model).fit(X, y)
         self.n_features_in_ = self.estimator_.n_features_in_
         self.classes_ = np.array([0, 1])
@@ -112,6 +117,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             The predicted values. 0 for inliers, 1 for outliers.
         """
         check_is_fitted(self, ["estimator_", "classes_"])
+        X = validate_data(self, X=X, reset=False)
         preds = self.estimator_.predict(X)
         result = (preds == -1).astype(int)
         return result
@@ -130,6 +136,7 @@ class OutlierClassifier(BaseEstimator, ClassifierMixin, MetaEstimatorMixin):
             The predicted probabilities.
         """
         check_is_fitted(self, ["estimator_", "classes_"])
+        X = validate_data(self, X=X, reset=False)
         decision_function_scores = self.estimator_.decision_function(X)
         probabilities = self._predict_proba_sigmoid.predict(decision_function_scores).reshape(-1, 1)
         complement = np.ones_like(probabilities) - probabilities

@@ -5,10 +5,11 @@ import numpy as np
 from sklearn.base import BaseEstimator, MetaEstimatorMixin, RegressorMixin, clone, is_classifier, is_regressor
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.metaestimators import available_if
-from sklearn.utils.validation import _check_sample_weight, check_array, check_is_fitted, check_X_y
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted
+from sklearn_compat.utils.validation import validate_data
 
 
-class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
+class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
     """A meta regressor for zero-inflated datasets, i.e. the targets contain a lot of zeroes.
 
     `ZeroInflatedRegressor` consists of a classifier and a regressor.
@@ -98,8 +99,8 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
             If `regressor` is not a regressor
             If all train target entirely consists of zeros and `handle_zero="error"`
         """
-        X, y = check_X_y(X, y)
-        self._check_n_features(X, reset=True)
+        X, y = validate_data(self, X=X, y=y, reset=True)
+
         if not is_classifier(self.classifier):
             raise ValueError(
                 f"`classifier` has to be a classifier. Received instance of {type(self.classifier)} instead."
@@ -173,9 +174,8 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
         array-like of shape (n_samples,)
             The predicted values.
         """
-        check_is_fitted(self)
-        X = check_array(X)
-        self._check_n_features(X, reset=False)
+        check_is_fitted(self, ["n_features_in_", "classifier_", "regressor_"])
+        X = validate_data(self, X=X, reset=False)
 
         output = np.zeros(len(X))
         non_zero_indices = np.where(self.classifier_.predict(X))[0]
@@ -211,9 +211,8 @@ class ZeroInflatedRegressor(BaseEstimator, RegressorMixin, MetaEstimatorMixin):
             The predicted risk.
         """
 
-        check_is_fitted(self)
-        X = check_array(X)
-        self._check_n_features(X, reset=True)
+        check_is_fitted(self, ["n_features_in_", "classifier_", "regressor_"])
+        X = validate_data(self, X=X, reset=False)
 
         non_zero_proba = self.classifier_.predict_proba(X)[:, 1]
         expected_impact = self.regressor_.predict(X)

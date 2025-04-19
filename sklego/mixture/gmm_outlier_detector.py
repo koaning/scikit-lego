@@ -5,7 +5,8 @@ from scipy.optimize import minimize_scalar
 from scipy.stats import gaussian_kde
 from sklearn.base import BaseEstimator, OutlierMixin
 from sklearn.mixture import GaussianMixture
-from sklearn.utils.validation import FLOAT_DTYPES, check_array, check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+from sklearn_compat.utils.validation import validate_data
 
 
 class GMMOutlierDetector(OutlierMixin, BaseEstimator):
@@ -38,6 +39,34 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
         The trained Gaussian Mixture model.
     likelihood_threshold_ : float
         The threshold value used to determine if something is an outlier.
+
+    Examples
+    --------
+    ```python
+    import numpy as np
+    from sklego.mixture import GMMOutlierDetector
+
+    # Generate datset, it consists of two clusters
+    np.random.seed(1)
+    group0 = np.random.normal(0, 3, (10, 2))
+    group1 = np.random.normal(2.5, 2, (5, 2))
+    data = np.vstack([group0, group1])
+
+    y = np.hstack([np.zeros((group0.shape[0],), dtype=int), np.ones((group1.shape[0],), dtype=int)])
+
+    # Create and fit the GMMOutlierDetector model
+    gmm = GMMOutlierDetector(threshold=0.9, n_components=2, random_state=1)
+    gmm.fit(data, y)
+
+    # Classify a new point as outlier or not
+    p = np.array([[4.5, 0.5]])
+    p_pred = gmm.predict(p) # predict the probabilities p belongs to each cluster
+    print('The point is an outlier if the score is -1, inlier if the score is 1')
+    ### The point is an outlier if the score is -1, inlier if the score is 1
+
+    print(f'The score for this point is {p_pred}.')
+    ### The score for this point is [-1].
+    ```
     """
 
     _ALLOWED_METHODS = ("quantile", "stddev")
@@ -102,8 +131,8 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
             - If `method` is not in `["quantile", "stddev"]`.
         """
         # GMM sometimes throws an error if you don't do this
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
-        if len(X.shape) == 1:
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=True)
+        if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
         if (self.method == "quantile") and ((self.threshold > 1) or (self.threshold < 0)):
@@ -150,9 +179,10 @@ class GMMOutlierDetector(OutlierMixin, BaseEstimator):
 
     def score_samples(self, X):
         """Compute the log likelihood for each sample and return the negative value."""
-        X = check_array(X, estimator=self, dtype=FLOAT_DTYPES)
         check_is_fitted(self, ["gmm_", "likelihood_threshold_"])
-        if len(X.shape) == 1:
+        X = validate_data(self, X=X, dtype=FLOAT_DTYPES, reset=False)
+
+        if X.ndim == 1:
             X = np.expand_dims(X, 1)
 
         return self.gmm_.score_samples(X)
