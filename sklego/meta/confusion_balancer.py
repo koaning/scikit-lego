@@ -34,8 +34,8 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     cfm_ : array-like of shape (n_classes, n_classes)
         The confusion matrix used for the correction.
 
-     Examples
-    --------
+     Example
+     -------
     ```py
     import numpy as np
     from sklearn.linear_model import LogisticRegression
