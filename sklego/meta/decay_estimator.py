@@ -52,7 +52,7 @@ class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
     classes_ : array-like of shape (n_classes,)
         The classes labels. Only present if the wrapped estimator is a classifier.
 
-    Examples
+    Example
     --------
     ```py
     from sklearn.linear_model import LinearRegression

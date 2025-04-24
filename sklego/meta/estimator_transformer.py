@@ -30,7 +30,6 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
     Example
     -------
-
     ```py
     import numpy as np
     from sklearn.linear_model import LogisticRegression
