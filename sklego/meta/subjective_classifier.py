@@ -32,7 +32,7 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     evidence : Literal["predict_proba", "confusion_matrix", "both"], default="both"
         A string indicating which evidence should be used to correct the inner estimator's predictions.
 
-        - If `"both"` the the inner estimator's `predict_proba()` results are multiplied by the posterior probabilities.
+        - If `"both"`  the inner estimator's `predict_proba()` results are multiplied by the posterior probabilities.
         - If `"predict_proba"`, the inner estimator's `predict_proba()` results are multiplied by the prior
             distribution.
         - If `"confusion_matrix"`, the inner estimator's discrete predictions are converted to posterior probabilities
@@ -46,6 +46,33 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         The classes labels.
     posterior_matrix_ : array-like, shape=(n_classes, n_classes)
         The posterior probabilities for each class, given the prediction of the inner classifier.
+
+    Example
+    -------
+    ```py
+    import numpy as np
+    from sklearn.linear_model import LogisticRegression
+    from sklego.meta import SubjectiveClassifier
+
+    np.random.seed(0)
+    n1, n2 = 50, 100
+    X = np.concatenate([np.random.normal(0, 1, (n1, 2)), np.random.normal(2, 1, (n2, 2))], axis=0)
+    y = np.concatenate([np.zeros((n1, 1)), np.ones((n2, 1))], axis=0).reshape(-1)
+
+    prior = {0: 0.2, 1: 0.8}
+
+    logistic_regressor = LogisticRegression()
+    subjective_classifier = SubjectiveClassifier(logistic_regressor, prior, evidence="confusion_matrix")
+    subjective_classifier.fit(X, y)
+
+    # Classify new datapoint
+
+    dp = np.random.normal(0, 1, (1,2)) # comes from the same distribution as datappints in class 0
+    pred_prob = subjective_classifier.predict_proba(dp)
+    preds = subjective_classifier.predict(dp)
+    print(f"Datapoint {dp[0]} with predicted probabilities: {pred_prob[0]}, is classified as belonging in class {preds[0]}")
+    ### Datapoint [-1.30652685  1.65813068] with predicted probabilities: [0.91836735 0.08163265], is classified as belonging in class 0.0
+    ```
     """
 
     _ALLOWED_EVIDENCE = ("predict_proba", "confusion_matrix", "both")
