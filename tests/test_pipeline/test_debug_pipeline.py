@@ -54,7 +54,7 @@ def custom_log_callback(output, execution_time, **kwargs):
     """
     logger = logging.getLogger(__name__)
     step_result, step = output
-    logger.info(f"[{step}] shape={step_result.shape} " f"nbytes={step_result.nbytes} time={execution_time}")
+    logger.info(f"[{step}] shape={step_result.shape} nbytes={step_result.nbytes} time={execution_time}")
 
 
 @pytest.fixture
@@ -105,9 +105,9 @@ def test_output_shape_in_logs_when_log_callback_is_default(caplog, named_steps):
     assert caplog.text, f"Log should be none empty: {caplog.text}"
     shape_str = f"shape={IRIS.data.shape}"
     assert shape_str in caplog.text, f'"{shape_str}" should be in {caplog.text}'
-    assert caplog.text.count(shape_str) == (
-        len(pipe.steps) - 1
-    ), f'"{shape_str}" should be {len(pipe.steps) - 1} times in {caplog.text}'
+    assert caplog.text.count(shape_str) == (len(pipe.steps) - 1), (
+        f'"{shape_str}" should be {len(pipe.steps) - 1} times in {caplog.text}'
+    )
 
 
 def test_time_in_logs_when_log_callback_is_default(caplog, named_steps):
@@ -117,9 +117,9 @@ def test_time_in_logs_when_log_callback_is_default(caplog, named_steps):
         pipe.fit(IRIS.data, IRIS.target)
     assert caplog.text, f"Log should be none empty: {caplog.text}"
     assert "time=" in caplog.text, f'"time=" should be in: {caplog.text}'
-    assert caplog.text.count("time") == (
-        len(pipe.steps) - 1
-    ), f'"time" should be {len(pipe.steps) - 1} times in {caplog.text}'
+    assert caplog.text.count("time") == (len(pipe.steps) - 1), (
+        f'"time" should be {len(pipe.steps) - 1} times in {caplog.text}'
+    )
 
 
 def test_step_name_in_logs_when_log_callback_is_default(caplog, named_steps):
@@ -140,9 +140,9 @@ def test_nbytes_in_logs_when_log_callback_is_custom(caplog, named_steps):
         pipe.fit(IRIS.data, IRIS.target)
     assert caplog.text, f"Log should be none empty: {caplog.text}"
     assert "nbytes=" in caplog.text, f'"nbytes=" should be in: {caplog.text}'
-    assert caplog.text.count("nbytes=") == (
-        len(pipe.steps) - 1
-    ), f'"nbytes=" should be {len(pipe.steps) - 1} times in {caplog.text}'
+    assert caplog.text.count("nbytes=") == (len(pipe.steps) - 1), (
+        f'"nbytes=" should be {len(pipe.steps) - 1} times in {caplog.text}'
+    )
 
 
 def test_feature_union(caplog, named_steps):
