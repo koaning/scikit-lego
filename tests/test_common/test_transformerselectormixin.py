@@ -45,7 +45,7 @@ def test_hash_invalid():
     """Tests whether the hash function raises on non-supported class"""
     with pytest.raises(
         ValueError,
-        match="Unknown datatype <class 'dict'>, `TrainOnlyTransformerMixin` only " "supports",
+        match="Unknown datatype <class 'dict'>, `TrainOnlyTransformerMixin` only supports",
     ):
         TrainOnlyTransformerMixin._hash({"a": [1, 1, 2], "b": [4, 5, 6]})
 

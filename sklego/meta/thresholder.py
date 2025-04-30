@@ -108,7 +108,7 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         self.classes_ = self.estimator_.classes_
         y_type = type_of_target(y, input_name="y", raise_unknown=True)
         if y_type != "binary":
-            raise ValueError("Only binary classification is supported. The type of the target " f"is {y_type}.")
+            raise ValueError(f"Only binary classification is supported. The type of the target is {y_type}.")
 
         return self
 
