@@ -7,7 +7,7 @@ import pyarrow as pa
 import pytest
 import sklearn
 from pandas.testing import assert_frame_equal
-from sklearn import clone, set_config
+from sklearn import clone
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
@@ -411,10 +411,9 @@ def test_set_output(penguins_df, frame_func, transform_output):
     transformed = meta.fit_transform(X, y)
     assert isinstance(transformed, frame_func)
 
+
 def test_with_object_dtype():
     # Example from https://github.com/koaning/scikit-lego/issues/740
-
-    set_config(transform_output="pandas")
 
     data = {
         "big": ["A", "A", "A", "A", "A", "B", "B", "B", "C", "C"],
@@ -425,11 +424,15 @@ def test_with_object_dtype():
     df = pd.DataFrame(data=data)
     X, y = df.drop(columns=["y"]), df["y"]
 
-    result = GroupedTransformer(
-        transformer=SimpleImputer(strategy="most_frequent", missing_values=None),
-        groups=["big"],
-        check_X=False,
-    ).fit_transform(X, y)
+    result = (
+        GroupedTransformer(
+            transformer=SimpleImputer(strategy="most_frequent", missing_values=None),
+            groups=["big"],
+            check_X=False,
+        )
+        .set_output(transform="pandas")
+        .fit_transform(X, y)
+    )
 
     expected = pd.DataFrame(
         {
