@@ -6,7 +6,9 @@ import polars as pl
 import pyarrow as pa
 import pytest
 import sklearn
+from pandas.testing import assert_frame_equal
 from sklearn import clone
+from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler, TargetEncoder
@@ -408,3 +410,35 @@ def test_set_output(penguins_df, frame_func, transform_output):
     meta = GroupedTransformer(StandardScaler(), groups="island").set_output(transform=transform_output)
     transformed = meta.fit_transform(X, y)
     assert isinstance(transformed, frame_func)
+
+
+def test_with_object_dtype():
+    # Example from https://github.com/koaning/scikit-lego/issues/740
+
+    data = {
+        "big": ["A", "A", "A", "A", "A", "B", "B", "B", "C", "C"],
+        "small": ["a", "a", None, "a", "a", "b", "b", None, "C", "C"],
+        "other": [0.1, 0.2, 0.3, 0.6, 0.5, 0.1, 0.3, 0.5, 0.6, 0.6],
+        "y": [1, 1, 0, 1, 0, 1, 1, 0, 0, 0],
+    }
+    df = pd.DataFrame(data=data)
+    X, y = df.drop(columns=["y"]), df["y"]
+
+    result = (
+        GroupedTransformer(
+            transformer=SimpleImputer(strategy="most_frequent", missing_values=None),
+            groups=["big"],
+            check_X=False,
+        )
+        .set_output(transform="pandas")
+        .fit_transform(X, y)
+    )
+
+    expected = pd.DataFrame(
+        {
+            "small": ["a", "a", "a", "a", "a", "b", "b", "b", "C", "C"],
+            "other": [0.1, 0.2, 0.3, 0.6, 0.5, 0.1, 0.3, 0.5, 0.6, 0.6],
+        }
+    ).astype("object")
+
+    assert_frame_equal(result, expected)
