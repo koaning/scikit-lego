@@ -33,7 +33,7 @@ def default_log_callback(output, execution_time, **kwargs):
     """
     logger = logging.getLogger(__name__)
     step_result, step = output
-    logger.info(f"[{step}] shape={step_result.shape} " f"time={int(execution_time)}s")
+    logger.info(f"[{step}] shape={step_result.shape} time={int(execution_time)}s")
 
 
 def _log_wrapper(log_callback=default_log_callback):
