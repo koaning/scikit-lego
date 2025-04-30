@@ -9,7 +9,7 @@ from sklego.base import ProbabilisticClassifier
 
 
 class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
-    r"""The `ConfusionBalancer` estimator attempts to give it's child estimator a more balanced output by learning from
+    r"""The `ConfusionBalancer` estimator attempts to give its child estimator a more balanced output by learning from
     the confusion matrix during training.
 
     The idea is that the confusion matrix calculates $P(C_i | M_i)$ where $C_i$ is the actual class and $M_i$ is the
@@ -33,6 +33,38 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         The target class labels.
     cfm_ : array-like of shape (n_classes, n_classes)
         The confusion matrix used for the correction.
+
+     Example
+     -------
+    ```py
+    import numpy as np
+    from sklearn.linear_model import LogisticRegression
+
+    from sklego.meta import ConfusionBalancer
+
+    np.random.seed(0)
+    n1, n2 = 50, 100
+    X = np.concatenate([np.random.normal(0, 1, (n1, 2)), np.random.normal(2, 1, (n2, 2))], axis=0)
+    y = np.concatenate([np.zeros((n1, 1)), np.ones((n2, 1))], axis=0).reshape(-1)
+
+    confusion_balancer = ConfusionBalancer(
+        estimator=LogisticRegression(),
+        alpha=.5,
+        cfm_smooth= 1
+        )
+
+    # Fit the model
+    confusion_balancer.fit(X, y)
+
+    # Predict out of sample datapoint
+    dp = np.random.normal(0, 1, (1, 2))
+    probs = confusion_balancer.predict_proba(dp) # Get probabilities per class
+    preds = confusion_balancer.predict(dp) # Get most likely class
+
+    # print(f'Out of sample datapoint {dp} is predicted to belong in class {int(preds[0])} (Probabilities are {probs} for classes 0 and 1, respectively)')
+
+    ### Out of sample datapoint [[-1.30652685  1.65813068]] is predicted to belong in class 0 (Probabilities are [[0.92173898 0.07826102]] for classes 0 and 1, respectively)
+    ```
     """
 
     _required_parameters = ["estimator"]

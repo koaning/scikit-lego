@@ -15,7 +15,6 @@ class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
         A regression model that will be used for prediction.
     column : int | str
         This should be:
-
             - The index of the target column to predict in the input data, when the input is an array.
             - The name of the target column to predict in the input data, when the input is a dataframe.
     lower : float, default=2.0
@@ -52,6 +51,35 @@ class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
     (and to learn how you can add your dataframe library to it!), though note that only those
     supported by [sklearn.utils.check_X_y](https://scikit-learn.org/stable/modules/generated/sklearn.utils.check_X_y.html)
     will work with this class.
+
+    Example
+    -------
+
+    ```py
+    import numpy as np
+    from sklearn.linear_model import LinearRegression
+    from sklego.meta import RegressionOutlierDetector
+
+    np.random.seed(0)
+    n1, n2 = 30, 5
+    X = np.random.normal(0, 1, (n1+n2, 2))
+    y = np.concatenate([np.random.normal(0, 0.5, (n1, 1)), np.random.normal(5, 1, (n2,1))], axis=0)
+    data = np.concatenate([X, y], axis=1)
+
+    col = 2
+
+    # Initialize the outlier detector - outliers are points predicted more that +/-1 sd from mean
+    linear_regressor = LinearRegression()
+    outlier_detector = RegressionOutlierDetector(linear_regressor, col, lower=1, upper=1)
+
+    outlier_detector.fit(data)
+    preds = outlier_detector.predict(data)
+    scores = outlier_detector.decision_function(data)
+
+    print(preds)
+    ### The last 5 points are outliers, as expected
+    ### [ 1  1  1  1  1  1  1  1  1  1 -1  1  1  1  1  1  1  1  1  1 -1  1  1  1 1  1  1  1  1  1 -1 -1 -1 -1 -1]
+    ```
     """
 
     _required_parameters = ["model", "column"]

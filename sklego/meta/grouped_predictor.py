@@ -76,6 +76,44 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         The shrinkage function that is used to calculate the shrinkage factors
     shrinkage_factors_ : dict
         A dictionary with the shrinkage factors per group
+
+    Example
+    -------
+    ```py
+    import pandas as pd
+    from sklearn.dummy import DummyRegressor
+    from sklego.meta import GroupedPredictor
+
+    results_df = pd.DataFrame(
+        {
+            "Grade": ["11", "11", "11", "11", "12", "12", "12", "12"],
+            "Course": ["Algebra", "Algebra", "English", "English", "Algebra", "Algebra", "English", "English"],
+            "Name": ["Mary", "Helen", "Mary", "Helen", "Mary", "Helen", "Mary", "Helen"],
+            "Result": [100, 94, 88, 92, 96, 98, 90, 90],
+        }
+    )
+
+    groups = ["Grade", "Name"]
+    target = "Result"
+
+    # We will use the DummyRegressor() to calculate the mean of each grouping
+    grouped_pred = GroupedPredictor(DummyRegressor(), groups)
+    grouped_pred.fit(results_df[groups], results_df[target])
+
+    # What is the average for Mary in Grade 12?
+    pred_df = pd.DataFrame(
+        {
+            "Grade": ["12"],
+            "Name": ["Mary"],
+        }
+    )
+
+    # Predicts the mean result of each student in each grade
+    pred = grouped_pred.predict(pred_df)
+
+    print(f"The average result of {pred_df["Name"][0]} in Grade {pred_df["Grade"][0]} was {pred}")
+    ### The average result of Mary in Grade 12 was 93.0
+    ```
     """
 
     # Number of features in value df can be 0, e.g. for dummy models
@@ -437,6 +475,7 @@ class GroupedRegressor(RegressorMixin, GroupedPredictor):
         -------
         ValueError
             If the supplied estimator is not a regressor.
+
         """
         if not is_regressor(self.estimator):
             raise ValueError("GroupedRegressor is only available for regression models")
@@ -484,7 +523,7 @@ class GroupedClassifier(ClassifierMixin, GroupedPredictor):
         Returns
         -------
         self : GroupedClassifier
-            The fitted regressor.
+            The fitted classifier.
 
         Raises
         -------

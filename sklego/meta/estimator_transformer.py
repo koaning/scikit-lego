@@ -27,6 +27,35 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         The fitted underlying estimator.
     multi_output_ : bool
         Whether or not the estimator is multi output.
+
+    Example
+    -------
+    ```py
+    import numpy as np
+    from sklearn.linear_model import LogisticRegression
+    from sklego.meta import EstimatorTransformer
+
+    np.random.seed(0)
+    n1, n2 = 50, 100
+    X = np.concatenate([np.random.normal(0, 1, (n1, 2)), np.random.normal(2, 1, (n2, 2))], axis=0)
+    y = np.concatenate([np.zeros((n1, 1)), np.ones((n2, 1))], axis=0).reshape(-1)
+
+    estimator_transformer = EstimatorTransformer(
+        estimator=LogisticRegression(max_iter=1000, random_state=0),
+        predict_func="predict_proba",
+        check_input= False
+        )
+
+    # Fit the data
+    estimator_transformer.fit(X, y)
+    print(f'Is the output multimodal? {estimator_transformer.multi_output_}')
+    ### Is the output multimodal? False
+
+    # Transform the data using "predict_func" as specified
+    transformed_X = estimator_transformer.transform(X)
+    print(f'Shape of transformed data: {transformed_X.shape}')
+    ### Shape of transformed data: (300, 1)
+    ```
     """
 
     def __init__(self, estimator, predict_func="predict", check_input=False):
