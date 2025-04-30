@@ -1,3 +1,4 @@
+import inspect
 from warnings import warn
 
 import narwhals.stable.v1 as nw
@@ -14,7 +15,7 @@ from sklearn.base import (
     is_regressor,
 )
 from sklearn.utils.metaestimators import available_if
-from sklearn.utils.validation import check_is_fitted, _check_sample_weight
+from sklearn.utils.validation import _check_sample_weight, check_is_fitted
 from sklearn_compat.utils.validation import check_array
 
 from sklego.common import as_list, expanding_list
@@ -26,7 +27,6 @@ from sklego.meta._shrinkage_utils import (
     min_n_obs_shrinkage,
     relative_shrinkage,
 )
-import inspect
 
 
 def _get_estimator(estimators, grp_values, grp_names, return_level, fallback_method):
@@ -222,7 +222,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         self.n_jobs = n_jobs
         self.check_X = check_X
         self.shrinkage_kwargs = shrinkage_kwargs
-        
+
     @property
     def _estimator_type(self):
         """Computes `_estimator_type` dynamically from the wrapped model."""
@@ -285,16 +285,16 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         if self.n_features_in_ < 1:
             msg = "Found 0 features, while a minimum of 1 if required."
             raise ValueError(msg)
-        
+
         try:
             self.estimator_supports_sample_weight_ = "sample_weight" in inspect.signature(self.estimator.fit).parameters
         except Exception:
             self.estimator_supports_sample_weight_ = False
 
         self.has_sw_ = sample_weight is not None
-        
+
         if self.has_sw_ and not self.estimator_supports_sample_weight_:
-            msg = f"Estimator does not support sample_weight."
+            msg = "Estimator does not support sample_weight."
             raise ValueError(msg)
         sample_weight = _check_sample_weight(sample_weight, X.to_native(), ensure_non_negative=True)
 
@@ -402,12 +402,12 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         """Shortcut to fit an estimator on a single group"""
         _X = nw.to_native(grp_frame.drop([*self.groups_, self._TARGET_NAME, self._SAMPLE_WEIGHT_NAME]))
         _y = nw.to_native(grp_frame[self._TARGET_NAME])
-        
+
         args = [_X, _y]
         if self.estimator_supports_sample_weight_:
             _sample_weight = nw.to_native(grp_frame[self._SAMPLE_WEIGHT_NAME])
             args.append(_sample_weight)
-        
+
         return clone(self.estimator).fit(*args)
 
     def _fit_estimators(self, frame: nw.DataFrame):

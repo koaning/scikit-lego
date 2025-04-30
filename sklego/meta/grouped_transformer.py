@@ -173,7 +173,7 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
             for group_name, X_grp in frame.group_by(self.groups_)
         ]
 
-        output = np.zeros(shape=(n_samples, results[0][1].shape[1]))
+        output = np.empty(shape=(n_samples, results[0][1].shape[1]), dtype=results[0][1].dtype)
         for grp_index, grp_result in results:
             output[grp_index, :] = grp_result
 
