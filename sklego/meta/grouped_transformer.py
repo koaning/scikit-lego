@@ -32,6 +32,48 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     fallback_ : scikit-learn compatible transformer | None
         The fitted transformer to fall back to in case a group is not found during `.transform()`. Only present if
         `use_global_model` is `True`.
+
+    Example
+    -------
+    ```py
+    import pandas as pd
+    from sklearn.preprocessing import MinMaxScaler
+    from sklego.meta import GroupedTransformer
+
+    results_df = pd.DataFrame(
+        {
+            "Grade": ["11", "11", "11", "11", "11", "11", "12", "12", "12", "12", "12", "12"],
+            "Course": ["Algebra", "Algebra", "Algebra", "English", "English", "English","Algebra", "Algebra", "Algebra", "English", "English", "English"],
+            "Name": ["Mary", "Helen", "John", "Mary", "Helen", "John", "Mary", "Helen", "John", "Mary", "Helen", "John"],
+            "Result": [100, 94, 97, 88, 92, 96, 97, 98, 96, 90, 92, 94],
+        }
+    )
+
+    groups = ["Grade", "Course"]
+    target = ["Result"]
+
+    # We will use the MinMaxScaler() to scale each grouping (result of course per grade)
+    grouped_transformer = GroupedTransformer(MinMaxScaler(), groups)
+    grouped_transformer.fit(results_df[groups+target])
+
+    # Scales the result of each student per grade/course
+    results_df["Scaled_Result"] = grouped_transformer.transform(results_df[groups+target])
+    print(results_df)
+
+    ###   Grade   Course   Name  Result  Scaled_Result
+    ###    0     11  Algebra   Mary     100            1.0
+    ###    1     11  Algebra  Helen      94            0.0
+    ###    2     11  Algebra   John      97            0.5
+    ###    3     11  English   Mary      88            0.0
+    ###    4     11  English  Helen      92            0.5
+    ###    5     11  English   John      96            1.0
+    ###    6     12  Algebra   Mary      97            0.5
+    ###    7     12  Algebra  Helen      98            1.0
+    ###    8     12  Algebra   John      96            0.0
+    ###    9     12  English   Mary      90            0.0
+    ###    10    12  English  Helen      92            0.5
+    ###    11    12  English   John      94            1.0
+    ```
     """
 
     _check_kwargs = {"accept_large_sparse": False}
@@ -173,7 +215,7 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
             for group_name, X_grp in frame.group_by(self.groups_)
         ]
 
-        output = np.zeros(shape=(n_samples, results[0][1].shape[1]))
+        output = np.empty(shape=(n_samples, results[0][1].shape[1]), dtype=results[0][1].dtype)
         for grp_index, grp_result in results:
             output[grp_index, :] = grp_result
 

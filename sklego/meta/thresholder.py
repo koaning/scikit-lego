@@ -26,7 +26,6 @@ class Thresholder(ClassifierMixin, BaseEstimator):
     threshold : float
         The threshold value to use.
     refit : bool, default=False
-
         - If True, we will always retrain the model even if it is already fitted.
         - If False we only refit if the original model isn't fitted.
     check_input : bool, default=False
@@ -38,6 +37,38 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         The fitted classifier.
     classes_ : array-like, shape=(2,)
         The classes labels.
+
+    Example
+    -------
+
+    ```py
+    import numpy as np
+    from sklearn.linear_model import LogisticRegression
+    from sklego.meta import Thresholder
+
+    np.random.seed(0)
+    n1, n2 = 50, 100
+    X = np.concatenate([np.random.normal(0, 1, (n1, 2)), np.random.normal(2, 1, (n2, 2))], axis=0)
+    y = np.concatenate([np.zeros((n1, 1)), np.ones((n2, 1))], axis=0).reshape(-1)
+
+    logistic_regressor = LogisticRegression()
+    logistic_thresholder = Thresholder(logistic_regressor, threshold=0.8)
+    logistic_thresholder.fit(X, y)
+    pred_prob = logistic_thresholder.predict_proba(X)
+    preds = logistic_thresholder.predict(X)
+
+    # What were the probabilities for element 74?
+    print(pred_prob[74, :])
+    ### [0.32816679 0.67183321]
+
+    # The largest probability is under the predefined threshold, so the datapoint is assigned to the other class
+    print(preds[74])
+    ### 0
+
+    # The accuracy score of the classifier
+    print(logistic_thresholder.score(X, y))
+    ### 0.9533333333333334
+    ```
     """
 
     _required_parameters = ["model", "threshold"]
@@ -108,7 +139,7 @@ class Thresholder(ClassifierMixin, BaseEstimator):
         self.classes_ = self.estimator_.classes_
         y_type = type_of_target(y, input_name="y", raise_unknown=True)
         if y_type != "binary":
-            raise ValueError("Only binary classification is supported. The type of the target " f"is {y_type}.")
+            raise ValueError(f"Only binary classification is supported. The type of the target is {y_type}.")
 
         return self
 

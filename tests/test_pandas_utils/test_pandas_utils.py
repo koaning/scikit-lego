@@ -322,7 +322,7 @@ def test_log_extra(capsys):
     test_df = pd.DataFrame({"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats})
 
     def cat_counter(df):
-        return f"cats={(df['animals']=='cat').sum()}"
+        return f"cats={(df['animals'] == 'cat').sum()}"
 
     @log_step_extra(cat_counter)
     def do_nothing(df, *args, **kwargs):
@@ -338,7 +338,7 @@ def test_log_extra(capsys):
     print_statements = captured.out.split("\n")
 
     assert f"cats={n_cats}" in print_statements[0]
-    assert f"cats={2*n_cats}" in print_statements[1]
+    assert f"cats={2 * n_cats}" in print_statements[1]
 
 
 def test_log_extra_kwargs(capsys):
@@ -349,7 +349,7 @@ def test_log_extra_kwargs(capsys):
     test_df = pd.DataFrame({"id": range(n_cats + n_dogs), "animals": ["dog"] * n_dogs + ["cat"] * n_cats})
 
     def animal_counter(df, animal="cat"):
-        return f"{animal}s={(df['animals']==animal).sum()}"
+        return f"{animal}s={(df['animals'] == animal).sum()}"
 
     @log_step_extra(animal_counter, animal="dog")
     def do_nothing(df, *args, **kwargs):
@@ -365,7 +365,7 @@ def test_log_extra_kwargs(capsys):
     print_statements = captured.out.split("\n")
 
     assert f"dogs={n_dogs}" in print_statements[0]
-    assert f"dogs={2*n_dogs}" in print_statements[1]
+    assert f"dogs={2 * n_dogs}" in print_statements[1]
 
 
 def test_log_extra_multiple(capsys, data):
