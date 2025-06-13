@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.linear_model import Ridge
 from sklearn.utils.validation import check_is_fitted
 from sklearn_compat.utils.validation import _check_n_features, validate_data
@@ -79,7 +79,7 @@ class LinearEmbedder(TransformerMixin, BaseEstimator):
         if self.estimator is None:
             self.estimator_ = Ridge(fit_intercept=False)
         else:
-            self.estimator_ = self.estimator
+            self.estimator_ = clone(self.estimator)
             
         self.estimator_.fit(X, y)
         
