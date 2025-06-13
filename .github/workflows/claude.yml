@@ -12,6 +12,10 @@ on:
 jobs:
   claude-response:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - uses: anthropics/claude-code-action@beta
         with:
