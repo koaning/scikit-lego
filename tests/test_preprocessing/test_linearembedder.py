@@ -12,79 +12,80 @@ def test_sklearn_compatible_estimator(estimator, check):
     check(estimator)
 
 
-def test_default_estimator():
-    """Test that default estimator is Ridge with fit_intercept=False."""
+def test_estimator_configuration():
+    """Test default and custom estimator configuration."""
     X, y = make_regression(n_samples=50, n_features=5, random_state=42)
-    embedder = LinearEmbedder()
-    embedder.fit(X, y)
     
-    assert isinstance(embedder.estimator_, Ridge)
-    assert not embedder.estimator_.fit_intercept
-
-
-def test_custom_estimator():
-    """Test using a custom estimator."""
-    X, y = make_regression(n_samples=50, n_features=5, random_state=42)
+    # Test default estimator
+    embedder_default = LinearEmbedder()
+    embedder_default.fit(X, y)
+    
+    assert isinstance(embedder_default.estimator_, Ridge)
+    assert not embedder_default.estimator_.fit_intercept
+    assert embedder_default.n_features_in_ == 5
+    
+    # Test custom estimator
     custom_ridge = Ridge(alpha=10.0, fit_intercept=True)
-    embedder = LinearEmbedder(estimator=custom_ridge)
-    embedder.fit(X, y)
+    embedder_custom = LinearEmbedder(estimator=custom_ridge)
+    embedder_custom.fit(X, y)
     
-    assert embedder.estimator_ is custom_ridge
-    assert embedder.estimator_.alpha == 10.0
-    assert embedder.estimator_.fit_intercept
+    assert embedder_custom.estimator_ is custom_ridge
+    assert embedder_custom.estimator_.alpha == 10.0
+    assert embedder_custom.estimator_.fit_intercept
+    assert embedder_custom.n_features_in_ == 5
 
 
-def test_regression_embedding():
-    """Test embedding with regression data."""
-    X, y = make_regression(n_samples=100, n_features=10, random_state=42)
-    embedder = LinearEmbedder()
+def test_basic_embedding_functionality():
+    """Test embedding with regression, classification, and multi-output data."""
+    # Test regression embedding
+    X_reg, y_reg = make_regression(n_samples=100, n_features=10, random_state=42)
+    embedder_reg = LinearEmbedder()
     
-    # Fit and transform
-    X_embedded = embedder.fit_transform(X, y)
-    
-    # Check shape is preserved
-    assert X_embedded.shape == X.shape
-    
-    # Check that coefficients are stored
-    assert hasattr(embedder, 'coef_')
-    assert embedder.coef_.shape == (1, X.shape[1])
+    X_embedded_reg = embedder_reg.fit_transform(X_reg, y_reg)
+    assert X_embedded_reg.shape == X_reg.shape
+    assert hasattr(embedder_reg, 'coef_')
+    assert embedder_reg.coef_.shape == (1, X_reg.shape[1])
     
     # Check transform works separately
-    X_embedded_2 = embedder.transform(X)
-    np.testing.assert_array_equal(X_embedded, X_embedded_2)
-
-
-def test_classification_embedding():
-    """Test embedding with classification data."""
-    X, y = make_classification(n_samples=100, n_features=10, random_state=42)
-    # Use logistic regression for classification
-    embedder = LinearEmbedder(estimator=LogisticRegression(fit_intercept=False, max_iter=1000))
+    X_embedded_reg_2 = embedder_reg.transform(X_reg)
+    np.testing.assert_array_equal(X_embedded_reg, X_embedded_reg_2)
     
-    # Fit and transform
-    X_embedded = embedder.fit_transform(X, y)
+    # Test classification embedding
+    X_clf, y_clf = make_classification(n_samples=100, n_features=10, random_state=42)
+    embedder_clf = LinearEmbedder(estimator=LogisticRegression(fit_intercept=False, max_iter=1000))
     
-    # Check shape is preserved
-    assert X_embedded.shape == X.shape
+    X_embedded_clf = embedder_clf.fit_transform(X_clf, y_clf)
+    assert X_embedded_clf.shape == X_clf.shape
+    assert hasattr(embedder_clf, 'coef_')
+    assert embedder_clf.coef_.shape == (1, X_clf.shape[1])
     
-    # Check that coefficients are stored
-    assert hasattr(embedder, 'coef_')
-    assert embedder.coef_.shape == (1, X.shape[1])
-
-
-def test_multioutput_regression():
-    """Test embedding with multi-output regression."""
-    X, y = make_regression(n_samples=100, n_features=5, n_targets=3, random_state=42)
-    embedder = LinearEmbedder()
+    # Test multi-output regression
+    X_multi, y_multi = make_regression(n_samples=100, n_features=5, n_targets=3, random_state=42)
+    embedder_multi = LinearEmbedder()
     
-    # Fit and transform
-    X_embedded = embedder.fit_transform(X, y)
-    
-    # Check shape is preserved
-    assert X_embedded.shape == X.shape
-    
+    X_embedded_multi = embedder_multi.fit_transform(X_multi, y_multi)
+    assert X_embedded_multi.shape == X_multi.shape
+    assert hasattr(embedder_multi, 'coef_')
     # Check that coefficients are averaged across outputs
-    assert hasattr(embedder, 'coef_')
-    assert embedder.coef_.shape == (1, X.shape[1])
+    assert embedder_multi.coef_.shape == (1, X_multi.shape[1])
+
+
+def test_input_validation_errors():
+    """Test error conditions for input validation."""
+    X_train, y_train = make_regression(n_samples=50, n_features=5, random_state=42)
+    
+    # Test that transform fails when called before fit
+    embedder_unfitted = LinearEmbedder()
+    with pytest.raises(Exception):  # Should raise NotFittedError or similar
+        embedder_unfitted.transform(X_train)
+    
+    # Test that transform checks for consistent number of features
+    embedder_fitted = LinearEmbedder()
+    embedder_fitted.fit(X_train, y_train)
+    
+    X_wrong_features = np.random.randn(10, 3)  # Different number of features
+    with pytest.raises(ValueError):
+        embedder_fitted.transform(X_wrong_features)
 
 
 def test_coefficient_scaling():
@@ -102,27 +103,6 @@ def test_coefficient_scaling():
     expected = X * embedder.coef_
     
     np.testing.assert_allclose(X_embedded, expected)
-
-
-def test_fit_before_transform():
-    """Test that transform fails when called before fit."""
-    X, y = make_regression(n_samples=50, n_features=5, random_state=42)
-    embedder = LinearEmbedder()
-    
-    with pytest.raises(Exception):  # Should raise NotFittedError or similar
-        embedder.transform(X)
-
-
-def test_consistent_n_features():
-    """Test that transform checks for consistent number of features."""
-    X_train, y_train = make_regression(n_samples=50, n_features=5, random_state=42)
-    X_test = np.random.randn(10, 3)  # Different number of features
-    
-    embedder = LinearEmbedder()
-    embedder.fit(X_train, y_train)
-    
-    with pytest.raises(ValueError):
-        embedder.transform(X_test)
 
 
 def test_check_input_parameter():
@@ -168,17 +148,8 @@ def test_embedding_improves_representation():
     assert coef_ratio > original_scale_ratio
 
 
-def test_n_features_in_attribute():
-    """Test that n_features_in_ is set correctly."""
-    X, y = make_regression(n_samples=50, n_features=7, random_state=42)
-    embedder = LinearEmbedder()
-    embedder.fit(X, y)
-    
-    assert embedder.n_features_in_ == 7
-
-
 def test_single_feature():
-    """Test embedding with single feature."""
+    """Test embedding with single feature edge case."""
     X = np.array([[1], [2], [3], [4]])
     y = np.array([2, 4, 6, 8])
     
