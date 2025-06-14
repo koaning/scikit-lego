@@ -128,7 +128,6 @@ def test_check_input_parameter():
 
 def test_embedding_improves_representation():
     """Test that embedding can improve feature representation."""
-    # Create a simple case where features have different scales
     np.random.seed(42)
     n_samples = 1000
     
