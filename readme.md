@@ -119,6 +119,7 @@ Here's a list of features that this library currently offers:
 - `sklego.preprocessing.ColumnSelector` selects columns based on column name
 - `sklego.preprocessing.InformationFilter` transformer that can de-correlate features
 - `sklego.preprocessing.IdentityTransformer` returns the same data, allows for concatenating pipelines
+- `sklego.preprocessing.LinearEmbedder` reweight features using coefficients from a fitted linear model
 - `sklego.preprocessing.OrthogonalTransformer` makes all features linearly independent
 - `sklego.preprocessing.TypeSelector` selects columns based on type
 - `sklego.preprocessing.RandomAdder` adds randomness in training

@@ -7,6 +7,7 @@ __all__ = [
     "IdentityTransformer",
     "InformationFilter",
     "IntervalEncoder",
+    "LinearEmbedder",
     "OrthogonalTransformer",
     "OutlierRemover",
     "PandasTypeSelector",
@@ -21,6 +22,7 @@ from sklego.preprocessing.dictmapper import DictMapper
 from sklego.preprocessing.formulaictransformer import FormulaicTransformer
 from sklego.preprocessing.identitytransformer import IdentityTransformer
 from sklego.preprocessing.intervalencoder import IntervalEncoder
+from sklego.preprocessing.linearembedder import LinearEmbedder
 from sklego.preprocessing.monotonicspline import MonotonicSplineTransformer
 from sklego.preprocessing.outlier_remover import OutlierRemover
 from sklego.preprocessing.pandastransformers import ColumnDropper, ColumnSelector, PandasTypeSelector, TypeSelector
