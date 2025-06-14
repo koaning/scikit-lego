@@ -29,7 +29,10 @@ def test_estimator_configuration():
     embedder_custom = LinearEmbedder(estimator=custom_ridge)
     embedder_custom.fit(X, y)
     
-    assert embedder_custom.estimator_ is custom_ridge
+    # Test that estimator was cloned (not the same object)
+    assert embedder_custom.estimator_ is not custom_ridge
+    # Test that cloned estimator has the same attributes
+    assert isinstance(embedder_custom.estimator_, Ridge)
     assert embedder_custom.estimator_.alpha == 10.0
     assert embedder_custom.estimator_.fit_intercept
     assert embedder_custom.n_features_in_ == 5
