@@ -140,7 +140,7 @@ def test_embedding_improves_representation():
     y = 5 * X1.flatten() + 0.1 * X2.flatten() + 0.1 * np.random.randn(n_samples)
     
     embedder = LinearEmbedder()
-    X_embedded = embedder.fit_transform(X, y)
+    embedder.fit_transform(X, y)
     
     # The embedding should amplify the important feature (X1) relative to X2
     coef_ratio = abs(embedder.coef_[0, 0]) / abs(embedder.coef_[0, 1])
