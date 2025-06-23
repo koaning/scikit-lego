@@ -101,7 +101,7 @@ class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
         results = np.ones(difference.shape, dtype=int)
         allowed_methods = ["sd", "relative", "absolute"]
         if self.method not in allowed_methods:
-            ValueError(f"`method` must be in {allowed_methods} got: {self.method}")
+            raise ValueError(f"`method` must be in {allowed_methods} got: {self.method}")
         if self.method == "sd":
             lower_limit_hit = -self.lower * self.sd_ > difference
             upper_limit_hit = self.upper * self.sd_ < difference
@@ -225,7 +225,7 @@ class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
         difference = y_true - y_pred
         allowed_methods = ["sd", "relative", "absolute"]
         if self.method not in allowed_methods:
-            ValueError(f"`method` must be in {allowed_methods} got: {self.method}")
+            raise ValueError(f"`method` must be in {allowed_methods} got: {self.method}")
         if self.method == "sd":
             return difference
         if self.method == "relative":
