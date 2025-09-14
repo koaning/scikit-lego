@@ -301,7 +301,7 @@ def test_timegapsplit_summary():
     expected = pd.DataFrame(expected_data).set_index(["fold", "part"])
     pandas_assert_frame_equal(summary, expected)
 
-    # Polars doesn't have an index, so this class behaves a bit differenly for
+    # Polars doesn't have an index, so this class behaves a bit differently for
     # index-less objects. We need to ensure that `date_serie` and `X_train` have
     # the same length.
     date_serie = df["date"].loc[X_train.index]

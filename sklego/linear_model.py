@@ -801,8 +801,8 @@ class _DemographicParityClassifier(_FairClassifier):
         train_sensitive_cols=False,
     ):
         msg = (
-            "Please consider using fairlearn `ThresholdOptimizer` with `constraints='demographic_parity'` in combination "
-            "with scikit-learn `LogisticRegression` instead.\n\n"
+            "Please consider using fairlearn `ThresholdOptimizer` with `constraints='demographic_parity'` in "
+            "combination with scikit-learn `LogisticRegression` instead.\n\n"
             "Docs: https://fairlearn.org/v0.12/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html"
         )
         warn(msg, UserWarning)
@@ -834,6 +834,27 @@ class EqualOpportunityClassifier(LinearClassifierMixin, BaseEstimator):
     distance to the decision boundary of the classifier for those examples that have a y_true of 1.
 
     !!! warning
+        We suggest to use
+        [fairlearn `ThresholdOptimizer`](https://fairlearn.org/v0.12/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html)
+        with `constraints='equalized_odds'` (closest equivalent to equal opportunity) in combination with scikit-learn
+        `LogisticRegression` instead of scikit-lego `EqualOpportunityClassifier` implementation:
+
+        ```py
+        from fairlearn.postprocessing import ThresholdOptimizer
+        from sklearn.linear_model import LogisticRegression
+
+        unmitigated_lr = LogisticRegression().fit(X, y)
+        postprocess_est = ThresholdOptimizer(
+            estimator=unmitigated_lr,
+            constraints='equalized_odds',  # closest equivalent
+            objective='balanced_accuracy_score',
+            prefit=True,
+            predict_method='predict_proba'
+        )
+        postprocess_est.fit(X, y, sensitive_features=sensitive_features)
+        ```
+
+    !!! note
         This classifier only works for binary classification problems.
 
     $$
@@ -915,6 +936,12 @@ class _EqualOpportunityClassifier(_FairClassifier):
         max_iter=100,
         train_sensitive_cols=False,
     ):
+        msg = (
+            "Please consider using fairlearn `ThresholdOptimizer` with `constraints='equalized_odds'` in combination "
+            "with scikit-learn `LogisticRegression` instead.\n\n"
+            "Docs: https://fairlearn.org/v0.12/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html"
+        )
+        warn(msg, UserWarning)
         super().__init__(
             sensitive_cols=sensitive_cols,
             C=C,
