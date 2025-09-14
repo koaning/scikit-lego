@@ -1,3 +1,5 @@
+from warnings import warn
+
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
@@ -19,6 +21,17 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     when moving from the max to the min of the input range. As a result these repeating basis functions can capture how
     close each datapoint is to the center of each repeating basis function, even when the input data has a circular
     nature.
+
+    !!! warning
+        We suggest to use
+        [scikit-learn `SplineTransformer`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.SplineTransformer.html)
+        with `extrapolation='periodic'` instead of scikit-lego `RepeatingBasisFunction` transformer:
+
+        ```py
+        from sklearn.preprocessing import SplineTransformer
+
+        spline = SplineTransformer(..., extrapolation='periodic')
+        ```
 
     Parameters
     ----------
@@ -60,6 +73,13 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     """
 
     def __init__(self, column=0, remainder="drop", n_periods=12, input_range=None, width=1.0):
+        msg = (
+            "Please consider using scikit-learn `SplineTransformer` with `extrapolation='periodic'` instead.\n\n"
+            "Hint: `from sklearn.preprocessing import SplineTransformer`\n"
+            "Docs: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.SplineTransformer.html"
+        )
+        warn(msg, UserWarning)
+
         self.column = column
         self.remainder = remainder
         self.n_periods = n_periods

@@ -690,14 +690,34 @@ class DemographicParityClassifier(LinearClassifierMixin, BaseEstimator):
     distance to the decision boundary of the classifier.
 
     !!! warning
+        We suggest to use
+        [fairlearn `ThresholdOptimizer`](https://fairlearn.org/v0.12/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html)
+        with `constraints='demographic_parity'` in combination with scikit-learn `LogisticRegression` instead of
+        scikit-lego `DemographicParityClassifier` implementation:
+
+        ```py
+        from fairlearn.postprocessing import ThresholdOptimizer
+        from sklearn.linear_model import LogisticRegression
+
+        unmitigated_lr = LogisticRegression().fit(X, y)
+        postprocess_est = ThresholdOptimizer(
+            estimator=unmitigated_lr,
+            constraints='demographic_parity',
+            objective='balanced_accuracy_score',
+            prefit=True,
+            predict_method='predict_proba'
+        )
+        postprocess_est.fit(X, y, sensitive_features=sensitive_features)
+        ```
+
+    !!! note
         This classifier only works for binary classification problems.
 
-    $$\begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i},
-        \boldsymbol{\theta}\right) \\
-        {\text { subject to }} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
-        d_\boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
-        {} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
-        d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}$$
+    $$
+    \begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i}, \boldsymbol{\theta}\right) \\
+    {\text { subject to }} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right) d_\boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
+    {} & {\frac{1}{N} \sum_{i=1}^{N}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right) d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}
+    $$
 
     Parameters
     ----------
@@ -780,6 +800,12 @@ class _DemographicParityClassifier(_FairClassifier):
         max_iter=100,
         train_sensitive_cols=False,
     ):
+        msg = (
+            "Please consider using fairlearn `ThresholdOptimizer` with `constraints='demographic_parity'` in combination "
+            "with scikit-learn `LogisticRegression` instead.\n\n"
+            "Docs: https://fairlearn.org/v0.12/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html"
+        )
+        warn(msg, UserWarning)
         super().__init__(
             sensitive_cols=sensitive_cols,
             C=C,
@@ -810,12 +836,11 @@ class EqualOpportunityClassifier(LinearClassifierMixin, BaseEstimator):
     !!! warning
         This classifier only works for binary classification problems.
 
-    $$\begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i},
-        \boldsymbol{\theta}\right) \\
-        {\text { subject to }} & {\frac{1}{POS} \sum_{i=1}^{POS}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
-        d_\boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
-        {} & {\frac{1}{POS} \sum_{i=1}^{POS}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right)
-        d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}$$
+    $$
+    \begin{array}{cl}{\operatorname{minimize}} & -\sum_{i=1}^{N} \log p\left(y_{i} | \mathbf{x}_{i}, \boldsymbol{\theta}\right) \\
+    {\text { subject to }} & {\frac{1}{POS} \sum_{i=1}^{POS}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right) d_\boldsymbol{\theta}\left(\mathbf{x}_{i}\right) \leq \mathbf{c}} \\
+    {} & {\frac{1}{POS} \sum_{i=1}^{POS}\left(\mathbf{z}_{i}-\overline{\mathbf{z}}\right) d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}\end{array}
+    $$
 
     where POS is the subset of the population where $\text{y_true} = 1$
 
@@ -1215,14 +1240,22 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
 
     Compared to linear regression, this approach is robust to outliers.
 
-    !!! info
-        This implementation uses
-        [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html).
-
     !!! warning
-        If, while fitting the model, `sample_weight` contains any zero values, some solvers may not converge properly.
-        We would expect that a sample weight of zero is equivalent to removing the sample, however unittests tell us
-        that this is always the case only for `method='SLSQP'` (our default)
+        We suggest to use the
+        [official scikit-learn version of quantile regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.QuantileRegressor.html)
+        instead of the scikit-lego implementation:
+
+        ```py
+        from sklearn.linear_model import QuantileRegressor
+        ```
+
+        There are a few reasons for this:
+
+        - This implementation uses [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html)
+            on a non-smooth function which is not ideal for a few solvers.
+        - If, while fitting the model, `sample_weight` contains any zero values, some solvers may not converge properly.
+            We would expect that a sample weight of zero is equivalent to removing the sample, however unittests tell us
+            that this is always the case only for `method='SLSQP'` (our default).
 
     Parameters
     ----------
@@ -1290,6 +1323,12 @@ class QuantileRegression(BaseScipyMinimizeRegressor):
         method="SLSQP",
         quantile=0.5,
     ):
+        msg = (
+            "Please consider using scikit-learn version of quantile regression.\n\n"
+            "Hint: `from sklearn.linear_model import QuantileRegressor`\n"
+            "Docs: https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.QuantileRegressor.html"
+        )
+        warn(msg, UserWarning)
         super().__init__(alpha, l1_ratio, fit_intercept, copy_X, positive, method)
         self.quantile = quantile
 
@@ -1350,14 +1389,25 @@ class LADRegression(QuantileRegression):
     Compared to linear regression, this approach is robust to outliers. You can even optimize for the lowest MAPE
     (Mean Average Percentage Error), by providing `sample_weight=np.abs(1/y_train)` when fitting the regressor.
 
-    !!! info
-        This implementation uses
-        [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html).
-
     !!! warning
-        If, while fitting the model, `sample_weight` contains any zero values, some solvers may not converge properly.
-        We would expect that a sample weight of zero is equivalent to removing the sample, however unittests tell us
-        that this is always the case only for `method='SLSQP'` (our default)
+        We suggest to use the
+        [official scikit-learn version of quantile regression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.QuantileRegressor.html)
+        with `quantile=0.5` instead of the scikit-lego implementation:
+
+        ```py
+        from sklearn.linear_model import QuantileRegressor
+
+        lad_reg = QuantileRegressor(..., quantile=0.5)
+        ```
+
+        There are a few reasons for this:
+
+        - You can expect better support and more stability from the scikit-learn team.
+        - This implementation uses [scipy.optimize.minimize](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html)
+            on a non-smooth function which is not ideal for a few solvers.
+        - If, while fitting the model, `sample_weight` contains any zero values, some solvers may not converge properly.
+            We would expect that a sample weight of zero is equivalent to removing the sample, however unittests tell us
+            that this is always the case only for `method='SLSQP'` (our default).
 
     Parameters
     ----------
