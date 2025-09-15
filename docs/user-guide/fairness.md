@@ -1,5 +1,9 @@
 # Fairness
 
+!!! tip
+    For a more comprehensive guide on fairness, we suggest to checkout the
+    [fairlearn library](https://fairlearn.org/) and its [user guide](https://fairlearn.org/v0.12/user_guide/index.html).
+
 Scikit learn (pre version 1.2) came with the boston housing dataset. We can make a simple pipeline with it and make us a small model. We can even write the code to also make a plot that can convince us that we're doing well:
 
 ```py title="Predict Boston housing dataset"

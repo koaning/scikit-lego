@@ -1,5 +1,5 @@
-import warnings
 from typing import Callable
+from warnings import warn
 
 import numpy as np
 
@@ -93,14 +93,14 @@ def p_percent_score(sensitive_column, positive_target=1):
         # If we never predict a positive target for one of the subgroups, the model is by definition not
         # fair so we return 0
         if p_y1_z1 == 0:
-            warnings.warn(
+            warn(
                 f"No samples with y_hat == {positive_target} for {sensitive_column} == 1, returning 0",
                 RuntimeWarning,
             )
             return 0
 
         if p_y1_z0 == 0:
-            warnings.warn(
+            warn(
                 f"No samples with y_hat == {positive_target} for {sensitive_column} == 0, returning 0",
                 RuntimeWarning,
             )
@@ -147,7 +147,6 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
     ------
     M. Hardt, E. Price and N. Srebro (2016), Equality of Opportunity in Supervised Learning
     """
-
     def impl(estimator, X, y_true):
         """Remember: X is the thing going *in* to your pipeline."""
         sensitive_col = X[:, sensitive_column] if isinstance(X, np.ndarray) else X[sensitive_column]
@@ -165,14 +164,14 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
         # If we never predict a positive target for one of the subgroups, the model is by definition not
         # fair so we return 0
         if len(y_given_z1_y1) == 0:
-            warnings.warn(
+            warn(
                 f"No samples with y_hat == {positive_target} for {sensitive_column} == 1, returning 0",
                 RuntimeWarning,
             )
             return 0
 
         if len(y_given_z0_y1) == 0:
-            warnings.warn(
+            warn(
                 f"No samples with y_hat == {positive_target} for {sensitive_column} == 0, returning 0",
                 RuntimeWarning,
             )
@@ -229,7 +228,7 @@ def subset_score(subset_picker: Callable, score: Callable, **kwargs):
                     + " series, returned {} instead".format(len(mask.shape))
                 )
         if np.sum(mask) == 0:
-            warnings.warn("No samples in subset, returning NaN", RuntimeWarning)
+            warn("No samples in subset, returning NaN", RuntimeWarning)
             return np.nan
         X = X[mask]
         y_pred = estimator.predict(X)
