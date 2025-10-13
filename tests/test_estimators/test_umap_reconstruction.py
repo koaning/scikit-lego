@@ -17,7 +17,7 @@ def test_sklearn_compatible_estimator(estimator, check):
         "check_dict_unchanged",
         # Numba 0.62.0 fails on this check, probably temporary issue
         "check_estimators_dtypes",
-        "check_f_contigous_array_estimator",
+        "check_f_contiguous_array_estimator",
     }:
         pytest.skip()
 
