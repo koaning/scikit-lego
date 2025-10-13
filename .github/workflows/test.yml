@@ -28,9 +28,15 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install uv
       uses: astral-sh/setup-uv@v5
-    - name: Install dependencies
+    - name: Create virtual environment and install dependencies
       run: |
+        uv venv
+        source .venv/bin/activate
         uv pip install -e ".[test-all]"
         uv pip freeze
+      shell: bash
     - name: Test with pytest
-      run: make test
+      run: |
+        source .venv/bin/activate
+        make test
+      shell: bash
