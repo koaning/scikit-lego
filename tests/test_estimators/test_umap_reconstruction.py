@@ -41,5 +41,5 @@ def test_obvious_usecase(dataset):
     except ZeroDivisionError:
         # This is an issue with UMAP/numba and can't be fixed on our end
         pytest.skip()
-    assert mod.predict([0.01]) == np.array([-1])
-    assert mod.predict([10.01]) == np.array([1])
+    assert mod.predict([[0.01]]) == np.array([-1])
+    assert mod.predict([[10.01]]) == np.array([1])
