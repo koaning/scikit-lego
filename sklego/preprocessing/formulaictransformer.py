@@ -19,11 +19,11 @@ class FormulaicTransformer(TransformerMixin, BaseEstimator):
     ----------
     formula : str
         A formulaic-compatible formula.
-        Refer to the [formulaic documentation](https://matthewwardrop.github.io/formulaic/guides/grammar/) for more
+        Refer to the [formulaic documentation](https://matthewwardrop.github.io/formulaic/latest/guides/grammar/) for more
             details.
     return_type : Literal["pandas", "numpy", "sparse"], default="numpy"
         The type of the returned matrix.
-        Refer to the [formulaic documentation](https://matthewwardrop.github.io/formulaic/guides/model_specs/) for more
+        Refer to the [formulaic documentation](https://matthewwardrop.github.io/formulaic/latest/guides/model_specs/) for more
             details.
 
     Attributes
