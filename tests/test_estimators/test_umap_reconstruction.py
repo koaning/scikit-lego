@@ -24,22 +24,17 @@ def test_sklearn_compatible_estimator(estimator, check):
     check(estimator)
 
 
-@pytest.fixture
-def dataset():
-    np.random.seed(42)
-    return np.random.normal(0, 1, (200, 10))
-
-
-def test_obvious_usecase(dataset):
+def test_obvious_usecase():
+    input_data = np.random.normal(0, 1, (200, 10))
     try:  
         mod = UMAPOutlierDetection(
             n_components=2,
             threshold=7.5,
             random_state=42,
             variant="absolute",
-        ).fit(dataset)
+        ).fit(input_data)
     except ZeroDivisionError:
         # This is an issue with UMAP/numba and can't be fixed on our end
         pytest.skip()
-    assert mod.predict([[0.01]]) == np.array([-1])
-    assert mod.predict([[10.01]]) == np.array([1])
+    assert mod.predict(np.random.normal(10, 1, (1, 10))) == np.array([-1])
+    assert mod.predict(np.random.normal(0, 0.1, (1, 10))) == np.array([1])
