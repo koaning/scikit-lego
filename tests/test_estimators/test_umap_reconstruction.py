@@ -36,7 +36,6 @@ def test_obvious_usecase(dataset):
         threshold=7.5,
         random_state=42,
         variant="absolute",
-        n_neighbors=3,
     ).fit(dataset)
     assert mod.predict([[10] * 10]) == np.array([-1])
     assert mod.predict([[0.0001] * 10]) == np.array([1])
