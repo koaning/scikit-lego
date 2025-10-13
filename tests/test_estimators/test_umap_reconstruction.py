@@ -34,7 +34,7 @@ def test_obvious_usecase():
             variant="absolute",
         ).fit(input_data)
         assert mod.predict(np.random.normal(10, 1, (1, 10))) == np.array([-1])
-        assert mod.predict(np.random.normal(0, 0.c1, (1, 10))) == np.array([1])
+        assert mod.predict(np.random.normal(0, 0.1, (1, 10))) == np.array([1])
     except ZeroDivisionError:
         # This is an issue with UMAP/numba and can't be fixed on our end
         pytest.skip()
