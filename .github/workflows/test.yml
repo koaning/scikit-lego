@@ -34,9 +34,4 @@ jobs:
         source .venv/bin/activate
         uv pip install -e ".[test-all]"
         uv pip freeze
-      shell: bash
-    - name: Test with pytest
-      run: |
-        source .venv/bin/activate
-        make test
-      shell: bash
+        uv run pytest -n auto --disable-warnings
