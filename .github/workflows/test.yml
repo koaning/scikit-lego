@@ -31,7 +31,6 @@ jobs:
     - name: Create virtual environment and install dependencies
       run: |
         uv venv
-        source .venv/bin/activate
         uv pip install -e ".[test-all]"
         uv pip freeze
         uv run pytest -n auto --disable-warnings
