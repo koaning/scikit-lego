@@ -27,7 +27,7 @@ def test_sklearn_compatible_estimator(estimator, check):
 @pytest.fixture
 def dataset():
     np.random.seed(42)
-    return np.concatenate([np.random.normal(0, 1, (200, 10))])
+    return np.random.normal(0, 1, (200, 10))
 
 
 def test_obvious_usecase(dataset):
@@ -37,5 +37,6 @@ def test_obvious_usecase(dataset):
         random_state=42,
         variant="absolute",
     ).fit(dataset)
-    assert mod.predict([[10] * 10]) == np.array([-1])
-    assert mod.predict([[0.0001] * 10]) == np.array([1])
+    new_data = np.random.normal(0, 0.1, (200, 10))
+    assert mod.predict(new_data) == np.array([-1])
+    assert mod.predict(10 + new_data) == np.array([1])
