@@ -5,8 +5,7 @@ install:
 	pre-commit install
 
 test:
-	pytest -n auto --disable-warnings --cov=sklego
-	rm -rf .coverage*
+	pytest -n auto --disable-warnings
 
 precommit:
 	pre-commit run
