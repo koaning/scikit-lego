@@ -9,7 +9,7 @@ description="A collection of lego bricks for scikit-learn pipelines"
 
 license = {file = "LICENSE"}
 readme = "readme.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     {name = "Vincent D. Warmerdam"},
     {name = "Matthijs Brouns"},
