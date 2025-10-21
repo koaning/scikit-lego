@@ -691,7 +691,7 @@ class DemographicParityClassifier(LinearClassifierMixin, BaseEstimator):
 
     !!! warning
         We suggest to use
-        [fairlearn `ThresholdOptimizer`](https://fairlearn.org/v0.12/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html)
+        [fairlearn `ThresholdOptimizer`](https://fairlearn.org/v0.13/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html)
         with `constraints='demographic_parity'` in combination with scikit-learn `LogisticRegression` instead of
         scikit-lego `DemographicParityClassifier` implementation:
 
@@ -803,7 +803,7 @@ class _DemographicParityClassifier(_FairClassifier):
         msg = (
             "Please consider using fairlearn `ThresholdOptimizer` with `constraints='demographic_parity'` in "
             "combination with scikit-learn `LogisticRegression` instead.\n\n"
-            "Docs: https://fairlearn.org/v0.12/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html"
+            "Docs: https://fairlearn.org/v0.13/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html"
         )
         warn(msg, UserWarning)
         super().__init__(
@@ -835,9 +835,9 @@ class EqualOpportunityClassifier(LinearClassifierMixin, BaseEstimator):
 
     !!! warning
         We suggest to use
-        [fairlearn `ThresholdOptimizer`](https://fairlearn.org/v0.12/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html)
-        with `constraints='equalized_odds'` (closest equivalent to equal opportunity) in combination with scikit-learn
-        `LogisticRegression` instead of scikit-lego `EqualOpportunityClassifier` implementation:
+        [fairlearn `ThresholdOptimizer`](https://fairlearn.org/v0.13/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html)
+        with `constraints='true_positive_rate_parity'` in combination with scikit-learn `LogisticRegression` instead of
+        scikit-lego `EqualOpportunityClassifier` implementation:
 
         ```py
         from fairlearn.postprocessing import ThresholdOptimizer
@@ -846,7 +846,7 @@ class EqualOpportunityClassifier(LinearClassifierMixin, BaseEstimator):
         unmitigated_lr = LogisticRegression().fit(X, y)
         postprocess_est = ThresholdOptimizer(
             estimator=unmitigated_lr,
-            constraints='equalized_odds',  # closest equivalent
+            constraints='true_positive_rate_parity',  # closest equivalent
             objective='balanced_accuracy_score',
             prefit=True,
             predict_method='predict_proba'
@@ -937,9 +937,9 @@ class _EqualOpportunityClassifier(_FairClassifier):
         train_sensitive_cols=False,
     ):
         msg = (
-            "Please consider using fairlearn `ThresholdOptimizer` with `constraints='equalized_odds'` in combination "
-            "with scikit-learn `LogisticRegression` instead.\n\n"
-            "Docs: https://fairlearn.org/v0.12/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html"
+            "Please consider using fairlearn `ThresholdOptimizer` with `constraints='true_positive_rate_parity'` in"
+            "combination " "with scikit-learn `LogisticRegression` instead.\n\n"
+            "Docs: https://fairlearn.org/v0.13/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html"
         )
         warn(msg, UserWarning)
         super().__init__(
