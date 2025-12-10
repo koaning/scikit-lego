@@ -77,4 +77,4 @@ Explore the User Guide sections below for full examples.
 - **Meta Models**: [user-guide/meta-models.md](meta-models.md)
 
 **Tip**: Keep `random_state=0` for deterministic results.
-If you'd like, replace the sklearn-only pipeline above with a scikit-lego-specific transformer (e.g., ColumnSelector).
+If you'd like, try enhancing the pipeline above with other scikit-lego-specific transformers (e.g., `OutlierRemover`, `PandasTypeSelector`, or `FeatureAgglomeration`).
