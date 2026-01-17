@@ -22,7 +22,7 @@ def test_sum_equals_one():
     X = np.concatenate([np.random.normal(0, 1, (n1, 2)), np.random.normal(2, 1, (n2, 2))], axis=0)
     y = np.concatenate([np.zeros((n1, 1)), np.ones((n2, 1))], axis=0).reshape(-1)
     mod = ConfusionBalancer(
-        LogisticRegression(solver="lbfgs", multi_class="multinomial", max_iter=1000),
+        LogisticRegression(solver="lbfgs", max_iter=1000),
         alpha=0.1,
     )
     mod.fit(X, y)

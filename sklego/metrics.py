@@ -147,6 +147,7 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
     ------
     M. Hardt, E. Price and N. Srebro (2016), Equality of Opportunity in Supervised Learning
     """
+
     def impl(estimator, X, y_true):
         """Remember: X is the thing going *in* to your pipeline."""
         sensitive_col = X[:, sensitive_column] if isinstance(X, np.ndarray) else X[sensitive_column]

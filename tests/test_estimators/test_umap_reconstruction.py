@@ -26,7 +26,7 @@ def test_sklearn_compatible_estimator(estimator, check):
 
 def test_obvious_usecase():
     input_data = np.random.normal(0, 1, (200, 10))
-    try:  
+    try:
         mod = UMAPOutlierDetection(
             n_components=2,
             threshold=7.5,

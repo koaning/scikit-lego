@@ -1,6 +1,7 @@
 from sklearn import clone
 from sklearn.base import BaseEstimator, MetaEstimatorMixin
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
+from sklearn_compat.utils import get_tags
 from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 from sklego.meta._decay_utils import exponential_decay, linear_decay, sigmoid_decay, stepwise_decay
@@ -104,7 +105,7 @@ class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
     @property
     def _estimator_type(self):
         """Computes `_estimator_type` dynamically from the wrapped model."""
-        return self.model._estimator_type
+        return get_tags(self.model).estimator_type
 
     def fit(self, X, y):
         """Fit the underlying estimator on the training data `X` and `y` using the calculated sample weights.
@@ -172,4 +173,6 @@ class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
         return self.estimator_.score(X, y)
 
     def __sklearn_tags__(self):
-        return self.model.__sklearn_tags__()
+        tags = self.model.__sklearn_tags__()
+        tags.estimator_type = self._estimator_type
+        return tags

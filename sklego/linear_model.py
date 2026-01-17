@@ -938,7 +938,8 @@ class _EqualOpportunityClassifier(_FairClassifier):
     ):
         msg = (
             "Please consider using fairlearn `ThresholdOptimizer` with `constraints='true_positive_rate_parity'` in"
-            "combination " "with scikit-learn `LogisticRegression` instead.\n\n"
+            "combination "
+            "with scikit-learn `LogisticRegression` instead.\n\n"
             "Docs: https://fairlearn.org/v0.13/api_reference/generated/fairlearn.postprocessing.ThresholdOptimizer.html"
         )
         warn(msg, UserWarning)
