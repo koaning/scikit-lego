@@ -15,6 +15,7 @@ from sklearn.base import (
 )
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils import get_tags
 from sklearn_compat.utils.validation import check_array
 
 from sklego.common import as_list, expanding_list
@@ -224,7 +225,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     @property
     def _estimator_type(self):
         """Computes `_estimator_type` dynamically from the wrapped model."""
-        return self.estimator._estimator_type
+        return get_tags(self.estimator).estimator_type
 
     def fit(self, X, y=None):
         """Fit one estimator for each hierarchical group of training data `X` and `y`.
@@ -434,6 +435,7 @@ class HierarchicalPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
         tags.input_tags.allow_nan = True
+        tags.estimator_type = self._estimator_type
         return tags
 
 

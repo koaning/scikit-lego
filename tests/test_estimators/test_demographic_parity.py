@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from sklearn.multiclass import OneVsRestClassifier
 
 try:
     from cvxpy import SolverError
@@ -53,22 +54,23 @@ def _test_same(dataset):
 
     sensitive_cols = [0]
     X_without_sens = np.delete(X, sensitive_cols, axis=1)
-    lr = LogisticRegression(
-        penalty=None,
-        solver="lbfgs",
-        multi_class="ovr",
-        dual=False,
-        tol=1e-4,
-        C=1.0,
-        fit_intercept=True,
-        intercept_scaling=1,
-        class_weight=None,
-        random_state=None,
-        max_iter=100,
-        verbose=0,
-        warm_start=False,
-        n_jobs=None,
-        l1_ratio=None,
+    lr = OneVsRestClassifier(
+        LogisticRegression(
+            penalty=None,
+            solver="lbfgs",
+            dual=False,
+            tol=1e-4,
+            C=1.0,
+            fit_intercept=True,
+            intercept_scaling=1,
+            class_weight=None,
+            random_state=None,
+            max_iter=100,
+            verbose=0,
+            warm_start=False,
+            n_jobs=None,
+            l1_ratio=None,
+        )
     )
     fair = DemographicParityClassifier(covariance_threshold=None, sensitive_cols=sensitive_cols, penalty="none")
     try:

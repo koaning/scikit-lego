@@ -10,8 +10,8 @@ from sklego.preprocessing import RandomAdder
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_transformer_data_not_an_array",  # hash only supports a few types
-        "check_pipeline_consistency",
-        "check_transformer_general",
+        "check_pipeline_consistency",  # RandomAdder is non deterministic
+        "check_transformer_general",  # RandomAdder is non deterministic
     }:
         pytest.skip("RandomAdder is a TrainOnlyTransformer")
 

@@ -8,6 +8,7 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin, RegressorMixin, is_classifier, is_regressor
 from sklearn.utils.metaestimators import available_if
 from sklearn.utils.validation import check_is_fitted
+from sklearn_compat.utils import get_tags
 
 from sklego.common import as_list, expanding_list
 from sklego.meta._grouped_utils import parse_X_y
@@ -434,14 +435,19 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
     @property
     def _estimator_type(self):
         """Computes `_estimator_type` dynamically from the wrapped model."""
-        return self.estimator._estimator_type
+        return get_tags(self.estimator).estimator_type
 
     def _more_tags(self):
         return {"allow_nan": True}
 
     def __sklearn_tags__(self):
+        estimator_tags = get_tags(self.estimator)
+
         tags = super().__sklearn_tags__()
         tags.input_tags.allow_nan = True
+        tags.classifier_tags = estimator_tags.classifier_tags
+        tags.regressor_tags = estimator_tags.regressor_tags
+
         return tags
 
 

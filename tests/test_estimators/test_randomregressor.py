@@ -12,7 +12,7 @@ def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_methods_subset_invariance",
         "check_methods_sample_order_invariance",
-        "check_pipeline_consistency",
+        "check_pipeline_consistency",  # RandomRegressor is non deterministic
     }:
         pytest.skip("RandomRegressor is not invariant")
     check(estimator)

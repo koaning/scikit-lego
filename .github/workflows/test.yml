@@ -13,11 +13,14 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: [
           "3.10",
-          "3.13"
+          "3.13",
+          "3.14",
         ]
         exclude:
           - os: windows-latest
             python-version: "3.13"
+          - os: windows-latest
+            python-version: "3.14"
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout source code

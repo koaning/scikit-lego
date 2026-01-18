@@ -5,6 +5,7 @@ from sklearn.linear_model import LinearRegression, LogisticRegression, Ridge
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils.estimator_checks import parametrize_with_checks
+from sklearn_compat.utils import get_tags
 
 from sklego.meta import DecayEstimator
 
@@ -81,6 +82,6 @@ def test_throw_warning(mod):
 )
 def test_estimator_type_regressor(mod, is_regr):
     mod = DecayEstimator(mod)
-    assert mod._estimator_type == mod.model._estimator_type
+    assert mod._estimator_type == get_tags(mod.model).estimator_type
     assert is_regressor(mod) == is_regr
     assert is_classifier(mod) == (not is_regr)
