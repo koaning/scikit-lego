@@ -32,3 +32,9 @@ which will run all the scripts and save results in the `docs/_static` folder.
 [mkdocs-material]: https://squidfunk.github.io/mkdocs-material/
 [pymdown-snippets]: https://facelessuser.github.io/pymdown-extensions/extensions/snippets/
 [localhost]: http://localhost:8000/
+
+## NLP Example
+
+An example demonstrating text classification using TF-IDF and Logistic Regression is available in:
+
+docs/examples/nlp_text_classification.py
