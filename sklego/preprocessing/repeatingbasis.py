@@ -183,7 +183,12 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         self : _RepeatingBasisFunction
             The fitted transformer.
         """
-        X = validate_data(self, X=X, ensure_2d=True, reset=True)
+        _, n_cols = X.shape
+        if n_cols > 1:
+            msg = f"Expected exactly one column to `_RepeatingBasisFunction`, found {n_cols}"
+            raise ValueError(msg)
+
+        X = validate_data(self, X=X, ensure_2d=True, reset=True, dtype="numeric")
 
         # find min and max for standardization if not given explicitly
         if self.input_range is None:
