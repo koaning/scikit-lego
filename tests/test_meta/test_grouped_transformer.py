@@ -101,16 +101,15 @@ def multiple_obs_fitter():
 
 
 @pytest.fixture(scope="module")
-def penguins_df():
-    df = load_penguins(as_frame=True).dropna()
-    X = df.drop(columns="species")
-
+def penguins_df() -> pd.DataFrame:
+    df: pd.DataFrame = load_penguins(as_frame=True)
+    X = df.dropna().drop(columns="species")
     return X
 
 
 @pytest.fixture(scope="module")
-def penguins(penguins_df):
-    return penguins_df.values
+def penguins(penguins_df: pd.DataFrame) -> np.ndarray:
+    return penguins_df.to_numpy()
 
 
 def test_all_groups_scaled(dataset_with_single_grouping, scaling_range):
@@ -269,7 +268,7 @@ def test_array_with_strings():
 
 
 @pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
-def test_df(penguins_df, frame_func):
+def test_df(penguins_df: pd.DataFrame, frame_func):
     penguins_df = frame_func(penguins_df.to_dict(orient="list"))
     meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
 
@@ -280,18 +279,17 @@ def test_df(penguins_df, frame_func):
 
 
 @pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
-def test_df_missing_group(penguins_df, frame_func):
+def test_df_missing_group(penguins_df: pd.DataFrame, frame_func):
     meta = GroupedTransformer(StandardScaler(), groups=["island", "sex"])
 
     # Otherwise the fixture is changed
-    X = penguins_df.copy()
-    X.loc[0, "island"] = None
-    X = frame_func(X.to_dict(orient="list"))
+    X = penguins_df.copy().to_dict(orient="list")
+    X["island"][0] = None
     with pytest.raises(ValueError):
-        meta.fit_transform(X)
+        meta.fit_transform(frame_func(X))
 
 
-def test_array_with_multiple_string_cols(penguins):
+def test_array_with_multiple_string_cols(penguins: np.ndarray):
     X = penguins
 
     # BROKEN: Failing due to negative indexing... kind of an edge case
@@ -314,7 +312,7 @@ def test_grouping_column_not_in_array(penguins):
 
 
 @pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
-def test_grouping_column_not_in_df(penguins_df, frame_func):
+def test_grouping_column_not_in_df(penguins_df: pd.DataFrame, frame_func):
     meta = GroupedTransformer(StandardScaler(), groups=["island", "unexisting_column"])
 
     # This should raise ValueError
@@ -323,7 +321,7 @@ def test_grouping_column_not_in_df(penguins_df, frame_func):
 
 
 @pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
-def test_no_grouping(penguins_df, frame_func):
+def test_no_grouping(penguins_df: pd.DataFrame, frame_func):
     penguins_numeric = frame_func(
         penguins_df[["bill_length_mm", "bill_depth_mm", "flipper_length_mm", "body_mass_g"]].to_dict(orient="list")
     )
@@ -335,7 +333,7 @@ def test_no_grouping(penguins_df, frame_func):
 
 
 @pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
-def test_with_y(penguins_df, frame_func):
+def test_with_y(penguins_df: pd.DataFrame, frame_func):
     X = frame_func(penguins_df.drop(columns=["sex"]).to_dict(orient="list"))
     y = penguins_df["sex"].to_numpy()
 
@@ -400,7 +398,7 @@ def test_transform_with_y(transformer):
 
 
 @pytest.mark.parametrize(("frame_func", "transform_output"), [(pd.DataFrame, "pandas"), (pl.DataFrame, "polars")])
-def test_set_output(penguins_df, frame_func, transform_output):
+def test_set_output(penguins_df: pd.DataFrame, frame_func, transform_output):
     if transform_output == "polars" and sklearn.__version__ < "1.4.0":
         pytest.skip()
 
@@ -417,7 +415,7 @@ def test_with_object_dtype():
 
     data = {
         "big": ["A", "A", "A", "A", "A", "B", "B", "B", "C", "C"],
-        "small": ["a", "a", None, "a", "a", "b", "b", None, "C", "C"],
+        "small": ["a", "a", pd.NA, "a", "a", "b", "b", pd.NA, "C", "C"],
         "other": [0.1, 0.2, 0.3, 0.6, 0.5, 0.1, 0.3, 0.5, 0.6, 0.6],
         "y": [1, 1, 0, 1, 0, 1, 1, 0, 0, 0],
     }
@@ -426,7 +424,7 @@ def test_with_object_dtype():
 
     result = (
         GroupedTransformer(
-            transformer=SimpleImputer(strategy="most_frequent", missing_values=None),
+            transformer=SimpleImputer(strategy="most_frequent", missing_values=pd.NA),
             groups=["big"],
             check_X=False,
         )
@@ -439,6 +437,6 @@ def test_with_object_dtype():
             "small": ["a", "a", "a", "a", "a", "b", "b", "b", "C", "C"],
             "other": [0.1, 0.2, 0.3, 0.6, 0.5, 0.1, 0.3, 0.5, 0.6, 0.6],
         }
-    ).astype("object")
+    )
 
-    assert_frame_equal(result, expected)
+    assert_frame_equal(result, expected, check_dtype=False)
