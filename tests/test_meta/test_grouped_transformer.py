@@ -415,7 +415,7 @@ def test_with_object_dtype():
 
     data = {
         "big": ["A", "A", "A", "A", "A", "B", "B", "B", "C", "C"],
-        "small": ["a", "a", None, "a", "a", "b", "b", None, "C", "C"],
+        "small": ["a", "a", pd.NA, "a", "a", "b", "b", pd.NA, "C", "C"],
         "other": [0.1, 0.2, 0.3, 0.6, 0.5, 0.1, 0.3, 0.5, 0.6, 0.6],
         "y": [1, 1, 0, 1, 0, 1, 1, 0, 0, 0],
     }
@@ -424,7 +424,7 @@ def test_with_object_dtype():
 
     result = (
         GroupedTransformer(
-            transformer=SimpleImputer(strategy="most_frequent"),
+            transformer=SimpleImputer(strategy="most_frequent", missing_values=pd.NA),
             groups=["big"],
             check_X=False,
         )
