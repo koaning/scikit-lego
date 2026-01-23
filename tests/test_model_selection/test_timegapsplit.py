@@ -235,7 +235,7 @@ def test_timegapsplit_summary():
     )
 
     summary = cv.summary(X_train)
-    assert summary.shape == (12, 5)
+    assert summary.shape == (12, 6)
 
     expected_data = {
         "Start date": [
@@ -280,6 +280,7 @@ def test_timegapsplit_summary():
             timedelta(days=4),
             timedelta(days=2),
         ],
+        "frequency": ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'],
         "Unique days": [5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3],
         "nbr samples": [5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3],
         "part": [
