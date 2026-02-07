@@ -246,7 +246,7 @@ class ProbWeightRegression(RegressorMixin, BaseEstimator):
         prob = cp.Problem(objective, constraints)
         prob.solve()
 
-        if betas.value is None:
+        if prob.status != "optimal":
             raise ValueError(
                 f"cvxpy could not find a solution (status: {prob.status}).\n"
                 "Consider feature scaling (e.g. StandardScaler) before fitting the model."
