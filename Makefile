@@ -26,6 +26,5 @@ lint:
 check: lint precommit test clean
 
 pypi: clean
-	python setup.py sdist
-	python setup.py bdist_wheel --universal
-	twine upload dist/*
+	uv build
+	uv publish
