@@ -23,6 +23,9 @@ lint:
 	ruff format sklego tests
 	ruff check sklego tests --fix
 
+build:
+	uvx mobuild export nbs/ensemble sklego/ensemble
+
 check: lint precommit test clean
 
 pypi: clean
