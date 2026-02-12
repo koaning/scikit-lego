@@ -5,6 +5,8 @@
 #     "numpy==2.4.2",
 #     "scikit-learn==1.8.0",
 #     "scipy==1.17.0",
+#     "anywidget",
+#     "traitlets",
 # ]
 # requires-python = ">=3.14"
 # ///
@@ -46,19 +48,11 @@ def _():
 def _(IsolationForestEncoder):
     from sklearn.datasets import make_moons
 
-    X, _ = make_moons(n_samples=1000, noise=0.15, random_state=42)
+    X, _ = make_moons(n_samples=10000, noise=0.15, random_state=42)
 
     enc = IsolationForestEncoder(n_estimators=2, max_features=2, max_samples=100)
     out = enc.fit_transform(X)
     return X, enc, out
-
-
-@app.cell
-def _(enc):
-    from sklearn.tree import plot_tree
-    
-    plot_tree(enc.forest_.estimators_[1])
-    return
 
 
 @app.cell
@@ -69,14 +63,7 @@ def _(mo, out):
 
 
 @app.cell
-def _():
-    return
-
-
-@app.cell
-def _(X, out, slider):
-    import matplotlib.pylab as plt
-
+def _(X, out, plt, slider):
     selected = X[(out[:, slider.value] == 1).toarray()[:, 0], :]
 
     plt.scatter(X[:, 0], X[:, 1])
@@ -84,7 +71,128 @@ def _(X, out, slider):
     return
 
 
+@app.cell
+def _(TreeWidget, X, enc, mo):
+    tree_widget = mo.ui.anywidget(TreeWidget(enc.forest_.estimators_[0], X))
+    tree_widget
+    return (tree_widget,)
+
+
+@app.cell
+def _():
+    import matplotlib.pylab as plt
+
+    return (plt,)
+
+
+@app.cell(hide_code=True)
+def _(X, enc, plt, tree_widget):
+    node_id = tree_widget.value["selected_node"]
+    estimator = enc.forest_.estimators_[0]
+
+    if node_id >= 0:
+        mask_arr = estimator.decision_path(X)[:, node_id].toarray().ravel().astype(bool)
+    else:
+        mask_arr = None
+
+    plt.scatter(X[:, 0], X[:, 1], alpha=0.3)
+    plt.scatter(X[mask_arr, 0], X[mask_arr, 1], c="orange")
+    return
+
+
+@app.cell
+def _():
+    return
+
+
 @app.cell(column=1)
+def _():
+    import pathlib
+    import anywidget
+    import traitlets
+
+    class TreeWidget(anywidget.AnyWidget):
+        _esm = pathlib.Path(__file__).parent / "ensemble" / "widget.js"
+        _css = pathlib.Path(__file__).parent / "ensemble" / "widget.css"
+
+        tree_data = traitlets.Dict({}).tag(sync=True)
+        selected_node = traitlets.Int(-1).tag(sync=True)
+
+        def __init__(self, estimator, X, feature_names=None, **kwargs):
+            self._estimator = estimator
+            self._X = X
+            tree_data = self._compute_layout(estimator.tree_, feature_names)
+            super().__init__(tree_data=tree_data, **kwargs)
+
+        def _compute_layout(self, tree, feature_names=None):
+            import numpy as np
+
+            children_left = tree.children_left
+            children_right = tree.children_right
+            feature = tree.feature
+            threshold = tree.threshold
+
+            # Compute actual sample counts from full X, not just training subset
+            decision_paths = self._estimator.decision_path(self._X)
+            actual_samples = np.array(decision_paths.sum(axis=0)).ravel()
+
+            depths = {}
+            inorder_pos = {}
+            counter = [0]
+
+            def traverse(node_id, depth):
+                depths[node_id] = depth
+                if children_left[node_id] != -1:
+                    traverse(children_left[node_id], depth + 1)
+                inorder_pos[node_id] = counter[0]
+                counter[0] += 1
+                if children_right[node_id] != -1:
+                    traverse(children_right[node_id], depth + 1)
+
+            traverse(0, 0)
+
+            max_depth = max(depths.values())
+            max_pos = max(inorder_pos.values())
+            padding = 30
+            width = 700
+            height = max(max_depth * 50 + 2 * padding, 200)
+
+            nodes = []
+            edges = []
+            for i in range(tree.node_count):
+                x = padding + (inorder_pos[i] / max(max_pos, 1)) * (width - 2 * padding)
+                y = padding + (depths[i] / max(max_depth, 1)) * (height - 2 * padding)
+                is_leaf = children_left[i] == -1
+                n_samples = int(actual_samples[i])
+
+                if is_leaf:
+                    label = f"n={n_samples}"
+                else:
+                    feat_name = f"x[{feature[i]}]" if feature_names is None else feature_names[feature[i]]
+                    label = f"{feat_name} <= {threshold[i]:.2f}"
+
+                nodes.append({
+                    "id": i, "x": float(x), "y": float(y),
+                    "label": label, "samples": n_samples, "is_leaf": is_leaf,
+                })
+                if not is_leaf:
+                    edges.append({"source": i, "target": int(children_left[i])})
+                    edges.append({"source": i, "target": int(children_right[i])})
+
+            return {"nodes": nodes, "edges": edges, "width": int(width), "height": int(height)}
+
+        def compute_mask(self, node_id):
+            """Return boolean array: which samples from X reach this node."""
+            import numpy as np
+            if node_id < 0:
+                return np.zeros(self._X.shape[0], dtype=bool)
+            decision_paths = self._estimator.decision_path(self._X)
+            return decision_paths[:, node_id].toarray().ravel().astype(bool)
+
+    return (TreeWidget,)
+
+
+@app.cell(column=2)
 def _(
     BaseEstimator,
     IsolationForest,

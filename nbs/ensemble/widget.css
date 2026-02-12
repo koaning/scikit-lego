@@ -1,0 +1,80 @@
+.tree-widget {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+}
+
+.tree-info-panel {
+  padding: 6px 10px;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #555;
+  border-top: 1px solid #e0e0e0;
+}
+
+.tree-edge {
+  stroke: #bbb;
+  stroke-width: 1;
+  transition: stroke 0.15s, stroke-width 0.15s;
+}
+.tree-edge.highlighted {
+  stroke: #2563eb;
+  stroke-width: 2;
+}
+
+.tree-node rect {
+  fill: #fff;
+  stroke: #999;
+  stroke-width: 1;
+  transition: fill 0.15s, stroke 0.15s;
+}
+.tree-leaf rect {
+  fill: #f0f4ff;
+}
+
+.tree-node.on-path rect {
+  fill: #dbeafe;
+  stroke: #2563eb;
+  stroke-width: 1.5;
+}
+.tree-node.selected rect {
+  fill: #2563eb;
+  stroke: #1d4ed8;
+  stroke-width: 2;
+}
+.tree-node:hover rect {
+  stroke: #2563eb;
+  stroke-width: 1.5;
+}
+
+/* Dark mode — triggered by .dark class on wrapper */
+.dark .tree-widget {
+  background: #1a1a2e;
+  border-color: #333;
+}
+.dark .tree-info-panel {
+  color: #aaa;
+  border-top-color: #333;
+}
+.dark .tree-edge {
+  stroke: #555;
+}
+.dark .tree-edge.highlighted {
+  stroke: #60a5fa;
+}
+.dark .tree-node rect {
+  fill: #2a2a3e;
+  stroke: #555;
+}
+.dark .tree-leaf rect {
+  fill: #1e293b;
+}
+.dark .tree-node.on-path rect {
+  fill: #1e3a5f;
+  stroke: #60a5fa;
+}
+.dark .tree-node.selected rect {
+  fill: #2563eb;
+  stroke: #3b82f6;
+}
