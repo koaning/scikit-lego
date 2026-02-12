@@ -13,42 +13,40 @@
   border-top: 1px solid #e0e0e0;
 }
 
+/* Depth guide lines */
+.depth-line {
+  stroke: #eee;
+  stroke-width: 0.5;
+}
+
+/* Depth column labels */
+.depth-label {
+  fill: #999;
+  font-size: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Edges */
 .tree-edge {
-  stroke: #bbb;
-  stroke-width: 1;
+  stroke: #999;
+  stroke-width: 2;
   transition: stroke 0.15s, stroke-width 0.15s;
 }
 .tree-edge.highlighted {
   stroke: #2563eb;
-  stroke-width: 2;
+  stroke-width: 3;
 }
 
-.tree-node rect {
-  fill: #fff;
-  stroke: #999;
-  stroke-width: 1;
-  transition: fill 0.15s, stroke 0.15s;
+/* Nodes */
+.tree-node {
+  fill: #666;
+  transition: fill 0.15s;
 }
-.tree-leaf rect {
-  fill: #f0f4ff;
-}
-
-.tree-node.on-path rect {
-  fill: #dbeafe;
-  stroke: #2563eb;
-  stroke-width: 1.5;
-}
-.tree-node.selected rect {
-  fill: #2563eb;
-  stroke: #1d4ed8;
-  stroke-width: 2;
-}
-.tree-node:hover rect {
-  stroke: #2563eb;
-  stroke-width: 1.5;
+.tree-leaf {
+  fill: #999;
 }
 
-/* Dark mode — triggered by .dark class on wrapper */
+/* Dark mode */
 .dark .tree-widget {
   background: #1a1a2e;
   border-color: #333;
@@ -57,24 +55,21 @@
   color: #aaa;
   border-top-color: #333;
 }
+.dark .depth-line {
+  stroke: #2a2a3e;
+}
+.dark .depth-label {
+  fill: #666;
+}
 .dark .tree-edge {
-  stroke: #555;
+  stroke: #777;
 }
 .dark .tree-edge.highlighted {
   stroke: #60a5fa;
 }
-.dark .tree-node rect {
-  fill: #2a2a3e;
-  stroke: #555;
+.dark .tree-node {
+  fill: #aaa;
 }
-.dark .tree-leaf rect {
-  fill: #1e293b;
-}
-.dark .tree-node.on-path rect {
-  fill: #1e3a5f;
-  stroke: #60a5fa;
-}
-.dark .tree-node.selected rect {
-  fill: #2563eb;
-  stroke: #3b82f6;
+.dark .tree-leaf {
+  fill: #777;
 }

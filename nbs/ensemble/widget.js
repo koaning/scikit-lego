@@ -7,7 +7,6 @@ function render({ model, el }) {
     const DISPLAY_W = 700;
     const DISPLAY_H = 400;
 
-    // Detect dark mode from marimo/document context
     const isDark =
       document.documentElement.dataset.colorMode === "dark" ||
       document.documentElement.classList.contains("dark") ||
@@ -26,10 +25,9 @@ function render({ model, el }) {
     svg.classList.add("tree-widget");
     wrapper.appendChild(svg);
 
-    // Info panel below SVG
     const panel = document.createElement("div");
     panel.classList.add("tree-info-panel");
-    panel.textContent = "Click a node to inspect it.";
+    panel.textContent = "Click an edge to inspect it.";
     wrapper.appendChild(panel);
 
     // Build lookups
@@ -38,13 +36,12 @@ function render({ model, el }) {
       nodeMap[n.id] = n;
     });
 
-    // Build parent map from edges for path computation in JS
+    // Parent map for path computation
     const parentOf = {};
     data.edges.forEach((edge) => {
       parentOf[edge.target] = edge.source;
     });
 
-    // Compute path from root to a node entirely in JS
     function pathToNode(nodeId) {
       if (nodeId < 0) return [];
       const path = [nodeId];
@@ -57,8 +54,41 @@ function render({ model, el }) {
       return path;
     }
 
-    // Draw edges
+    // Depth level lines
+    const depthYs = {};
+    data.nodes.forEach((n) => {
+      if (depthYs[n.depth] === undefined) depthYs[n.depth] = n.y;
+    });
+
+    Object.entries(depthYs).forEach(([depth, y]) => {
+      const d = parseInt(depth);
+      if (d === 0) return; // skip root line
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", 0);
+      line.setAttribute("y1", y);
+      line.setAttribute("x2", data.width);
+      line.setAttribute("y2", y);
+      line.classList.add("depth-line");
+      svg.appendChild(line);
+    });
+
+    // Depth level column labels (between each pair of consecutive depths)
+    const sortedDepths = Object.keys(depthYs).map(Number).sort((a, b) => a - b);
+    for (let i = 0; i < sortedDepths.length - 1; i++) {
+      const d = sortedDepths[i];
+      const midY = (depthYs[d] + depthYs[sortedDepths[i + 1]]) / 2;
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", 8);
+      label.setAttribute("y", midY + 3);
+      label.setAttribute("text-anchor", "start");
+      label.classList.add("depth-label");
+      label.textContent = `col ${d}`;
+      svg.appendChild(label);
+    }
+
+    // Draw edges as clickable lines
     const edgeEls = {};
+    const edgeData = {};
     data.edges.forEach((edge) => {
       const src = nodeMap[edge.source];
       const tgt = nodeMap[edge.target];
@@ -69,24 +99,23 @@ function render({ model, el }) {
       line.setAttribute("y2", tgt.y);
       line.classList.add("tree-edge");
       svg.appendChild(line);
-      edgeEls[`${edge.source}-${edge.target}`] = line;
+      const key = `${edge.source}-${edge.target}`;
+      edgeEls[key] = line;
+      edgeData[key] = edge;
     });
 
-    // Draw nodes as small circles
-    const nodeEls = {};
-    const nodeR = 4;
+    // Draw nodes as small dots (not clickable)
     data.nodes.forEach((node) => {
       const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       circle.setAttribute("cx", node.x);
       circle.setAttribute("cy", node.y);
-      circle.setAttribute("r", nodeR);
+      circle.setAttribute("r", 3);
       circle.classList.add("tree-node");
       if (node.is_leaf) circle.classList.add("tree-leaf");
       svg.appendChild(circle);
-      nodeEls[node.id] = circle;
     });
 
-    // Use SVG's native coordinate transform (guaranteed correct with viewBox)
+    // SVG coordinate transform
     function toSVG(e) {
       const pt = svg.createSVGPoint();
       pt.x = e.clientX;
@@ -95,108 +124,111 @@ function render({ model, el }) {
       return { x: svgPt.x, y: svgPt.y };
     }
 
-    // Find nearest node to a point
-    function nearestNode(px, py, maxDist) {
+    // Point-to-line-segment distance
+    function distToSegment(px, py, x1, y1, x2, y2) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const lenSq = dx * dx + dy * dy;
+      if (lenSq === 0) return Math.hypot(px - x1, py - y1);
+      let t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+    }
+
+    // Find nearest edge
+    function nearestEdge(px, py, maxDist) {
       let best = null;
-      let bestDist = maxDist * maxDist;
-      data.nodes.forEach((n) => {
-        const dx = n.x - px;
-        const dy = n.y - py;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < bestDist) {
-          bestDist = d2;
-          best = n;
+      let bestKey = null;
+      let bestDist = maxDist;
+      Object.entries(edgeData).forEach(([key, edge]) => {
+        const src = nodeMap[edge.source];
+        const tgt = nodeMap[edge.target];
+        const d = distToSegment(px, py, src.x, src.y, tgt.x, tgt.y);
+        if (d < bestDist) {
+          bestDist = d;
+          best = edge;
+          bestKey = key;
         }
       });
       return best;
     }
 
-    // Show node info in panel
-    function showInfo(node, prefix) {
-      if (!node) {
-        panel.textContent = "Click a node to inspect it.";
+    function showEdgeInfo(edge, prefix) {
+      if (!edge) {
+        panel.textContent = "Click an edge to inspect it. Encoding: left = 0, right = 1.";
         return;
       }
+      const parent = nodeMap[edge.source];
+      const child = nodeMap[edge.target];
       const p = prefix ? prefix + " " : "";
-      if (node.is_leaf) {
-        panel.textContent = `${p}Leaf — samples: ${node.samples}`;
-      } else {
-        panel.textContent = `${p}Split: ${node.label} — samples: ${node.samples}`;
+      const dir = edge.side === "left" ? "left (0)" : "right (1)";
+      // Build encoding path from root to this edge's target
+      const path = pathToNode(edge.target);
+      const encoding = [];
+      for (let i = 0; i < path.length - 1; i++) {
+        const key = `${path[i]}-${path[i + 1]}`;
+        const e = edgeData[key];
+        if (e) encoding.push(e.side === "left" ? "0" : "1");
       }
+      panel.textContent = `${p}${parent.label} → ${dir} — ${child.samples} samples — col ${edge.depth} — path: [${encoding.join(", ")}]`;
     }
 
-    // Apply highlight for a given path + selected node (no Python needed)
-    let currentPath = [];
-    function applyHighlight(selectedId) {
-      currentPath = pathToNode(selectedId);
-      const pathSet = new Set(currentPath);
+    // Highlight
+    function applyHighlight(edge) {
+      const targetId = edge ? edge.target : -1;
+      const path = pathToNode(targetId);
+      const pathSet = new Set(path);
 
       const pathEdgeKeys = new Set();
-      for (let i = 0; i < currentPath.length - 1; i++) {
-        pathEdgeKeys.add(`${currentPath[i]}-${currentPath[i + 1]}`);
+      for (let i = 0; i < path.length - 1; i++) {
+        pathEdgeKeys.add(`${path[i]}-${path[i + 1]}`);
       }
 
       Object.entries(edgeEls).forEach(([key, line]) => {
         line.classList.toggle("highlighted", pathEdgeKeys.has(key));
       });
-
-      Object.entries(nodeEls).forEach(([id, circle]) => {
-        const nid = parseInt(id);
-        circle.classList.toggle("on-path", pathSet.has(nid));
-        circle.classList.toggle("selected", nid === selectedId);
-      });
-
-      if (selectedId >= 0 && nodeMap[selectedId]) {
-        showInfo(nodeMap[selectedId], "Selected");
-      } else {
-        showInfo(null);
-      }
     }
 
-    // Hover: show info for nearest node
+    let selectedEdge = null;
+
     svg.addEventListener("mousemove", (e) => {
       const pt = toSVG(e);
-      const node = nearestNode(pt.x, pt.y, 20);
-      if (node) {
+      const edge = nearestEdge(pt.x, pt.y, 15);
+      if (edge) {
         svg.style.cursor = "pointer";
-        const sel = model.get("selected_node");
-        if (sel < 0 || node.id !== sel) {
-          showInfo(node, "");
-        }
+        if (!selectedEdge) showEdgeInfo(edge, "");
       } else {
         svg.style.cursor = "";
-        const sel = model.get("selected_node");
-        if (sel >= 0 && nodeMap[sel]) {
-          showInfo(nodeMap[sel], "Selected");
-        } else {
-          showInfo(null);
-        }
+        if (!selectedEdge) showEdgeInfo(null);
       }
     });
 
-    // Click: select nearest node, highlight immediately in JS, then sync to Python
     svg.addEventListener("click", (e) => {
       const pt = toSVG(e);
-      const node = nearestNode(pt.x, pt.y, 20);
-      if (node) {
-        // Highlight immediately — no Python roundtrip needed
-        applyHighlight(node.id);
-        model.set("selected_node", node.id);
+      const edge = nearestEdge(pt.x, pt.y, 15);
+      if (edge) {
+        selectedEdge = edge;
+        applyHighlight(edge);
+        showEdgeInfo(edge, "Selected");
+        model.set("selected_edge_target", edge.target);
         model.save_changes();
       } else {
-        applyHighlight(-1);
-        model.set("selected_node", -1);
+        selectedEdge = null;
+        applyHighlight(null);
+        showEdgeInfo(null);
+        model.set("selected_edge_target", -1);
         model.save_changes();
       }
     });
 
-    // Also handle changes from Python side (e.g. programmatic selection)
-    model.on("change:selected_node", () => {
-      applyHighlight(model.get("selected_node"));
+    model.on("change:selected_edge_target", () => {
+      const targetId = model.get("selected_edge_target");
+      if (targetId < 0) {
+        selectedEdge = null;
+        applyHighlight(null);
+        showEdgeInfo(null);
+      }
     });
-
-    // Initial state
-    applyHighlight(model.get("selected_node"));
   }
 
   draw();

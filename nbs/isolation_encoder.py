@@ -52,6 +52,7 @@ def _(IsolationForestEncoder):
 
     enc = IsolationForestEncoder(n_estimators=2, max_features=2, max_samples=100)
     out = enc.fit_transform(X)
+    out.shape
     return X, enc, out
 
 
@@ -87,7 +88,7 @@ def _():
 
 @app.cell(hide_code=True)
 def _(X, enc, plt, tree_widget):
-    node_id = tree_widget.value["selected_node"]
+    node_id = tree_widget.value["selected_edge_target"]
     estimator = enc.forest_.estimators_[0]
 
     if node_id >= 0:
@@ -116,7 +117,8 @@ def _():
         _css = pathlib.Path(__file__).parent / "ensemble" / "widget.css"
 
         tree_data = traitlets.Dict({}).tag(sync=True)
-        selected_node = traitlets.Int(-1).tag(sync=True)
+        # Selected edge target node (-1 = nothing selected)
+        selected_edge_target = traitlets.Int(-1).tag(sync=True)
 
         def __init__(self, estimator, X, feature_names=None, **kwargs):
             self._estimator = estimator
@@ -174,22 +176,30 @@ def _():
                 nodes.append({
                     "id": i, "x": float(x), "y": float(y),
                     "label": label, "samples": n_samples, "is_leaf": is_leaf,
+                    "depth": depths[i],
                 })
                 if not is_leaf:
-                    edges.append({"source": i, "target": int(children_left[i])})
-                    edges.append({"source": i, "target": int(children_right[i])})
+                    edges.append({
+                        "source": i, "target": int(children_left[i]),
+                        "side": "left", "depth": depths[i],
+                    })
+                    edges.append({
+                        "source": i, "target": int(children_right[i]),
+                        "side": "right", "depth": depths[i],
+                    })
 
-            return {"nodes": nodes, "edges": edges, "width": int(width), "height": int(height)}
-
-        def compute_mask(self, node_id):
-            """Return boolean array: which samples from X reach this node."""
-            import numpy as np
-            if node_id < 0:
-                return np.zeros(self._X.shape[0], dtype=bool)
-            decision_paths = self._estimator.decision_path(self._X)
-            return decision_paths[:, node_id].toarray().ravel().astype(bool)
+            return {
+                "nodes": nodes, "edges": edges,
+                "width": int(width), "height": int(height),
+                "max_depth": max_depth,
+            }
 
     return (TreeWidget,)
+
+
+@app.cell
+def _():
+    return
 
 
 @app.cell(column=2)
