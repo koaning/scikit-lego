@@ -122,6 +122,7 @@ nav:
     - Installation: installation.md
     - Contribution: contribution.md
   - User guide:
+    - Quickstart: user-guide/quickstart.md
     - Datasets: user-guide/datasets.md
     - Linear Models: user-guide/linear-models.md
     - Mixture Methods: user-guide/mixture-methods.md
