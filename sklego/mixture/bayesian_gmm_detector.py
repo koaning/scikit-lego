@@ -48,7 +48,7 @@ class BayesianGMMOutlierDetector(OutlierMixin, BaseEstimator):
     import numpy as np
     from sklego.mixture import BayesianGMMOutlierDetector
 
-    # Generate datset, it consists of two clusters
+    # Generate dataset, it consists of two clusters
     np.random.seed(1)
     group0 = np.random.normal(0, 3, (10, 2))
     group1 = np.random.normal(2.5, 2, (5, 2))

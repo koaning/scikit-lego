@@ -48,16 +48,17 @@ documentation = "https://koaning.github.io/scikit-lego/"
 cvxpy = ["cmake", "osqp", "cvxpy>=1.1.8", "numpy<2.0"]
 formulaic = ["formulaic>=0.6.0"]
 umap = ["umap-learn>=0.4.6", "numpy<2.0"]
-
 all = ["scikit-lego[cvxpy,formulaic,umap]"]
 
 docs = [
-    "mkdocs>=1.5.3",
+    "mkdocs>=1.5.3,<2.0.0",
     "mkdocs-autorefs>=0.5.0",
     "mkdocs-material>=9.4.5",
     "mkdocs-material-extensions>=1.2",
     "mkdocstrings>=0.23.0",
     "mkdocstrings-python>=1.7.3",
+    "requests>=2.33.0",  # mkdocs-material dep, vulnerability found in 2.32.5, fixed in 2.33.0
+    "urllib3>=2.6.3",  # mkdocs-material dep, 3 vulnerabilities found in 2.5.0, fixed in 2.6.3
 ]
 
 test = [
@@ -76,12 +77,19 @@ utils = [
     "matplotlib>=3.0.2",
     "jupyter>=1.0.0",
     "jupyterlab>=0.35.4",
+    "fonttools>=4.60.2",  # matplotlib dep, vulnerability found in 4.60.1, fixed in 4.60.2
+    "pillow>=12.1.1",  # matplotlib dep, vulnerability found in 11.3.0, fixed in 12.1.1
+    "pygments>=2.20.0",   # jupyter dep, vulnerability found in 2.19.0, fixed in 2.20.0
+    "nbconvert>=7.17.0",  # jupyter dep, vulnerability found in 7.16.6, fixed in 7.17.0
+    "requests>=2.33.0",  # jupyter dep, vulnerability found in 2.32.5, fixed in 2.33.0
+    "tornado>=6.5.5",  # jupyter dep, 2 vulnerabilities in 6.5.2, fixed in 6.5.5
 ]
 
 dev = [
     "scikit-lego[all,test,docs]",
     "pre-commit>=1.18.3",
-    "ruff>=0.1.6",
+    "virtualenv>=20.36.1",  # pre-commit dep, vulnerability in 20.35.3, fixed in 20.36.1
+    "ruff>=0.15.8",
 ]
 
 [tool.setuptools.packages.find]

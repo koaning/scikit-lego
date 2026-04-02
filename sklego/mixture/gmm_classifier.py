@@ -31,7 +31,7 @@ class GMMClassifier(ClassifierMixin, BaseEstimator):
     import numpy as np
     from sklego.mixture import GMMClassifier
 
-    # Generate datset
+    # Generate dataset
     np.random.seed(1)
     group0 = np.random.normal(0, 3, (1000, 2))
     group1 = np.random.normal(2.5, 2, (500, 2))

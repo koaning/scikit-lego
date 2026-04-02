@@ -24,7 +24,7 @@ A mitigation for this is to add _decorators_ to your pipeline functions that log
 
 ## Logging in method chaining
 
-In order to use the logging capabilitites we first need to ensure we have a proper logger configured. We do this by running
+In order to use the logging capabilities we first need to ensure we have a proper logger configured. We do this by running
 
 ```py
 --8<-- "docs/_scripts/pandas-pipelines.py:log-setup"

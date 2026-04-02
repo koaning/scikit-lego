@@ -103,7 +103,7 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         )
 
     def fit(self, X, y):
-        """Fit the inner classfier using `X` and `y` as training data by fitting the underlying estimator and computing
+        """Fit the inner classifier using `X` and `y` as training data by fitting the underlying estimator and computing
         the posterior probabilities.
 
         Parameters
