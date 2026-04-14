@@ -204,9 +204,12 @@ class TimeGapSplit:
             X_train_df = X_index_df.filter(
                 nw.col("__date__") >= start_date, nw.col("__date__") < current_date + self.train_duration
             )
+            valid_end = current_date + self.train_duration + self.valid_duration + self.gap_duration
+            if valid_end >= date_max:
+                valid_end = valid_end + pd.Timedelta("1ns")
             X_valid_df = X_index_df.filter(
                 nw.col("__date__") >= current_date + self.train_duration + self.gap_duration,
-                nw.col("__date__") < current_date + self.train_duration + self.valid_duration + self.gap_duration,
+                nw.col("__date__") < valid_end,
             )
 
             current_date = current_date + time_shift
