@@ -63,7 +63,7 @@ docs = [
 
 test = [
     "narwhals[polars,pyarrow]",
-    "pytest>=6.2.5",
+    "pytest>=9.0.3",  # vulnerability found in pytest 8.4.2, fixed in 9.0.3
     "pytest-xdist>=1.34.0",
     "pytest-cov>=2.6.1",
     "pytest-mock>=1.6.3",
@@ -78,7 +78,7 @@ utils = [
     "jupyter>=1.0.0",
     "jupyterlab>=0.35.4",
     "fonttools>=4.60.2",  # matplotlib dep, vulnerability found in 4.60.1, fixed in 4.60.2
-    "pillow>=12.1.1",  # matplotlib dep, vulnerability found in 11.3.0, fixed in 12.1.1
+    "pillow>=12.2.0",  # matplotlib dep, vulnerability found in 11.3.0, fixed in 12.2.0
     "pygments>=2.20.0",   # jupyter dep, vulnerability found in 2.19.0, fixed in 2.20.0
     "nbconvert>=7.17.0",  # jupyter dep, vulnerability found in 7.16.6, fixed in 7.17.0
     "requests>=2.33.0",  # jupyter dep, vulnerability found in 2.32.5, fixed in 2.33.0
