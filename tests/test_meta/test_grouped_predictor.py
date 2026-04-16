@@ -362,7 +362,7 @@ def test_custom_shrinkage(shrinkage_data):
         np.array([means["Earth"], means["BE"], means["Brussels"]]) @ shrinkage_factors,
     ]
 
-    assert np.allclose(expected_prediction, shrink_est.predict(X))
+    assert np.allclose(shrink_est.predict(X), expected_prediction)
 
 
 def test_custom_shrinkage_wrong_return_type(shrinkage_data):
