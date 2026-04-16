@@ -54,7 +54,7 @@ with open(_static_path / "ts.md", "w") as f:
 
 # --8<-- [start:example-1]
 cv = TimeGapSplit(
-    date_serie=df["date"],
+    date_series=df["date"],
     train_duration=timedelta(days=10),
     valid_duration=timedelta(days=2),
     gap_duration=timedelta(days=1)
@@ -70,7 +70,7 @@ plt.clf()
 
 # --8<-- [start:example-2]
 cv = TimeGapSplit(
-    date_serie=df["date"],
+    date_series=df["date"],
     train_duration=timedelta(days=10),
     valid_duration=timedelta(days=5),
     gap_duration=timedelta(days=1)
@@ -85,7 +85,7 @@ plt.clf()
 
 # --8<-- [start:example-3]
 cv = TimeGapSplit(
-    date_serie=df["date"],
+    date_series=df["date"],
     train_duration=timedelta(days=10),
     valid_duration=timedelta(days=2),
     gap_duration=timedelta(days=1),
@@ -101,7 +101,7 @@ plt.clf()
 
 # --8<-- [start:example-4]
 cv = TimeGapSplit(
-    date_serie=df["date"],
+    date_series=df["date"],
     train_duration=None,
     valid_duration=timedelta(days=3),
     gap_duration=timedelta(days=2),
@@ -117,7 +117,7 @@ plt.clf()
 
 # --8<-- [start:example-5]
 cv = TimeGapSplit(
-    date_serie=df["date"],
+    date_series=df["date"],
     train_duration=timedelta(days=10),
     valid_duration=timedelta(days=2),
     gap_duration=timedelta(days=1),

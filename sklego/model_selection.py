@@ -46,10 +46,12 @@ class TimeGapSplit:
 
     Parameters
     ----------
-    date_serie : Series
+    date_series : Series
         Series with the date, that should have all the indices of X used in the split() method.
         If the Series is not pandas-like (for example, if it's a Polars Series, which does not have
         an index) then it must the same length as the `X` and `y` objects passed to `split`.
+    date_serie : Series | None, default=None
+        Backward-compatible alias for `date_series`.
     valid_duration : datetime.timedelta
         Retraining period.
     stride_duration : datetime.timedelta | None
@@ -86,14 +88,27 @@ class TimeGapSplit:
 
     def __init__(
         self,
-        date_serie,
-        valid_duration,
+        date_serie=None,
+        valid_duration=None,
         stride_duration=None,
         train_duration=None,
         gap_duration=timedelta(0),
         n_splits=None,
         window="rolling",
+        date_series=None,
     ):
+        if valid_duration is None:
+            raise ValueError("`valid_duration` has to be defined")
+
+        if (date_serie is None) and (date_series is None):
+            raise ValueError("Either `date_series` or `date_serie` has to be defined")
+
+        if (date_serie is not None) and (date_series is not None):
+            raise ValueError("Only one of `date_series` and `date_serie` can be provided")
+
+        if date_series is not None:
+            date_serie = date_series
+
         # If stride length is not defined, set it equal to the length validation set
         if stride_duration is None:
             stride_duration = valid_duration
@@ -111,7 +126,8 @@ class TimeGapSplit:
         if (train_duration is not None) and (train_duration <= stride_duration):
             raise ValueError("stride_duration is longer than train_duration, it should be shorter.")
 
-        self.date_serie = nw.from_native(date_serie, series_only=True).alias("__date__")
+        self.date_series = nw.from_native(date_serie, series_only=True).alias("__date__")
+        self.date_serie = self.date_series
         self.train_duration = train_duration
         self.valid_duration = valid_duration
         self.gap_duration = gap_duration
@@ -120,7 +136,7 @@ class TimeGapSplit:
         self.window = window
 
     def _join_date_and_x(self, X):
-        """Creates a DataFrame indexed by the pandas index (the same as `date_serie`) with date column joined with that
+        """Creates a DataFrame indexed by the pandas index (the same as `date_series`) with date column joined with that
         index and with the 'numpy index' column (i.e. just a range) that is required for the output and the rest of
         sklearn.
 
@@ -132,7 +148,7 @@ class TimeGapSplit:
         X : DataFrame
             Dataframe with the data to split
         """
-        X_index_df = nw.maybe_align_index(self.date_serie, X).to_frame().with_row_index("np_index")
+        X_index_df = nw.maybe_align_index(self.date_series, X).to_frame().with_row_index("np_index")
 
         return X_index_df
 
@@ -160,7 +176,7 @@ class TimeGapSplit:
 
         if len(X) != len(X_index_df):
             raise AssertionError(
-                "X and X_index_df are not the same length, there must be some index missing in 'self.date_serie'"
+                "X and X_index_df are not the same length, there must be some index missing in 'self.date_series'"
             )
 
         date_min = X_index_df["__date__"].min()
