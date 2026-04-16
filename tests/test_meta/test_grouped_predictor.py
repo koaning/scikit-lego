@@ -266,9 +266,7 @@ def test_constant_shrinkage(shrinkage_data):
         np.array([means["Earth"], means["BE"], means["Antwerp"]]) @ shrinkage_factors,
         np.array([means["Earth"], means["BE"], means["Brussels"]]) @ shrinkage_factors,
     ]
-
-    for exp, pred in zip(expected_prediction, shrink_est.predict(X).tolist()):
-        assert pytest.approx(exp) == pred
+    assert np.allclose(shrink_est.predict(X), expected_prediction)
 
 
 def test_relative_shrinkage(shrinkage_data):
@@ -293,9 +291,7 @@ def test_relative_shrinkage(shrinkage_data):
         np.array([means["Earth"], means["BE"], means["Antwerp"]]) @ shrinkage_factors,
         np.array([means["Earth"], means["BE"], means["Brussels"]]) @ shrinkage_factors,
     ]
-
-    for exp, pred in zip(expected_prediction, shrink_est.predict(X).tolist()):
-        assert pytest.approx(exp) == pred
+    assert np.allclose(shrink_est.predict(X), expected_prediction)
 
 
 def test_min_n_obs_shrinkage(shrinkage_data):
@@ -315,8 +311,7 @@ def test_min_n_obs_shrinkage(shrinkage_data):
 
     expected_prediction = [means["NL"], means["NL"], means["BE"], means["BE"]]
 
-    for exp, pred in zip(expected_prediction, shrink_est.predict(X).tolist()):
-        assert pytest.approx(exp) == pred
+    assert np.allclose(shrink_est.predict(X), expected_prediction)
 
 
 def test_min_n_obs_shrinkage_too_little_obs(shrinkage_data):
@@ -367,7 +362,7 @@ def test_custom_shrinkage(shrinkage_data):
         np.array([means["Earth"], means["BE"], means["Brussels"]]) @ shrinkage_factors,
     ]
 
-    assert expected_prediction == shrink_est.predict(X).tolist()
+    assert np.allclose(expected_prediction, shrink_est.predict(X))
 
 
 def test_custom_shrinkage_wrong_return_type(shrinkage_data):
@@ -509,7 +504,7 @@ def test_shrinkage_single_group(shrinkage_data):
         np.array([means["Earth"], means["BE"]]) @ shrinkage_factors,
     ]
 
-    assert expected_prediction == shrink_est.predict(X[["Country"]]).tolist()
+    assert np.allclose(shrink_est.predict(X[["Country"]]), expected_prediction)
 
 
 def test_shrinkage_single_group_no_global(shrinkage_data):
