@@ -50,8 +50,6 @@ class TimeGapSplit:
         Series with the date, that should have all the indices of X used in the split() method.
         If the Series is not pandas-like (for example, if it's a Polars Series, which does not have
         an index) then it must the same length as the `X` and `y` objects passed to `split`.
-    date_serie : Series | None, default=None
-        Backward-compatible alias for `date_series`.
     valid_duration : datetime.timedelta
         Retraining period.
     stride_duration : datetime.timedelta | None
@@ -69,6 +67,8 @@ class TimeGapSplit:
 
         - `"rolling"` window has fixed size and is shifted entirely.
         - `"expanding"` left side of window is fixed, right border increases each fold.
+    date_serie : Series | None, default=None
+        Backward-compatible alias for `date_series`.
 
     Notes
     -----
@@ -88,26 +88,34 @@ class TimeGapSplit:
 
     def __init__(
         self,
-        date_serie=None,
+        date_series=None,
         valid_duration=None,
         stride_duration=None,
         train_duration=None,
         gap_duration=timedelta(0),
         n_splits=None,
         window="rolling",
-        date_series=None,
+        date_serie=None,
     ):
         if valid_duration is None:
             raise ValueError("`valid_duration` has to be defined")
 
-        if (date_serie is None) and (date_series is None):
-            raise ValueError("Either `date_series` or `date_serie` has to be defined")
-
-        if (date_serie is not None) and (date_series is not None):
-            raise ValueError("Only one of `date_series` and `date_serie` can be provided")
-
-        if date_series is not None:
-            date_serie = date_series
+        match (date_series, date_serie):
+            case (None, None):
+                msg = "`date_series` cannot be None"
+                raise ValueError(msg)
+            case (value, None):
+                self.date_series = nw.from_native(value, series_only=True).alias("__date__")
+            case (None, value):
+                msg = (
+                    "Please use `date_series` instead of `date_serie`, "
+                    "`date_serie` will be deprecated in future versions"
+                )
+                warn(msg, DeprecationWarning)
+                self.date_series = nw.from_native(value, series_only=True).alias("__date__")
+            case (_, _):
+                msg = "Cannot provide both `date_series` and `date_serie`"
+                raise ValueError(msg)
 
         # If stride length is not defined, set it equal to the length validation set
         if stride_duration is None:
@@ -126,7 +134,6 @@ class TimeGapSplit:
         if (train_duration is not None) and (train_duration <= stride_duration):
             raise ValueError("stride_duration is longer than train_duration, it should be shorter.")
 
-        self.date_series = nw.from_native(date_serie, series_only=True).alias("__date__")
         self.date_serie = self.date_series
         self.train_duration = train_duration
         self.valid_duration = valid_duration
