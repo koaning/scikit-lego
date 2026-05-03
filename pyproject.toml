@@ -76,13 +76,14 @@ test-all = [
 utils = [
     "matplotlib>=3.0.2",
     "jupyter>=1.0.0",
-    "jupyterlab>=0.35.4",
+    "jupyterlab>=4.5.7",  # vulnerability found in 4.4.9, fixed in 4.5.7
     "fonttools>=4.60.2",  # matplotlib dep, vulnerability found in 4.60.1, fixed in 4.60.2
     "pillow>=12.2.0",  # matplotlib dep, vulnerability found in 11.3.0, fixed in 12.2.0
     "pygments>=2.20.0",   # jupyter dep, vulnerability found in 2.19.0, fixed in 2.20.0
     "nbconvert>=7.17.1",  # jupyter dep, 2 vulnerabilities found in 7.17.0, fixed in 7.17.1
     "requests>=2.33.0",  # jupyter dep, vulnerability found in 2.32.5, fixed in 2.33.0
     "tornado>=6.5.5",  # jupyter dep, 2 vulnerabilities in 6.5.2, fixed in 6.5.5
+    "notebook>=7.5.6",  # jupyter dep, vulerability in 7.4.7, fixed in 7.5.6
 ]
 
 dev = [
