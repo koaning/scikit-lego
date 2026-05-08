@@ -84,6 +84,8 @@ utils = [
     "requests>=2.33.0",  # jupyter dep, vulnerability found in 2.32.5, fixed in 2.33.0
     "tornado>=6.5.5",  # jupyter dep, 2 vulnerabilities in 6.5.2, fixed in 6.5.5
     "notebook>=7.5.6",  # jupyter dep, vulerability in 7.4.7, fixed in 7.5.6
+    "jupyter-server>=2.18.0",  # jupyter dep, 4 vulerabilities in 2.17.0, fixed in 2.18.0
+    "mistune>=3.2.1",  # jupyter dep, vulerability in 3.1.4, fixed in 3.2.1
 ]
 
 dev = [
