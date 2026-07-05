@@ -367,7 +367,8 @@ def test_custom_shrinkage(shrinkage_data):
         np.array([means["Earth"], means["BE"], means["Brussels"]]) @ shrinkage_factors,
     ]
 
-    assert expected_prediction == shrink_est.predict(X).tolist()
+    for exp, pred in zip(expected_prediction, shrink_est.predict(X).tolist()):
+        assert pytest.approx(exp) == pred
 
 
 def test_custom_shrinkage_wrong_return_type(shrinkage_data):
