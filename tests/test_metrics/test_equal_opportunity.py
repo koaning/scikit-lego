@@ -81,3 +81,4 @@ def test_warning_is_logged(sensitive_classification_dataset):
         # Trigger a warning.
         equal_opportunity_score("x2", positive_target=2)(mod_fair, X, y)
         assert issubclass(w[-1].category, RuntimeWarning)
+        assert "y_true == 2 and y_hat == 2" in str(w[-1].message)
