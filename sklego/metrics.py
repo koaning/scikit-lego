@@ -166,14 +166,16 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
         # fair so we return 0
         if len(y_given_z1_y1) == 0:
             warn(
-                f"No samples with y_hat == {positive_target} for {sensitive_column} == 1, returning 0",
+                f"No samples with y_true == {positive_target} and y_hat == {positive_target} "
+                f"for {sensitive_column} == 1, returning 0",
                 RuntimeWarning,
             )
             return 0
 
         if len(y_given_z0_y1) == 0:
             warn(
-                f"No samples with y_hat == {positive_target} for {sensitive_column} == 0, returning 0",
+                f"No samples with y_true == {positive_target} and y_hat == {positive_target} "
+                f"for {sensitive_column} == 0, returning 0",
                 RuntimeWarning,
             )
             return 0
