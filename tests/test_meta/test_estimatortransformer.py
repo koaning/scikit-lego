@@ -5,6 +5,7 @@ import pytest
 from sklearn import clone
 from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.pipeline import FeatureUnion, Pipeline
@@ -115,3 +116,43 @@ def test_nan_and_string_input(X):
 
     assert transformed.shape == (y.shape[0], 1)
     assert np.all(transformed == clf.fit(X, y).predict(X))
+
+
+def test_get_feature_names_out(random_xy_dataset_regr):
+    """`get_feature_names_out` should exist and match the width of `transform`."""
+    X, y = random_xy_dataset_regr
+    X, y = check_X_y(X, y, estimator=EstimatorTransformer(LinearRegression()), dtype="numeric")
+
+    transformer = EstimatorTransformer(LinearRegression()).fit(X, y)
+    names = transformer.get_feature_names_out()
+
+    assert list(names) == ["estimatortransformer0"]
+    assert len(names) == transformer.transform(X).shape[1]
+
+
+def test_get_feature_names_out_multitarget(random_xy_dataset_multitarget):
+    """One name per target column for a multi output estimator."""
+    X, y = random_xy_dataset_multitarget
+    X, y = check_X_y(X, y, estimator=EstimatorTransformer(LinearRegression()), dtype="numeric", multi_output=True)
+
+    transformer = EstimatorTransformer(LinearRegression()).fit(X, y)
+    names = transformer.get_feature_names_out()
+
+    assert len(names) == y.shape[1]
+    assert len(names) == transformer.transform(X).shape[1]
+
+
+def test_get_feature_names_out_in_pipeline(random_xy_dataset_regr):
+    """The names must also resolve through a pipeline (the reported symptom)."""
+    X, y = random_xy_dataset_regr
+    X, y = check_X_y(X, y, estimator=EstimatorTransformer(LinearRegression()), dtype="numeric")
+
+    pipeline = Pipeline([("clf", EstimatorTransformer(LinearRegression()))]).fit(X, y)
+
+    assert list(pipeline.get_feature_names_out()) == ["estimatortransformer0"]
+
+
+def test_get_feature_names_out_not_fitted():
+    """Asking before fit raises NotFittedError rather than AttributeError."""
+    with pytest.raises(NotFittedError):
+        EstimatorTransformer(LinearRegression()).get_feature_names_out()

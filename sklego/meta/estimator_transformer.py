@@ -1,10 +1,15 @@
 from sklearn import clone
-from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin
+from sklearn.base import (
+    BaseEstimator,
+    ClassNamePrefixFeaturesOutMixin,
+    MetaEstimatorMixin,
+    TransformerMixin,
+)
 from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 
-class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
+class EstimatorTransformer(ClassNamePrefixFeaturesOutMixin, TransformerMixin, MetaEstimatorMixin, BaseEstimator):
     """Allow using an estimator as a transformer in an earlier step of a pipeline.
 
     !!! warning
@@ -90,7 +95,20 @@ class EstimatorTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
         self.estimator_ = clone(self.estimator)
         self.estimator_.fit(X, y, **kwargs)
         self.n_features_in_ = X.shape[1]
+        # transform() returns one column per target for a multi output
+        # estimator, and reshapes to a single column otherwise.
+        self.n_outputs_ = y.shape[1] if self.multi_output_ else 1
         return self
+
+    @property
+    def _n_features_out(self):
+        """Number of columns `transform` produces.
+
+        Consumed by `ClassNamePrefixFeaturesOutMixin` to build the names
+        returned by `get_feature_names_out`.
+        """
+        check_is_fitted(self, "estimator_")
+        return self.n_outputs_
 
     def transform(self, X):
         """Transform the data by applying the `predict_func` of the fitted estimator.
