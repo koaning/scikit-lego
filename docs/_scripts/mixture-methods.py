@@ -9,10 +9,9 @@ _static_path.mkdir(parents=True, exist_ok=True)
 #################################### GMMClassifier #######################################
 ##########################################################################################
 
+import matplotlib.pylab as plt
 # --8<-- [start:gmm-classifier]
 import numpy as np
-import matplotlib.pylab as plt
-
 from sklearn.datasets import make_moons
 from sklearn.preprocessing import StandardScaler
 
@@ -29,11 +28,11 @@ mod = GMMClassifier(n_components=4).fit(X, y)
 plt.figure(figsize=(14, 5))
 plt.subplot(121)
 plt.scatter(X[:, 0], X[:, 1], c=mod.predict(X), s=8)
-plt.title("classes of points");
+plt.title("classes of points")
 
 plt.subplot(122)
 plt.scatter(U[:, 0], U[:, 1], c=mod.predict_proba(U)[:, 1], s=8)
-plt.title("classifier boundary");
+plt.title("classifier boundary")
 # --8<-- [end:gmm-classifier]
 
 plt.savefig(_static_path / "gmm-classifier.png")
@@ -43,10 +42,9 @@ plt.clf()
 ################################## GMMOutlierDetector ####################################
 ##########################################################################################
 
+import matplotlib.pylab as plt
 # --8<-- [start:gmm-outlier-detector]
 import numpy as np
-import matplotlib.pylab as plt
-
 from sklearn.datasets import make_moons
 from sklearn.preprocessing import StandardScaler
 
@@ -62,11 +60,11 @@ mod = GMMOutlierDetector(n_components=16, threshold=0.95).fit(X)
 plt.figure(figsize=(14, 5))
 plt.subplot(121)
 plt.scatter(X[:, 0], X[:, 1], c=mod.score_samples(X), s=8)
-plt.title("likelihood of points given mixture of 16 gaussians");
+plt.title("likelihood of points given mixture of 16 gaussians")
 
 plt.subplot(122)
 plt.scatter(U[:, 0], U[:, 1], c=mod.predict(U), s=8)
-plt.title("outlier selection");
+plt.title("outlier selection")
 # --8<-- [end:gmm-outlier-detector]
 
 plt.savefig(_static_path / "gmm-outlier-detector.png")
@@ -81,7 +79,7 @@ for i in range(1, 5):
     mod = GMMOutlierDetector(n_components=16, threshold=i, method="stddev").fit(X)
     plt.subplot(140 + i)
     plt.scatter(U[:, 0], U[:, 1], c=mod.predict(U), s=8)
-    plt.title(f"outlier sigma={i}");
+    plt.title(f"outlier sigma={i}")
 # --8<-- [end:gmm-outlier-multi-threshold]
 
 plt.savefig(_static_path / "gmm-outlier-multi-threshold.png")
@@ -90,9 +88,9 @@ plt.clf()
 ########################################### KDE ##########################################
 ##########################################################################################
 
+import matplotlib.pylab as plt
 # --8<-- [start:outlier-mixture-threshold]
 import numpy as np
-import matplotlib.pylab as plt
 import seaborn as sns
 from scipy.stats import gaussian_kde
 
@@ -105,7 +103,9 @@ likelihood_range = np.linspace(0.80, 1.0, 10000)
 index_max_y = np.argmax(density(likelihood_range))
 mean_likelihood = likelihood_range[index_max_y]
 new_likelihoods = score_samples[score_samples < mean_likelihood]
-new_likelihoods_std = np.sqrt(np.sum((new_likelihoods - mean_likelihood) ** 2) / (len(new_likelihoods) - 1))
+new_likelihoods_std = np.sqrt(
+    np.sum((new_likelihoods - mean_likelihood) ** 2) / (len(new_likelihoods) - 1)
+)
 
 plt.figure(figsize=(14, 3))
 plt.subplot(121)
@@ -123,4 +123,37 @@ plt.title("log-lik values from with GMM, stddev is based on blue part")
 # --8<-- [end:outlier-mixture-threshold]
 
 plt.savefig(_static_path / "outlier-mixture-threshold.png")
+plt.clf()
+
+############################# BayesianKernelDensityClassifier ############################
+##########################################################################################
+
+plt.rcdefaults()
+# --8<-- [start:bayes-kde-classifier]
+import matplotlib.pylab as plt
+import numpy as np
+from sklearn.datasets import make_moons
+from sklearn.preprocessing import StandardScaler
+
+from sklego.neighbors import BayesianKernelDensityClassifier
+
+n = 1000
+X, y = make_moons(n)
+X = X + np.random.normal(0, 0.12, (n, 2))
+X = StandardScaler().fit_transform(X)
+U = np.random.uniform(-2, 2, (10000, 2))
+
+mod = BayesianKernelDensityClassifier(bandwidth=0.2).fit(X, y)
+
+plt.figure(figsize=(14, 5))
+plt.subplot(121)
+plt.scatter(X[:, 0], X[:, 1], c=mod.predict(X), s=8)
+plt.title("classes of points")
+
+plt.subplot(122)
+plt.scatter(U[:, 0], U[:, 1], c=mod.predict_proba(U)[:, 1], s=8)
+plt.title("classifier boundary")
+# --8<-- [end:bayes-kde-classifier]
+
+plt.savefig(_static_path / "bayes-kde-classifier.png")
 plt.clf()
