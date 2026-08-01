@@ -289,8 +289,8 @@ def test_timegapsplit_with_gridsearch():
 @pytest.mark.parametrize(
     ("delta", "expected"),
     [
-        (pd.Timedelta(days=1), "D"),
-        (pd.Timedelta(days=2), "2D"),
+        (pd.Timedelta(days=1), "24h"),
+        (pd.Timedelta(days=2), "48h"),
         (pd.Timedelta(days=1, hours=12), "36h"),
         (pd.Timedelta(hours=1), "h"),
         (pd.Timedelta(hours=3), "3h"),
@@ -298,15 +298,15 @@ def test_timegapsplit_with_gridsearch():
         (pd.Timedelta(seconds=30), "30s"),
         (pd.Timedelta(milliseconds=1500), "1500ms"),
         (pd.Timedelta(microseconds=1), "us"),
-        (pd.Timedelta(0), "0D"),
-        (pd.Timedelta(days=-1), "-1D"),
+        (pd.Timedelta(0), "0h"),
+        (pd.Timedelta(days=-1), "-24h"),
     ],
 )
 def test_timedelta_to_freqstr(delta: pd.Timedelta, expected: str) -> None:
     """Offset aliases must not depend on the pandas version.
 
-    `pd.tseries.frequencies.to_offset` renders whole-day timedeltas as hours (`"24h"`) since pandas
-    3.0, because `Day` now models a calendar day rather than a fixed 24h duration.
+    These are the pandas 3 renderings. `pd.tseries.frequencies.to_offset` produced `"D"` for whole
+    days before pandas 3.0, and the legacy uppercase `"H"`/`"T"`/`"S"` aliases before pandas 2.2.
     """
     assert _timedelta_to_freqstr(delta) == expected
 
@@ -365,7 +365,7 @@ def test_timegapsplit_summary():
             timedelta(days=4),
             timedelta(days=2),
         ],
-        "frequency": ["D", "D", "D", "D", "D", "D", "D", "D", "D", "D", "D", "D"],
+        "frequency": ["24h"] * 12,
         "Unique days": [5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3],
         "nbr samples": [5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3],
         "part": [

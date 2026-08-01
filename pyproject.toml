@@ -21,8 +21,8 @@ maintainers = [
 
 dependencies = [
     "narwhals>=1.5.0",
-    "numpy>=1.26.4",  # imported directly by sklego, previously relied on as a transitive dependency
-    "pandas>=2.0.3",  # `DataFrame.convert_dtypes(dtype_backend=...)` is used by `TimeGapSplit.summary`
+    "numpy>=1.26.4",
+    "pandas>=2.0.3",
     "scikit-learn>=1.4.2",
     "sklearn-compat>=0.1.3",
 ]
@@ -46,9 +46,9 @@ issue-tracker = "https://github.com/koaning/scikit-lego/issues"
 documentation = "https://koaning.github.io/scikit-lego/"
 
 [project.optional-dependencies]
-cvxpy = ["cmake", "osqp", "cvxpy>=1.1.8", "numpy<2.0"]
+cvxpy = ["cvxpy>=1.5.2"]
 formulaic = ["formulaic>=0.6.0"]
-umap = ["umap-learn>=0.4.6", "numpy<2.0"]
+umap = ["umap-learn>=0.5.8", "numba>=0.61"]
 all = ["scikit-lego[cvxpy,formulaic,umap]"]
 
 docs = [

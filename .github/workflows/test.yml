@@ -55,8 +55,8 @@ jobs:
     - name: Install lowest supported dependencies
       run: |
         uv venv --python 3.10
-        uv pip install --resolution lowest-direct -e ".[test]"
+        uv pip install --resolution lowest-direct -e ".[test-all]"
     - name: Show installed versions
       run: uv pip freeze
     - name: Run tests
-      run: uv run --no-sync pytest -n auto --disable-warnings -m "not cvxpy and not formulaic and not umap"
+      run: uv run --no-sync pytest -n auto --disable-warnings

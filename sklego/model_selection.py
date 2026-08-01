@@ -15,8 +15,9 @@ from sklego.base import Clusterer
 from sklego.common import sliding_window
 
 # Offset aliases and their duration in nanoseconds, from coarsest to finest.
+# `D` is deliberately absent: it denotes a calendar day, which is not a fixed
+# duration, so it cannot describe a timedelta.
 _FREQ_ALIASES: tuple[tuple[str, int], ...] = (
-    ("D", 86_400_000_000_000),
     ("h", 3_600_000_000_000),
     ("min", 60_000_000_000),
     ("s", 1_000_000_000),
@@ -29,10 +30,11 @@ _FREQ_ALIASES: tuple[tuple[str, int], ...] = (
 def _timedelta_to_freqstr(delta: pd.Timedelta) -> str:
     """Render a timedelta as a pandas offset alias, using the coarsest unit that divides it evenly.
 
-    `pandas.tseries.frequencies.to_offset(...).freqstr` is deliberately *not* used here: its output is
-    not stable across pandas versions. Since pandas 3.0 the `Day` offset models a calendar day, which
-    is not a fixed duration, so an exact timedelta of whole days is rendered in hours (`"24h"`) instead
-    of days (`"D"`).
+    NOTE: Matches what `pandas.tseries.frequencies.to_offset(...).freqstr` returns on pandas 3,
+    where the `Day` offset models a calendar day and so an exact timedelta of whole days renders
+    in hours (`"24h"`, not `"D"`).
+    That function is not called directly because pandas 2 still renders those deltas as `"D"`,
+    and this column should not change meaning with the installed pandas version.
     """
     total_ns: int = delta // pd.Timedelta(1, "ns")
 
