@@ -4,13 +4,17 @@ from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LinearRegression
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.svm import OneClassSVM
-from sklearn.utils.estimator_checks import parametrize_with_checks
+from sklearn_compat.utils.estimator_checks import parametrize_with_checks
 
 from sklego.meta import OutlierClassifier
 from sklego.mixture import GMMOutlierDetector
+from tests.conftest import GAUSSIAN_MIXTURE_ARRAY_API_REASON, expect_array_api_failure
 
 
-@parametrize_with_checks([OutlierClassifier(GMMOutlierDetector(threshold=0.1, method="quantile"))])
+@parametrize_with_checks(
+    [OutlierClassifier(GMMOutlierDetector(threshold=0.1, method="quantile"))],
+    expected_failed_checks=expect_array_api_failure(GAUSSIAN_MIXTURE_ARRAY_API_REASON),
+)
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         # Since `OutlierClassifier` is a classifier (`ClassifierMixin`), parametrize_with_checks feeds a classification

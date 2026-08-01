@@ -1,13 +1,35 @@
 import itertools as it
+from collections.abc import Callable
 
 import numpy as np
 import pandas as pd
 import polars as pl
 import pytest
+from sklearn.base import BaseEstimator
 
 n_vals = (10, 500)
 k_vals = (1, 5)
 np_types = (np.int32, np.float32, np.float64)
+
+# scikit-learn 1.9 runs `check_array_api_input` with NumPy inputs
+ARRAY_API_CHECK = "check_array_api_input"
+
+GAUSSIAN_MIXTURE_ARRAY_API_REASON = (
+    "wraps scikit-learn's GaussianMixture, which rejects init_params='kmeans' under array_api_dispatch"
+)
+DATAFRAME_ARRAY_API_REASON = "groups X through a dataframe, which array_api_dispatch does not accept"
+
+
+def expect_array_api_failure(
+    reason: str,
+    applies_to: tuple[type[BaseEstimator], ...] | None = None,
+) -> Callable[[BaseEstimator], dict[str, str]]:
+    """Build an `expected_failed_checks` callable for `parametrize_with_checks`.
+
+    `applies_to` narrows the expected failure to instances of the given estimator types; `None`
+    applies it to every parametrized estimator.
+    """
+    return lambda estimator: {ARRAY_API_CHECK: reason} if not applies_to or isinstance(estimator, applies_to) else {}
 
 
 def select_tests(include, exclude=[]):

@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
-from sklearn.utils.estimator_checks import parametrize_with_checks
+from sklearn_compat.utils.estimator_checks import parametrize_with_checks
 
 from sklego.naive_bayes import BayesianGaussianMixtureNB, GaussianMixtureNB
+from tests.conftest import GAUSSIAN_MIXTURE_ARRAY_API_REASON, expect_array_api_failure
 
 
 @parametrize_with_checks(
@@ -12,6 +13,7 @@ from sklego.naive_bayes import BayesianGaussianMixtureNB, GaussianMixtureNB
         BayesianGaussianMixtureNB(),
         BayesianGaussianMixtureNB(n_components=2),
     ],
+    expected_failed_checks=expect_array_api_failure(GAUSSIAN_MIXTURE_ARRAY_API_REASON, applies_to=(GaussianMixtureNB,)),
 )
 def test_sklearn_compatible_estimator(estimator, check):
     check(estimator)

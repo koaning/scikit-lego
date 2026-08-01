@@ -14,6 +14,33 @@ from sklearn_compat.utils.validation import check_array
 from sklego.base import Clusterer
 from sklego.common import sliding_window
 
+# Offset aliases and their duration in nanoseconds, from coarsest to finest.
+_FREQ_ALIASES: tuple[tuple[str, int], ...] = (
+    ("D", 86_400_000_000_000),
+    ("h", 3_600_000_000_000),
+    ("min", 60_000_000_000),
+    ("s", 1_000_000_000),
+    ("ms", 1_000_000),
+    ("us", 1_000),
+    ("ns", 1),
+)
+
+
+def _timedelta_to_freqstr(delta: pd.Timedelta) -> str:
+    """Render a timedelta as a pandas offset alias, using the coarsest unit that divides it evenly.
+
+    `pandas.tseries.frequencies.to_offset(...).freqstr` is deliberately *not* used here: its output is
+    not stable across pandas versions. Since pandas 3.0 the `Day` offset models a calendar day, which
+    is not a fixed duration, so an exact timedelta of whole days is rendered in hours (`"24h"`) instead
+    of days (`"D"`).
+    """
+    total_ns: int = delta // pd.Timedelta(1, "ns")
+
+    # The trailing ("ns", 1) entry divides any integer, so a match is always found.
+    alias, unit_ns = next((alias, unit_ns) for alias, unit_ns in _FREQ_ALIASES if total_ns % unit_ns == 0)
+    n = total_ns // unit_ns
+    return alias if n == 1 else f"{n}{alias}"
+
 
 class TimeGapSplit:
     r"""Provides train/test indices to split time series data samples.
@@ -64,7 +91,7 @@ class TimeGapSplit:
 
         In production you would have not been able to create the target for that period, and you would have to drop it from
         the training data.
-        
+
     n_splits : int | None, default=None
         Number of splits.
     window : Literal["rolling", "expanding"], default="rolling"
@@ -255,11 +282,9 @@ class TimeGapSplit:
         if self.n_splits:
             if n_split_max < self.n_splits:
                 raise ValueError(
-                    (
-                        "Number of folds requested = {1} are greater"
-                        " than maximum  ={0} possible"
-                        " based on the given values."
-                    ).format(n_split_max, self.n_splits)
+                    f"Number of folds requested = {self.n_splits} are greater"
+                    f" than maximum  ={n_split_max} possible"
+                    " based on the given values."
                 )
 
         current_date = date_min
@@ -346,11 +371,13 @@ class TimeGapSplit:
                 n_unique = dates.dt.date().n_unique()
             except NotImplementedError:
                 # Added convert_dtypes to avoid NotImplementedError if pandas default backend is being used (we are using a pandas dataframe).
-                dates_converted = nw.from_native(nw.to_native(dates).convert_dtypes(dtype_backend="pyarrow"), eager_only = True,series_only = True)
+                dates_converted = nw.from_native(
+                    nw.to_native(dates).convert_dtypes(dtype_backend="pyarrow"), eager_only=True, series_only=True
+                )
                 n_unique = dates_converted.dt.date().n_unique()
 
             # Calculate the frequency of data as the mode of the difference of successive data points
-            freq = pd.tseries.frequencies.to_offset(dates.diff().to_pandas().value_counts().index[0]).freqstr
+            freq = _timedelta_to_freqstr(dates.diff().to_pandas().value_counts().index[0])
 
             # Populate the summary dictionary for current fold
             summary["Start date"].append(mindate)
@@ -556,7 +583,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
             raise ValueError(
                 "k-fold cross-validation requires at least one"
                 " train/test split by setting n_splits=2 or more,"
-                " got n_splits={0}.".format(n_splits)
+                f" got n_splits={n_splits}."
             )
 
         self.n_splits = n_splits
@@ -604,9 +631,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
         X, y, groups = indexable(X, y, groups)
         n_groups = np.unique(groups).shape[0]
         if self.n_splits >= n_groups:
-            raise ValueError(
-                ("n_splits({0}) must be less than the amount of unique groups({1}).").format(self.n_splits, n_groups)
-            )
+            raise ValueError(f"n_splits({self.n_splits}) must be less than the amount of unique groups({n_groups}).")
         return list(self._iter_test_indices(X, y, groups))
 
     def get_n_splits(self, X=None, y=None, groups=None):
@@ -643,9 +668,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
             If runtime is expected to take over one minute.
         """
         unique_groups = len(set(groups))
-        warning = (
-            "Finding the optimal split points with {0} unique groups and n_splits at {1} can take several minutes."
-        ).format(unique_groups, self.n_splits)
+        warning = f"Finding the optimal split points with {unique_groups} unique groups and n_splits at {self.n_splits} can take several minutes."
         if self.n_splits == 4 and unique_groups > 250:
             warn(
                 warning + " Consider to decrease n_splits to 3 or lower.",

@@ -10,7 +10,7 @@ from sklearn.linear_model import Lasso
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 
-from sklego.model_selection import TimeGapSplit
+from sklego.model_selection import TimeGapSplit, _timedelta_to_freqstr
 
 df = pd.DataFrame(np.random.randint(0, 30, size=(30, 4)), columns=list("ABCy"))
 df["date"] = pd.date_range(start="1/1/2018", end="1/30/2018")[::-1]
@@ -286,6 +286,31 @@ def test_timegapsplit_with_gridsearch():
     assert best_C
 
 
+@pytest.mark.parametrize(
+    ("delta", "expected"),
+    [
+        (pd.Timedelta(days=1), "D"),
+        (pd.Timedelta(days=2), "2D"),
+        (pd.Timedelta(days=1, hours=12), "36h"),
+        (pd.Timedelta(hours=1), "h"),
+        (pd.Timedelta(hours=3), "3h"),
+        (pd.Timedelta(minutes=90), "90min"),
+        (pd.Timedelta(seconds=30), "30s"),
+        (pd.Timedelta(milliseconds=1500), "1500ms"),
+        (pd.Timedelta(microseconds=1), "us"),
+        (pd.Timedelta(0), "0D"),
+        (pd.Timedelta(days=-1), "-1D"),
+    ],
+)
+def test_timedelta_to_freqstr(delta: pd.Timedelta, expected: str) -> None:
+    """Offset aliases must not depend on the pandas version.
+
+    `pd.tseries.frequencies.to_offset` renders whole-day timedeltas as hours (`"24h"`) since pandas
+    3.0, because `Day` now models a calendar day rather than a fixed 24h duration.
+    """
+    assert _timedelta_to_freqstr(delta) == expected
+
+
 def test_timegapsplit_summary():
     cv = TimeGapSplit(
         date_series=df["date"],
@@ -340,7 +365,7 @@ def test_timegapsplit_summary():
             timedelta(days=4),
             timedelta(days=2),
         ],
-        "frequency": ['D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D'],
+        "frequency": ["D", "D", "D", "D", "D", "D", "D", "D", "D", "D", "D", "D"],
         "Unique days": [5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3],
         "nbr samples": [5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3],
         "part": [
