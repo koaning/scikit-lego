@@ -3223,7 +3223,7 @@ requires-dist = [
     { name = "requests", marker = "extra == 'docs'", specifier = ">=2.33.0" },
     { name = "requests", marker = "extra == 'utils'", specifier = ">=2.33.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.15.8" },
-    { name = "scikit-learn", specifier = ">=1.0" },
+    { name = "scikit-learn", specifier = ">=1.2" },
     { name = "scikit-lego", extras = ["all", "test"], marker = "extra == 'test-all'" },
     { name = "scikit-lego", extras = ["all", "test", "docs"], marker = "extra == 'dev'" },
     { name = "scikit-lego", extras = ["cvxpy", "formulaic", "umap"], marker = "extra == 'all'" },
