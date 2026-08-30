@@ -73,7 +73,7 @@ def _mk_average(xs, ys, intervals, method="average", span=1, **kwargs):
     for idx, interval in enumerate(intervals):
         if method == "average":
             distances = 1 / (0.01 + np.abs(xs - interval))
-            predicate = (xs < (interval + span)) | (xs < (interval - span))
+            predicate = (xs < (interval + span)) & (xs > (interval - span))
         elif method == "normal":
             distances = np.exp(-((xs - interval) ** 2) / span)
             predicate = xs == xs

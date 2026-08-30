@@ -30,6 +30,22 @@ def test_obvious_cases_two(random_xy_dataset_regr_small, method):
     assert np.all(np.isclose(x_transform, 1.0))
 
 
+def test_average_method_uses_a_bounded_window():
+    # With a linear target the averaged height at each interval should track the
+    # local y-value. The "average" window must be bounded on both sides; without
+    # a lower bound every point below the interval leaks in and biases the height
+    # down (regression test for the windowing predicate in _mk_average).
+    np.random.seed(0)
+    x = np.random.uniform(0, 10, 2000)
+    y = 2 * x
+    encoder = IntervalEncoder(n_chunks=5, span=0.1, method="average")
+    encoder.fit(x.reshape(-1, 1), y)
+    heights = encoder.heights_.ravel()
+    quantiles = encoder.quantiles_.ravel()
+    # skip the first quantile (near 0, where the relative error is ill-defined)
+    assert np.allclose(heights[1:], 2 * quantiles[1:], rtol=0.05)
+
+
 def generate_dataset(start, n=600):
     np.random.seed(42)
     xs = np.arange(start, start + n) / 100 / np.pi
