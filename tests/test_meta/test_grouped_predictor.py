@@ -10,17 +10,19 @@ from sklearn.dummy import DummyRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import make_pipeline
-from sklearn.utils.estimator_checks import parametrize_with_checks
+from sklearn_compat.utils.estimator_checks import parametrize_with_checks
 
 from sklego.datasets import load_chicken
 from sklego.meta import GroupedClassifier, GroupedPredictor, GroupedRegressor
+from tests.conftest import DATAFRAME_ARRAY_API_REASON, expect_array_api_failure
 
 
 @parametrize_with_checks(
     [
         meta_cls(estimator=LinearRegression(), groups=0, use_global_model=True)
         for meta_cls in [GroupedPredictor, GroupedRegressor]
-    ]
+    ],
+    expected_failed_checks=expect_array_api_failure(DATAFRAME_ARRAY_API_REASON),
 )
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {

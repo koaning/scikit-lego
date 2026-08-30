@@ -13,14 +13,17 @@ from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler, TargetEncoder
 from sklearn.utils import check_X_y
-from sklearn.utils.estimator_checks import parametrize_with_checks
+from sklearn_compat.utils.estimator_checks import parametrize_with_checks
 
 from sklego.datasets import load_heroes, load_penguins
 from sklego.meta import GroupedTransformer
-from tests.conftest import k_vals, n_vals, np_types
+from tests.conftest import DATAFRAME_ARRAY_API_REASON, expect_array_api_failure, k_vals, n_vals, np_types
 
 
-@parametrize_with_checks([GroupedTransformer(StandardScaler(), groups=0, check_X=True)])
+@parametrize_with_checks(
+    [GroupedTransformer(StandardScaler(), groups=0, check_X=True)],
+    expected_failed_checks=expect_array_api_failure(DATAFRAME_ARRAY_API_REASON),
+)
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_transformer_data_not_an_array",  # TODO: Look into this

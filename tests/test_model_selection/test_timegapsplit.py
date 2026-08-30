@@ -10,7 +10,7 @@ from sklearn.linear_model import Lasso
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 
-from sklego.model_selection import TimeGapSplit
+from sklego.model_selection import TimeGapSplit, _timedelta_to_freqstr
 
 df = pd.DataFrame(np.random.randint(0, 30, size=(30, 4)), columns=list("ABCy"))
 df["date"] = pd.date_range(start="1/1/2018", end="1/30/2018")[::-1]
@@ -286,6 +286,31 @@ def test_timegapsplit_with_gridsearch():
     assert best_C
 
 
+@pytest.mark.parametrize(
+    ("delta", "expected"),
+    [
+        (pd.Timedelta(days=1), "24h"),
+        (pd.Timedelta(days=2), "48h"),
+        (pd.Timedelta(days=1, hours=12), "36h"),
+        (pd.Timedelta(hours=1), "h"),
+        (pd.Timedelta(hours=3), "3h"),
+        (pd.Timedelta(minutes=90), "90min"),
+        (pd.Timedelta(seconds=30), "30s"),
+        (pd.Timedelta(milliseconds=1500), "1500ms"),
+        (pd.Timedelta(microseconds=1), "us"),
+        (pd.Timedelta(0), "0h"),
+        (pd.Timedelta(days=-1), "-24h"),
+    ],
+)
+def test_timedelta_to_freqstr(delta: pd.Timedelta, expected: str) -> None:
+    """Offset aliases must not depend on the pandas version.
+
+    These are the pandas 3 renderings. `pd.tseries.frequencies.to_offset` produced `"D"` for whole
+    days before pandas 3.0, and the legacy uppercase `"H"`/`"T"`/`"S"` aliases before pandas 2.2.
+    """
+    assert _timedelta_to_freqstr(delta) == expected
+
+
 def test_timegapsplit_summary():
     cv = TimeGapSplit(
         date_series=df["date"],
@@ -295,7 +320,7 @@ def test_timegapsplit_summary():
     )
 
     summary = cv.summary(X_train)
-    assert summary.shape == (12, 5)
+    assert summary.shape == (12, 6)
 
     expected_data = {
         "Start date": [
@@ -340,6 +365,7 @@ def test_timegapsplit_summary():
             timedelta(days=4),
             timedelta(days=2),
         ],
+        "frequency": ["24h"] * 12,
         "Unique days": [5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3],
         "nbr samples": [5, 3, 5, 3, 5, 3, 5, 3, 5, 3, 5, 3],
         "part": [
@@ -375,3 +401,18 @@ def test_timegapsplit_summary():
 
     expected = pl.DataFrame(expected_data)
     polars_assert_frame_equal(summary, expected)
+
+
+def test_timegapsplit_summary_non_hour_frequency():
+    dates = pd.Series(pd.date_range("2018-01-01", periods=13, freq="90min"))
+    X = pd.DataFrame({"x": range(len(dates))})
+    cv = TimeGapSplit(
+        date_series=dates,
+        train_duration=timedelta(hours=6),
+        valid_duration=timedelta(hours=3),
+        stride_duration=timedelta(hours=3),
+    )
+
+    summary = cv.summary(X)
+
+    assert set(summary["frequency"]) == {"90min"}

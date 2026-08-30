@@ -14,14 +14,18 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import accuracy_score, r2_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.utils.estimator_checks import parametrize_with_checks
+from sklearn_compat.utils.estimator_checks import parametrize_with_checks
 
 from sklego.meta import HierarchicalClassifier, HierarchicalRegressor
+from tests.conftest import DATAFRAME_ARRAY_API_REASON, expect_array_api_failure
 
 frame_funcs = [pd.DataFrame, pl.DataFrame, pa.table]
 
 
-@parametrize_with_checks([HierarchicalRegressor(estimator=LinearRegression(), groups=0)])
+@parametrize_with_checks(
+    [HierarchicalRegressor(estimator=LinearRegression(), groups=0)],
+    expected_failed_checks=expect_array_api_failure(DATAFRAME_ARRAY_API_REASON),
+)
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {
         "check_no_attributes_set_in_init",  # Setting **shrinkage_kwargs in init

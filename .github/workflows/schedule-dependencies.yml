@@ -7,18 +7,22 @@ on:
 
 
 jobs:
+  # Unpinned install, so this is the job that sees new upstream releases first.
+  # The newest Python is not optional here: major releases drop old interpreters, so a
+  # 3.10-only matrix silently caps "latest" (pandas 3 and scikit-learn 1.9 both require >=3.11).
   cron-base:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.10", "3.14"]
         os: [macos-latest, ubuntu-latest, windows-latest]
         pre-release-dependencies: ["--pre", ""]
     steps:
     - name: Checkout source code
       uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -34,8 +38,9 @@ jobs:
   cron-extra:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.10", "3.14"]
         os: [macos-latest, ubuntu-latest, windows-latest]
         pre-release-dependencies: [
           # "--pre",
@@ -46,7 +51,7 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies

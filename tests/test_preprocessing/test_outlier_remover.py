@@ -3,17 +3,25 @@ import pytest
 from sklearn.cluster import KMeans
 from sklearn.ensemble import IsolationForest
 from sklearn.pipeline import Pipeline
-from sklearn.utils.estimator_checks import parametrize_with_checks
+from sklearn_compat.utils.estimator_checks import parametrize_with_checks
 
 from sklego.mixture import GMMOutlierDetector
 from sklego.preprocessing import OutlierRemover
+from tests.conftest import GAUSSIAN_MIXTURE_ARRAY_API_REASON, expect_array_api_failure
+
+
+def _expected_failed_checks(estimator: OutlierRemover) -> dict[str, str]:
+    """Only the wrapped detector decides whether `array_api_dispatch` breaks, so apply the rule to it."""
+    expect_failure = expect_array_api_failure(GAUSSIAN_MIXTURE_ARRAY_API_REASON, applies_to=(GMMOutlierDetector,))
+    return expect_failure(estimator.outlier_detector)
 
 
 @parametrize_with_checks(
     [
         OutlierRemover(outlier_detector=GMMOutlierDetector(), refit=True),
         OutlierRemover(outlier_detector=IsolationForest(), refit=True),
-    ]
+    ],
+    expected_failed_checks=_expected_failed_checks,
 )
 def test_sklearn_compatible_estimator(estimator, check):
     if check.func.__name__ in {

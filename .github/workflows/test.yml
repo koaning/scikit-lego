@@ -6,6 +6,7 @@ on:
     - main
 
 jobs:
+  # Reproducible run: exactly the versions recorded in uv.lock.
   test:
     strategy:
       fail-fast: false
@@ -26,14 +27,36 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v7
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install uv
       uses: astral-sh/setup-uv@v7
-    - name: Create virtual environment and install dependencies
+    - name: Install locked dependencies
+      # `--locked` fails the job if uv.lock is out of date with pyproject.toml.
+      run: uv sync --locked --extra test-all
+    - name: Show installed versions
+      run: uv pip freeze
+    - name: Run tests
+      # `--no-sync` is required: without it `uv run` re-syncs the environment to uv.lock,
+      # silently discarding anything installed by a previous step.
+      run: uv run --no-sync pytest -n auto --disable-warnings
+
+  # Guard rail: prove that the lower bounds declared in pyproject.toml actually work.
+  # `--resolution lowest-direct` pins every direct dependency to its declared floor and
+  # leaves transitive ones at their newest compatible release.
+  minimum-versions:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v7
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+    - name: Install lowest supported dependencies
       run: |
-        uv venv
-        uv pip install -e ".[test-all]"
-        uv pip freeze
-        uv run pytest -n auto --disable-warnings
+        uv venv --python 3.10
+        uv pip install --resolution lowest-direct -e ".[test-all]"
+    - name: Show installed versions
+      run: uv pip freeze
+    - name: Run tests
+      run: uv run --no-sync pytest -n auto --disable-warnings

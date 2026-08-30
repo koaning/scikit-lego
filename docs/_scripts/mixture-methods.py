@@ -124,3 +124,35 @@ plt.title("log-lik values from with GMM, stddev is based on blue part")
 
 plt.savefig(_static_path / "outlier-mixture-threshold.png")
 plt.clf()
+
+########################### BayesianKernelDensityClassifier ##############################
+##########################################################################################
+
+plt.rcdefaults()
+# --8<-- [start:bayes-kde-classifier]
+import matplotlib.pylab as plt
+import numpy as np
+from sklearn.datasets import make_moons
+from sklearn.preprocessing import StandardScaler
+
+from sklego.neighbors import BayesianKernelDensityClassifier
+
+n = 1000
+X, y = make_moons(n)
+X = X + np.random.normal(0, 0.12, (n, 2))
+X = StandardScaler().fit_transform(X)
+U = np.random.uniform(-2, 2, (10000, 2))
+
+mod = BayesianKernelDensityClassifier(bandwidth=0.2).fit(X, y)
+
+plt.figure(figsize=(14, 5))
+plt.subplot(121)
+plt.scatter(X[:, 0], X[:, 1], c=mod.predict(X), s=8)
+plt.title("classes of points");
+
+plt.subplot(122)
+plt.scatter(U[:, 0], U[:, 1], c=mod.predict_proba(U)[:, 1], s=8)
+plt.title("classifier boundary");
+# --8<-- [end:bayes-kde-classifier]
+
+plt.savefig(_static_path / "bayes-kde-classifier.png")

@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.utils.estimator_checks import parametrize_with_checks
+from sklearn_compat.utils.estimator_checks import parametrize_with_checks
 
 from sklego.mixture import BayesianGMMOutlierDetector, GMMOutlierDetector
+from tests.conftest import GAUSSIAN_MIXTURE_ARRAY_API_REASON, expect_array_api_failure
 
 
 @parametrize_with_checks(
@@ -12,7 +13,10 @@ from sklego.mixture import BayesianGMMOutlierDetector, GMMOutlierDetector
         GMMOutlierDetector(threshold=2, method="stddev"),
         BayesianGMMOutlierDetector(threshold=0.999, method="quantile"),
         BayesianGMMOutlierDetector(threshold=2, method="stddev"),
-    ]
+    ],
+    expected_failed_checks=expect_array_api_failure(
+        GAUSSIAN_MIXTURE_ARRAY_API_REASON, applies_to=(GMMOutlierDetector,)
+    ),
 )
 def test_sklearn_compatible_estimator(estimator, check):
     check(estimator)
