@@ -401,3 +401,18 @@ def test_timegapsplit_summary():
 
     expected = pl.DataFrame(expected_data)
     polars_assert_frame_equal(summary, expected)
+
+
+def test_timegapsplit_summary_non_hour_frequency():
+    dates = pd.Series(pd.date_range("2018-01-01", periods=13, freq="90min"))
+    X = pd.DataFrame({"x": range(len(dates))})
+    cv = TimeGapSplit(
+        date_series=dates,
+        train_duration=timedelta(hours=6),
+        valid_duration=timedelta(hours=3),
+        stride_duration=timedelta(hours=3),
+    )
+
+    summary = cv.summary(X)
+
+    assert set(summary["frequency"]) == {"90min"}
