@@ -161,6 +161,41 @@ fold_method = KlusterFoldValidation(
 cross_val_score(pipeline, X, y, cv=fold_method)
 ```
 
+## WithoutLiersCV
+
+The [WithoutLiersCV][withoutlierscv-api] object wraps any other cross-validator and
+removes the data points labeled as anomalies from the training folds,
+while leaving the test folds exactly as the base splitter generated them.
+
+When would you want this? Think of a novelty detection setting (cf. [Novelty Detection](https://scikit-learn.org/stable/modules/outlier_detection.html#novelty-detection)):
+estimators such as `OneClassSVM` assume they are trained on clean, anomaly-free data,
+but to evaluate them you still want anomalies in the test folds, otherwise there is nothing to detect.
+
+A plain `KFold` would leak anomalies into the training folds,
+while removing them from the dataset beforehand would also remove them from the test folds.
+
+As a tangible example: suppose you monitor sensor readings from a fleet of machines and
+a small fraction of the historical readings is labeled as faulty.
+To evaluate how well a novelty detector recognizes those faults, you want each training fold
+to contain only healthy readings, and each test fold to contain both healthy and faulty ones.
+
+```py title="Evaluate a novelty detector without anomalies in the training folds"
+from sklearn.model_selection import KFold, cross_val_score
+from sklearn.svm import OneClassSVM
+
+from sklego.model_selection import WithoutLiersCV
+
+# Given an X, y dataset where y is 1 for healthy readings and -1 for faulty ones
+cv = WithoutLiersCV(
+    cs=KFold(n_splits=5, shuffle=True, random_state=42),
+    anomalous_label=-1,
+)
+cross_val_score(OneClassSVM(), X, y, cv=cv, scoring="accuracy")
+```
+
+If you want the anomalous points excluded from the test folds as well, pass `exclude_from_test=True`.
+
 [time-gap-split-api]: ../../api/model-selection#sklego.model_selection.TimeGapSplit
 [group-ts-split-api]: ../../api/model-selection#sklego.model_selection.GroupTimeSeriesSplit
 [clusterfold-api]: ../../api/model-selection#sklego.model_selection.ClusterFoldValidation
+[withoutlierscv-api]: ../../api/model-selection#sklego.model_selection.WithoutLiersCV
