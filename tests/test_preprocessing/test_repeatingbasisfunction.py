@@ -50,3 +50,18 @@ def test_when_rbf_helper_receives_more_than_one_col_raises_value_error(df):
     rbf_helper_tf = _RepeatingBasisFunction()
     with pytest.raises(ValueError):
         rbf_helper_tf.fit(X, y)
+
+def test_discrete_input_range_distinct_encodings():
+    df_week = pd.DataFrame({"weekday": [0, 1, 2, 3, 4, 5, 6]})
+    tf = RepeatingBasisFunction(column="weekday", n_periods=4, input_range=(0, 7))
+    transformed = tf.fit_transform(df_week)
+
+    assert not np.allclose(transformed[0], transformed[6])
+
+
+def test_default_input_range_collapses_endpoints():
+    df_week = pd.DataFrame({"weekday": [0, 1, 2, 3, 4, 5, 6]})
+    tf = RepeatingBasisFunction(column="weekday", n_periods=4, input_range=None)
+    transformed = tf.fit_transform(df_week)
+
+    np.testing.assert_allclose(transformed[0], transformed[6])
