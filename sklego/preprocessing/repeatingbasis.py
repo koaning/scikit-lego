@@ -45,8 +45,11 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     n_periods : int, default=12
         Number of basis functions to create, i.e., the number of columns that will exit the transformer.
     input_range : Tuple[float, float] | List[float] | None, default=None
-        The values at which the data repeats itself. For example, for days of the week this is (1,7).
-        If `input_range=None` it is inferred from the training data.
+        The values over which periodic functions repeat, defining the half-open interval [a, b) where b wraps to a.
+        For discrete sequences of N elements, set the interval length to N:
+        - For 0-indexed values {0, ..., N-1} (e.g. weekdays 0 to 6), use `input_range=(0, N)` (e.g. `(0, 7)`).
+        - For 1-indexed values {1, ..., N} (e.g. weekdays 1 to 7), use `input_range=(1, N + 1)` (e.g. `(1, 8)`).
+        If `input_range=None`, it defaults to `(X.min(), X.max())`. Because the endpoints normalize to 0.0 and 1.0, the minimum and maximum observed values will produce identical transformations.
     width : float, default=1.0.
         Determines the width of the radial basis functions.
 
@@ -65,10 +68,10 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         "user_id": [101, 102, 103],
         "created_day": [5, 1, 7]
     })
-    RepeatingBasisFunction(column="created_day", input_range=(1,7)).fit_transform(df)
-    # array([[0.06217652, 0.00432024, 0.16901332, 0.89483932, 0.64118039],
+    RepeatingBasisFunction(column="created_day", input_range=(1,8), n_periods=5).fit_transform(df)
+    # array([[0.01013423, 0.03177805, 0.47965227, 0.97979867, 0.27086833],
     #        [1.        , 0.36787944, 0.01831564, 0.01831564, 0.36787944],
-    #        [1.        , 0.36787944, 0.01831564, 0.01831564, 0.36787944]])
+    #        [0.60037304, 0.0529305 , 0.00538311, 0.1914629 , 0.92161045]])
     ```
     """
 
@@ -150,8 +153,11 @@ class _RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     n_periods : int, default=12
         The number of repeating periods or basis functions to generate.
     input_range : Tuple[float, float] | List[float] | None, default=None
-        The values at which the data repeats itself. For example, for days of the week this is (1,7).
-        If `input_range=None` it is inferred from the training data.
+        The values over which periodic functions repeat, defining the half-open interval [a, b) where b wraps to a.
+        For discrete sequences of N elements, set the interval length to N:
+        - For 0-indexed values {0, ..., N-1} (e.g. weekdays 0 to 6), use `input_range=(0, N)` (e.g. `(0, 7)`).
+        - For 1-indexed values {1, ..., N} (e.g. weekdays 1 to 7), use `input_range=(1, N + 1)` (e.g. `(1, 8)`).
+        If `input_range=None`, it defaults to `(X.min(), X.max())`. Because the endpoints normalize to 0.0 and 1.0, the minimum and maximum observed values will produce identical transformations.
     width : float, default=1.0
         The width of the basis functions. This parameter controls how narrow or wide the basis functions are.
 
