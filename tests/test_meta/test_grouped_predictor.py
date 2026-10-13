@@ -6,7 +6,7 @@ import pandas as pd
 import polars as pl
 import pyarrow as pa
 import pytest
-from sklearn.dummy import DummyRegressor
+from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import make_pipeline
@@ -162,6 +162,59 @@ def test_predict_proba_correct_zeros_same_and_different_labels(
     }
     for grp_name, grp in df_proba.groupby("group"):
         assert all((grp.loc[:, label] == 0).all() for label in label_not_in_group[grp_name])
+
+
+@pytest.mark.parametrize("meta_cls", [GroupedPredictor, GroupedClassifier])
+@pytest.mark.parametrize(
+    "frame_func",
+    [pd.DataFrame, pl.DataFrame, pa.table, pytest.param(lambda data: np.column_stack(list(data.values())), id="numpy")],
+)
+@pytest.mark.parametrize("classes", [np.array([2, 4, 8]), np.array(["ant", "bee", "cat"])])
+@pytest.mark.parametrize("use_global_model", [False, True])
+def test_predict_proba_preserves_training_classes(meta_cls, frame_func, classes, use_global_model):
+    X = frame_func({"group": [0] * 4 + [1] * 4, "value": list(range(8))})
+    y = classes[[1, 2, 2, 2, 0, 0, 0, 1]]
+    model = meta_cls(
+        make_pipeline(DummyClassifier(strategy="prior")),
+        groups=0 if isinstance(X, np.ndarray) else "group",
+        use_global_model=use_global_model,
+    ).fit(X, y)
+
+    expected_by_group = {
+        0: [0.0, 0.25, 0.75],
+        1: [0.75, 0.25, 0.0],
+        2: [0.375, 0.25, 0.375],
+    }
+    batches = [[0, 0], [0], [0, 1, 0], [1, 0, 1]]
+    if use_global_model:
+        batches.extend([[2, 2], [2], [0, 2, 1], [2, 0, 1]])
+
+    for groups in batches:
+        query = frame_func({"group": groups, "value": list(range(len(groups)))})
+        probabilities = model.predict_proba(query)
+        assert probabilities.shape == (len(groups), len(classes))
+        np.testing.assert_allclose(probabilities, [expected_by_group[group] for group in groups])
+
+    np.testing.assert_array_equal(model.classes_, classes)
+    if not use_global_model:
+        query = frame_func({"group": [2], "value": [0]})
+        with pytest.raises(ValueError, match="Found new group 2 during predict with use_global_model = False"):
+            model.predict_proba(query)
+
+
+@pytest.mark.parametrize("meta_cls", [GroupedPredictor, GroupedClassifier])
+@pytest.mark.parametrize("n_samples", [1, 2])
+@pytest.mark.parametrize("classes", [[2], [2, 4]])
+@pytest.mark.parametrize("use_global_model", [False, True])
+def test_predict_proba_keeps_sample_and_class_axes(meta_cls, n_samples, classes, use_global_model):
+    X = pd.DataFrame({"group": [0] * len(classes), "value": range(len(classes))})
+    model = meta_cls(DummyClassifier(), groups="group", use_global_model=use_global_model).fit(X, classes)
+    query = pd.DataFrame({"group": [0] * n_samples, "value": range(n_samples)})
+
+    probabilities = model.predict_proba(query)
+
+    assert probabilities.shape == (n_samples, len(classes))
+    np.testing.assert_allclose(probabilities, np.full((n_samples, len(classes)), 1 / len(classes)))
 
 
 def test_fallback_can_raise_error():
