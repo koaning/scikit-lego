@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import pytest
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 
@@ -36,7 +37,7 @@ def test_equal_opportunity_pandas():
     assert equal_opportunity_score(sensitive_column="x2")(mod_1, X, y) == 0
 
 
-def test_p_percent_pandas_multiclass():
+def test_equal_opportunity_pandas_multiclass():
     sensitive_classification_dataset = pd.DataFrame(
         {
             "x1": [1, 0, 1, 0, 1, 0, 1, 1],
@@ -54,15 +55,30 @@ def test_p_percent_pandas_multiclass():
 
     mod_1.predict = lambda X: np.array([2, 0, 1, 0, 1, 0, 1, 2])
     assert (
-        equal_opportunity_score(sensitive_column="x2", positive_target=2)(mod_1, X, np.array([2, 0, 1, 0, 1, 0, 1, 2]))
-        == 1
+        equal_opportunity_score(sensitive_column="x2", pos_label=2)(mod_1, X, np.array([2, 0, 1, 0, 1, 0, 1, 2])) == 1
     )
 
     mod_1.predict = lambda X: np.array([1, 0, 1, 0, 1, 0, 0, 1])
-    assert equal_opportunity_score(sensitive_column="x2", positive_target=2)(mod_1, X, y) == 0
+    assert equal_opportunity_score(sensitive_column="x2", pos_label=2)(mod_1, X, y) == 0
 
     mod_1.predict = lambda X: np.array([1, 0, 1, 0, 1, 0, 0, 0])
-    assert equal_opportunity_score(sensitive_column="x2", positive_target=2)(mod_1, X, y) == 0
+    assert equal_opportunity_score(sensitive_column="x2", pos_label=2)(mod_1, X, y) == 0
+
+
+def test_positive_target_deprecation_alias():
+    X = pd.DataFrame({"x1": [1, 0, 1, 0], "x2": [0, 0, 1, 1]})
+    y = np.array([2, 0, 2, 0])
+    model = types.SimpleNamespace(predict=lambda X: np.array([2, 0, 2, 0]))
+
+    with pytest.deprecated_call(match="use `pos_label` instead"):
+        scorer = equal_opportunity_score(sensitive_column="x2", positive_target=2)
+
+    assert scorer(model, X, y) == 1
+
+
+def test_pos_label_and_positive_target_cannot_both_be_set():
+    with pytest.raises(ValueError, match="do not specify both"):
+        equal_opportunity_score(sensitive_column="x2", pos_label=2, positive_target=1)
 
 
 def test_p_percent_numpy(sensitive_classification_dataset):
@@ -79,6 +95,6 @@ def test_warning_is_logged(sensitive_classification_dataset):
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
         # Trigger a warning.
-        equal_opportunity_score("x2", positive_target=2)(mod_fair, X, y)
+        equal_opportunity_score("x2", pos_label=2)(mod_fair, X, y)
         assert issubclass(w[-1].category, RuntimeWarning)
         assert "y_true == 2 and y_hat == 2" in str(w[-1].message)

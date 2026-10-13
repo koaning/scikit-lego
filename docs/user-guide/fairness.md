@@ -84,6 +84,9 @@ and be turned into a metric in the same way as above:
 
 $$\text{equality of opportunity} = \min \left(\frac{P(\hat{y}=1 | z=1, y=1)}{P(\hat{y}=1 | z=0, y=1)}, \frac{P(\hat{y}=1 | z=0, y=1)}{P(\hat{y}=1 | z=1, y=1)}\right)$$
 
+When the positive class is not labeled `1`, pass it with the `pos_label` parameter, for example
+`equal_opportunity_score("gender", pos_label="approved")`.
+
 We can see in the example below that the equal opportunity score does not differ for the models as long as the records where `y_true = 1` are predicted correctly.
 
 ```py title="equality opportunity score"
@@ -259,7 +262,7 @@ d_{\boldsymbol{\theta}}\left(\mathbf{x}_{i}\right) \geq-\mathbf{c}}
 \end{array}
 $$
 
-where POS is the subset of the population where `y_true = positive_target`.
+where POS is the subset of the population where `y_true = pos_label`.
 
 ```py title="Equal Opportunity Classifier"
 --8<-- "docs/_scripts/fairness.py:equal-opportunity-grid"
