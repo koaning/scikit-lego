@@ -52,6 +52,20 @@ def test_mrmr_fit(dataset, k):
     assert mask.size == mrmr.n_features_in_ == X.shape[1]
 
 
+def test_mrmr_k_equal_to_n_features():
+    """With k equal to the number of features, fit warns, keeps every feature and still returns the estimator."""
+    X, y = make_classification(n_features=4, random_state=42)
+    mrmr = MaximumRelevanceMinimumRedundancy(k=4)
+
+    with pytest.warns(UserWarning, match="no feature selection is applied"):
+        fitted = mrmr.fit(X, y)
+
+    assert fitted is mrmr
+    assert sorted(mrmr.selected_features_) == [0, 1, 2, 3]
+    assert mrmr.scores_.shape == (4,)
+    assert mrmr.transform(X).shape == X.shape
+
+
 @pytest.mark.parametrize(
     "dataset",
     [make_classification(n_features=4), make_classification(n_features=10)],
