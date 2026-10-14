@@ -58,6 +58,7 @@ docs = [
     "mkdocs-material-extensions>=1.2",
     "mkdocstrings>=0.23.0",
     "mkdocstrings-python>=1.7.3",
+    "pymdown-extensions<12.2; python_version < '3.11'",  # mkdocstrings>=1.0.7 supports pymdownx 12.2 but drops py3.10
     "requests>=2.33.0",  # mkdocs-material dep, vulnerability found in 2.32.5, fixed in 2.33.0
     "urllib3>=2.6.3",  # mkdocs-material dep, 3 vulnerabilities found in 2.5.0, fixed in 2.6.3
 ]
