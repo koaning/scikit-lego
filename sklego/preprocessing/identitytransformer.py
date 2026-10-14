@@ -1,5 +1,5 @@
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import _num_features, _num_samples, check_is_fitted
 from sklearn_compat.utils.validation import _check_n_features, validate_data
 
 
@@ -71,7 +71,7 @@ class IdentityTransformer(TransformerMixin, BaseEstimator):
             X = validate_data(self, X=X, copy=True, reset=True)
         else:
             _check_n_features(self, X, reset=True)
-        self.n_samples_, self.n_features_in_ = X.shape
+        self.n_samples_, self.n_features_in_ = X.shape if hasattr(X, "shape") else (_num_samples(X), _num_features(X))
         return self
 
     def transform(self, X):
