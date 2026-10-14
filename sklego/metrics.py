@@ -112,7 +112,7 @@ def p_percent_score(sensitive_column, positive_target=1):
     return impl
 
 
-def equal_opportunity_score(sensitive_column, positive_target=1):
+def equal_opportunity_score(sensitive_column, pos_label=1, *, positive_target=None):
     r"""The equality opportunity score calculates the ratio between the probability of a **true positive** outcome
     given the sensitive attribute (column) being true and the same probability given the sensitive attribute being
     false.
@@ -127,8 +127,11 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
     sensitive_column : str | int
         Name of the column containing the binary sensitive attribute (when X is a dataframe) or the index of the column
         (when X is a numpy array).
-    positive_target: int, default=1
+    pos_label : int, default=1
         The name of the class which is associated with a positive outcome
+    positive_target : int, optional
+        Deprecated alias for `pos_label`. It cannot be used together with a
+        non-default value for `pos_label`.
 
     Returns
     -------
@@ -141,12 +144,23 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
     from sklego.metrics import equal_opportunity_score
     ...
     equal_opportunity_score('gender')(clf, X, y)
+    equal_opportunity_score('gender', pos_label='approved')(clf, X, y)
     ```
 
     Source
     ------
     M. Hardt, E. Price and N. Srebro (2016), Equality of Opportunity in Supervised Learning
     """
+
+    if positive_target is not None:
+        if pos_label != 1:
+            raise ValueError("Use only `pos_label`; do not specify both `pos_label` and `positive_target`.")
+        warn(
+            "`positive_target` is deprecated; use `pos_label` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        pos_label = positive_target
 
     def impl(estimator, X, y_true):
         """Remember: X is the thing going *in* to your pipeline."""
@@ -159,14 +173,14 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
             )
 
         y_hat = estimator.predict(X)
-        y_given_z1_y1 = y_hat[(sensitive_col == 1) & (y_true == positive_target)]
-        y_given_z0_y1 = y_hat[(sensitive_col == 0) & (y_true == positive_target)]
+        y_given_z1_y1 = y_hat[(sensitive_col == 1) & (y_true == pos_label)]
+        y_given_z0_y1 = y_hat[(sensitive_col == 0) & (y_true == pos_label)]
 
         # If we never predict a positive target for one of the subgroups, the model is by definition not
         # fair so we return 0
         if len(y_given_z1_y1) == 0:
             warn(
-                f"No samples with y_true == {positive_target} and y_hat == {positive_target} "
+                f"No samples with y_true == {pos_label} and y_hat == {pos_label} "
                 f"for {sensitive_column} == 1, returning 0",
                 RuntimeWarning,
             )
@@ -174,14 +188,14 @@ def equal_opportunity_score(sensitive_column, positive_target=1):
 
         if len(y_given_z0_y1) == 0:
             warn(
-                f"No samples with y_true == {positive_target} and y_hat == {positive_target} "
+                f"No samples with y_true == {pos_label} and y_hat == {pos_label} "
                 f"for {sensitive_column} == 0, returning 0",
                 RuntimeWarning,
             )
             return 0
 
-        p_y1_z1 = np.mean(y_given_z1_y1 == positive_target)
-        p_y1_z0 = np.mean(y_given_z0_y1 == positive_target)
+        p_y1_z1 = np.mean(y_given_z1_y1 == pos_label)
+        p_y1_z0 = np.mean(y_given_z0_y1 == pos_label)
         score = np.minimum(p_y1_z1 / p_y1_z0, p_y1_z0 / p_y1_z1)
         return score if not np.isnan(score) else 1
 
