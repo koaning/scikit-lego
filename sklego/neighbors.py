@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import softmax
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.neighbors import KernelDensity
 from sklearn.utils.multiclass import unique_labels
@@ -110,10 +111,7 @@ class BayesianKernelDensityClassifier(ClassifierMixin, BaseEstimator):
 
         log_likelihood = np.array([self.models_[target_label].score_samples(X) for target_label in self.classes_]).T
 
-        log_likelihood_and_prior = np.exp(log_likelihood + log_prior)
-        evidence = log_likelihood_and_prior.sum(axis=1, keepdims=True)
-        posterior = log_likelihood_and_prior / evidence
-        return posterior
+        return softmax(log_likelihood + log_prior, axis=1)
 
     def predict(self, X):
         """Predict labels for `X` using fitted estimator and `predict_proba()` method, by taking the class with the
