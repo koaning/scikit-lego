@@ -218,7 +218,6 @@ class MaximumRelevanceMinimumRedundancy(SelectorMixin, BaseEstimator):
             raise ValueError(f"k ({self.k}) parameter must be less than n_features_in_ ({self.n_features_in_})")
         elif self.k == self.n_features_in_:
             warnings.warn("k parameter is equal to n_features_in, no feature selection is applied")
-            return np.asarray(left_features)
         elif self.k < 1:
             raise ValueError(f"k ({self.k}) parameter must be greater than or equal to 1")
 
