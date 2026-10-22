@@ -2,6 +2,7 @@ from typing import List, Union
 
 import narwhals.stable.v1 as nw
 import numpy as np
+from scipy import sparse
 from sklearn.base import BaseEstimator, MetaEstimatorMixin, TransformerMixin, clone
 from sklearn.utils.validation import check_is_fitted
 
@@ -197,7 +198,8 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
             else:
                 raise ValueError(f"Found new group {group} during transform with use_global_model = False")
 
-        return np.asarray(group_transformer.transform(X))
+        transformed = group_transformer.transform(X)
+        return transformed if sparse.issparse(transformed) else np.asarray(transformed)
 
     def __transform_groups(self, frame: nw.DataFrame):
         """Transform all groups"""
@@ -207,13 +209,18 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
         results = [
             (
-                X_grp.select("__sklego_index__").to_numpy().squeeze().astype(int),
+                X_grp.select("__sklego_index__").to_numpy().ravel().astype(int),
                 self.__transform_single_group(
                     group_name, nw.to_native(X_grp.drop(["__sklego_index__", *self.groups_]))
                 ),
             )
             for group_name, X_grp in frame.group_by(self.groups_)
         ]
+
+        if any(sparse.issparse(grp_result) for _, grp_result in results):
+            output = sparse.vstack([grp_result for _, grp_result in results], format="csr")
+            row_indices = np.concatenate([grp_index for grp_index, _ in results])
+            return output[np.argsort(row_indices)]
 
         output = np.empty(shape=(n_samples, results[0][1].shape[1]), dtype=results[0][1].dtype)
         for grp_index, grp_result in results:
@@ -233,8 +240,10 @@ class GroupedTransformer(TransformerMixin, MetaEstimatorMixin, BaseEstimator):
 
         Returns
         -------
-        array-like of shape (n_samples, n_features)
-            Data transformed per group.
+        np.ndarray or scipy.sparse matrix or array of shape (n_samples, n_features_out)
+            Data transformed per group in the original row order. Sparse output from grouped transformers is
+            combined in CSR format without converting it to a dense array. With `groups=None`, the wrapped
+            transformer's output is returned directly.
         """
         check_is_fitted(self, ["n_features_in_", "transformers_"])
 
