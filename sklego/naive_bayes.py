@@ -1,6 +1,7 @@
 from warnings import warn
 
 import numpy as np
+from scipy.special import softmax
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.mixture import BayesianGaussianMixture, GaussianMixture
 from sklearn.utils.multiclass import unique_labels
@@ -124,8 +125,10 @@ class GaussianMixtureNB(ClassifierMixin, BaseEstimator):
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     def predict_proba(self, X: np.ndarray):
-        """Predict probabilities for `X` using fitted estimator by summing the probabilities of each gaussian for each
-        class.
+        """Predict probabilities for `X` by summing feature log likelihoods for each class and normalizing in log space.
+
+        For finite log likelihoods, shifted normalization avoids invalid results when direct likelihood products would
+        underflow or overflow.
 
         Parameters
         ----------
@@ -146,8 +149,7 @@ class GaussianMixtureNB(ClassifierMixin, BaseEstimator):
             probs[:, class_idx] = np.array(
                 [m.score_samples(np.expand_dims(X[:, idx], 1)) for idx, m in enumerate(v)]
             ).sum(axis=0)
-        likelihood = np.exp(probs)
-        return likelihood / likelihood.sum(axis=1).reshape(-1, 1)
+        return softmax(probs, axis=1)
 
     @property
     def num_fit_cols_(self):
@@ -289,8 +291,10 @@ class BayesianGaussianMixtureNB(ClassifierMixin, BaseEstimator):
         return self.classes_[self.predict_proba(X).argmax(axis=1)]
 
     def predict_proba(self, X: np.ndarray):
-        """Predict probabilities for `X` using fitted estimator by summing the probabilities of each gaussian for each
-        class.
+        """Predict probabilities for `X` by summing feature log likelihoods for each class and normalizing in log space.
+
+        For finite log likelihoods, shifted normalization avoids invalid results when direct likelihood products would
+        underflow or overflow.
 
         Parameters
         ----------
@@ -311,8 +315,7 @@ class BayesianGaussianMixtureNB(ClassifierMixin, BaseEstimator):
             probs[:, class_idx] = np.array(
                 [m.score_samples(np.expand_dims(X[:, idx], 1)) for idx, m in enumerate(v)]
             ).sum(axis=0)
-        likelihood = np.exp(probs)
-        return likelihood / likelihood.sum(axis=1).reshape(-1, 1)
+        return softmax(probs, axis=1)
 
     @property
     def num_fit_cols_(self):
