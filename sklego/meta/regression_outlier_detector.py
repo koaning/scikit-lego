@@ -119,7 +119,7 @@ class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
     def to_x_y(self, X):
         """Split `X` into two arrays `X_to_use` and `y`.
         `y` is the column we want to predict (specified in the `column` parameter) and `X_to_use` is the rest of the
-        data.
+        data. The target is excluded using its fitted column index, including when `column` is a dataframe column name.
 
         Parameters
         ----------
@@ -134,7 +134,7 @@ class RegressionOutlierDetector(OutlierMixin, BaseEstimator):
             The target column.
         """
         y = X[:, self.idx_]
-        cols_to_use = [i for i in range(X.shape[1]) if i != self.column]
+        cols_to_use = [i for i in range(X.shape[1]) if i != self.idx_]
         X_to_use = X[:, cols_to_use]
         if len(X_to_use.shape) == 1:
             X_to_use = X_to_use.reshape(-1, 1)
