@@ -77,12 +77,14 @@ def stepwise_decay(X, y, n_steps=None, step_size=None, min_value=0.0, max_value=
     It is possible to specify one of `n_steps` or `step_size` to determine the behaviour of the decay.
 
     - If `step_size` is provided, the decay will be split into `n_samples // step_size` steps, each of which will
-        decrease the value by `step_width = (max_value - min_value) / n_steps`.
+        decrease the value by `step_width = (max_value - min_value) / n_steps`. The requested step size is preserved.
     - If `n_steps` is provided, the decay will be split into `n_steps` steps, each of which will decrease the value
-        by `step_width = (max_value - min_value) / n_steps`.
+        by `step_width = (max_value - min_value) / n_steps`. The steps are spaced across all samples, with unequal
+        lengths when the sample count is not divisible by `n_steps`.
 
-    Each *step* of length *step_size* has constant weight, and then decreases by `step_width` until the minimum value is
-    reached.
+    With `step_size`, interior buckets contain the requested number of samples. The first and last buckets can be
+    shorter. The existing sample-position convention is retained, so using one step per sample need not reach
+    `max_value`.
 
     !!! warning
         It is up to the user to sort the dataset appropriately.
@@ -150,11 +152,15 @@ def stepwise_decay(X, y, n_steps=None, step_size=None, min_value=0.0, max_value=
     if n_steps is not None and n_steps > n_samples:
         raise ValueError("`n_steps` must be less than or equal to the number of samples")
 
-    n_steps = n_samples // step_size if step_size is not None else n_steps
-    step_size = n_samples // n_steps
+    sample_positions = np.arange(n_samples, 0, -1)
+    if step_size is not None:
+        n_steps = n_samples // step_size
+        step_indices = sample_positions // step_size
+    else:
+        step_indices = (sample_positions * n_steps) // n_samples
     step_width = (max_value - min_value) / n_steps
 
-    return max_value - (np.arange(n_samples, 0, -1) // step_size) * step_width
+    return np.clip(max_value - step_indices * step_width, min_value, max_value)
 
 
 def sigmoid_decay(X, y, growth_rate=None, min_value=0.0, max_value=1.0):
