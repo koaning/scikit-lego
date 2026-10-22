@@ -85,3 +85,34 @@ def test_estimator_type_regressor(mod, is_regr):
     assert mod._estimator_type == get_tags(mod.model).estimator_type
     assert is_regressor(mod) == is_regr
     assert is_classifier(mod) == (not is_regr)
+
+
+def test_fit_propagates_estimator_type_error():
+    X = np.arange(12).reshape(6, 2)
+    y = np.arange(6)
+
+    with pytest.raises(TypeError, match="'alpha' parameter"):
+        DecayEstimator(Ridge(alpha="invalid")).fit(X, y)
+
+
+def test_fit_preserves_internal_type_error():
+    error = TypeError("internal training failed")
+
+    class FailingRidge(Ridge):
+        def fit(self, X, y, sample_weight=None):
+            raise error
+
+    X = np.arange(12).reshape(6, 2)
+    y = np.arange(6)
+    with pytest.raises(TypeError, match="internal training failed") as exc_info:
+        DecayEstimator(FailingRidge()).fit(X, y)
+
+    assert exc_info.value is error
+
+
+def test_fit_reports_unsupported_sample_weight():
+    X = np.arange(12).reshape(6, 2)
+    y = np.array([0, 1, 0, 1, 0, 1])
+
+    with pytest.raises(TypeError, match="Model KNeighborsClassifier.fit\\(\\) does not have 'sample_weight'"):
+        DecayEstimator(KNeighborsClassifier()).fit(X, y)
