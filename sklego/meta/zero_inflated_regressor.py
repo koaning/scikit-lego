@@ -196,6 +196,9 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
         - $P(X=0)$ is calculated using the `.predict_proba()` method of the underlying classifier.
         - $E[X]$ is the regressor prediction on `X`.
 
+        If the classifier was fitted on only zero or only non-zero targets, the probability of a non-zero target is
+        zero or one, respectively.
+
         !!! info
 
             This method requires the underlying classifier to implement `.predict_proba()` method.
@@ -214,7 +217,7 @@ class ZeroInflatedRegressor(RegressorMixin, MetaEstimatorMixin, BaseEstimator):
         check_is_fitted(self, ["n_features_in_", "classifier_", "regressor_"])
         X = validate_data(self, X=X, reset=False)
 
-        non_zero_proba = self.classifier_.predict_proba(X)[:, 1]
+        non_zero_proba = self.classifier_.predict_proba(X)[:, self.classifier_.classes_ == 1].sum(axis=1)
         expected_impact = self.regressor_.predict(X)
 
         return non_zero_proba * expected_impact

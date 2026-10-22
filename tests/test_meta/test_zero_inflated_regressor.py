@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
 from sklearn.linear_model import RidgeClassifier
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
@@ -162,3 +163,19 @@ def test_no_predict_proba():
 
     with pytest.raises(AttributeError, match="This 'ZeroInflatedRegressor' has no attribute 'score_samples'"):
         zir.score_samples(X)
+
+
+@pytest.mark.parametrize("n_nonzero", [0, 2, 4])
+def test_score_samples_uses_probability_of_nonzero_class(n_nonzero):
+    X = np.arange(8).reshape(4, 2)
+    y = np.array([3.0] * n_nonzero + [0.0] * (4 - n_nonzero))
+    zir = ZeroInflatedRegressor(
+        classifier=DummyClassifier(strategy="prior"),
+        regressor=DummyRegressor(strategy="constant", constant=7),
+        handle_zero="ignore",
+    ).fit(X, y)
+
+    scores = zir.score_samples(X[:2])
+
+    assert scores.shape == (2,)
+    np.testing.assert_allclose(scores, 7 * n_nonzero / 4)
