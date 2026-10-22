@@ -167,6 +167,32 @@ def test_timegapsplit_using_splits():
     assert len(list(cv.split(X_train, y_train))) == 3
 
 
+@pytest.mark.parametrize("frame_func, series_func", [(pd.DataFrame, pd.Series), (pl.DataFrame, pl.Series)])
+@pytest.mark.parametrize("stride, expected_folds", [(1, 11), (2, 6), (5, 3)])
+@pytest.mark.parametrize("request_n_splits", [False, True])
+def test_timegapsplit_checks_the_complete_validation_window(
+    frame_func, series_func, stride, expected_folds, request_n_splits
+):
+    dates = pd.date_range("2024-01-01", periods=21, freq="D")
+    X = frame_func({"x": np.arange(len(dates))})
+    cv = TimeGapSplit(
+        date_series=series_func(dates),
+        train_duration=timedelta(days=6),
+        valid_duration=timedelta(days=4),
+        stride_duration=timedelta(days=stride),
+        n_splits=expected_folds if request_n_splits else None,
+    )
+
+    folds = list(cv.split(X))
+
+    assert len(folds) == expected_folds
+    assert cv.get_n_splits(X) == expected_folds
+    for i, (train_index, valid_index) in enumerate(folds):
+        start = i * stride
+        np.testing.assert_array_equal(train_index, np.arange(start, start + 6))
+        np.testing.assert_array_equal(valid_index, np.arange(start + 6, start + 10))
+
+
 def test_timegapsplit_too_many_splits():
     cv = TimeGapSplit(
         date_series=df["date"],
