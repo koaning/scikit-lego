@@ -22,11 +22,14 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
     estimator's `predict_proba()` results, the posterior probabilities based on the confusion matrix, or a combination
     of the two approaches.
 
+    If the inner classifier never predicts a class on the training data, the corresponding posterior column falls
+    back to the supplied prior distribution. Priors are always looked up by class label, including string labels.
+
     Parameters
     ----------
     estimator : scikit-learn compatible classifier
         Classifier that will be wrapped with SubjectiveClassifier. It should implement `predict_proba` method.
-    prior : dict[int, float]
+    prior : dict
         A dictionary mapping `class -> frequency` representing the prior (a.k.a. subjective real-world) class
         distribution. The class frequencies should sum to 1.
     evidence : Literal["predict_proba", "confusion_matrix", "both"], default="both"
@@ -99,7 +102,7 @@ class SubjectiveClassifier(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         return (
             (self._likelihood(y_hat, y, cfm) * self.prior[self.classes_[y]] / y_hat_evidence)
             if y_hat_evidence > 0
-            else self.prior[y]  # in case confusion matrix has all-zero column for y_hat
+            else self.prior[self.classes_[y]]  # in case confusion matrix has all-zero column for y_hat
         )
 
     def fit(self, X, y):
