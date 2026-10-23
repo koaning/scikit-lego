@@ -68,3 +68,20 @@ def test_raises_error(frame_func):
     with pytest.raises(ValueError):
         mod = RegressionOutlierDetector(LogisticRegression(), column="y")
         mod.fit(X)
+
+
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
+@pytest.mark.parametrize("target_first", [False, True])
+def test_named_target_is_excluded_from_regression(frame_func, target_first):
+    data = {"feature": [0.0, 1.0, 2.0, 3.0], "target": [1.0, 3.0, 5.0, 7.0]}
+    if target_first:
+        data = {name: data[name] for name in reversed(data)}
+    detector = RegressionOutlierDetector(LinearRegression(), column="target", method="absolute", lower=1, upper=1)
+    detector.fit(frame_func(data))
+
+    assert detector.estimator_.n_features_in_ == 1
+    np.testing.assert_allclose(detector.estimator_.coef_, [2.0])
+
+    query = {"feature": [4.0, 4.0], "target": [9.0, 100.0]}
+    query = frame_func({name: query[name] for name in data})
+    np.testing.assert_array_equal(detector.predict(query), [1, -1])
