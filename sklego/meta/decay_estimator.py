@@ -121,6 +121,11 @@ class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
         -------
         self : DecayEstimator
             The fitted estimator.
+
+        Raises
+        ------
+        TypeError
+            If the estimator does not support `sample_weight`, or its `fit` method raises a `TypeError`.
         """
 
         if self.check_input:
@@ -143,6 +148,7 @@ class DecayEstimator(MetaEstimatorMixin, BaseEstimator):
         except TypeError as e:
             if "sample_weight" in str(e):
                 raise TypeError(f"Model {type(self.model).__name__}.fit() does not have 'sample_weight'")
+            raise
 
         if self._is_classifier():
             self.classes_ = self.estimator_.classes_
