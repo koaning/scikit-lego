@@ -7,11 +7,12 @@ import pyarrow as pa
 import pytest
 import sklearn
 from pandas.testing import assert_frame_equal
+from scipy import sparse
 from sklearn import clone
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler, TargetEncoder
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder, StandardScaler, TargetEncoder
 from sklearn.utils import check_X_y
 from sklearn_compat.utils.estimator_checks import parametrize_with_checks
 
@@ -126,6 +127,32 @@ def test_all_groups_scaled(dataset_with_single_grouping, scaling_range):
 
     assert np.allclose(df_with_groups.groupby("G").min(), scaling_range[0])
     assert np.allclose(df_with_groups.groupby("G").max(), scaling_range[1])
+
+
+@pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame, pa.table])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_sparse_transformer_preserves_row_order(frame_func, dtype):
+    X = frame_func({"group": ["b", "a", "b", "c", "a"], "value": [2, 0, 1, 1, 2]})
+    transformer = GroupedTransformer(
+        OneHotEncoder(categories=[[0, 1, 2]], dtype=dtype), groups="group", use_global_model=False
+    )
+
+    result = transformer.fit_transform(X)
+
+    assert sparse.isspmatrix_csr(result)
+    assert result.dtype == dtype
+    np.testing.assert_array_equal(result.toarray(), np.eye(3, dtype=dtype)[[2, 0, 1, 1, 2]])
+
+
+def test_sparse_transformer_preserves_global_fallback_rows():
+    X_train = pd.DataFrame({"group": ["b", "a", "b", "c", "a"], "value": [2, 0, 1, 1, 2]})
+    X_test = pd.DataFrame({"group": ["d", "a", "c", "b", "d"], "value": [0, 2, 1, 0, 2]})
+    transformer = GroupedTransformer(OneHotEncoder(categories=[[0, 1, 2]]), groups="group").fit(X_train)
+
+    result = transformer.transform(X_test)
+
+    assert sparse.isspmatrix_csr(result)
+    np.testing.assert_array_equal(result.toarray(), np.eye(3)[[0, 2, 1, 0, 2]])
 
 
 def test_group_correlation_minmaxscaler(dataset_with_single_grouping, scaling_range):
