@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn import clone
 from sklearn.base import BaseEstimator, ClassifierMixin, MetaEstimatorMixin
 from sklearn.metrics import confusion_matrix
@@ -26,6 +27,8 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         Hyperparameter which determines how much smoothing to apply. Must be between 0 and 1.
     cfm_smooth : float, default=0
         Smoothing parameter for the confusion matrices to ensure zeros don't exist.
+        Without smoothing, a class that the estimator never predicts during fitting keeps its original probability
+        contribution because there is no evidence for a correction.
 
     Attributes
     ----------
@@ -105,7 +108,8 @@ class ConfusionBalancer(ClassifierMixin, MetaEstimatorMixin, BaseEstimator):
         self.estimator_ = clone(self.estimator).fit(X, y)
         self.classes_ = unique_labels(y)
         cfm = confusion_matrix(y, self.estimator_.predict(X)).T + self.cfm_smooth
-        self.cfm_ = cfm / cfm.sum(axis=1).reshape(-1, 1)
+        row_totals = cfm.sum(axis=1, keepdims=True)
+        self.cfm_ = np.divide(cfm, row_totals, out=np.eye(len(self.classes_)), where=row_totals != 0)
         return self
 
     def predict_proba(self, X):
