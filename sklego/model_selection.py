@@ -56,22 +56,26 @@ class TimeGapSplit:
     The 3 duration parameters can be used to really replicate how the model is going to be used in production in batch
     learning.
 
-    Each validation fold doesn't overlap. The entire `window` moves by 1 `valid_duration` until there is not enough
-    data.
+    By default, validation folds do not overlap. The entire `window` moves by `stride_duration`, which defaults to
+    `valid_duration`, until a complete validation window no longer fits within the observed date range. A shorter
+    stride creates overlapping validation folds; a longer stride leaves gaps between them.
 
-    If this would lead to more splits than specified with `n_splits`, the `window` moves by `valid_duration` times the
-    fraction of possible splits and requested splits:
+    For the dates aligned to the data passed to `split`, let `total_length = max(date) - min(date)`.
+    When both `train_duration` and `n_splits` are provided, the shift is adjusted using:
 
-    - `n_possible_splits = (total_length - train_duration - gap_duration) // valid_duration`
-    - `time_shift = valid_duration * n_possible_splits / n_splits`
+    - `n_split_max = 1 + (total_length - train_duration - gap_duration - valid_duration) / stride_duration`
+    - `time_shift = stride_duration * n_split_max / n_splits`
 
-    so the CV spans the whole dataset.
+    Here `n_split_max` is a possibly fractional scheduling value, not an integer fold count. At the original stride,
+    the number of complete folds is `max(0, floor(n_split_max))`. Requesting fewer folds increases the shift so the
+    folds are spread across the available date range.
 
-    If `train_duration` is not passed but `n_splits` is, the training duration is increased to:
+    If `train_duration` is not passed but `n_splits` is, the training duration is inferred as:
 
-    `train_duration = total_length - (gap_duration + valid_duration * n_splits)`
+    `train_duration = total_length - (gap_duration + valid_duration + (n_splits - 1) * stride_duration)`
 
-    such that the shifting the entire window by one validation duration spans the whole training set.
+    This fits the requested windows at the specified stride. Validation intervals include their lower boundary and
+    exclude their upper boundary. A complete window's upper boundary must be no later than the latest observed date.
 
     Parameters
     ----------
@@ -298,7 +302,7 @@ class TimeGapSplit:
         else:
             time_shift = self.stride_duration
         while True:
-            if current_date + self.train_duration + time_shift + self.gap_duration > date_max:
+            if current_date + self.train_duration + self.valid_duration + self.gap_duration > date_max:
                 break
 
             X_train_df = X_index_df.filter(
