@@ -46,6 +46,34 @@ def test_average_method_uses_a_bounded_window():
     assert np.allclose(heights[1:], 2 * quantiles[1:], rtol=0.05)
 
 
+@pytest.mark.parametrize("span", [1.0, 0.001])
+@pytest.mark.parametrize("offset", [0.0, 100_000.0])
+def test_normal_method_does_not_underflow_between_distant_samples(span, offset):
+    X = np.array([[0.0], [100.0]]) + offset
+    encoder = IntervalEncoder(n_chunks=3, span=span, method="normal").fit(X, [2.0, 6.0])
+
+    np.testing.assert_allclose(encoder.heights_, [[2.0, 4.0, 6.0]])
+    np.testing.assert_allclose(encoder.transform([[offset + 50.0]]), [[4.0]])
+
+
+def test_normal_method_preserves_normalized_gaussian_averages():
+    X = np.array([[-1.0], [-0.2], [0.3], [1.2]])
+    y = np.array([1.0, 4.0, 2.0, 8.0])
+    encoder = IntervalEncoder(n_chunks=5, span=0.5, method="normal").fit(X, y)
+    weights = np.exp(-((X[:, 0, None] - encoder.quantiles_[0]) ** 2) / encoder.span)
+    expected = np.average(y[:, None] * np.ones_like(weights), axis=0, weights=weights)
+
+    np.testing.assert_allclose(encoder.heights_[0], expected)
+
+
+@pytest.mark.parametrize("target", [1e308, -1e308])
+def test_normal_method_preserves_large_constant_targets(target):
+    encoder = IntervalEncoder(n_chunks=3, method="normal").fit([[-1.0], [1.0]], [target, target])
+
+    np.testing.assert_allclose(encoder.heights_, [[target, target, target]])
+    np.testing.assert_allclose(encoder.transform([[0.0]]), [[target]])
+
+
 def generate_dataset(start, n=600):
     np.random.seed(42)
     xs = np.arange(start, start + n) / 100 / np.pi

@@ -75,13 +75,21 @@ def _mk_average(xs, ys, intervals, method="average", span=1, **kwargs):
             distances = 1 / (0.01 + np.abs(xs - interval))
             predicate = (xs < (interval + span)) & (xs > (interval - span))
         elif method == "normal":
-            distances = np.exp(-((xs - interval) ** 2) / span)
+            squared_distances = (xs - interval) ** 2
+            # A common scale cancels in the weighted average. Keep the largest
+            # weight at one so distant observations cannot all underflow to zero.
+            distances = np.exp(-(squared_distances - squared_distances.min()) / span)
             predicate = xs == xs
         else:
             raise ValueError("method needs to be either `average` or `normal`")
         subset = ys[predicate]
         dist_subset = distances[predicate]
-        results[idx] = np.average(subset, weights=dist_subset)
+        if method == "normal":
+            # Normalize before multiplying by the targets so rescaling the
+            # weights does not overflow otherwise finite weighted averages.
+            results[idx] = np.dot(subset, dist_subset / dist_subset.sum())
+        else:
+            results[idx] = np.average(subset, weights=dist_subset)
     return results
 
 
@@ -100,6 +108,8 @@ class IntervalEncoder(TransformerMixin, BaseEstimator):
     span : float, default=1.0
         A hyperparameter for the interpolation method, if the method is `"normal"` it resembles the width of the radial
         basis function used to weigh the points. It is ignored if the method is `"increasing"` or `"decreasing"`.
+        For `"normal"`, weights are rescaled and normalized before averaging to avoid numerical underflow between
+        distant samples and overflow when summing large targets.
     method : Literal["average", "normal", "increasing", "decreasing"], default="normal"
         The interpolation method used, can be either `"average"`, `"normal"`, `"increasing"` or `"decreasing"`.
 
