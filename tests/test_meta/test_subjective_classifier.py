@@ -1,11 +1,33 @@
 import numpy as np
 import pytest
 from sklearn.cluster import DBSCAN
+from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from sklego.meta import SubjectiveClassifier
+
+
+@pytest.mark.parametrize("labels", [[0, 1], [10, 30], [-1, 1], ["cat", "dog"], ["cat", "dog", "fox"]])
+@pytest.mark.parametrize("evidence", ["predict_proba", "confusion_matrix", "both"])
+def test_unpredicted_classes_use_label_keyed_prior(labels, evidence):
+    y = np.repeat(labels, [4] + [2] * (len(labels) - 1))
+    X = np.arange(len(y)).reshape(-1, 1)
+    prior_values = np.arange(1, len(labels) + 1, dtype=float)
+    prior_values /= prior_values.sum()
+    classifier = SubjectiveClassifier(
+        DummyClassifier(strategy="most_frequent"),
+        prior=dict(zip(labels, prior_values)),
+        evidence=evidence,
+    ).fit(X, y)
+
+    # A constant prediction provides no evidence beyond the supplied prior.
+    np.testing.assert_allclose(classifier.posterior_matrix_, np.tile(prior_values[:, None], (1, len(labels))))
+    expected = prior_values if evidence == "confusion_matrix" else np.eye(len(labels))[0]
+    probabilities = classifier.predict_proba(X[:2])
+    np.testing.assert_allclose(probabilities, np.tile(expected, (2, 1)))
+    np.testing.assert_array_equal(classifier.predict(X[:2]), np.repeat(labels[np.argmax(expected)], 2))
 
 
 @parametrize_with_checks(
