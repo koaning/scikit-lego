@@ -88,7 +88,7 @@ Here's a list of features that this library currently offers:
 - `sklego.datasets.fetch_creditcard` fetch a fraud dataset from openml
 - `sklego.datasets.make_simpleseries` make a simulated timeseries
 - `sklego.pandas_utils.add_lags` adds lag values in a pandas dataframe
-- `sklego.pandas_utils.log_step` a useful decorator to log your pipeline steps
+- `sklego.pandas_utils.log_step` logs pipeline steps, including shape changes when the dataframe is passed by keyword
 - `sklego.dummy.RandomRegressor` dummy benchmark that predicts random values
 - `sklego.linear_model.DeadZoneRegressor` experimental feature that has a deadzone in the cost function
 - `sklego.linear_model.DemographicParityClassifier` logistic classifier constrained on demographic parity
