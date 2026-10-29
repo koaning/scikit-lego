@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 import pytest
+from numpy.testing import assert_allclose, assert_array_equal
 from scipy.io.arff import loadarff
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import GridSearchCV
@@ -71,6 +72,37 @@ def test_alpha_param2(frame_func, boston_data):
     assert np.isclose(ifilter.fit_transform(df), X_removed).all()
 
 
+@pytest.mark.parametrize(
+    "X, X_test, columns",
+    [
+        (
+            np.array([[0, 2], [0, 1], [0, 4], [0, 3]]),
+            np.array([[0, 6], [0, 5]]),
+            [0],
+        ),
+        (
+            np.array([[1, 2, 2], [2, 4, 1], [3, 6, 4], [4, 8, 3]]),
+            np.array([[5, 10, 6], [0, 0, 5]]),
+            [0, 1],
+        ),
+    ],
+    ids=["zero-sensitive-column", "linearly-dependent-sensitive-columns"],
+)
+def test_alpha_zero_handles_degenerate_sensitive_columns(X, X_test, columns):
+    # Zero-norm and linearly dependent sensitive columns make the learned projection contain NaNs. Since alpha=0
+    # promises no filtering, transform must bypass that projection instead of letting `0 * NaN` corrupt the output.
+    with np.errstate(invalid="ignore", divide="ignore"):
+        transformer = InformationFilter(columns=columns, alpha=0).fit(X)
+
+    result = transformer.transform(X)
+    result_test = transformer.transform(X_test)
+
+    assert_array_equal(result, X[:, [-1]])
+    assert_array_equal(result_test, X_test[:, [-1]])
+    assert result.dtype == np.result_type(X.dtype, transformer.projection_.dtype)
+    assert result_test.dtype == np.result_type(X_test.dtype, transformer.projection_.dtype)
+
+
 @pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])
 def test_output_orthogonal_frame(frame_func, boston_data):
     X, y = boston_data
@@ -93,6 +125,21 @@ def test_output_orthogonal_frame(frame_func, boston_data):
     X_fair = InformationFilter(columns=["b", "lstat"]).fit_transform(df)
     assert all([(c * df["b"]).sum() < 1e-5 for c in X_fair.T])
     assert all([(c * df["lstat"]).sum() < 1e-5 for c in X_fair.T])
+
+
+def test_integer_input_preserves_fractional_projection():
+    X = np.array([[1, 2], [2, 1], [3, 4], [4, 3]])
+    X_test = np.array([[2, 5], [5, 2]])
+    coefficient = np.linalg.lstsq(X[:, [0]].astype(float), X[:, [1]], rcond=None)[0]
+    expected = X[:, [1]] - X[:, [0]] @ coefficient
+    expected_test = X_test[:, [1]] - X_test[:, [0]] @ coefficient
+
+    transformer = InformationFilter(columns=[0])
+    result = transformer.fit_transform(X)
+
+    assert_allclose(result, expected, atol=1e-12)
+    assert_allclose(transformer.transform(X_test), expected_test, atol=1e-12)
+    assert np.issubdtype(result.dtype, np.floating)
 
 
 @pytest.mark.parametrize("frame_func", [pd.DataFrame, pl.DataFrame])

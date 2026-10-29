@@ -1,7 +1,7 @@
 import narwhals.stable.v1 as nw
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES, check_is_fitted
 from sklearn_compat.utils.validation import validate_data
 
 from sklego.common import as_list
@@ -134,6 +134,8 @@ class InformationFilter(TransformerMixin, BaseEstimator):
 
     $$X_{fair} = [v_3, ..., v_k]$$
 
+    Integer input is converted to floating point before computing the projections to preserve fractional residuals.
+
     Parameters
     ----------
     columns : int | str | Sequence[int] | Sequence[str]
@@ -143,7 +145,7 @@ class InformationFilter(TransformerMixin, BaseEstimator):
         Parameter to control how much to filter:
 
         - `alpha=1` we filter out all information.
-        - `alpha=0` we don't apply any filtering.
+        - `alpha=0` we return the non-sensitive columns without applying the projection.
 
         Should be between 0 and 1.
 
@@ -233,7 +235,7 @@ class InformationFilter(TransformerMixin, BaseEstimator):
         """
         self._check_coltype(X)
         self.col_ids_ = [v if isinstance(v, int) else self._col_idx(X, v) for v in as_list(self.columns)]
-        X = validate_data(self, X=X, reset=True)
+        X = validate_data(self, X=X, reset=True, dtype=FLOAT_DTYPES)
 
         X_fair = X.copy()
         v_vectors = self._make_v_vectors(X, self.col_ids_)
@@ -270,8 +272,12 @@ class InformationFilter(TransformerMixin, BaseEstimator):
         self._check_coltype(X)
         X = validate_data(self, X=X, reset=False)
 
+        X_orig = np.delete(X, self.col_ids_, axis=1)
+        if self.alpha == 0:
+            # Avoid propagating a degenerate projection through 0 * NaN, preserving output dtype promotion.
+            return X_orig.astype(np.result_type(X.dtype, self.projection_.dtype), copy=False)
+
         # apply the projection and remove the column we won't need
         X_fair = X @ self.projection_
         X_removed = np.delete(X_fair, self.col_ids_, axis=1)
-        X_orig = np.delete(X, self.col_ids_, axis=1)
         return self.alpha * np.atleast_2d(X_removed) + (1 - self.alpha) * np.atleast_2d(X_orig)
