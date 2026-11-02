@@ -186,14 +186,14 @@ plt.savefig(_static_path / "rbf-data.png")
 plt.clf()
 
 # --8<-- [start:rbf-transform]
+from sklearn.compose import ColumnTransformer
+
 from sklego.preprocessing import RepeatingBasisFunction
 
 N_PERIODS = 5
-rbf = RepeatingBasisFunction(
-    n_periods=N_PERIODS,
+rbf = ColumnTransformer(
+    [("periodic", RepeatingBasisFunction(n_periods=N_PERIODS, input_range=(1,365)), ["day_of_year"])],
     remainder="passthrough",
-    column="day_of_year",
-    input_range=(1,365)
 )
 
 _ = rbf.fit(X)

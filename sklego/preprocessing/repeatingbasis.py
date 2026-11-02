@@ -38,10 +38,13 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     column : int | str, default=0
         Index or column name of the data to transform. Integers are interpreted as positional columns, while
         strings can reference DataFrame columns by name.
+        Deprecated: select a single column with an external `ColumnTransformer`, using a list such as `[0]`
+        or `["created_day"]` to keep the input two-dimensional.
     remainder : Literal["drop", "passthrough"], default="drop"
         By default, only the specified column is transformed, and the non-specified columns are dropped.
         By specifying `remainder="passthrough"`, all remaining columns will be automatically passed through.
         This subset of columns is concatenated with the output of the transformer.
+        Deprecated: set `remainder` on the external `ColumnTransformer` instead.
     n_periods : int, default=12
         Number of basis functions to create, i.e., the number of columns that will exit the transformer.
     input_range : Tuple[float, float] | List[float] | None, default=None
@@ -62,17 +65,25 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
     --------
     ```py
     import pandas as pd
+    from sklearn.compose import ColumnTransformer
+
     from sklego.preprocessing import RepeatingBasisFunction
 
     df = pd.DataFrame({
         "user_id": [101, 102, 103],
         "created_day": [5, 1, 7]
     })
-    RepeatingBasisFunction(column="created_day", input_range=(1,8), n_periods=5).fit_transform(df)
+    rbf = ColumnTransformer([
+        ("periodic", RepeatingBasisFunction(input_range=(1,8), n_periods=5), ["created_day"])
+    ])
+    rbf.fit_transform(df)
     # array([[0.01013423, 0.03177805, 0.47965227, 0.97979867, 0.27086833],
     #        [1.        , 0.36787944, 0.01831564, 0.01831564, 0.36787944],
     #        [0.60037304, 0.0529305 , 0.00538311, 0.1914629 , 0.92161045]])
     ```
+
+    During the deprecation period, the inner estimator still emits a `FutureWarning` on every fit,
+    including when using default parameters. The removal version will be announced in a future release.
     """
 
     def __init__(self, column=0, remainder="drop", n_periods=12, input_range=None, width=1.0):
@@ -105,6 +116,15 @@ class RepeatingBasisFunction(TransformerMixin, BaseEstimator):
         self : RepeatingBasisFunction
             The fitted transformer.
         """
+        warn(
+            "The `column` and `remainder` parameters of RepeatingBasisFunction are deprecated. "
+            "Use an external ColumnTransformer for column selection and remainder handling, "
+            "with a two-dimensional single-column selector such as [0] or ['column_name']. "
+            "This warning is emitted on every fit, including when using default parameters, "
+            "during the deprecation period.",
+            FutureWarning,
+            stacklevel=2,
+        )
         self.pipeline_ = ColumnTransformer(
             [
                 (
