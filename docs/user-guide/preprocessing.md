@@ -154,6 +154,12 @@ The transformer selects a column and transforms it with a given number of repeat
 
 As a result these repeating basis functions can capture how close each datapoint is to the center of each repeating basis function, even when the input data has a circular nature.
 
+The `column` and `remainder` parameters of `RepeatingBasisFunction` are deprecated.
+Use an external scikit-learn `ColumnTransformer` to select the column and handle the remaining columns.
+Pass a list containing one column name or index, such as `["day_of_year"]` or `[1]`, so that the input remains two-dimensional.
+During the transition, the inner `RepeatingBasisFunction` still emits a `FutureWarning` on every fit, even with default parameters.
+The parameters remain supported during the deprecation period; their removal version will be announced in a future release.
+
 ### Example
 
 Let's make some random data to start with. We have input data `day`, `day_of_year` and target `y`.
@@ -183,7 +189,7 @@ These are bell curves that are equidistant over the 1-365 range. Each curve capt
 
 For example, the curve in the top row captures how close a day is to new year's day. It peaks on day 1 with a value of 1 and smoothly drops at an equal rate in December and in the rest of January.
 
-Note, how the `day` feature still exists, in the transformed feature set as a result of the `remainder="passthrough"` setting. The default setting `remainder="drop"` will only keep the repeating basis functions and drop all columns of the original dataset.
+Note, how the `day` feature still exists, after the repeating basis functions, as a result of the external `ColumnTransformer`'s `remainder="passthrough"` setting. Its default setting `remainder="drop"` will only keep the repeating basis functions and drop all columns of the original dataset.
 
 ### Example Regression
 
