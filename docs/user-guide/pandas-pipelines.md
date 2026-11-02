@@ -100,6 +100,17 @@ For example, if we don't care how long a function takes, but do want to see how 
 4      76     8      1     1
 ```
 
+The input dataframe can also be passed by keyword, including when `shape_delta=True`.
+The first parameter in the function signature identifies the input, regardless of the order of keyword arguments:
+
+```py
+--8<-- "docs/_scripts/pandas-pipelines.py:log-step-keyword"
+```
+
+```console
+[remove_first(df, rows = 1)] n_obs=2, n_col=1 delta=(-1, 0)
+```
+
 We can also define custom logging functions by using [`log_step_extra`][log-step-extra-api].
 
 This takes any number of functions (> 1) that can take the output dataframe and return some output that can be converted to a string.
