@@ -215,6 +215,49 @@ def test_log_shape_delta(capsys, data):
     assert "delta=(0, -1)" in print_statements[4]
 
 
+@pytest.mark.parametrize("display_args", [True, False])
+@pytest.mark.parametrize("call_style", ["positional", "keyword", "reversed_keywords", "keyword_only"])
+def test_log_shape_delta_argument_binding(capsys, data, call_style, display_args):
+    frame = pd.DataFrame(data)
+    other = pd.DataFrame({"other": [1]})
+
+    @log_step(shape_delta=True, time_taken=False, display_args=display_args)
+    def remove_first(df, other, rows=1):
+        assert other.shape == (1, 1)
+        return df.iloc[rows:]
+
+    @log_step(shape_delta=True, time_taken=False, display_args=display_args)
+    def remove_first_keyword_only(*, df, other, rows=1):
+        assert other.shape == (1, 1)
+        return df.iloc[rows:]
+
+    if call_style == "positional":
+        result = remove_first(frame, other, rows=1)
+    elif call_style == "keyword":
+        result = remove_first(df=frame, other=other, rows=1)
+    elif call_style == "reversed_keywords":
+        result = remove_first(rows=1, other=other, df=frame)
+    else:
+        result = remove_first_keyword_only(rows=1, other=other, df=frame)
+
+    pd.testing.assert_frame_equal(result, frame.iloc[1:])
+    assert frame.shape == (3, 2)
+    output = capsys.readouterr().out
+    assert "delta=(-1, 0)" in output
+    assert "X1" not in output
+
+
+def test_log_shape_delta_keyword_error(capsys, data):
+    @log_step(shape_delta=True, time_taken=False)
+    def fail(df):
+        raise ValueError("transformation failed")
+
+    with pytest.raises(ValueError, match="transformation failed"):
+        fail(df=pd.DataFrame(data))
+
+    assert "FAILED with error: transformation failed" in capsys.readouterr().out
+
+
 @pytest.mark.parametrize("names", [True, False])
 def test_log_names(names, capsys, data):
     """Test logging of names can be switched on and off"""

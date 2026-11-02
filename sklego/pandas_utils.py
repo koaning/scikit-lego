@@ -39,7 +39,8 @@ def log_step(
     shape : bool, default=True
         Whether or not to log the shape of the output result.
     shape_delta : bool, default=False
-        Whether or not to log the difference in shape of input and output.
+        Whether or not to log the difference in shape of input and output. The input dataframe is the
+        first function argument, which may be passed positionally or by keyword.
     names : bool, default=False
         Whether or not to log the names of the columns of the result.
     dtypes : bool, default=False
@@ -87,7 +88,12 @@ def log_step(
     @wraps(func)
     def wrapper(*args, **kwargs):
         if shape_delta:
-            old_shape = args[0].shape
+            if args:
+                input_frame = args[0]
+            else:
+                bound_args = inspect.signature(func).bind(*args, **kwargs).arguments
+                input_frame = next(iter(bound_args.values()))
+            old_shape = input_frame.shape
         tic = dt.datetime.now()
 
         optional_strings = []

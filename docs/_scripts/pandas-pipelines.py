@@ -8,6 +8,19 @@ _static_path.mkdir(parents=True, exist_ok=True)
 
 import pandas as pd
 
+# --8<-- [start:log-step-keyword]
+from sklego.pandas_utils import log_step
+
+
+@log_step(shape_delta=True, time_taken=False)
+def remove_first(df, rows=1):
+    return df.iloc[rows:]
+
+
+frame = pd.DataFrame({"value": [1, 2, 3]})
+remove_first(rows=1, df=frame)
+# --8<-- [end:log-step-keyword]
+
 # --8<-- [start:log-setup]
 import logging
 
