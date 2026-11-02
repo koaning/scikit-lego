@@ -71,6 +71,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         A dictionary with the fitted estimators per group
     groups_ : list
         A list of all the groups that were found during fitting
+    classes_ : ndarray of shape (n_classes,)
+        The sorted class labels seen during fitting. Only available for classifiers.
     fallback_ : estimator
         A fallback estimator that is used when `use_global_model=True` and a group is not found during `.predict()`
     shrinkage_function_ : callable
@@ -260,6 +262,9 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         self.groups_ = as_list(self.estimators_.keys())
 
+        if is_classifier(self.estimator):
+            self.classes_ = np.unique(y)
+
         if self.shrinkage is not None:
             _groups = (
                 [self._global_col_name, *as_list(deepcopy(self.groups))]
@@ -318,7 +323,7 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
 
         n_samples = frame.shape[0]
         frame = frame.with_columns(__sklego_index__=np.arange(n_samples))
-        return (
+        predictions = (
             pd.concat(
                 [
                     self.__predict_single_group(
@@ -332,9 +337,10 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
             )
             .fillna(0)
             .sort_index()
-            .to_numpy()
-            .squeeze()
         )
+        if method == "predict_proba" and is_classifier(self.estimator):
+            return predictions.reindex(columns=self.classes_, fill_value=0).to_numpy()
+        return predictions.to_numpy().squeeze()
 
     def predict(self, X):
         """Predict target values on new data `X` by predicting on each group. If a group is not found during
@@ -381,7 +387,8 @@ class GroupedPredictor(ShrinkageMixin, MetaEstimatorMixin, BaseEstimator):
         Returns
         -------
         array-like of shape (n_samples, n_classes)
-            Predicted probabilities per class.
+            Predicted probabilities in `classes_` order for classifiers. Classes absent from a group's training
+            data receive probability zero. Both axes are retained for a single sample or a single class.
         """
         check_is_fitted(self, ["estimators_", "groups_", "fallback_"])
 
@@ -539,5 +546,4 @@ class GroupedClassifier(ClassifierMixin, GroupedPredictor):
 
         if not is_classifier(self.estimator):
             raise ValueError("GroupedClassifier is only available for classification models")
-        self.classes_ = np.unique(y)
         return super().fit(X, y)

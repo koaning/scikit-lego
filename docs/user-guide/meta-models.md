@@ -144,6 +144,12 @@ Their specs and functionalities are the exact same of the `GroupedPredictor`[^1]
 
 [^1]: Not entirely true, as `GroupedClassifier` doesn't allow for the `shrinkage` parameter.
 
+For classifiers, `predict_proba` returns one column for every label in `classes_`, in that order,
+even when the prediction batch contains only some of the fitted groups.
+Classes absent from a group's training data receive probability zero.
+Unseen groups use the global model's probabilities when `use_global_model=True`.
+The output always has shape `(n_samples, n_classes)`, including for a single sample or a single class.
+
 ## Grouped Transformation
 
 We can apply grouped prediction on estimators that have a `.predict()` implemented but we're also able to do something similar for transformers, like `StandardScaler`.
