@@ -16,6 +16,8 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
         An outlier detector that implements `.fit()` and `.predict()` methods.
     refit : bool, default=True
         Whether or not to fit the underlying estimator during `OutlierRemover(...).fit()`.
+        If True, a clone of `outlier_detector` is fitted. If False, the supplied detector must already be fitted
+        and is used directly without refitting.
 
     Attributes
     ----------
@@ -65,10 +67,12 @@ class OutlierRemover(TrainOnlyTransformerMixin, BaseEstimator):
         self : OutlierRemover
             The fitted transformer.
         """
-        self.estimator_ = clone(self.outlier_detector)
+        super().fit(X, y)
         if self.refit:
-            super().fit(X, y)
+            self.estimator_ = clone(self.outlier_detector)
             self.estimator_.fit(X, y)
+        else:
+            self.estimator_ = self.outlier_detector
         _check_n_features(self, X, reset=True)
         return self
 
