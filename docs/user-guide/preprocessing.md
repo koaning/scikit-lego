@@ -295,6 +295,8 @@ It's important to note that this transformer only removes outliers during traini
 
 The `OutlierRemover` class is initialized with an `outlier_detector` estimator, and a boolean flag `refit`. The outlier detector should be a scikit-learn compatible estimator that implements `.fit()` and `.predict()` methods. The refit flag determines whether the underlying estimator is fitted during `OutlierRemover.fit()`.
 
+With the default `refit=True`, a clone of the detector is fitted, leaving the supplied detector unchanged. To reuse an already fitted detector, set `refit=False`. In both cases, call `OutlierRemover.fit(X)` to record which data should have outliers removed during training.
+
 [estimator-transformer-api]: ../../api/meta#sklego.meta.estimator_transformer.EstimatorTransformer
 [meta-module]: ../../api/meta
 [id-transformer-api]: ../../api/preprocessing#sklego.preprocessing.identitytransformer.IdentityTransformer

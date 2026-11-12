@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.cluster import KMeans
 from sklearn.ensemble import IsolationForest
@@ -67,6 +68,53 @@ def test_do_not_refit(mocker):
     outlier_remover = OutlierRemover(outlier_detector=mock_outlier_detector, refit=False)
     outlier_remover.fit(X=np.array([[5, 5]]))
     mock_outlier_detector.fit.assert_not_called()
+
+
+@pytest.mark.parametrize("container", [np.array, pd.DataFrame])
+@pytest.mark.parametrize("method", ["transform_train", "transform", "fit_transform"])
+def test_prefitted_detector(container, method, mocker):
+    X = container([[0.0], [0.1], [0.2], [0.3], [10.0]])
+    detector = IsolationForest(random_state=0, contamination=0.2).fit(X)
+    expected = X[detector.predict(X) != -1]
+    fit_spy = mocker.spy(detector, "fit")
+    remover = OutlierRemover(detector, refit=False)
+
+    if method == "fit_transform":
+        result = remover.fit_transform(X)
+    else:
+        assert remover.fit(X) is remover
+        result = getattr(remover, method)(X)
+
+    assert remover.estimator_ is detector
+    fit_spy.assert_not_called()
+    assert len(expected) < len(X)
+    np.testing.assert_array_equal(result, expected)
+
+
+@pytest.mark.parametrize("container", [np.array, pd.DataFrame])
+def test_prefitted_detector_tracks_training_data(container, mocker):
+    X = container([[0.0], [0.1], [0.2], [0.3], [10.0]])
+    X_new = container([[0.1], [20.0]])
+    detector = IsolationForest(random_state=0, contamination=0.2).fit(X)
+    fit_spy = mocker.spy(detector, "fit")
+    remover = OutlierRemover(detector, refit=False).fit(X)
+
+    np.testing.assert_array_equal(remover.transform(X_new), X_new)
+    remover.fit(X_new)
+    np.testing.assert_array_equal(remover.transform(X_new), X_new[detector.predict(X_new) != -1])
+    np.testing.assert_array_equal(remover.transform(X), X)
+    fit_spy.assert_not_called()
+
+
+def test_refit_clones_detector():
+    X = np.array([[0.0], [0.1], [0.2], [0.3], [10.0]])
+    detector = IsolationForest(random_state=0, contamination=0.2).fit(X)
+    original_trees = detector.estimators_
+    remover = OutlierRemover(detector, refit=True).fit(X)
+
+    assert remover.estimator_ is not detector
+    assert detector.estimators_ is original_trees
+    np.testing.assert_array_equal(remover.transform(X), X[detector.predict(X) != -1])
 
 
 def test_pipeline_integration():
