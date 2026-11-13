@@ -137,6 +137,7 @@ nav:
     - RStudio: rstudio.md
   - API Reference:
     - Base: api/base.md
+    - Cluster: api/cluster.md
     - Common: api/common.md
     - Datasets: api/datasets.md
     - Decay Functions: api/decay-functions.md

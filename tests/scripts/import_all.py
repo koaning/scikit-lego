@@ -1,5 +1,6 @@
 # flake8: noqa
 from sklego import *
+from sklego.cluster import *
 from sklego.decomposition import *
 from sklego.meta import *
 from sklego.mixture import *
