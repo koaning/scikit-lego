@@ -154,3 +154,36 @@ def test_nans_could_work():
     y = np.array([1, 0, 1, 0, 1])
     model = Thresholder(HistGradientBoostingClassifier(), 0.6)
     model.fit(X, y)
+
+
+@pytest.mark.parametrize("check_input", [False, True])
+@pytest.mark.parametrize("n_classes", [1, 3])
+def test_rejects_nonbinary_prefitted_model(check_input, n_classes):
+    X = np.arange(6).reshape(-1, 1)
+    model = DummyClassifier().fit(X, np.arange(6) % n_classes)
+    thresholder = Thresholder(model, threshold=0.5, check_input=check_input)
+
+    with pytest.raises(ValueError, match="two classes"):
+        thresholder.fit(X, np.arange(6) % 2)
+
+
+@pytest.mark.parametrize("refit", [False, True])
+def test_rejects_single_class_fitted_model(refit):
+    X = np.arange(6).reshape(-1, 1)
+    thresholder = Thresholder(DummyClassifier(), threshold=0.5, refit=refit)
+
+    with pytest.raises(ValueError, match="two classes"):
+        thresholder.fit(X, np.zeros(6))
+
+
+def test_refit_replaces_nonbinary_prefitted_model():
+    X = np.arange(6).reshape(-1, 1)
+    model = DummyClassifier().fit(X, np.arange(6) % 3)
+    thresholder = Thresholder(model, threshold=0.5, refit=True)
+    thresholder.fit(X, np.arange(6) % 2)
+
+    assert thresholder.estimator_ is not model
+    np.testing.assert_array_equal(thresholder.classes_, [0, 1])
+    assert thresholder.predict(X).shape == (6,)
+    assert thresholder.predict_proba(X).shape == (6, 2)
+    np.testing.assert_array_equal(model.classes_, [0, 1, 2])
