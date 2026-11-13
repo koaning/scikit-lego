@@ -61,11 +61,14 @@ The user's target use case is **sampling from the same distribution**. Test: dra
 | e-GMM 1 / 5 / 20 ep | 109.64 / 109.72 / 109.87 | 0.61 / 0.61 / 0.60 | 0.60 / 0.59 / 0.60 |
 | EM, e-means init, 10 it | 109.67 | 0.61 | 0.60 |
 | `GaussianMixture()` defaults | 109.95 | 0.60 | 0.56 |
+| **full covariance** EM, e-means init, 5 it (1091s) | **117.72** | **0.53** | **0.50** |
 
-All diagonal models are about equally distinguishable from real data; nearest-real-row distance of samples is ~0.85 for
-every model vs 0.73 for real test rows. **The diagonal restriction looks like the bigger limit for sampling, not EM vs
-e-GMM.** `sampling_glove_full_cov.py` (sklearn full-covariance EM, e-means init) is the reference to check that; it is
-slow (k=256 full 100x100 covariances) and had not finished when this PR was opened.
+All diagonal models are about equally distinguishable from real data (nearest-real-row distance of samples ~0.85 vs
+0.73 for real test rows). **Full covariance changes the picture:** after only 5 EM iterations it gains ~7.8 nats/row of
+test log-likelihood over the best diagonal fit, and its re-normalised samples are indistinguishable from real rows
+(AUC 0.50; nearest-row distance 0.81). It is expensive though: 1091s for 5 iterations with sklearn on a 2-core VM
+(`sampling_glove_full_cov.py`; the 20-iteration run was stopped). For the sampling use case, `covariance_type="full"`
+is the main requirement, and making it fast is exactly where an e-means style minibatch update could pay off.
 
 ### Earlier synthetic / tabular runs (`results/synthetic_and_covtype_frontier.csv`)
 
@@ -75,8 +78,9 @@ slow (k=256 full 100x100 covariances) and had not finished when this PR was open
 
 ## Suggested next steps
 
-1. Wait for / rerun `sampling_glove_full_cov.py`. If full covariance gets AUC clearly closer to 0.5, `covariance_type="full"`
-   is required, not optional.
+1. Implement `covariance_type="full"` in the prototype (EMA of `sum r x x^T` per component, Cholesky per update) and
+   compare against the full-covariance EM reference above on time-to-quality and sampling AUC. That is the headline
+   experiment: full covariance is what sampling needs, and sklearn EM takes ~220s per iteration here.
 2. Promote to `sklego.mixture.EGaussianMixture` mirroring `GaussianMixture`'s API: `covariance_type` in
    {"diag", "spherical", "full"} (full = EMA of `sum r x x^T` per component), `n_epochs`, `batch_size`, `alpha`,
    `init` (default: e-means centroids), `reg_covar`, `random_state`; `score_samples`, `sample`, `predict_proba`.
