@@ -1,0 +1,4 @@
+kind,dataset,method,iters,seconds,test,train
+kmeans,"GloVe-100 normalized (400k x 100, k=256)",sklearn KMeans() defaults,288,65.46635720300037,0.6087226263680959,0.6054600148243927
+kmeans,"GloVe-100 normalized (400k x 100, k=1024)",sklearn KMeans() defaults,156,168.20322475600005,0.5572274220245507,0.5497669978533102
+gmm,"GloVe-100 normalized (320k train / 80k test, k=256)",sklearn GaussianMixture() defaults,51,386.6355326749999,109.95171056668677,110.24685324885014
