@@ -1,0 +1,2 @@
+method,label,seconds,test_ll,auc_raw,auc_renorm,nn_sample_to_train,nn_test_to_train,sample_norm_mean
+"EM full covariance, e-means init",5 it,1091.0768737689996,117.71501658048527,0.5299852128125,0.5041964065625,0.812773442063715,0.7315198892820349,0.9963535366959488
