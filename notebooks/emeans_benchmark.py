@@ -117,6 +117,27 @@ def _(np, pairwise_distances_argmin_min):
     return (inertia,)
 
 
+@app.cell
+def _(alt, pl):
+    def frontier_chart(df, y, y_title, ref, ref_label):
+        """Quality against training time, one line per method, with a dashed reference line."""
+        _base = alt.Chart(df).encode(
+            x=alt.X("seconds:Q", scale=alt.Scale(type="log"), title="training time incl. init (s, log scale)"),
+            y=alt.Y(f"{y}:Q", scale=alt.Scale(zero=False), title=y_title),
+            color=alt.Color("method:N", title=None, legend=alt.Legend(orient="bottom", columns=2, labelLimit=300)),
+            tooltip=["method", "label", "seconds", alt.Tooltip(f"{y}:Q", format=".4f")],
+        )
+        _rule = alt.Chart(pl.DataFrame({y: [ref], "text": [f"reference: {ref_label}"]})).encode(y=f"{y}:Q")
+        return (
+            _rule.mark_rule(strokeDash=[5, 4], color="gray")
+            + _rule.mark_text(align="left", x=5, dy=-6, color="gray").encode(text="text:N")
+            + _base.mark_line(point=True)
+            + _base.mark_text(align="left", dx=6, dy=-6, fontSize=10).encode(text="label:N")
+        ).properties(width=600, height=350)
+
+    return (frontier_chart,)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -186,8 +207,10 @@ def _(mo):
 
     Each point is one fit; lines connect the same method with more iterations (Lloyd, MiniBatchKMeans) or more epochs
     (e-means). The x-axis is wall-clock time *including* initialisation, the y-axis is the mean squared distance of
-    held-out rows to their nearest centroid, as a percentage above the best fit in the chart. Points in the bottom left
-    are the ones you want.
+    held-out rows to their nearest centroid (lower is better). The dashed line is what sklearn's `KMeans` converges to
+    (k-means++ init, 100 iterations); anything below it and to its left beats `KMeans` on both quality and time. Point
+    labels are iterations (`it`) or epochs (`ep`); fits more than 1.5% worse than the dashed line are left out so the
+    rest stays readable.
 
     What we saw in larger offline runs (same methods, 80/20 train/test split):
 
@@ -195,7 +218,8 @@ def _(mo):
       frontier. At k=1024, five epochs reached a test MSE within 0.05% of the best run in about 3s (Rust `emeans`
       crate) or 16s (this NumPy port), while Lloyd needed 39s (random init, 30 iterations, 0.42%) or 120s (k-means++,
       0.19%). Revival mattered: without it the same fit ended 1.2% above the best. k-means++ cost about 80s of
-      initialisation for no measurable gain. MiniBatchKMeans stalled around 2.5%.
+      initialisation for no measurable gain. MiniBatchKMeans stalled around 2.5%. Plain `KMeans(1024).fit(X)` with
+      default settings ran 156 iterations in 168s for a test MSE of 0.5572, against 0.5569 in 2.9s for Rust e-means.
     - **Heavy-tailed tabular data** (covtype with standardised one-hot columns): the opposite. Random starts ended
       far behind k-means++, and revival hurt by reseeding the small clusters that cover rare-category outliers. Use
       `init="k-means++"` and `unused_threshold=0` for data like that.
@@ -205,12 +229,13 @@ def _(mo):
 
 
 @app.cell
-def _(EMeans, KMeans, MiniBatchKMeans, X, X_test, alt, inertia, k, pl, time):
+def _(EMeans, KMeans, MiniBatchKMeans, X, X_test, frontier_chart, inertia, k, pl, time):
     def _fits():
         for _it in [1, 3, 10, 30, 100]:
             for _init in ["random", "k-means++"]:
                 yield (
                     f"Lloyd KMeans ({_init})",
+                    f"{_it} it",
                     lambda _it=_it, _init=_init: KMeans(
                         k, init=_init, n_init=1, max_iter=_it, tol=0, random_state=0
                     ).fit(X),
@@ -218,6 +243,7 @@ def _(EMeans, KMeans, MiniBatchKMeans, X, X_test, alt, inertia, k, pl, time):
         for _it in [1, 3, 10]:
             yield (
                 "MiniBatchKMeans (B=4096)",
+                f"{_it} it",
                 lambda _it=_it: MiniBatchKMeans(
                     k, n_init=1, batch_size=4096, max_iter=_it, max_no_improvement=None, tol=0, random_state=0
                 ).fit(X),
@@ -227,37 +253,34 @@ def _(EMeans, KMeans, MiniBatchKMeans, X, X_test, alt, inertia, k, pl, time):
                 for _ut, _label in [(None, "revival"), (0.0, "no revival")]:
                     yield (
                         f"EMeans ({_init}, {_label})",
+                        f"{_ep} ep",
                         lambda _ep=_ep, _init=_init, _ut=_ut: EMeans(
                             k, n_epochs=_ep, init=_init, unused_threshold=_ut, random_state=0
                         ).fit(X),
                     )
 
     _rows = []
-    for _name, _fit in _fits():
+    for _name, _label, _fit in _fits():
         _tic = time.perf_counter()
         _model = _fit()
         _seconds = time.perf_counter() - _tic
         _rows.append(
             {
                 "method": _name,
+                "label": _label,
                 "seconds": _seconds,
                 "train MSE": inertia(X, _model.cluster_centers_) / len(X),
                 "test MSE": inertia(X_test, _model.cluster_centers_) / len(X_test),
             }
         )
-    frontier = pl.DataFrame(_rows).with_columns(
-        pct_above_best=100 * (pl.col("test MSE") / pl.col("test MSE").min() - 1) + 0.01
-    )
-    (
-        alt.Chart(frontier)
-        .mark_line(point=True)
-        .encode(
-            x=alt.X("seconds:Q", scale=alt.Scale(type="log"), title="training time (s)"),
-            y=alt.Y("pct_above_best:Q", scale=alt.Scale(type="log"), title="test MSE, % above best"),
-            color=alt.Color("method:N", legend=alt.Legend(orient="bottom", columns=3, labelLimit=300)),
-            tooltip=["method", "seconds", "train MSE", "test MSE"],
-        )
-        .properties(width=600, height=350)
+    frontier = pl.DataFrame(_rows)
+    _ref = frontier.filter(pl.col("method") == "Lloyd KMeans (k-means++)", pl.col("label") == "100 it")["test MSE"][0]
+    frontier_chart(
+        frontier.filter(pl.col("test MSE") <= 1.015 * _ref),
+        "test MSE",
+        "test MSE (lower is better)",
+        _ref,
+        "sklearn KMeans, k-means++ init, 100 it",
     )
     return
 
@@ -402,7 +425,8 @@ def _(mo):
     (diagonal covariances only) compared to scikit-learn's `GaussianMixture(covariance_type="diag")` on the held-out
     average log-likelihood, plotted against training time (initialisation included). The "same starting means" EM line
     and both e-GMM lines start from the means picked in the dropdown; the default-init EM line runs scikit-learn's own
-    k-means initialisation, which is the baseline to beat in practice.
+    k-means initialisation, which is the baseline to beat in practice. The dashed line is that baseline after 50
+    iterations; higher is better, and fits more than 5% below it are left out.
     """)
     return
 
@@ -492,7 +516,7 @@ def _(gmm_init, gmm_k, kmeans_plusplus, make_blobs, np):
 
 
 @app.cell
-def _(GaussianMixture, X_gmm_test, X_gmm_train, alt, egmm, egmm_score, gmm_means_init, pl, time):
+def _(GaussianMixture, X_gmm_test, X_gmm_train, egmm, egmm_score, frontier_chart, gmm_means_init, pl, time):
     import warnings
 
     from sklearn.exceptions import ConvergenceWarning
@@ -512,44 +536,42 @@ def _(GaussianMixture, X_gmm_test, X_gmm_train, alt, egmm, egmm_score, gmm_means
 
     _fits = []
     for _iters in [1, 2, 5, 10, 25, 50]:
-        _fits.append(("EM, same starting means", _iters, lambda _i=_iters: _em(_i, gmm_means_init)))
-        _fits.append(("EM, sklearn default init (k-means)", _iters, lambda _i=_iters: _em(_i, None)))
+        _fits.append(("EM, same starting means", f"{_iters} it", lambda _i=_iters: _em(_i, gmm_means_init)))
+        _fits.append(("EM, sklearn default init (k-means)", f"{_iters} it", lambda _i=_iters: _em(_i, None)))
     for _epochs in [0.5, 1, 2, 3, 5]:
         _fits.append(
-            ("e-GMM, scaling laws", _epochs, lambda _e=_epochs: egmm(X_gmm_train, gmm_means_init, n_epochs=_e))
+            ("e-GMM, scaling laws", f"{_epochs} ep", lambda _e=_epochs: egmm(X_gmm_train, gmm_means_init, n_epochs=_e))
         )
         _fits.append(
             (
                 "e-GMM, B=2048, alpha=0.2",
-                _epochs,
+                f"{_epochs} ep",
                 lambda _e=_epochs: egmm(X_gmm_train, gmm_means_init, n_epochs=_e, batch_size=2048, alpha=0.2),
             )
         )
     _rows = []
-    for _method, _passes, _fit in _fits:
+    for _method, _label, _fit in _fits:
         _tic = time.perf_counter()
         _params = _fit()
         _rows.append(
             {
                 "method": _method,
-                "passes": _passes,
+                "label": _label,
                 "seconds": time.perf_counter() - _tic,
                 "train log-likelihood": egmm_score(X_gmm_train, *_params),
                 "test log-likelihood": egmm_score(X_gmm_test, *_params),
             }
         )
     gmm_curve = pl.DataFrame(_rows)
-    _best = gmm_curve["test log-likelihood"].max()
-    (
-        alt.Chart(gmm_curve.with_columns(gap=_best - pl.col("test log-likelihood") + 1e-3))
-        .mark_line(point=True)
-        .encode(
-            x=alt.X("seconds:Q", scale=alt.Scale(type="log"), title="training time (s)"),
-            y=alt.Y("gap:Q", scale=alt.Scale(type="log"), title="test log-likelihood, nats/row below best"),
-            color=alt.Color("method:N", legend=alt.Legend(orient="bottom", columns=2, labelLimit=300)),
-            tooltip=["method", "passes", "seconds", "train log-likelihood", "test log-likelihood"],
-        )
-        .properties(width=600, height=320)
+    _ref = gmm_curve.filter(pl.col("method") == "EM, sklearn default init (k-means)", pl.col("label") == "50 it")[
+        "test log-likelihood"
+    ][0]
+    frontier_chart(
+        gmm_curve.filter(pl.col("test log-likelihood") >= _ref - 0.05 * abs(_ref)),
+        "test log-likelihood",
+        "held-out log-likelihood per row (higher is better)",
+        _ref,
+        "sklearn GaussianMixture, default init, 50 it",
     )
     return
 
@@ -592,6 +614,12 @@ def _(mo):
     - **On real, overlapping data e-GMM is much faster to a given quality.** On the 10 numeric columns of covtype
       (150k rows, 32 components) e-GMM got within 0.1 nats/row of the best run in about 0.6s (2 epochs, scaling-law
       defaults), while EM needed 100 iterations and about 18s to get to the same place.
+    - **On embeddings it gets a good GMM fast, but EM still wins at full convergence.** On GloVe-100 (320k rows,
+      256 components) e-GMM started from e-means centroids (`batch_size=16384`, `alpha=0.3`) reached 109.64 nats/row
+      after one epoch (10s) and 109.72 after five (31s, including the ~1s e-means init). Default
+      `GaussianMixture()` needs 106s to reach 109.72, nearly all of it k-means initialisation, and ends at 109.95
+      after 51 iterations (387s). The k-means scaling laws pushed `alpha` to 1 there, which turned e-GMM into noisy
+      minibatch EM that got worse with more epochs; GMM needs its own, smaller `alpha`.
     - **On well separated blobs it is a tie.** EM from a k-means start converges in one or two iterations, so there is
       little left to gain; e-GMM gets to the same log-likelihood in roughly the same time.
     - **The initialisation matters more than the optimiser.** From random rows both EM and e-GMM get stuck 2-10
