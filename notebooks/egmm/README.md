@@ -1,7 +1,37 @@
-# e-GMM: e-means style updates for Gaussian mixtures (research handoff)
+# e-GMM: e-means style updates for Gaussian mixtures (research notes)
 
-Status: **prototype + benchmarks, not a library estimator yet.** This folder exists so the next person (or agent) can
-pick up the `EGaussianMixture` work. It builds on `sklego.cluster.EMeans` (PR #851) and imports its private helpers.
+Status: **promoted to the library as `sklego.mixture.EGaussianMixture`.** This folder keeps the research that led
+there. `egmm.py` is the original diagonal prototype, and the scripts and `results/*.csv` below were produced with it.
+The scripts are left as they were so the recorded numbers stay reproducible.
+
+## What changed on the way into the library
+
+- **Covariances:** `covariance_type` is `"diag"` or `"spherical"`. Spherical keeps a moving average of `|x|^2`
+  instead of `x^2`.
+- **Init:** `init="e-means"` (the default) seeds k-means++ on a subsample of `64 * k` rows, runs `EMeans` for 2
+  epochs, and takes weights, means and variances from one hard-assignment pass. Random e-means starts lost 1.6
+  nats/row on well separated blobs (two centroids in one blob). Subsampled k-means++ matched full k-means++ over 5
+  seeds, and costs 0.13s instead of 3.1s at 320k x 100, k=256.
+- **Defaults:** `batch_size = max(k-means law, 64 * k)` rounded to a power of two (capped at n), and
+  `alpha = min(k-means law, 0.3)`.
+- **Speed and robustness:** one GEMM for the E-step (`[x, x^2] @ W`) and one for the statistics (`resp.T @ [x, x^2]`),
+  an in-place logsumexp, chunked scoring, and data centred around its mean, so large offsets do not wreck
+  `E[x^2] - E[x]^2`.
+
+### How the defaults were picked
+
+Sweeps over `batch_size` x `alpha` x epochs on blobs (8-d, k=20), overlapping blobs (64-d, k=128), covtype (10
+numeric columns, k=32 and 128) and an embedding-like set (250k rows, 100-d on the unit sphere, k=64 and 256), from
+the e-means init:
+
+- `alpha=1` (what the k-means laws give for longer runs) can lose 1.6-13.6 nats/row when there are 64 or fewer rows
+  per component per batch, and gets *worse* with more epochs, the same thing seen on GloVe.
+- The stable region is roughly `batch_size / k >= 200 * alpha`. Both (64 rows per component, `alpha=0.3`) and (128,
+  `alpha=0.6`) are stable everywhere, and their test log-likelihoods match to within 0.02 nats/row on every set.
+- (64, `alpha=0.6`) is 0.04-0.23 nats/row better on covtype and the 256-component embedding set, but degrades with
+  epochs on the 64-component embedding set (88.96 -> 88.55 from 3 to 10 epochs). So the default stays at the safe
+  `alpha <= 0.3`.
+- Batches of 256 rows per component or more are stable but converge more slowly per epoch.
 
 ## The algorithm (`egmm.py`)
 
@@ -73,7 +103,7 @@ slow (k=256 full 100x100 covariances) and had not finished when this PR was open
 - Well separated anisotropic blobs: tie; EM from k-means init converges in 1-2 iterations.
 - From random rows both EM and e-GMM get stuck 2-10 nats behind on blobs.
 
-## Suggested next steps
+## Suggested next steps (as written for the handoff)
 
 1. Wait for / rerun `sampling_glove_full_cov.py`. If full covariance gets AUC clearly closer to 0.5, `covariance_type="full"`
    is required, not optional.

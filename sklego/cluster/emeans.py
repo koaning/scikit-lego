@@ -112,15 +112,56 @@ def _scheduled_alpha(alpha0, step, total_steps):
     return alpha0 * (_ALPHA_MIN_FACTOR + (1.0 - _ALPHA_MIN_FACTOR) * cosine)
 
 
+# Rows per chunk when a pass over all of X would otherwise build an (n_samples, n_clusters) matrix.
+_CHUNK_ELEMENTS = 2**22
+
+
+def _chunks(n_rows, n_cols):
+    step = max(1, _CHUNK_ELEMENTS // max(n_cols, 1))
+    for start in range(0, n_rows, step):
+        yield slice(start, min(start + step, n_rows))
+
+
+def _row_norms(X):
+    return np.einsum("ij,ij->i", X, X)
+
+
 def _squared_distances(X, centers, center_norms):
-    dist = np.einsum("ij,ij->i", X, X)[:, None] - 2.0 * (X @ centers.T) + center_norms[None, :]
+    dist = X @ centers.T
+    dist *= -2.0
+    dist += center_norms[None, :]
+    dist += _row_norms(X)[:, None]
     return np.maximum(dist, 0.0, out=dist)
 
 
+def _nearest_block(X, centers, center_norms):
+    """Nearest centroid of each row. The row norms do not change the argmin, so they are only added afterwards."""
+    partial = X @ centers.T
+    partial *= -2.0
+    partial += center_norms[None, :]
+    labels = partial.argmin(axis=1)
+    dist = partial[np.arange(len(labels)), labels] + _row_norms(X)
+    return labels, np.maximum(dist, 0.0, out=dist)
+
+
+def _cluster_sums(X, labels, n_clusters):
+    """Number of rows and float64 sum of the rows assigned to each cluster."""
+    one_hot = sparse.csr_matrix(
+        (np.ones(len(labels)), (labels, np.arange(len(labels)))), shape=(n_clusters, len(labels))
+    )
+    counts = np.bincount(labels, minlength=n_clusters).astype(np.float64)
+    sums = np.asarray(one_hot @ (X if X.dtype == np.float64 else X.astype(np.float64)))
+    return counts, sums
+
+
 def _nearest(X, centers):
-    dist = _squared_distances(X, centers, np.einsum("ij,ij->i", centers, centers))
-    labels = dist.argmin(axis=1)
-    return labels, dist[np.arange(len(labels)), labels]
+    """Nearest centroid and squared distance of each row, computed in chunks to bound memory."""
+    center_norms = _row_norms(centers)
+    labels = np.empty(X.shape[0], dtype=np.intp)
+    dist = np.empty(X.shape[0], dtype=X.dtype)
+    for rows in _chunks(X.shape[0], centers.shape[0]):
+        labels[rows], dist[rows] = _nearest_block(X[rows], centers, center_norms)
+    return labels, dist
 
 
 class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
@@ -304,12 +345,8 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
             for start in range(0, rows, self.batch_size_):
                 batch = X[order[start : start + self.batch_size_]]
                 labels, dist = _nearest(batch, centers)
-                objective += float(dist.sum())
-                one_hot = sparse.csr_matrix(
-                    (np.ones(len(labels)), (labels, np.arange(len(labels)))), shape=(k, len(labels))
-                )
-                counts = np.bincount(labels, minlength=k).astype(np.float64)
-                sums = np.asarray(one_hot @ batch.astype(np.float64))
+                objective += float(dist.sum(dtype=np.float64))
+                counts, sums = _cluster_sums(batch, labels, k)
                 pass_counts += counts
                 if last_pass:
                     pass_sums += sums
@@ -329,7 +366,7 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         self.n_iter_ = len(epoch_rows)
         self.n_splits_ = n_splits
         self.labels_, dist = _nearest(X, centers)
-        self.inertia_ = float(dist.sum())
+        self.inertia_ = float(dist.sum(dtype=np.float64))
         return self
 
     @staticmethod
@@ -415,7 +452,7 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         check_is_fitted(self, ["cluster_centers_"])
         X = validate_data(self, X=X, dtype=[np.float64, np.float32], reset=False)
         centers = self.cluster_centers_.astype(X.dtype)
-        return np.sqrt(_squared_distances(X, centers, np.einsum("ij,ij->i", centers, centers)))
+        return np.sqrt(_squared_distances(X, centers, _row_norms(centers)))
 
     def score(self, X, y=None):
         """Opposite of the sum of squared distances of the rows in `X` to their nearest centroid.
@@ -434,4 +471,4 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self, ["cluster_centers_"])
         X = validate_data(self, X=X, dtype=[np.float64, np.float32], reset=False)
-        return -float(_nearest(X, self.cluster_centers_.astype(X.dtype))[1].sum())
+        return -float(_nearest(X, self.cluster_centers_.astype(X.dtype))[1].sum(dtype=np.float64))

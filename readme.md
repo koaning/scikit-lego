@@ -105,6 +105,7 @@ Here's a list of features that this library currently offers:
 - `sklego.mixture.BayesianGMMOutlierDetector` detects outliers based on a trained bayesian GMM
 - `sklego.mixture.GMMClassifier` classifies by training a GMM per class
 - `sklego.mixture.GMMOutlierDetector` detects outliers based on a trained GMM
+- `sklego.mixture.EGaussianMixture` Gaussian mixture trained with mini-batches and a moving average (e-means style), much faster than EM
 - `sklego.meta.ConfusionBalancer` experimental feature that allows you to balance the confusion matrix
 - `sklego.meta.DecayEstimator` adds decay to the sample_weight that the model accepts
 - `sklego.meta.EstimatorTransformer` adds a model output as a feature

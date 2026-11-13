@@ -111,3 +111,14 @@ def test_schedule_helpers():
     assert _epoch_rows(5, 1.5) == [2, 5]
     assert _scheduled_alpha(0.5, 0, 100) == 0.5
     assert _scheduled_alpha(0.5, 100, 100) == pytest.approx(0.05)
+
+
+def test_chunked_assignment_matches_a_single_block(blobs, monkeypatch):
+    X, _ = blobs
+    model = EMeans(n_clusters=10, random_state=42).fit(X)
+    labels, distances, inertia = model.predict(X), model.transform(X), model.score(X)
+    monkeypatch.setattr("sklego.cluster.emeans._CHUNK_ELEMENTS", 37)
+    np.testing.assert_array_equal(model.predict(X), labels)
+    np.testing.assert_allclose(model.transform(X), distances)
+    assert model.score(X) == pytest.approx(inertia)
+    np.testing.assert_array_equal(EMeans(n_clusters=10, random_state=42).fit(X).labels_, model.labels_)
