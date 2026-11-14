@@ -112,6 +112,33 @@ def _scheduled_alpha(alpha0, step, total_steps):
     return alpha0 * (_ALPHA_MIN_FACTOR + (1.0 - _ALPHA_MIN_FACTOR) * cosine)
 
 
+def _alpha_schedule(alpha0, total_steps):
+    """`_scheduled_alpha` for every step at once, as handed to the Rust backend."""
+    fraction = np.arange(total_steps, dtype=np.float64) / max(total_steps, 1)
+    cosine = 0.5 * (1.0 + np.cos(np.pi * fraction))
+    return alpha0 * (_ALPHA_MIN_FACTOR + (1.0 - _ALPHA_MIN_FACTOR) * cosine)
+
+
+_BACKENDS = ("numpy", "rust")
+
+
+def _rust_module():
+    """The compiled `sklego_rust` extension, with install instructions when it is missing."""
+    try:
+        import sklego_rust
+    except ImportError as error:
+        raise ImportError(
+            "backend='rust' needs the `sklego-rust` package, which is built from the `rust/` folder of the "
+            "scikit-lego repository: `pip install ./rust` (needs a Rust toolchain, see https://rustup.rs)."
+        ) from error
+    return sklego_rust
+
+
+def _rust_seed(rng):
+    """Seed for the Rust RNG, drawn from the estimator's `random_state`."""
+    return int(rng.randint(0, np.iinfo(np.int64).max, dtype=np.int64))
+
+
 # Rows per chunk when a pass over all of X would otherwise build an (n_samples, n_clusters) matrix.
 _CHUNK_ELEMENTS = 2**22
 
@@ -200,6 +227,11 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         turns revival off. When `None` it is `0.1`, or `0` when there are at most 2 features.
     random_state : int | np.random.RandomState | None, default=None
         Controls the starting centroids, the order of the rows and the revivals.
+    backend : Literal["numpy", "rust"], default="numpy"
+        `"rust"` runs the training loop and the full-data passes (`labels_`, `predict`, `transform`, `score`) in
+        compiled Rust, which needs the `sklego-rust` package (`pip install ./rust` from the scikit-lego repository).
+        Both backends run the same algorithm with the same defaults, but they draw their random numbers
+        differently, so a given `random_state` gives a different (equally good) model in each.
 
     Attributes
     ----------
@@ -250,6 +282,7 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         init="random",
         unused_threshold=None,
         random_state=None,
+        backend="numpy",
     ):
         self.n_clusters = n_clusters
         self.n_epochs = n_epochs
@@ -259,6 +292,7 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         self.init = init
         self.unused_threshold = unused_threshold
         self.random_state = random_state
+        self.backend = backend
 
     def _check_params(self, n_samples):
         if not isinstance(self.n_clusters, Integral) or self.n_clusters < 1:
@@ -277,6 +311,8 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
             not isinstance(self.unused_threshold, Real) or not (0 <= self.unused_threshold < math.inf)
         ):
             raise ValueError(f"unused_threshold must be a non-negative number or None, got {self.unused_threshold}")
+        if self.backend not in _BACKENDS:
+            raise ValueError(f"backend must be 'numpy' or 'rust', got {self.backend}")
 
     def _init_centers(self, X, rng):
         if isinstance(self.init, str):
@@ -332,6 +368,9 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         total_steps = sum(math.ceil(rows / self.batch_size_) for rows in epoch_rows)
 
         centers = self._init_centers(X, rng)
+        if self.backend == "rust":
+            return self._fit_rust(X, centers, epoch_rows, total_steps, threshold, rng)
+
         usage = np.full(k, _INIT_USAGE)
         step, n_splits = 0, 0
         self.objective_history_ = []
@@ -368,6 +407,35 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         self.labels_, dist = _nearest(X, centers)
         self.inertia_ = float(dist.sum(dtype=np.float64))
         return self
+
+    def _fit_rust(self, X, centers, epoch_rows, total_steps, threshold, rng):
+        fit = getattr(_rust_module(), f"emeans_fit_{X.dtype.name}")
+        centers, labels, inertia, n_steps, n_splits, history = fit(
+            np.ascontiguousarray(X),
+            np.ascontiguousarray(centers, dtype=X.dtype),
+            epoch_rows,
+            self.batch_size_,
+            _alpha_schedule(self.alpha_, total_steps),
+            float(threshold),
+            _rust_seed(rng),
+        )
+        self.cluster_centers_ = centers
+        self.labels_ = labels.astype(np.intp, copy=False)
+        self.inertia_ = float(inertia)
+        self.n_steps_ = n_steps
+        self.n_iter_ = len(epoch_rows)
+        self.n_splits_ = n_splits
+        self.objective_history_ = list(history)
+        return self
+
+    def _nearest(self, X):
+        """Nearest centroid and squared distance of every row, with the configured backend."""
+        centers = self.cluster_centers_.astype(X.dtype)
+        if self.backend == "rust":
+            nearest = getattr(_rust_module(), f"emeans_nearest_{X.dtype.name}")
+            labels, dist = nearest(np.ascontiguousarray(X), np.ascontiguousarray(centers))
+            return labels.astype(np.intp, copy=False), dist
+        return _nearest(X, centers)
 
     @staticmethod
     def _apply_batch(centers, usage, counts, sums, alpha):
@@ -434,7 +502,7 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self, ["cluster_centers_"])
         X = validate_data(self, X=X, dtype=[np.float64, np.float32], reset=False)
-        return _nearest(X, self.cluster_centers_.astype(X.dtype))[0]
+        return self._nearest(X)[0]
 
     def transform(self, X):
         """Euclidean distance of each row in `X` to every centroid.
@@ -452,6 +520,9 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         check_is_fitted(self, ["cluster_centers_"])
         X = validate_data(self, X=X, dtype=[np.float64, np.float32], reset=False)
         centers = self.cluster_centers_.astype(X.dtype)
+        if self.backend == "rust":
+            distances = getattr(_rust_module(), f"emeans_distances_{X.dtype.name}")
+            return distances(np.ascontiguousarray(X), np.ascontiguousarray(centers))
         return np.sqrt(_squared_distances(X, centers, _row_norms(centers)))
 
     def score(self, X, y=None):
@@ -471,4 +542,4 @@ class EMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self, ["cluster_centers_"])
         X = validate_data(self, X=X, dtype=[np.float64, np.float32], reset=False)
-        return -float(_nearest(X, self.cluster_centers_.astype(X.dtype))[1].sum(dtype=np.float64))
+        return -float(self._nearest(X)[1].sum(dtype=np.float64))

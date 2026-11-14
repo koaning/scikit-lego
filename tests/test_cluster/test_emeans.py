@@ -86,6 +86,7 @@ def test_revival_fixes_collapsed_init():
         {"init": np.zeros((2, 8))},
         {"unused_threshold": -1},
         {"n_epochs": 1e-6},
+        {"backend": "cuda"},
     ],
 )
 def test_invalid_params(blobs, params):

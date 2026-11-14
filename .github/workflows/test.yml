@@ -42,6 +42,37 @@ jobs:
       # silently discarding anything installed by a previous step.
       run: uv run --no-sync pytest -n auto --disable-warnings
 
+  # The optional Rust backend of EMeans and EGaussianMixture (`rust/`), tested against the NumPy one.
+  rust:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v7
+    - name: Set up Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.13"
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy
+    - name: Lint and test the crate
+      run: |
+        cargo clippy --manifest-path rust/Cargo.toml --all-targets -- -D warnings
+        cargo test --manifest-path rust/Cargo.toml
+    - name: Install locked dependencies and the extension
+      run: |
+        uv sync --locked --extra test
+        uv pip install ./rust
+    - name: Run the Rust backend tests
+      run: uv run --no-sync pytest -n auto --disable-warnings -m rust tests/test_cluster tests/test_estimators/test_egmm_rust.py
+
   # Guard rail: prove that the lower bounds declared in pyproject.toml actually work.
   # `--resolution lowest-direct` pins every direct dependency to its declared floor and
   # leaves transitive ones at their newest compatible release.

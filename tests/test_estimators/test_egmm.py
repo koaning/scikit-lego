@@ -135,6 +135,8 @@ def test_fit_predict(blobs):
         {"reg_covar": -1.0},
         {"init": "kmeans"},
         {"init": np.zeros((3, 5))},
+        {"unused_threshold": -1},
+        {"backend": "cuda"},
     ],
 )
 def test_invalid_params(blobs, params):
@@ -148,3 +150,21 @@ def test_sample_needs_positive_n(blobs):
     model = EGaussianMixture(n_components=2, random_state=0).fit(X_train)
     with pytest.raises(ValueError):
         model.sample(0)
+
+
+@pytest.mark.parametrize("covariance_type", ["diag", "spherical"])
+def test_revival_fixes_collapsed_init(covariance_type):
+    """Components that all start at one point share every row; revival splits them apart, as in `EMeans`."""
+    X, y = make_blobs(n_samples=4_000, centers=8, n_features=4, cluster_std=0.3, random_state=0)
+    init = np.repeat(X[:1], 8, axis=0) + np.random.default_rng(0).normal(scale=1e-6, size=(8, 4))
+    params = dict(n_components=8, covariance_type=covariance_type, init=init, random_state=0)
+    revived = EGaussianMixture(**params).fit(X)
+    stuck = EGaussianMixture(**params, unused_threshold=0).fit(X)
+    assert revived.n_splits_ > 0 and stuck.n_splits_ == 0
+    assert revived.score(X) > stuck.score(X) + 1.0
+    assert adjusted_rand_score(y, revived.predict(X)) > adjusted_rand_score(y, stuck.predict(X)) + 0.2
+
+
+def test_no_revival_with_two_features():
+    X, _ = make_blobs(n_samples=2_000, centers=4, n_features=2, random_state=0)
+    assert EGaussianMixture(n_components=4, random_state=0).fit(X).n_splits_ == 0

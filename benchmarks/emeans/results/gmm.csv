@@ -1,0 +1,367 @@
+task,seed,machine,data,method,algorithm,init,unit,reference,budget,k,covariance,seconds,passes,test_ll,ari,realism
+gmm,0,Apple M4 Pro,embedding-like,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,diag,5.892620917002205,57.0,88.97737339893693,,0.5948637999999999
+gmm,0,Apple M4 Pro,embedding-like,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,spherical,4.512481249985285,41.0,88.88041524734666,,0.5953606825
+gmm,1,Apple M4 Pro,embedding-like,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,diag,5.443314750009449,48.0,88.96568287783592,,0.5759608650000001
+gmm,1,Apple M4 Pro,embedding-like,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,spherical,4.384448832977796,34.0,88.86260356333611,,0.6006876525
+gmm,2,Apple M4 Pro,embedding-like,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,diag,6.590532665984938,59.0,88.99538106140398,,0.6038890075
+gmm,2,Apple M4 Pro,embedding-like,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,spherical,4.338163250009529,30.0,88.88078509280723,,0.6020153975
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,diag,1.3221063330129255,1.0,88.90991179657303,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,spherical,1.3734963749884628,1.0,88.82984949576243,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,diag,1.8270546249987092,1.0,88.89660778947864,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,spherical,1.748607459012419,1.0,88.80755983933408,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,diag,1.9890316249802709,1.0,88.91203526517033,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,spherical,2.018351042002905,1.0,88.82929878968343,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,diag,1.4262842090101913,2.0,88.92261713038195,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,spherical,1.4536590829957277,2.0,88.84191278422155,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,diag,1.8444264999998268,2.0,88.91072944684414,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,spherical,2.0030616669973824,2.0,88.82069045033865,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,diag,2.0803549170086626,2.0,88.92503233412423,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,spherical,2.1104402920173015,2.0,88.84208089879395,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,diag,1.687218417006079,5.0,88.9321861455182,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,spherical,1.6661396249837708,5.0,88.85112570095608,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,diag,2.0893264999904204,5.0,88.92102897095056,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,spherical,2.1200822920072824,5.0,88.83045247022253,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,diag,2.2696865829930175,5.0,88.93514106755039,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,spherical,2.289687749987934,5.0,88.85181421577971,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,diag,2.0275001249974594,10.0,88.94032239018425,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,spherical,2.0358175839937758,10.0,88.8578865416459,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,diag,2.4405696250032634,10.0,88.92999521369443,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,spherical,2.4843264580122195,10.0,88.8376155281362,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,diag,2.739249833015492,10.0,88.94365027630374,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,spherical,2.7099107909889426,10.0,88.85891329091544,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,diag,2.7849945420166478,20.0,88.95318927782763,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,spherical,2.8019269999931566,20.0,88.86796625095498,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,diag,3.293017374991905,20.0,88.94515456734624,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,spherical,3.3605216249998193,20.0,88.84991701554563,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,diag,3.4614990830013994,20.0,88.95608056289412,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,spherical,3.4784546659793705,20.0,88.87085439787369,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,diag,5.1697388339962345,50.0,88.97475236544203,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,spherical,5.219822832994396,50.0,88.88505996039858,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,diag,5.667331666016253,50.0,88.96691755259249,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,spherical,5.642933083989192,50.0,88.87439152984697,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,diag,5.769681959005538,50.0,88.98794477366367,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,spherical,5.826667541987263,50.0,88.90096292541693,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,diag,9.067284582997672,100.0,88.99609258424476,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,spherical,9.127744459023234,100.0,88.90818185738736,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,diag,9.469327124999836,100.0,89.00390648329359,,
+gmm,1,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,spherical,9.706690874998458,100.0,88.91301906591448,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,diag,9.782260582986055,100.0,89.02031079148684,,
+gmm,2,Apple M4 Pro,embedding-like,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,spherical,9.945281541004078,100.0,88.95194903414487,,
+gmm,0,Apple M4 Pro,embedding-like,"GaussianMixture() defaults, full covariance",GaussianMixture (full),k-means,it,false,converged,64,full,43.08497450000141,23.0,96.56520781337116,,0.59527412
+gmm,0,Apple M4 Pro,covtype,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,32,diag,10.984090916987043,59.0,-8.862153562234372,,0.99612708
+gmm,0,Apple M4 Pro,covtype,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,32,spherical,2.9182527500088327,10.0,-10.979890171835143,,0.9992847149999999
+gmm,1,Apple M4 Pro,covtype,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,32,diag,10.485881083004642,57.0,-8.754105206212628,,0.9956745875
+gmm,1,Apple M4 Pro,covtype,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,32,spherical,3.2828797919792123,12.0,-10.992057170421722,,0.9992139875
+gmm,2,Apple M4 Pro,covtype,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,32,diag,8.170545750006568,43.0,-8.875789274979066,,0.9944080225
+gmm,2,Apple M4 Pro,covtype,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,32,spherical,3.237045791989658,11.0,-10.987255631155934,,0.9991868325
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,32,diag,1.443627375003416,1.0,-9.842881169912504,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,32,spherical,1.3918202910281252,1.0,-11.002522834151925,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,32,diag,1.3931461669853888,1.0,-9.935493007673974,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,32,spherical,1.4522272089961916,1.0,-11.00967105472768,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,32,diag,1.2862333750235848,1.0,-9.857201482993446,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,32,spherical,1.2974203749909066,1.0,-11.007128133089692,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,32,diag,1.6470808750018477,2.0,-9.71534273933417,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,32,spherical,1.6104762500035577,2.0,-10.995470107941065,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,32,diag,1.555480582988821,2.0,-9.816426550206947,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,32,spherical,1.5991117090161424,2.0,-11.005253008357856,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,32,diag,1.4599636660132091,2.0,-9.707892801780838,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,32,spherical,1.4768997089995537,2.0,-11.001791050091457,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,32,diag,2.0469156249891967,5.0,-9.488655485766344,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,32,spherical,2.103870166989509,5.0,-10.985639651201437,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,32,diag,2.0123783340095542,5.0,-9.533896013687318,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,32,spherical,2.080496624985244,5.0,-10.99880502666958,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,32,diag,1.9440597080101725,5.0,-9.41022059889271,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,32,spherical,1.9617194159945939,5.0,-10.99366415414269,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,32,diag,2.822030334005831,10.0,-9.141331978791596,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,32,spherical,2.9102170419937465,10.0,-10.979890171835143,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,32,diag,2.844673750019865,10.0,-9.141962281548519,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,32,spherical,2.947546500014141,10.0,-10.993452919591059,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,32,diag,2.812486875016475,10.0,-9.171865727142778,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,32,spherical,2.8575117499858607,10.0,-10.987882323594178,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,32,diag,4.455204917001538,20.0,-8.976946661575715,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,32,spherical,4.610789582977304,20.0,-10.976955748677113,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,32,diag,4.481637541990494,20.0,-8.906804231590774,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,32,spherical,4.698555500013754,20.0,-10.988750984754828,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,32,diag,4.377486208017217,20.0,-8.976378456975663,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,32,spherical,4.814772124984302,20.0,-10.983565885608774,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,32,diag,9.42012562500895,50.0,-8.872594125766389,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,32,spherical,9.651754582999274,50.0,-10.976444382108948,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,32,diag,9.373098042007769,50.0,-8.761369336972455,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,32,spherical,9.63598654200905,50.0,-10.983458102240125,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,32,diag,9.35116525000194,50.0,-8.870969676026291,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,32,spherical,9.542466667015105,50.0,-10.975480019926632,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,32,diag,17.58249354097643,100.0,-8.81480610060623,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,32,spherical,18.098911041975953,100.0,-10.97577736913586,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,32,diag,17.540455457987264,100.0,-8.732429613309128,,
+gmm,1,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,32,spherical,17.97290962500847,100.0,-10.978018799067884,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,32,diag,17.700245541986078,100.0,-8.788640028512178,,
+gmm,2,Apple M4 Pro,covtype,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,32,spherical,17.894096333009657,100.0,-10.972781921434496,,
+gmm,0,Apple M4 Pro,covtype,"GaussianMixture() defaults, full covariance",GaussianMixture (full),k-means,it,false,converged,32,full,38.01678641597391,43.0,-2.4841183440572294,,0.9928855849999999
+gmm,0,Apple M4 Pro,blobs,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,diag,0.4716732079978101,3.0,-37.68239176008393,0.9391773823984211,0.58217187125
+gmm,0,Apple M4 Pro,blobs,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,spherical,0.3808965829957742,2.0,-39.562796454818866,0.939091545171315,0.8317893375
+gmm,1,Apple M4 Pro,blobs,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,diag,0.3354790409794077,2.0,-37.210528368921715,0.9788310292612598,0.53183668375
+gmm,1,Apple M4 Pro,blobs,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,spherical,0.3590034579974599,2.0,-39.03058262401541,0.9788380541324245,0.8141441662500001
+gmm,2,Apple M4 Pro,blobs,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,diag,0.34984300000360236,2.0,-37.08342107942982,0.9818723258378144,0.52341377125
+gmm,2,Apple M4 Pro,blobs,GaussianMixture() defaults (runs until converged),GaussianMixture,k-means,it,true,converged,64,spherical,0.3632265839842148,2.0,-38.868262720405966,0.9818830207738356,0.81526762375
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,diag,0.30941070898552425,1.0,-37.68314330952599,0.9390970629263072,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,spherical,0.307183333003195,1.0,-39.56291026613874,0.9390729753943823,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,diag,0.27745662501547486,1.0,-37.21078597332797,0.9788176083513903,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,spherical,0.29136649999418296,1.0,-39.03068289030396,0.9788050259378056,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,diag,0.281220666016452,1.0,-37.083543059421444,0.9818723258378144,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,1,64,spherical,0.2899905419908464,1.0,-38.86827797263369,0.9818786170030264,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,diag,0.36220791601226665,2.0,-37.68259569722887,0.9391649691956713,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,spherical,0.39521133300149813,2.0,-39.562796454818866,0.939091545171315,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,diag,0.34680349999689497,2.0,-37.210528368921715,0.9788310292612598,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,spherical,0.34991154199815355,2.0,-39.03058262401541,0.9788380541324245,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,diag,0.35629225001321174,2.0,-37.08342107942982,0.9818723258378144,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,2,64,spherical,0.3590033340151422,2.0,-38.868262720405966,0.9818830207738356,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,diag,0.5614477919880301,5.0,-37.6822559818704,0.9392409293364355,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,spherical,0.5718127499858383,5.0,-39.56279764134563,0.9391267729572801,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,diag,0.5495050000026822,5.0,-37.21034186172582,0.9788603863094277,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,spherical,0.5707437089877203,5.0,-39.03054586632498,0.9788603863094277,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,diag,0.5377045409986749,5.0,-37.08334289717611,0.9818698093506285,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,5,64,spherical,0.5866964170127176,5.0,-38.86827886307655,0.9818807140413504,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,diag,0.8946942090115044,10.0,-37.68220763130334,0.9394002415917825,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,spherical,0.9231540000182576,10.0,-39.56283511964535,0.939199873979196,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,diag,0.8718264579947572,10.0,-37.21033535811274,0.9789198293207316,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,spherical,0.9120567080099136,10.0,-39.03054194452638,0.9788930965214421,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,diag,0.8809781669988297,10.0,-37.08331163398633,0.981869180226948,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,10,64,spherical,0.925311667000642,10.0,-38.868308630772326,0.9819132170646732,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,diag,1.5536316660000011,20.0,-37.68222394587988,0.9396270382214396,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,spherical,1.6522357920184731,20.0,-39.562846169160586,0.9393143332957129,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,diag,1.5985892080061603,20.0,-37.21041369158957,0.9788380541324245,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,spherical,1.647064999997383,20.0,-39.030535549004384,0.9789685738735346,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,diag,1.5605561670090538,20.0,-37.083293674024105,0.9818750520186588,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,20,64,spherical,1.6546904999995604,20.0,-38.86833703160005,0.9819270564510854,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,diag,3.5483749999839347,50.0,-37.68217589231824,0.9392586447783432,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,spherical,3.788245208997978,50.0,-39.562822172378446,0.9393756371389854,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,diag,3.577795082994271,50.0,-37.21047338274398,0.9787587829857729,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,spherical,3.8063329170108773,50.0,-39.03054546350144,0.9791462174424936,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,diag,3.5889586670091376,50.0,-37.083289623058754,0.9818976997431828,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,50,64,spherical,3.8013640840072185,50.0,-38.868341067227014,0.981993941677878,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,diag,6.9554515829950105,100.0,-37.68223555925573,0.9397007083108332,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,spherical,7.321063375013182,100.0,-39.56281236576063,0.9394230421430506,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,diag,6.996182125003543,100.0,-37.210508570757135,0.9787273228749441,
+gmm,1,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,spherical,7.475670332991285,100.0,-39.03056147611211,0.9792304592820492,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,diag,6.941850333008915,100.0,-37.083301283432824,0.981979894390232,
+gmm,2,Apple M4 Pro,blobs,"GaussianMixture, stopped after N EM iterations",GaussianMixture,k-means,it,false,100,64,spherical,7.356688458996359,100.0,-38.86834151465387,0.9820411126554094,
+gmm,0,Apple M4 Pro,blobs,"GaussianMixture() defaults, full covariance",GaussianMixture (full),k-means,it,false,converged,64,full,1.7514577919791918,3.0,-37.181665285144554,0.9390307400668725,0.55550060375
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,diag,0.2194334169907961,1.0,88.89078760360468,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,spherical,0.17194583301898092,1.0,88.8187381944904,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,diag,0.19463650000398047,1.0,88.9155870948079,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,spherical,0.17156637497828342,1.0,88.83444052349746,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,diag,0.19674166600452736,1.0,88.90144844787594,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,spherical,0.17227870799251832,1.0,88.82149007931714,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,diag,0.2659534169943072,2.0,88.91281306007558,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,spherical,0.23878875002264977,2.0,88.8359346724482,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,diag,0.26737554199644364,2.0,88.93690106663581,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,spherical,0.2311892089783214,2.0,88.84856457233299,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,diag,0.2674572079849895,2.0,88.92344790395606,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,spherical,0.22759741701884195,2.0,88.83619268861732,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,diag,0.4737846670032013,5.0,88.94513285617207,,0.6011163125000001
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,spherical,0.42752383300103247,5.0,88.8562711963367,,0.5984179600000001
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,diag,0.47664045900455676,5.0,88.96818352883675,,0.5899847925
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,spherical,0.4047907500062138,5.0,88.87197261758908,,0.5929192575
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,diag,0.4698919160000514,5.0,88.9549092705579,,0.60001603
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,spherical,0.40364487501210533,5.0,88.85726490195229,,0.5996411925
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,diag,0.8437872919894289,10.0,88.94483323321872,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,spherical,0.6912388750060927,10.0,88.85415068535274,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,diag,0.8521208330057561,10.0,88.96213219263684,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,spherical,0.6919137499935459,10.0,88.86680470117885,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,diag,0.8410742910054978,10.0,88.95192206535012,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,spherical,0.6916235840180889,10.0,88.85617413801953,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,diag,1.5637038330023643,20.0,88.94591114119753,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,spherical,1.2747201249876525,20.0,88.85526423494683,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,diag,1.575275082985172,20.0,88.9610257592748,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,spherical,1.283951250021346,20.0,88.8675208051844,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,diag,1.5687951669970062,20.0,88.95119259759048,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,spherical,1.2715594999899622,20.0,88.8567377044236,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,diag,3.8661793749779463,50.0,88.95700107417036,,0.5928022825
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,spherical,3.0060732910060324,50.0,88.864396526412,,0.6083536125
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,diag,3.85134991700761,50.0,88.96672747373331,,0.5971130525
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,spherical,2.990468082978623,50.0,88.87622236584438,,0.5979712125000001
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,diag,3.9324072090093978,50.0,88.95903071709532,,0.6031809125
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,spherical,3.006907292001415,50.0,88.86548342056838,,0.612890285
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,diag,0.10910179102211259,1.0,88.89957272304568,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,spherical,0.0941673330089543,1.0,88.81880084160682,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,diag,0.09846383301191963,1.0,88.90836131657403,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,spherical,0.0945532500045374,1.0,88.8323387607965,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,diag,0.09722383299958892,1.0,88.91088553093536,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,spherical,0.09374049998586997,1.0,88.82607678280327,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,diag,0.11829725001007318,2.0,88.92266777521982,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,spherical,0.1130881659919396,2.0,88.83279079585593,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,diag,0.1254368749796413,2.0,88.9243572035753,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,spherical,0.11051337499520741,2.0,88.84677131013588,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,diag,0.12007279199315235,2.0,88.93054022006419,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,spherical,0.11214912502327934,2.0,88.84156296040113,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,diag,0.184772124979645,5.0,88.95739706790742,,0.59222057
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,spherical,0.17751337500521913,5.0,88.84742577858627,,0.59724226
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,diag,0.2040944590116851,5.0,88.95025566036125,,0.5999075575
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,spherical,0.19094174998463131,5.0,88.86905439683837,,0.5957226375
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,diag,0.2004065829969477,5.0,88.96086381391224,,0.597342925
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,spherical,0.18721291702240705,5.0,88.86331298906606,,0.58935046
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,diag,0.34551899999496527,10.0,88.95015434156336,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,spherical,0.2718917500169482,10.0,88.85278072895471,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,diag,0.3039387090248056,10.0,88.94666555658888,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,spherical,0.27832279200083576,10.0,88.86822085776085,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,diag,0.3323695419821888,10.0,88.95284906935314,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,spherical,0.23171074999845587,10.0,88.86399343235374,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,diag,0.49370804100180976,20.0,88.95041490383876,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,spherical,0.36464891699142754,20.0,88.85492098280127,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,diag,0.5035543749982025,20.0,88.94763186775211,,
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,spherical,0.36307200000737794,20.0,88.86939133251887,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,diag,0.5002483330026735,20.0,88.95435376230164,,
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,spherical,0.3714564169931691,20.0,88.8650329612577,,
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,diag,1.2440972500189673,50.0,88.96069230711367,,0.5925926025
+gmm,0,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,spherical,0.8494129999889992,50.0,88.86587605705186,,0.5992544525
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,diag,1.199732041975949,50.0,88.954980328602,,0.594670215
+gmm,1,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,spherical,0.8009538750047795,50.0,88.87945409367326,,0.6020075425
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,diag,1.377855124999769,50.0,88.964859312665,,0.6100642000000001
+gmm,2,Apple M4 Pro,embedding-like,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,spherical,0.8282474160077982,50.0,88.87730430883788,,0.60268734
+gmm,0,Apple M4 Pro,embedding-like,real rows (floor),floor,,,,,,,0.0,,,,0.498615265
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,32,diag,0.30811308400006965,1.0,-8.959982681006117,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,32,spherical,0.2958330000110436,1.0,-10.967924473632543,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,32,diag,0.30073058302514255,1.0,-9.052477212167712,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,32,spherical,0.2929111660050694,1.0,-10.983575463026073,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,32,diag,0.2958576249948237,1.0,-8.975950470725916,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,32,spherical,0.2930103329999838,1.0,-10.972685491790092,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,32,diag,0.4140823750058189,2.0,-8.81278671265267,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,32,spherical,0.4093901250162162,2.0,-10.958929315990721,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,32,diag,0.41056087499600835,2.0,-8.888562601165205,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,32,spherical,0.4052511249901727,2.0,-10.977509105099696,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,32,diag,0.41575083398493007,2.0,-8.804789849243848,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,32,spherical,0.4038199170026928,2.0,-10.966951302648539,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,32,diag,0.7568874580028933,5.0,-8.729550059455743,,0.9949551550000002
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,32,spherical,0.7332325839961413,5.0,-10.958278676040118,,0.9990809499999999
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,32,diag,0.7587162500130944,5.0,-8.843019710104736,,0.99639325
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,32,spherical,0.731966833001934,5.0,-10.971594028549207,,0.999239815
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,32,diag,0.7648663750151172,5.0,-8.77641024538191,,0.995184175
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,32,spherical,0.7333750409889035,5.0,-10.956549500348881,,0.9992688075
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,32,diag,1.2752995840273798,10.0,-8.784361558369662,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,32,spherical,1.2156860420072917,10.0,-10.958433096794531,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,32,diag,1.2996012499788776,10.0,-8.857288814843763,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,32,spherical,1.236019333009608,10.0,-10.970945650687915,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,32,diag,1.2769682079961058,10.0,-8.662967785639227,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,32,spherical,1.2237328749906737,10.0,-10.956127267571414,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,32,diag,2.3262744579988066,20.0,-8.715491474234373,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,32,spherical,2.251964583003428,20.0,-10.95836680090418,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,32,diag,2.291526624991093,20.0,-8.877609127381495,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,32,spherical,2.2197050839895383,20.0,-10.968912431342082,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,32,diag,2.343358875019476,20.0,-8.772225875137513,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,32,spherical,2.2272815000033006,20.0,-10.956138427730755,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,32,diag,5.482195916993078,50.0,-8.716650426257997,,0.9949877825
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,32,spherical,5.412531833018875,50.0,-10.958390441605479,,0.9990558925
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,32,diag,5.376930958009325,50.0,-8.87057934476099,,0.9957149325000002
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,32,spherical,5.1970312090124935,50.0,-10.96820717191763,,0.9992716424999999
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,32,diag,5.481308582995553,50.0,-8.757711534815476,,0.9950462000000001
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,32,spherical,5.242586499982281,50.0,-10.956109207536452,,0.9991239475
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,32,diag,0.16125262502464466,1.0,-8.941521140485209,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,32,spherical,0.15388637498836033,1.0,-10.976689570018031,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,32,diag,0.15801083398400806,1.0,-9.012705245268945,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,32,spherical,0.15713408301235177,1.0,-10.965492011759284,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,32,diag,0.16120870801387355,1.0,-8.985242564874666,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,32,spherical,0.15401479200227186,1.0,-10.972021898792917,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,32,diag,0.24915745900943875,2.0,-8.829861025525206,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,32,spherical,0.2445732920023147,2.0,-10.971409432968807,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,32,diag,0.25228275000699796,2.0,-8.859467785202218,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,32,spherical,0.2553701249998994,2.0,-10.962960737721176,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,32,diag,0.26805641700048,2.0,-8.844484351491598,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,32,spherical,0.24293612499604933,2.0,-10.969881694950127,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,32,diag,0.5285475830023643,5.0,-8.67420539878439,,0.995862285
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,32,spherical,0.5357153750082944,5.0,-10.965361163568089,,0.9992673925000001
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,32,diag,0.543756334023783,5.0,-8.793241279126324,,0.9963855025
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,32,spherical,0.5312349169980735,5.0,-10.953648000665067,,0.9989864175
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,32,diag,0.5492914999776985,5.0,-8.815252954358076,,0.995215485
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,32,spherical,0.536061457998585,5.0,-10.968744916142066,,0.9989714249999999
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,32,diag,1.0163127089908812,10.0,-8.820907982869246,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,32,spherical,1.0321264170052018,10.0,-10.965101445967232,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,32,diag,1.005591249995632,10.0,-8.829853527373164,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,32,spherical,0.9682765420002397,10.0,-10.95411006427859,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,32,diag,1.0010014580038842,10.0,-8.827313826785248,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,32,spherical,1.0179439579951577,10.0,-10.969855593759958,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,32,diag,0.8716487910132855,20.0,-8.824889052114914,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,32,spherical,0.7432708330161404,20.0,-10.965184227936883,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,32,diag,0.9809182090102695,20.0,-8.834583695966606,,
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,32,spherical,0.7246867919748183,20.0,-10.954423590740085,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,32,diag,0.7713147909962572,20.0,-8.725836853565202,,
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,32,spherical,0.746067582978867,20.0,-10.969637134593391,,
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,32,diag,1.3531040000088979,50.0,-8.80792971953975,,0.99610169
+gmm,0,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,32,spherical,1.4772461249958724,50.0,-10.964862650525765,,0.9990464925
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,32,diag,1.3224554999906104,50.0,-8.790532809148036,,0.99495489
+gmm,1,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,32,spherical,1.479854749981314,50.0,-10.953305277102142,,0.9991118374999999
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,32,diag,1.3390100419928785,50.0,-8.721764067086662,,0.99590261
+gmm,2,Apple M4 Pro,covtype,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,32,spherical,1.6792796670051757,50.0,-10.969748935904356,,0.9990214225000001
+gmm,0,Apple M4 Pro,covtype,real rows (floor),floor,,,,,,,0.0,,,,0.49804587749999996
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,diag,0.13625295899691992,1.0,-37.35176214777913,0.9615762693471545,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,spherical,0.12749879198963754,1.0,-39.229812980046404,0.9611779498805187,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,diag,0.13219416700303555,1.0,-37.38461459301517,0.9608564704706968,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,spherical,0.12833795801270753,1.0,-39.269953381995514,0.9608729058202001,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,diag,0.13122645899420604,1.0,-37.21017586011501,0.9788711850976335,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,1,64,spherical,0.129910874995403,1.0,-39.030187365703284,0.9788669914197716,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,diag,0.1700209169939626,2.0,-37.35157893859822,0.9617821042430044,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,spherical,0.16830699998536147,2.0,-39.22989118796304,0.9611753165958883,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,diag,0.1687515829980839,2.0,-37.384557687013604,0.9608796483818224,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,spherical,0.16846616700058803,2.0,-39.27014950952067,0.9608316057783817,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,diag,0.17129329100134782,2.0,-37.210050722517586,0.9788762174669919,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,2,64,spherical,0.16956174999359064,2.0,-39.030064548982736,0.9788680398423675,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,diag,0.29446270799962804,5.0,-37.35137695472878,0.9618188220880223,0.5547931612500001
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,spherical,0.2833257500024047,5.0,-39.22956226040243,0.9613041217051973,0.8279259700000001
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,diag,0.2954132919840049,5.0,-37.38453166002009,0.9609302148890183,0.53713247
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,spherical,0.2854198339919094,5.0,-39.270180483877375,0.9608265484115885,0.82365568375
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,diag,0.2914799580175895,5.0,-37.2101405958901,0.9788711850976335,0.5238333199999999
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,5,64,spherical,0.28798270801780745,5.0,-39.02978269935476,0.9789403759618491,0.8155774437500001
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,diag,0.4914861250144895,10.0,-37.351402191643444,0.9620930215705277,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,spherical,0.4803020829858724,10.0,-39.228840112627005,0.9614829019734051,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,diag,0.49434683300205506,10.0,-37.38464314352164,0.9608567865398655,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,spherical,0.4831016670214012,10.0,-39.27021913772493,0.9608258108749422,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,diag,0.49847545800730586,10.0,-37.210263450868005,0.9788743303341172,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,10,64,spherical,0.48223495899583213,10.0,-39.02940725797207,0.9791556481691055,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,diag,0.8925401250016876,20.0,-37.35139134941654,0.9633016302209265,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,spherical,0.8720447079977021,20.0,-39.22868789076357,0.9616474155112017,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,diag,0.8940468330110889,20.0,-37.38475701287421,0.9614776076887259,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,spherical,0.8679945830081124,20.0,-39.270253115557736,0.9608278127577627,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,diag,0.9003888329898473,20.0,-37.210299039465745,0.9788919433113358,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,20,64,spherical,0.8762641250214074,20.0,-39.02937001756595,0.9791235830094684,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,diag,2.1050201669859234,50.0,-37.35171781946542,0.9606023220778414,0.5504272962500001
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,spherical,2.034540583001217,50.0,-39.228690803875054,0.9616622539779349,0.8248878137500001
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,diag,2.085134582972387,50.0,-37.3845196226068,0.9621032807202213,0.5458603550000001
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,spherical,2.0376423340057954,50.0,-39.27026011598428,0.9608264430492727,0.8210810300000001
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,diag,2.1218388329725713,50.0,-37.210278838828174,0.9789108137047693,0.52758114625
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture,EGaussianMixture,e-means,ep,false,50,64,spherical,2.0652874580118805,50.0,-39.02940037685214,0.9792132767174393,0.81684888
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,diag,0.041031875007320195,1.0,-37.369641860117156,0.9612844193353678,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,spherical,0.03946025000186637,1.0,-39.237856595854346,0.9612748367237629,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,diag,0.041027958010090515,1.0,-37.66829336533357,0.9606951632595746,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,spherical,0.038920292019611225,1.0,-39.52954454638959,0.9603134441058206,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,diag,0.038156499998876825,1.0,-37.21005809092406,0.9789246515635934,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,1,64,spherical,0.03777695799362846,1.0,-39.029269535074896,0.9788680398423675,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,diag,0.050337959022726864,2.0,-37.369586639975836,0.9612743102016719,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,spherical,0.04979920800542459,2.0,-39.238123957319026,0.9612552497533916,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,diag,0.052615499997045845,2.0,-37.66823082119805,0.9608961588825058,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,spherical,0.049444166012108326,2.0,-39.52968161154619,0.9604128609164827,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,diag,0.05289537500357255,2.0,-37.2100418313315,0.9789988666019895,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,2,64,spherical,0.04951633300515823,2.0,-39.029214970612365,0.9788711850976335,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,diag,0.09121712498017587,5.0,-37.369657061403,0.9612430338607434,0.557883125
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,spherical,0.09861054102657363,5.0,-39.23835350966557,0.9612346089448282,0.8266373075000001
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,diag,0.10088641699985601,5.0,-37.668196227901255,0.961673145929216,0.55257192125
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,spherical,0.10071508301189169,5.0,-39.5298487289894,0.9605940035366753,0.8270459462499999
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,diag,0.09893816598923877,5.0,-37.210059897199876,0.9791895973864139,0.5238669825
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,5,64,spherical,0.09259024998755194,5.0,-39.02936828784966,0.9789108137047693,0.81625402375
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,diag,0.17248533299425617,10.0,-37.36961897121874,0.9612596726802921,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,spherical,0.14703200000803918,10.0,-39.238410568110396,0.961239242664984,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,diag,0.15602095797657967,10.0,-37.668223472381214,0.962653132268215,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,spherical,0.14810004198807292,10.0,-39.5298487363866,0.96082586121564,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,diag,0.15628429199568927,10.0,-37.210219083068225,0.9796872678836565,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,10,64,spherical,0.14764912499231286,10.0,-39.029360127758785,0.9790221352654571,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,diag,0.29221616600989364,20.0,-37.369543480993414,0.9612824185844715,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,spherical,0.2623068329994567,20.0,-39.23840392562474,0.961281997372804,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,diag,0.30340441697626375,20.0,-37.66810214416642,0.9621420406808678,
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,spherical,0.2635320420085918,20.0,-39.529828129978796,0.960849611459247,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,diag,0.30159320900565945,20.0,-37.21026205284845,0.9808165896972383,
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,20,64,spherical,0.2664260000165086,20.0,-39.02937142816896,0.9790472894208205,
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,diag,0.7650783749995753,50.0,-37.36948905964309,0.9640893671185212,0.55215197875
+gmm,0,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,spherical,0.640349833003711,50.0,-39.238407065968055,0.9613153773701753,0.8273149525
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,diag,0.7137194579991046,50.0,-37.21770767046287,0.9807414997801527,0.52507133875
+gmm,1,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,spherical,0.6540205420169514,50.0,-39.52992815668581,0.9603579251073832,0.8196173875
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,diag,0.7068128749961033,50.0,-37.210499669457604,0.9802154230664024,0.5305407025
+gmm,2,Apple M4 Pro,blobs,EGaussianMixture (Rust),EGaussianMixture (Rust),e-means,ep,false,50,64,spherical,0.6496852089767344,50.0,-39.02937675610527,0.9791032531059897,0.8195984212499999
+gmm,0,Apple M4 Pro,blobs,real rows (floor),floor,,,,,,,0.0,,,,0.503681425

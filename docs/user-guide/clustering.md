@@ -41,22 +41,53 @@ them based on the number of rows, clusters and epochs. You usually don't need to
     the same cluster. For data like that, use `init="k-means++"` and consider `unused_threshold=0` to turn revival
     off.
 
-### How much faster?
+### How does it compare?
 
-`notebooks/emeans_benchmark.py` is a [marimo](https://marimo.io) notebook that times `EMeans` against `KMeans` and
-`MiniBatchKMeans`, scoring every fit on held-out rows (covtype is one of the datasets in its dropdown). On one run (Apple M4 Pro,
-one seed, `n_clusters=256`, time includes initialisation) it found:
+[`benchmarks/emeans`](https://github.com/koaning/scikit-lego/tree/main/benchmarks/emeans) fits `EMeans`, `KMeans` and
+`MiniBatchKMeans` over their full range of iterations or epochs, and scores every fit on held-out rows. In short:
 
-| data | `KMeans()` defaults | `EMeans()` defaults | `EMeans(init="k-means++", unused_threshold=0)` |
-|---|---|---|---|
-| embedding-like: 100k rows, 100-d, unit norm | 3.5s, test MSE 0.8640 | **0.43s**, 0.8645 (10 epochs: 0.72s, 0.8637) | - |
-| covtype: 464k rows, 10 numeric columns | 11.5s, test MSE 1.406 | **0.90s**, 1.421 | 4.0s, 1.406 |
+- On embedding-like data (many overlapping clusters, 100 features), `EMeans` reaches the test error of `KMeans()` with
+  its defaults several times faster, and with a few more epochs ends slightly *below* it.
+- On covtype, `EMeans` gets within half a percent of `KMeans()` many times faster, but fully converged `KMeans()` still
+  ends a few tenths of a percent lower.
+- On data with well separated clusters, random starts fail for `EMeans` just as they do for `KMeans(init="random")`.
+  Use `init="k-means++"` there.
+- `MiniBatchKMeans` ends 1.5–4.5% behind on all three.
 
-On embedding-like data the defaults match `KMeans` about 8 times faster. On covtype, random starts give up about 1%
-of the error, and starting from k-means++ closes that gap while staying almost 3 times faster.
+The [benchmark README](https://github.com/koaning/scikit-lego/tree/main/benchmarks/emeans) has the charts, tables and
+the commands to rerun it.
 
-The same notebook also benchmarks [`EGaussianMixture`][egmm-api], which applies the e-means update to Gaussian
-mixtures. See the [mixture methods](mixture-methods.md#fast-gaussian-mixtures-with-egaussianmixture) page.
+### Rust backend
+
+`EMeans(backend="rust")` runs the training loop and the full-data passes (`labels_`, `predict`, `transform`, `score`)
+in compiled Rust. Every other parameter means the same thing, and the defaults are the same. The extension is built
+from the `rust/` folder of the repository and needs a [Rust toolchain](https://rustup.rs):
+
+```bash
+pip install ./rust
+```
+
+```py
+emeans = EMeans(n_clusters=50, random_state=42, backend="rust").fit(X)
+```
+
+Both backends run the same algorithm, but they draw different random numbers, so a given `random_state` gives a
+different (equally good) model on each. In the benchmark (Apple M4 Pro, mean over 3 seeds, `n_clusters=256`, same
+number of epochs on both backends):
+
+| data | epochs | `backend="numpy"` | `backend="rust"` | speedup | test MSE, numpy | test MSE, rust |
+|---|--:|--:|--:|--:|--:|--:|
+| embedding-like: 200k rows, 100 features | 5 | 0.68s | 0.24s | 2.8x | 0.8593 | 0.8595 |
+| | 50 | 6.61s | 1.68s | 3.9x | 0.8581 | 0.8582 |
+| covtype: 465k rows, 10 features | 5 | 0.90s | 0.24s | 3.7x | 1.4180 | 1.4169 |
+| | 50 | 8.30s | 1.30s | 6.4x | 1.4149 | 1.4114 |
+
+The gain is largest with few features, where NumPy spends most of its time on per-batch overhead. With many features,
+both backends spend most of their time in the same BLAS matrix products. With `init="k-means++"` the speedup is
+smaller (1.1–2.6x), because both backends use scikit-learn's k-means++, which takes about 2 seconds on these datasets.
+
+The same benchmark covers [`EGaussianMixture`][egmm-api], which applies the e-means update to Gaussian mixtures. See
+the [mixture methods](mixture-methods.md#fast-gaussian-mixtures-with-egaussianmixture) page.
 
 [emeans-api]: ../../api/cluster#sklego.cluster.emeans.EMeans
 [egmm-api]: ../../api/mixture#sklego.mixture.egmm.EGaussianMixture

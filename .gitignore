@@ -125,3 +125,6 @@ dmypy.json
 
 # Local Netlify folder
 .netlify
+
+# Quick benchmark runs (benchmarks/emeans/run.py --quick)
+benchmarks/emeans/results/*_quick.*

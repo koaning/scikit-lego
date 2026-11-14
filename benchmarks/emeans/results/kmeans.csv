@@ -1,0 +1,451 @@
+task,seed,machine,data,method,algorithm,init,unit,reference,budget,k,seconds,passes,test_mse,ari
+kmeans,0,Apple M4 Pro,embedding-like,KMeans() defaults (runs until converged),KMeans,k-means++,it,true,converged,256,5.811907832976431,145.0,0.859245326331265,
+kmeans,1,Apple M4 Pro,embedding-like,KMeans() defaults (runs until converged),KMeans,k-means++,it,true,converged,256,7.545455040992238,218.0,0.8589609340980998,
+kmeans,2,Apple M4 Pro,embedding-like,KMeans() defaults (runs until converged),KMeans,k-means++,it,true,converged,256,5.070696207985748,119.0,0.8584657019001891,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,1,256,0.22918162500718608,1.0,0.8680221770494977,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,1,256,0.19808941701194271,1.0,0.8678363728445174,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,1,256,0.19258783300756477,1.0,0.8682167583413875,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,2,256,0.31222854199586436,2.0,0.8607746352992186,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,2,256,0.30972062499495223,2.0,0.8615424609478007,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,2,256,0.30948779100435786,2.0,0.8618366190625969,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,5,256,0.681032916996628,5.0,0.8590511424220985,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,5,256,0.6768804579915013,5.0,0.8592302114036869,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,5,256,0.6708606249885634,5.0,0.8595520682693035,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,10,256,1.262302749993978,10.0,0.8577017299050241,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,10,256,1.2726822920085397,10.0,0.8576312682440551,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,10,256,1.2701749169791583,10.0,0.8578789022490315,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,20,256,2.6293720829999074,20.0,0.857896741034425,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,20,256,2.675837250018958,20.0,0.8582562198848368,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,20,256,2.6221305409853812,20.0,0.857710057347877,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,50,256,6.629299499996705,50.0,0.858234532226556,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,50,256,6.6039465829962865,50.0,0.858562177995396,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (random),EMeans,random,ep,false,50,256,6.59740562501247,50.0,0.8575008821962672,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,1,256,2.1220202499825973,1.0,0.8669514413171076,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,1,256,2.115654125023866,1.0,0.8668649789204516,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,1,256,2.132077375019435,1.0,0.8663849178985648,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,2,256,2.2538336669967975,2.0,0.8606756111268893,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,2,256,2.2616059590072837,2.0,0.8612094341351503,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,2,256,2.2808802500076126,2.0,0.8610349685617469,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,5,256,2.6095624580048025,5.0,0.8585624589955797,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,5,256,2.6015320000005886,5.0,0.8582634527507558,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,5,256,2.6090250419802032,5.0,0.8586656653387865,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,10,256,3.154816040972946,10.0,0.8572871992632819,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,10,256,3.219621999975061,10.0,0.857293317854298,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,10,256,3.197339207981713,10.0,0.8574597689887559,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,20,256,4.562645334022818,20.0,0.8577775480692656,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,20,256,4.629850291996263,20.0,0.8576457805993353,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,20,256,4.588642041984713,20.0,0.8580697185936849,
+kmeans,0,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,50,256,8.589406042010523,50.0,0.8583227048022085,
+kmeans,1,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,50,256,8.911478000023635,50.0,0.8582003421215524,
+kmeans,2,Apple M4 Pro,embedding-like,EMeans (k-means++),EMeans,k-means++,ep,false,50,256,8.760925833019428,50.0,0.8579129165802094,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,1,256,0.09237508301157504,1.0,0.8680512260250494,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,1,256,0.08979758300120011,1.0,0.8676983566754032,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,1,256,0.10242095799185336,1.0,0.8680306709001544,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,2,256,0.15668508398812264,2.0,0.8616226489781325,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,2,256,0.12704637501155958,2.0,0.861490165298872,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,2,256,0.14324616600060835,2.0,0.8615665595090114,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,5,256,0.2539091669896152,5.0,0.8595948763946325,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,5,256,0.22114949999377131,5.0,0.8593903816038981,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,5,256,0.24145954099367373,5.0,0.8595871886504628,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,10,256,0.3658173749863636,10.0,0.8575153790634151,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,10,256,0.3894885420158971,10.0,0.8580236202737925,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,10,256,0.3842343339929357,10.0,0.8577673350532073,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,20,256,0.6939979160088114,20.0,0.8571915385744098,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,20,256,1.0046157089818735,20.0,0.8585346291621965,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,20,256,0.6486009589862078,20.0,0.8582540245183254,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,50,256,1.7669789170031436,50.0,0.8578819786226185,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,50,256,1.6581251669849735,50.0,0.8589868355386867,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,50,256,1.6123592919902876,50.0,0.8578445705956775,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,1,256,1.9534298749931622,1.0,0.8668014650840669,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,1,256,1.9863617919909302,1.0,0.8668494561320645,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,1,256,2.0019995410111733,1.0,0.8665710399120431,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,2,256,2.0256775410089176,2.0,0.8610407730157081,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,2,256,2.057066208013566,2.0,0.8611360676118129,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,2,256,2.0778748329903465,2.0,0.8607454514753446,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,5,256,2.221813333017053,5.0,0.8597133419648246,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,5,256,2.155919165990781,5.0,0.8590433212826095,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,5,256,2.1122291670180857,5.0,0.8589142746515406,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,10,256,2.2717632919957396,10.0,0.8578590450093019,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,10,256,2.2570169999962673,10.0,0.8578761440757122,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,10,256,2.2361720000044443,10.0,0.8576674282787375,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,20,256,2.5606984589830972,20.0,0.8581456113782194,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,20,256,2.4982385000039358,20.0,0.8576057824562597,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,20,256,2.5248833340010606,20.0,0.8577525653234207,
+kmeans,0,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,50,256,3.647509375005029,50.0,0.8580915623971261,
+kmeans,1,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,50,256,3.7180292090051807,50.0,0.8576399380873403,
+kmeans,2,Apple M4 Pro,embedding-like,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,50,256,3.923971582989907,50.0,0.8575333106593881,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,1,256,0.08721095800865442,1.0,0.8959700492558175,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,1,256,0.07734658298431896,1.0,0.8965974407752599,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,1,256,0.0778620420023799,1.0,0.8968783565768158,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,2,256,0.10826662500039674,2.0,0.8874212012775128,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,2,256,0.10284387500723824,2.0,0.8879582515847491,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,2,256,0.10462599998572841,2.0,0.888205231503346,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,5,256,0.18196308298502117,5.0,0.8722761564761269,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,5,256,0.1831199580046814,5.0,0.8726792653143345,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,5,256,0.18219666599179618,5.0,0.8723433666453857,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,10,256,0.3267452919972129,10.0,0.8645181921975815,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,10,256,0.3208870420057792,10.0,0.8652359692812618,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,10,256,0.3143653750012163,10.0,0.8647474154647257,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,20,256,0.5883372079988476,20.0,0.8613348722172895,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,20,256,0.5918034169881139,20.0,0.8619821612338211,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,20,256,0.5746127500024159,20.0,0.8616645921292214,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,50,256,1.3700821670063306,50.0,0.8595252561082873,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,50,256,1.334002125018742,50.0,0.8599156243592366,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,50,256,1.3926504159753677,50.0,0.8597173632610094,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,100,256,2.6370675420039333,100.0,0.8587881048058111,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,100,256,2.7219158750085626,100.0,0.8591157127422822,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (random), stopped after N iterations",KMeans,random,it,false,100,256,2.7115122079849243,100.0,0.8591241447711372,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,1,256,2.048983541986672,1.0,0.8915841038766668,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,1,256,2.009680582996225,1.0,0.8907914511141358,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,1,256,2.0038711669913027,1.0,0.8910807532070295,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,2,256,2.097623332985677,2.0,0.8832834884184799,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,2,256,2.0435019170108717,2.0,0.8826485535528661,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,2,256,2.03540387499379,2.0,0.8826596390937324,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,5,256,2.08931345801102,5.0,0.8703475129382297,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,5,256,2.125964374979958,5.0,0.8700202797905462,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,5,256,2.1091245420102496,5.0,0.8697756616788579,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,10,256,2.23253491698415,10.0,0.8639976426156117,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,10,256,2.3043820000020787,10.0,0.8639324991096233,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,10,256,2.2698039159877226,10.0,0.8634097298285117,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,20,256,2.4662321250070818,20.0,0.8611347662733861,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,20,256,2.4921220830001403,20.0,0.8610015187825661,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,20,256,2.505280541983666,20.0,0.8605877519099171,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,50,256,3.340558791998774,50.0,0.8597184564353968,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,50,256,3.389339832996484,50.0,0.8595650877562713,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,50,256,3.3969550829788204,50.0,0.8591924578623233,
+kmeans,0,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,100,256,4.625790000020061,100.0,0.859346195372854,
+kmeans,1,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,100,256,4.674085750011727,100.0,0.8591640030370189,
+kmeans,2,Apple M4 Pro,embedding-like,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,100,256,4.670573167008115,100.0,0.8584763433160377,
+kmeans,0,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,1,256,0.4543275840114802,1.0,0.8794719299296814,
+kmeans,1,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,1,256,0.4264044589945115,1.0,0.8788570322890082,
+kmeans,2,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,1,256,0.44669283300754614,1.0,0.8787290408274167,
+kmeans,0,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,2,256,0.7996233750018291,2.0,0.8771779596081353,
+kmeans,1,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,2,256,0.7990478329884354,2.0,0.8766595495599555,
+kmeans,2,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,2,256,0.7940771669964306,2.0,0.8764459823930918,
+kmeans,0,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,5,256,1.9762375830032397,5.0,0.8750628354781989,
+kmeans,1,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,5,256,1.855840249976609,5.0,0.8745403638347099,
+kmeans,2,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,5,256,1.9114257079781964,5.0,0.8743654355101663,
+kmeans,0,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,10,256,3.864746000006562,10.0,0.8739299019837541,
+kmeans,1,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,10,256,3.738772750017233,10.0,0.8733668714961098,
+kmeans,2,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,10,256,3.8551072079862934,10.0,0.8731448067033888,
+kmeans,0,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,20,256,7.437713999999687,20.0,0.8730133135477619,
+kmeans,1,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,20,256,7.465822250000201,20.0,0.8724333342861115,
+kmeans,2,Apple M4 Pro,embedding-like,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,20,256,7.788740499992855,20.0,0.8721512925556633,
+kmeans,0,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,1,256,0.05744841700652614,1.0,0.8672907433280089,
+kmeans,1,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,1,256,0.046543958014808595,1.0,0.8683724685861298,
+kmeans,2,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,1,256,0.04634875000920147,1.0,0.8685521809807536,
+kmeans,0,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,2,256,0.08659179098322056,2.0,0.8608596862636326,
+kmeans,1,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,2,256,0.09881891700206324,2.0,0.8611688834116541,
+kmeans,2,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,2,256,0.0819902090006508,2.0,0.8617614587049102,
+kmeans,0,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,5,256,0.18209079100051895,5.0,0.8586184479773271,
+kmeans,1,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,5,256,0.21811362501466647,5.0,0.8600446761167151,
+kmeans,2,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,5,256,0.20518629101570696,5.0,0.8589181220504019,
+kmeans,0,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,10,256,0.3639545000041835,10.0,0.8574804934967493,
+kmeans,1,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,10,256,0.35564516598242335,10.0,0.8582940673547871,
+kmeans,2,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,10,256,0.33826474999659695,10.0,0.8578983551875217,
+kmeans,0,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,20,256,0.6423105830035638,20.0,0.8584730139216478,
+kmeans,1,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,20,256,0.6878378750116099,20.0,0.8582362985689224,
+kmeans,2,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,20,256,0.6718356250203215,20.0,0.8580891736607527,
+kmeans,0,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,50,256,1.6419342499866616,50.0,0.8582199908437155,
+kmeans,1,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,50,256,1.748300792009104,50.0,0.8585704318886364,
+kmeans,2,Apple M4 Pro,embedding-like,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,50,256,1.6333698329981416,50.0,0.8583368946285659,
+kmeans,0,Apple M4 Pro,covtype,KMeans() defaults (runs until converged),KMeans,k-means++,it,true,converged,256,11.690666415990563,252.0,1.405997527929324,
+kmeans,1,Apple M4 Pro,covtype,KMeans() defaults (runs until converged),KMeans,k-means++,it,true,converged,256,13.163904499990167,300.0,1.4100588806397216,
+kmeans,2,Apple M4 Pro,covtype,KMeans() defaults (runs until converged),KMeans,k-means++,it,true,converged,256,12.968413915979909,300.0,1.4083691920717607,
+kmeans,0,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,1,256,0.3099813750013709,1.0,1.4413255529402642,
+kmeans,1,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,1,256,0.3104549159761518,1.0,1.4401546876588762,
+kmeans,2,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,1,256,0.3079705419950187,1.0,1.4454896161471995,
+kmeans,0,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,2,256,0.458930250024423,2.0,1.4221474470017823,
+kmeans,1,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,2,256,0.4521744170051534,2.0,1.4254298467570505,
+kmeans,2,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,2,256,0.45930541699635796,2.0,1.4213680806379514,
+kmeans,0,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,5,256,0.9036172500054818,5.0,1.4205188202515724,
+kmeans,1,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,5,256,0.8987685829924885,5.0,1.4159462555477662,
+kmeans,2,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,5,256,0.8987872079887893,5.0,1.417669312709025,
+kmeans,0,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,10,256,1.6622369590040762,10.0,1.4175104893442365,
+kmeans,1,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,10,256,1.6785689580137841,10.0,1.4111175970982965,
+kmeans,2,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,10,256,1.7310615000023972,10.0,1.4113550834334572,
+kmeans,0,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,20,256,3.2325507079949602,20.0,1.4182153746140087,
+kmeans,1,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,20,256,3.216666708991397,20.0,1.4088064891709833,
+kmeans,2,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,20,256,3.2396095829899423,20.0,1.4140553035907044,
+kmeans,0,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,50,256,8.254558999993606,50.0,1.4198358357982288,
+kmeans,1,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,50,256,8.316287083987845,50.0,1.4118731002397238,
+kmeans,2,Apple M4 Pro,covtype,EMeans (random),EMeans,random,ep,false,50,256,8.31836237499374,50.0,1.4130360591705016,
+kmeans,0,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,1,256,3.495985000015935,1.0,1.440836203635365,
+kmeans,1,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,1,256,3.4782272499869578,1.0,1.4430067623157108,
+kmeans,2,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,1,256,3.4857413330173586,1.0,1.4409041716281088,
+kmeans,0,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,2,256,3.6219668749836273,2.0,1.4169782832548532,
+kmeans,1,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,2,256,3.645306708989665,2.0,1.4217966948476084,
+kmeans,2,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,2,256,3.651338958996348,2.0,1.4194129088437915,
+kmeans,0,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,5,256,4.102742666989798,5.0,1.408266504405157,
+kmeans,1,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,5,256,4.080041958019137,5.0,1.416258256964516,
+kmeans,2,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,5,256,4.0710134580149315,5.0,1.4137702834391113,
+kmeans,0,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,10,256,4.93088916700799,10.0,1.4121034914959394,
+kmeans,1,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,10,256,4.864394167001592,10.0,1.4149997282815465,
+kmeans,2,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,10,256,4.864498958020704,10.0,1.4115129134740985,
+kmeans,0,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,20,256,6.4389813329908065,20.0,1.4150267988493588,
+kmeans,1,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,20,256,6.46581337499083,20.0,1.4146454192791034,
+kmeans,2,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,20,256,6.4443022920168005,20.0,1.4140688476577856,
+kmeans,0,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,50,256,11.846523666987196,50.0,1.4082783871520077,
+kmeans,1,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,50,256,11.605172959010815,50.0,1.4142012109148123,
+kmeans,2,Apple M4 Pro,covtype,EMeans (k-means++),EMeans,k-means++,ep,false,50,256,11.52738179100561,50.0,1.4118870556431127,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,1,256,0.09694670801400207,1.0,1.4370202561294976,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,1,256,0.09545070797321387,1.0,1.4418986731968766,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,1,256,0.12973837499157526,1.0,1.4404856425884003,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,2,256,0.15364025000599213,2.0,1.4256479746111788,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,2,256,0.14876991699566133,2.0,1.4215201590825681,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,2,256,0.1320421659911517,2.0,1.4225566365810285,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,5,256,0.2379729169770144,5.0,1.4162321582269928,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,5,256,0.2442418330174405,5.0,1.416715379001207,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,5,256,0.2495562499971129,5.0,1.417804987643185,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,10,256,0.5086087499803398,10.0,1.412960100845447,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,10,256,0.42274320899741724,10.0,1.4148392348785146,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,10,256,0.41913925000699237,10.0,1.4138695081644472,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,20,256,0.6741551249870099,20.0,1.4112931088118317,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,20,256,0.685511999996379,20.0,1.4105016957085446,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,20,256,0.6749132910044864,20.0,1.4169625194128956,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,50,256,1.3326583330053836,50.0,1.4118663250016916,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,50,256,1.3276461250206921,50.0,1.4100588565046632,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,50,256,1.2532639169949107,50.0,1.4121903286653912,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,1,256,3.240837624995038,1.0,1.4358300858803075,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,1,256,3.3714503750088625,1.0,1.4382152940886872,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,1,256,3.328690916998312,1.0,1.4366045779309016,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,2,256,3.3112034579971805,2.0,1.4207480926789604,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,2,256,3.2931736249884125,2.0,1.4195771601788656,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,2,256,3.271796874993015,2.0,1.4205250838041898,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,5,256,3.401879832992563,5.0,1.4129088919521848,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,5,256,3.4185158330074046,5.0,1.4116022201798626,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,5,256,3.420816666999599,5.0,1.4155096444621191,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,10,256,3.6714199170237407,10.0,1.4125446492462113,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,10,256,3.572418874973664,10.0,1.4114523884514505,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,10,256,3.598131499980809,10.0,1.4146983659431625,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,20,256,3.9765795409912243,20.0,1.412695979951586,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,20,256,3.7948511249851435,20.0,1.4102589512985069,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,20,256,3.807043834007345,20.0,1.410427084960427,
+kmeans,0,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,50,256,4.426050625013886,50.0,1.4100154129818558,
+kmeans,1,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,50,256,4.414039583003614,50.0,1.412300184471335,
+kmeans,2,Apple M4 Pro,covtype,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,50,256,4.503658957983134,50.0,1.4117764894112181,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,1,256,0.08474395898520015,1.0,1.6783168246777296,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,1,256,0.10178875000565313,1.0,1.6578075495038544,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,1,256,0.0859456250036601,1.0,1.6924871377316635,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,2,256,0.12976008298574015,2.0,1.5927029486530302,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,2,256,0.1250708329898771,2.0,1.576342907885907,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,2,256,0.13438241599942558,2.0,1.5911366945032601,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,5,256,0.24760504200821742,5.0,1.5106089058178425,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,5,256,0.2504236660024617,5.0,1.4943576069105562,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,5,256,0.26688158299657516,5.0,1.5052861116613605,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,10,256,0.39851708299829625,10.0,1.4693409608207657,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,10,256,0.40274070799932815,10.0,1.4533341798820176,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,10,256,0.3779892500024289,10.0,1.4639105359060822,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,20,256,0.7078196670045145,20.0,1.4445626324746932,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,20,256,0.7239674169977661,20.0,1.430195298926382,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,20,256,0.7195348750101402,20.0,1.442483211423265,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,50,256,1.7294060419953894,50.0,1.428707897450038,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,50,256,1.7657939589989837,50.0,1.4151989452245353,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,50,256,2.003184125002008,50.0,1.4237885617024306,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,100,256,3.8470474159985315,100.0,1.4221610992376552,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,100,256,3.3108183340227697,100.0,1.4109055660893999,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (random), stopped after N iterations",KMeans,random,it,false,100,256,3.3270757910213433,100.0,1.4169898235610001,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,1,256,3.262593082996318,1.0,1.5514629865231213,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,1,256,3.3507031660119537,1.0,1.5550827293852325,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,1,256,3.2625203329953365,1.0,1.5470441768473153,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,2,256,3.5683699999935925,2.0,1.5069019591744515,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,2,256,3.323764915985521,2.0,1.5108659184410071,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,2,256,3.287910582992481,2.0,1.505518832913747,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,5,256,3.444090332981432,5.0,1.4604118166897628,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,5,256,3.388384624995524,5.0,1.464054755328256,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,5,256,3.4110985830193385,5.0,1.4599249844778874,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,10,256,3.678957458003424,10.0,1.436551415627531,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,10,256,3.521627375012031,10.0,1.4406180994998874,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,10,256,3.5602320000180043,10.0,1.4379682411329429,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,20,256,3.968108499975642,20.0,1.4227273878551443,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,20,256,3.8916775420075282,20.0,1.4251059622306286,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,20,256,3.8478716659883503,20.0,1.4249260619059565,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,50,256,4.823422750021564,50.0,1.411791998461598,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,50,256,4.8366232920088805,50.0,1.4152229113220196,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,50,256,4.854336542019155,50.0,1.4157329155536753,
+kmeans,0,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,100,256,6.494476084015332,100.0,1.4081383752702281,
+kmeans,1,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,100,256,6.507121542003006,100.0,1.4134799881121873,
+kmeans,2,Apple M4 Pro,covtype,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,100,256,6.451595249993261,100.0,1.4107669692114488,
+kmeans,0,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,1,256,1.3955097919970285,1.0,1.4707384707329485,
+kmeans,1,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,1,256,1.3731672080175485,1.0,1.464924270105907,
+kmeans,2,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,1,256,1.3606099159806035,1.0,1.461346533404264,
+kmeans,0,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,2,256,2.6952068750106264,2.0,1.46496872576006,
+kmeans,1,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,2,256,2.649945499986643,2.0,1.4585347528232766,
+kmeans,2,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,2,256,2.687325167004019,2.0,1.4567131200556038,
+kmeans,0,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,5,256,6.7560910420143045,5.0,1.4583676984036327,
+kmeans,1,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,5,256,6.856075791991316,5.0,1.4517961501594505,
+kmeans,2,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,5,256,6.872289416001877,5.0,1.4518152691968276,
+kmeans,0,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,10,256,13.118043124995893,10.0,1.454373202592794,
+kmeans,1,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,10,256,13.222213500004727,10.0,1.4479684749621746,
+kmeans,2,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,10,256,13.194743667001603,10.0,1.4488258072494835,
+kmeans,0,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,20,256,26.65788420799072,20.0,1.4508353723182716,
+kmeans,1,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,20,256,26.241364791989326,20.0,1.4447409170892271,
+kmeans,2,Apple M4 Pro,covtype,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,20,256,26.547563000000082,20.0,1.446388649599175,
+kmeans,0,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,1,256,0.06856504202005453,1.0,1.4468713700585778,
+kmeans,1,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,1,256,0.06175137500395067,1.0,1.4408586743056775,
+kmeans,2,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,1,256,0.05444670800352469,1.0,1.4443744427008758,
+kmeans,0,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,2,256,0.07777912501478568,2.0,1.4197106359255396,
+kmeans,1,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,2,256,0.08329737500753254,2.0,1.4205348833897946,
+kmeans,2,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,2,256,0.07632849999936298,2.0,1.4165752111213057,
+kmeans,0,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,5,256,0.16412887501064688,5.0,1.4142769607600782,
+kmeans,1,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,5,256,0.14648395800031722,5.0,1.4189469201004639,
+kmeans,2,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,5,256,0.1571497080149129,5.0,1.4158532091483835,
+kmeans,0,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,10,256,0.2883757080126088,10.0,1.4108930026484812,
+kmeans,1,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,10,256,0.2719352910062298,10.0,1.4152284950103495,
+kmeans,2,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,10,256,0.26924170801066794,10.0,1.4108667850760672,
+kmeans,0,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,20,256,0.4257679170113988,20.0,1.4147884519813985,
+kmeans,1,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,20,256,0.4313114160031546,20.0,1.4133714038395415,
+kmeans,2,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,20,256,0.43583408402628265,20.0,1.4132924412836603,
+kmeans,0,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,50,256,0.8988967910117935,50.0,1.4155454936819065,
+kmeans,1,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,50,256,0.9373612919880543,50.0,1.4176016865386472,
+kmeans,2,Apple M4 Pro,covtype,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,50,256,0.8719393749779556,50.0,1.412748933166769,
+kmeans,0,Apple M4 Pro,blobs,KMeans() defaults (runs until converged),KMeans,k-means++,it,true,converged,64,0.17299095800262876,32.0,105.56569711008743,0.9389877585567113
+kmeans,1,Apple M4 Pro,blobs,KMeans() defaults (runs until converged),KMeans,k-means++,it,true,converged,64,0.15505354100605473,24.0,95.90819113018941,0.978737390314837
+kmeans,2,Apple M4 Pro,blobs,KMeans() defaults (runs until converged),KMeans,k-means++,it,true,converged,64,0.1472642500011716,27.0,96.01389177390338,0.9818830207738356
+kmeans,0,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,1,64,0.04413416699389927,1.0,140.3775332157617,0.8272838136587112
+kmeans,1,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,1,64,0.044248374993912876,1.0,158.89828784139362,0.8441739267198931
+kmeans,2,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,1,64,0.04375149999395944,1.0,150.27301869597775,0.8588662216515534
+kmeans,0,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,2,64,0.07658487500157207,2.0,140.3744228247223,0.8272657278411624
+kmeans,1,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,2,64,0.07612258399603888,2.0,155.6682645991595,0.8587174040231197
+kmeans,2,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,2,64,0.07598791699274443,2.0,150.0928180696822,0.8588332959998815
+kmeans,0,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,5,64,0.12347858402063139,5.0,165.3139308357192,0.8036631375439831
+kmeans,1,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,5,64,0.12198616599198431,5.0,161.63877838477072,0.7937660557720349
+kmeans,2,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,5,64,0.12155124999117106,5.0,161.86196290996054,0.8321383392210137
+kmeans,0,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,10,64,0.17706266601453535,10.0,153.09457164757862,0.8073841033008315
+kmeans,1,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,10,64,0.1765433750115335,10.0,171.6077633876893,0.7768643680965444
+kmeans,2,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,10,64,0.1740742499823682,10.0,148.20687973028137,0.8461926843362707
+kmeans,0,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,20,64,0.29785462497966364,20.0,155.31428809762957,0.8116611806022906
+kmeans,1,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,20,64,0.28930658401804976,20.0,163.4132242125307,0.8276563118202408
+kmeans,2,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,20,64,0.2921005000243895,20.0,155.8009574872074,0.8317354835556695
+kmeans,0,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,50,64,0.7348702500166837,50.0,174.31298922414962,0.7812016930330921
+kmeans,1,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,50,64,0.7259808749950025,50.0,153.9448461887623,0.8083264165952897
+kmeans,2,Apple M4 Pro,blobs,EMeans (random),EMeans,random,ep,false,50,64,0.8225182919995859,50.0,154.824177305501,0.8326955742985314
+kmeans,0,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,1,64,0.13081812500604428,1.0,105.60910740928755,0.9385795311099793
+kmeans,1,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,1,64,0.1269793329993263,1.0,95.9061122779935,0.9787723102557713
+kmeans,2,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,1,64,0.13127174999681301,1.0,96.2092136558304,0.9824239841581802
+kmeans,0,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,2,64,0.16472266599885188,2.0,105.63023740272722,0.9385572264224666
+kmeans,1,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,2,64,0.16801362499245442,2.0,95.90673433513734,0.9787172552426411
+kmeans,2,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,2,64,0.15959029100486077,2.0,96.21429889236647,0.9824381243096697
+kmeans,0,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,5,64,0.20553058298537508,5.0,105.60770141986545,0.9404534814138789
+kmeans,1,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,5,64,0.25072199999704026,5.0,95.90387999652602,0.978782376835899
+kmeans,2,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,5,64,0.2051000419887714,5.0,96.21153732612353,0.9824498551092258
+kmeans,0,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,10,64,0.26405983298900537,10.0,105.66192459763788,0.9400688038718553
+kmeans,1,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,10,64,0.27110979199642316,10.0,95.90933968530645,0.9787630823883158
+kmeans,2,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,10,64,0.25856037499033846,10.0,96.01758607273095,0.9818830207738356
+kmeans,0,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,20,64,0.3719022079894785,20.0,105.56463752772395,0.9389655766528224
+kmeans,1,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,20,64,0.37092891699285246,20.0,95.90991695427216,0.9787587829857729
+kmeans,2,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,20,64,0.37474183400627226,20.0,96.01442347121238,0.9818830207738356
+kmeans,0,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,50,64,0.7723639580071904,50.0,105.56219583390072,0.9389829826247341
+kmeans,1,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,50,64,0.77217270800611,50.0,95.90602653468903,0.9787471429637536
+kmeans,2,Apple M4 Pro,blobs,EMeans (k-means++),EMeans,k-means++,ep,false,50,64,0.8047853750176728,50.0,96.01366454914692,0.9818830207738356
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,1,64,0.010215041984338313,1.0,146.3094535654558,0.8302699083752806
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,1,64,0.010011334001319483,1.0,167.82173380270876,0.8020519055288206
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,1,64,0.010395416989922523,1.0,145.24104371818706,0.8724872150498273
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,2,64,0.01712054101517424,2.0,146.22484028402562,0.8302398564520874
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,2,64,0.016867290978552774,2.0,167.73002997669226,0.8020374283329551
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,2,64,0.01686841598711908,2.0,155.5085392681567,0.857794670265646
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,5,64,0.03589450000436045,5.0,150.3846862459116,0.8294096089381112
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,5,64,0.035802582977339625,5.0,168.14143541252167,0.7460221633276215
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,5,64,0.03586112501216121,5.0,178.61558451579418,0.7991305854768115
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,10,64,0.062192457990022376,10.0,147.8801264046664,0.8324013021441491
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,10,64,0.061280583002371714,10.0,177.98115992405212,0.7298249158436706
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,10,64,0.060284792009042576,10.0,169.08930011204276,0.8150519470296026
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,20,64,0.1127735830086749,20.0,144.34553102941527,0.830329398313027
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,20,64,0.10876737500075251,20.0,175.4020602001901,0.743361669777436
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,20,64,0.109018457995262,20.0,164.9051554890407,0.8182145265445772
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,50,64,0.33441237499937415,50.0,146.65244745135024,0.8300636784746845
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,50,64,0.34278083298704587,50.0,154.7512876080098,0.8070346793552613
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, random)",EMeans (Rust),random,ep,false,50,64,0.3072038749814965,50.0,168.656479917993,0.8126695962224217
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,1,64,0.09238620899850503,1.0,105.70562649210326,0.9393231368656447
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,1,64,0.0909415420028381,1.0,95.79039846137904,0.9795264561498794
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,1,64,0.09160433398210444,1.0,96.02314218479836,0.9819222336760094
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,2,64,0.11091116699390113,2.0,105.71578191409874,0.939320273069303
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,2,64,0.1154592499951832,2.0,95.79410990494519,0.9795409060880894
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,2,64,0.12464008299866691,2.0,96.0106128463964,0.9818882633099865
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,5,64,0.11690791699220426,5.0,102.58292535931004,0.9597422898065713
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,5,64,0.11527974999626167,5.0,95.90915808260148,0.9787345588668145
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,5,64,0.12734612499480136,5.0,96.01799146652895,0.9818750520186588
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,10,64,0.1441681660071481,10.0,105.44485675607149,0.9403374608029527
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,10,64,0.13969929199083708,10.0,95.90572479485442,0.9787436823670642
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,10,64,0.13735295902006328,10.0,96.02224633502172,0.9818855371977191
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,20,64,0.18461312499130145,20.0,105.56513224362219,0.9389908363574312
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,20,64,0.18441079198964871,20.0,95.90565232001973,0.9787471429637536
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,20,64,0.18303495802683756,20.0,96.02121995230833,0.9818943445863604
+kmeans,0,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,50,64,0.3777662080246955,50.0,105.560273207495,0.9389765085169901
+kmeans,1,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,50,64,0.4034589169896208,50.0,95.90608897062427,0.9787404314827978
+kmeans,2,Apple M4 Pro,blobs,"EMeans (Rust, k-means++)",EMeans (Rust),k-means++,ep,false,50,64,0.3969662919989787,50.0,96.02128355001793,0.9818943445863604
+kmeans,0,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,1,64,0.010162999999010935,1.0,248.8561938227491,0.7905167165013891
+kmeans,1,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,1,64,0.009931708977092057,1.0,245.59317697073496,0.7475637814021142
+kmeans,2,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,1,64,0.009699415997602046,1.0,245.2884388390682,0.7538733796186873
+kmeans,0,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,2,64,0.015268500021193177,2.0,170.1479688247694,0.8404329900444072
+kmeans,1,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,2,64,0.01182045802124776,2.0,180.0242872410468,0.8141950338844582
+kmeans,2,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,2,64,0.012431790994014591,2.0,187.74397839860745,0.8054100240857187
+kmeans,0,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,5,64,0.02213579197996296,5.0,141.88550778337935,0.857741740847276
+kmeans,1,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,5,64,0.018310542014660314,5.0,167.19578462327112,0.8178571390932056
+kmeans,2,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,5,64,0.022212459007278085,5.0,165.99855664505435,0.8151773174476995
+kmeans,0,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,10,64,0.03272683298564516,10.0,141.79153172070417,0.8564920401167824
+kmeans,1,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,10,64,0.031078915984835476,10.0,166.98989058811324,0.8181254486417106
+kmeans,2,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,10,64,0.03279608397861011,10.0,165.96149930816014,0.8151099296691305
+kmeans,0,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,20,64,0.0615525410103146,20.0,141.69750134473168,0.8565047978062708
+kmeans,1,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,20,64,0.06276691702078097,20.0,166.9793087245435,0.8181379946938037
+kmeans,2,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,20,64,0.06262916600098833,20.0,165.91018465859918,0.8150553465578472
+kmeans,0,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,50,64,0.128455790982116,50.0,141.68432934772576,0.8565352188716776
+kmeans,1,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,50,64,0.13468212500447407,50.0,166.97676483276143,0.8182099131785506
+kmeans,2,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,50,64,0.12495829199906439,48.0,165.8650800725745,0.8150493173538065
+kmeans,0,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,100,64,0.14954858398414217,59.0,141.68468825986685,0.8565373995327444
+kmeans,1,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,100,64,0.19225783401634544,75.0,166.97673362134202,0.8181891496187293
+kmeans,2,Apple M4 Pro,blobs,"KMeans (random), stopped after N iterations",KMeans,random,it,false,100,64,0.12943129101768136,48.0,165.8650800725745,0.8150493173538065
+kmeans,0,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,1,64,0.09136850002687424,1.0,107.32610299665122,0.9400228345952845
+kmeans,1,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,1,64,0.08868454198818654,1.0,95.9063807497909,0.9791069209301102
+kmeans,2,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,1,64,0.08844083399162628,1.0,96.07796546696616,0.9822917815010574
+kmeans,0,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,2,64,0.09014520901837386,2.0,105.71063732717566,0.9401601267531445
+kmeans,1,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,2,64,0.09121070802211761,2.0,95.8993900106924,0.9789017979344752
+kmeans,2,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,2,64,0.09268670901656151,2.0,96.04868054858156,0.9820675265520606
+kmeans,0,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,5,64,0.09730687498813495,5.0,105.57244602998635,0.9390988667956653
+kmeans,1,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,5,64,0.0989282920199912,5.0,95.89687670834705,0.9787345588668145
+kmeans,2,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,5,64,0.09606141698895954,5.0,96.02213160800602,0.9818911991073724
+kmeans,0,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,10,64,0.11375849999603815,10.0,105.56416010100577,0.938988819869262
+kmeans,1,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,10,64,0.11413525001262315,10.0,95.90081424341518,0.9787235475353788
+kmeans,2,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,10,64,0.11094545800006017,10.0,96.014573244326,0.9818750520186588
+kmeans,0,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,20,64,0.15799162499024533,20.0,105.56365600749189,0.938986803373654
+kmeans,1,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,20,64,0.13410166700487025,20.0,95.90692401246808,0.9787345588668145
+kmeans,2,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,20,64,0.13178662498830818,20.0,96.01154354965162,0.9818786170030264
+kmeans,0,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,50,64,0.17634483298752457,38.0,105.5650325304423,0.9389901995724971
+kmeans,1,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,50,64,0.15772625000681728,31.0,95.90850144818079,0.978737390314837
+kmeans,2,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,50,64,0.22233137500006706,40.0,96.01419033004474,0.9818855371977191
+kmeans,0,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,100,64,0.17630070800078101,38.0,105.5650325304423,0.9389901995724971
+kmeans,1,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,100,64,0.16724479099502787,31.0,95.9085014481808,0.978737390314837
+kmeans,2,Apple M4 Pro,blobs,"KMeans (k-means++), stopped after N iterations",KMeans,k-means++,it,false,100,64,0.20344016602030024,40.0,96.01419033004477,0.9818855371977191
+kmeans,0,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,1,64,0.12399512500269338,1.0,95.85462819935272,0.9794626832059744
+kmeans,1,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,1,64,0.09981508401688188,1.0,110.17930653518466,0.9415137968568723
+kmeans,2,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,1,64,0.10388679101015441,1.0,104.82583650559073,0.9593010167993857
+kmeans,0,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,2,64,0.19657779100816697,2.0,95.82464248482458,0.9794601698282632
+kmeans,1,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,2,64,0.19242866701097228,2.0,110.12964059877447,0.941473758067096
+kmeans,2,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,2,64,0.19435608299681917,2.0,104.80982302709914,0.9589411022564487
+kmeans,0,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,5,64,0.471436541993171,5.0,95.80593223584187,0.9794626832059744
+kmeans,1,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,5,64,0.46796670800540596,5.0,110.10461151181033,0.941476512152066
+kmeans,2,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,5,64,0.4626124159840401,5.0,104.79042912037224,0.9587419697093496
+kmeans,0,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,10,64,0.9370839170005638,10.0,95.7972252121627,0.9794667674191604
+kmeans,1,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,10,64,0.9860837079759222,10.0,110.09221413607155,0.9414629534456035
+kmeans,2,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,10,64,1.3283279169991147,10.0,104.7826959862338,0.9586822869508953
+kmeans,0,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,20,64,1.8389248749881517,20.0,95.79144124732694,0.9794727365968153
+kmeans,1,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,20,64,1.8871199169952888,20.0,110.07753812547423,0.9414685676383877
+kmeans,2,Apple M4 Pro,blobs,"MiniBatchKMeans, stopped after N epochs",MiniBatchKMeans,k-means++,ep,false,20,64,1.846486000024015,20.0,104.7832885763726,0.9585835839309222
+kmeans,0,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,1,64,0.021724457998061553,1.0,158.86198736437197,0.8461521517501683
+kmeans,1,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,1,64,0.02047629200387746,1.0,163.90839453792162,0.8125345385953879
+kmeans,2,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,1,64,0.018663750000996515,1.0,156.96834692121013,0.7578468084900425
+kmeans,0,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,2,64,0.039183582994155586,2.0,158.7294237870772,0.8460634294113235
+kmeans,1,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,2,64,0.0380648749996908,2.0,163.81081007561684,0.8124075721881825
+kmeans,2,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,2,64,0.0382404160045553,2.0,156.45337558771786,0.7577772210925003
+kmeans,0,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,5,64,0.06545666701276787,5.0,138.33364129795515,0.8885279523335834
+kmeans,1,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,5,64,0.06376391698722728,5.0,169.33834468863031,0.8002219491124486
+kmeans,2,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,5,64,0.0624639589805156,5.0,162.804618841255,0.7465576227983697
+kmeans,0,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,10,64,0.08300749998306856,10.0,140.93305741496226,0.8763827027273156
+kmeans,1,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,10,64,0.08993666601600125,10.0,170.95739485737414,0.7953255435278515
+kmeans,2,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,10,64,0.08886204200098291,10.0,161.594034374215,0.7488844282240837
+kmeans,0,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,20,64,0.12825687497388572,20.0,147.752639442151,0.862944060192356
+kmeans,1,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,20,64,0.12923062502522953,20.0,163.744609458556,0.80590043636573
+kmeans,2,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,20,64,0.12352300001657568,20.0,155.76572694204592,0.8130707328363415
+kmeans,0,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,50,64,0.22636624998995103,50.0,147.1520244847664,0.864594844954422
+kmeans,1,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,50,64,0.22174224999616854,50.0,164.6495619972992,0.7980090253766167
+kmeans,2,Apple M4 Pro,blobs,"emeans crate (Rust, random)",emeans crate (Rust),random,ep,false,50,64,0.21996666601626202,50.0,151.25103226958697,0.8208685004653736

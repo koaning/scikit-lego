@@ -9,11 +9,18 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn_compat.utils.validation import validate_data
 
 from sklego.cluster.emeans import (
+    _BACKENDS,
+    _CHECK_UNUSED_EVERY,
     _INIT_USAGE,
+    _NO_REVIVAL_MAX_D,
+    _UNUSED_THRESHOLD,
     EMeans,
+    _alpha_schedule,
     _chunks,
     _epoch_rows,
     _round_power_of_two,
+    _rust_module,
+    _rust_seed,
     _scheduled_alpha,
     emeans_alpha,
     emeans_batch_size,
@@ -26,6 +33,9 @@ _ROWS_PER_COMPONENT = 64
 _INIT_EMEANS_EPOCHS = 2.0
 _MIN_MASS = 1e-10
 _LOG_2PI = math.log(2.0 * math.pi)
+# A revived component and its donor start this many standard deviations (Mahalanobis distance) from the donor's mean.
+# Much smaller splits do not separate: two near-identical components share every row under soft responsibilities.
+_SPLIT_DISTANCE = 1.0
 
 
 def egmm_batch_size(n_samples, n_components, n_epochs, n_features):
@@ -127,8 +137,9 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
     This is EM with the M-step swapped for the moving average update of [`EMeans`][sklego.cluster.emeans.EMeans].
     Every mini-batch gets an E-step under the current parameters, and the responsibility-weighted sums of `x` and
     `x**2` then move each component's weight, mean and variance with a step size that follows a cosine decay from
-    `alpha` down to `alpha / 10`. After the last pass the parameters are replaced by a full M-step on the sums
-    gathered during that pass.
+    `alpha` down to `alpha / 10`. Components that are (almost) never the most likely one for any row are revived by
+    splitting a busy component, as in `EMeans`. After the last pass the parameters are replaced by a full M-step on
+    the sums gathered during that pass.
 
     By default the means start from an `EMeans` fit, so a few passes over the data reach the held-out likelihood
     that `sklearn.mixture.GaussianMixture` needs many full EM iterations for. Only diagonal and spherical
@@ -155,8 +166,20 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
         dataset.
     reg_covar : float, default=1e-6
         Non-negative value added to the variances to keep them positive.
+    unused_threshold : float | None, default=None
+        Revival of unused components, as in `EMeans`. Every component keeps a moving average of the number of rows
+        for which it is the most likely component, and components whose average falls below this fraction of the
+        mean are revived by splitting a busy one. The donor is drawn in proportion to that average, and the two
+        halves start on either side of its mean, one standard deviation away, with the donor's variances. `0` turns
+        revival off. When `None` it is `0.1`, or `0` when there are at most 2 features.
     random_state : int | np.random.RandomState | None, default=None
         Controls the initialisation, the order of the rows and `sample`.
+    backend : Literal["numpy", "rust"], default="numpy"
+        `"rust"` runs the training loop (and the `EMeans` initialisation) and the density evaluations
+        (`score_samples`, `score`, `predict`, `predict_proba`) in compiled Rust, which needs the `sklego-rust` package
+        (`pip install ./rust` from the scikit-lego repository). Both backends run the same algorithm with the same
+        defaults, but they draw their random numbers differently, so a given `random_state` gives a different
+        (equally good) model in each.
 
     Attributes
     ----------
@@ -181,6 +204,8 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
         Number of passes over the data, a fractional pass counts as one.
     n_steps_ : int
         Number of mini-batch updates.
+    n_splits_ : int
+        Number of components revived during training.
     n_features_in_ : int
         Number of features seen during `fit`.
 
@@ -210,7 +235,9 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
         alpha=None,
         init="e-means",
         reg_covar=1e-6,
+        unused_threshold=None,
         random_state=None,
+        backend="numpy",
     ):
         self.n_components = n_components
         self.covariance_type = covariance_type
@@ -219,7 +246,9 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
         self.alpha = alpha
         self.init = init
         self.reg_covar = reg_covar
+        self.unused_threshold = unused_threshold
         self.random_state = random_state
+        self.backend = backend
 
     def _check_params(self, n_samples):
         if not isinstance(self.n_components, Integral) or self.n_components < 1:
@@ -236,8 +265,14 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
             raise ValueError(f"alpha must be in (0, 1] or None, got {self.alpha}")
         if not isinstance(self.reg_covar, Real) or not (0 <= self.reg_covar < math.inf):
             raise ValueError(f"reg_covar must be a non-negative number, got {self.reg_covar}")
+        if self.unused_threshold is not None and (
+            not isinstance(self.unused_threshold, Real) or not (0 <= self.unused_threshold < math.inf)
+        ):
+            raise ValueError(f"unused_threshold must be a non-negative number or None, got {self.unused_threshold}")
         if isinstance(self.init, str) and self.init not in ("e-means", "k-means++", "random"):
             raise ValueError(f"init must be 'e-means', 'k-means++', 'random' or an array, got {self.init}")
+        if self.backend not in _BACKENDS:
+            raise ValueError(f"backend must be 'numpy' or 'rust', got {self.backend}")
 
     def _initialize(self, X, shift, rng):
         """Weights, (shifted) means and variances to start from."""
@@ -267,13 +302,20 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
         # k-means++ on all rows costs more than the rest of the fit.
         subsample = X[rng.choice(n, size=min(n, _ROWS_PER_COMPONENT * k), replace=False)]
         seeds = kmeans_plusplus(subsample, k, random_state=rng)[0]
-        emeans = EMeans(n_clusters=k, n_epochs=_INIT_EMEANS_EPOCHS, init=seeds, random_state=rng).fit(X)
+        emeans = EMeans(
+            n_clusters=k, n_epochs=_INIT_EMEANS_EPOCHS, init=seeds, random_state=rng, backend=self.backend
+        ).fit(X)
         counts = np.bincount(emeans.labels_, minlength=k).astype(np.float64)
-        sums = np.zeros((k, d + (d if self.covariance_type == "diag" else 1)))
-        for rows in _chunks(X.shape[0], k):
-            one_hot = np.zeros((rows.stop - rows.start, k))
-            one_hot[np.arange(rows.stop - rows.start), emeans.labels_[rows]] = 1.0
-            sums += one_hot.T @ _features(X[rows] - shift, self.covariance_type)
+        if self.backend == "rust":
+            sums = _rust_module().egmm_label_stats(
+                X, shift, emeans.labels_.astype(np.int64, copy=False), k, self.covariance_type
+            )
+        else:
+            sums = np.zeros((k, d + (d if self.covariance_type == "diag" else 1)))
+            for rows in _chunks(X.shape[0], k):
+                one_hot = np.zeros((rows.stop - rows.start, k))
+                one_hot[np.arange(rows.stop - rows.start), emeans.labels_[rows]] = 1.0
+                sums += one_hot.T @ _features(X[rows] - shift, self.covariance_type)
         means = emeans.cluster_centers_.astype(np.float64) - shift
         variances = np.tile(global_var, (k, 1))
         if self.covariance_type == "spherical":
@@ -300,6 +342,8 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
             The fitted estimator.
         """
         X = validate_data(self, X=X, dtype=np.float64, reset=True)
+        if self.backend == "rust":
+            X = np.ascontiguousarray(X)
         n, d = X.shape
         k = self.n_components
         self._check_params(n)
@@ -313,13 +357,20 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
         if 0 in epoch_rows:
             raise ValueError("n_epochs is too small: the run would see no rows")
         total_steps = sum(math.ceil(rows / self.batch_size_) for rows in epoch_rows)
+        threshold = self.unused_threshold
+        if threshold is None:
+            threshold = 0.0 if d <= _NO_REVIVAL_MAX_D else _UNUSED_THRESHOLD
 
         # Work on data centred around its mean, the variances come from E[x**2] - E[x]**2.
         shift = X.mean(axis=0)
         weights, means, variances = self._initialize(X, shift, rng)
+        if self.backend == "rust":
+            return self._fit_rust(X, shift, weights, means, variances, epoch_rows, total_steps, threshold, rng)
+
         second = _second_moments(means, variances, self.covariance_type)
         mass = np.full(k, _INIT_USAGE)
-        step = 0
+        usage = np.full(k, _INIT_USAGE)
+        step, n_splits = 0, 0
 
         for epoch, rows in enumerate(epoch_rows):
             last_pass = epoch == len(epoch_rows) - 1
@@ -339,12 +390,15 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
 
                 alpha = _scheduled_alpha(self.alpha_, step, total_steps)
                 mass = (1.0 - alpha) * mass + alpha * batch_mass
+                usage = (1.0 - alpha) * usage + alpha * np.bincount(resp.argmax(axis=1), minlength=k)
                 hit = batch_mass > _MIN_MASS
                 step_size = (alpha * batch_mass[hit] / mass[hit])[:, None]
                 batch_means = batch_sums[hit] / batch_mass[hit, None]
                 means[hit] += step_size * (batch_means[:, :d] - means[hit])
                 second[hit] += step_size * (batch_means[:, d:] - second[hit])
                 variances = _variances(means, second, self.covariance_type, self.reg_covar)
+                if (step + 1) % _CHECK_UNUSED_EVERY == 0:
+                    n_splits += self._revive_unused(means, second, variances, mass, usage, threshold, rng)
                 weights = np.maximum(mass / mass.sum(), _MIN_MASS)
                 weights /= weights.sum()
                 step += 1
@@ -361,7 +415,87 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
         self.lower_bound_ = log_likelihood / epoch_rows[-1]
         self.n_iter_ = len(epoch_rows)
         self.n_steps_ = step
+        self.n_splits_ = n_splits
         return self
+
+    def _revive_unused(self, means, second, variances, mass, usage, threshold, rng):
+        """Split busy components to replace the ones that are (almost) never the most likely component of a row.
+
+        `usage` is the moving average of the number of rows for which each component is the most likely one, as the
+        cluster mass in `EMeans`. The soft responsibility mass is no use here: components that share their rows
+        (say all of them start at the same point) keep an equal mass forever. Works in place on the (shifted)
+        means, the second moments, the variances, the masses and `usage`.
+        """
+        if threshold == 0.0:
+            return 0
+        k, d = means.shape
+        limit = usage.sum() * threshold / k
+        unused = np.flatnonzero(usage < limit)
+        donors = np.flatnonzero((usage >= limit) & (usage > 0))
+        n_split = min(len(unused), len(donors))
+        if n_split == 0:
+            return 0
+        # Gumbel top-k: donors drawn without replacement in proportion to their mass.
+        keys = np.log(usage[donors]) - np.log(-np.log(np.maximum(rng.random_sample(len(donors)), 1e-300)))
+        sources = donors[np.argsort(-keys)[:n_split]]
+        targets = unused[:n_split]
+        # Move both halves along a fixed sign pattern, `_SPLIT_DISTANCE` standard deviations from the donor's mean.
+        signs = np.where(np.arange(d) % 2 == 0, 1.0, -1.0)
+        scale = np.sqrt(variances[sources])
+        if self.covariance_type == "spherical":
+            scale = scale[:, None]
+        offset = (_SPLIT_DISTANCE / math.sqrt(d)) * scale * signs
+        base = means[sources].copy()
+        means[sources] = base - offset
+        means[targets] = base + offset
+        variances[targets] = variances[sources]
+        changed = np.concatenate([sources, targets])
+        second[changed] = _second_moments(means[changed], variances[changed], self.covariance_type)
+        mass[targets] = mass[sources] = (mass[sources] + mass[targets]) / 2.0
+        usage[sources] /= 2.0
+        usage[targets] = usage[sources]
+        return n_split
+
+    def _fit_rust(self, X, shift, weights, means, variances, epoch_rows, total_steps, threshold, rng):
+        weights, means, covariances, lower_bound, n_steps, n_splits = _rust_module().egmm_fit(
+            X,
+            shift,
+            np.ascontiguousarray(weights, dtype=np.float64),
+            np.ascontiguousarray(means, dtype=np.float64),
+            np.ascontiguousarray(variances, dtype=np.float64),
+            self.covariance_type,
+            epoch_rows,
+            self.batch_size_,
+            _alpha_schedule(self.alpha_, total_steps),
+            float(self.reg_covar),
+            float(threshold),
+            _rust_seed(rng),
+        )
+        self.weights_ = weights
+        self.means_ = means + shift
+        self.covariances_ = covariances
+        self.precisions_ = 1.0 / self.covariances_
+        self.precisions_cholesky_ = np.sqrt(self.precisions_)
+        self.lower_bound_ = float(lower_bound)
+        self.n_iter_ = len(epoch_rows)
+        self.n_steps_ = n_steps
+        self.n_splits_ = n_splits
+        return self
+
+    def _evaluate_rust(self, X, output):
+        """`score_samples`, `predict_proba` or `predict` on the Rust backend."""
+        check_is_fitted(self, ["weights_", "means_", "covariances_"])
+        X = np.ascontiguousarray(validate_data(self, X=X, dtype=np.float64, reset=False))
+        shift = self.weights_ @ self.means_
+        return _rust_module().egmm_evaluate(
+            X,
+            shift,
+            np.ascontiguousarray(self.weights_, dtype=np.float64),
+            np.ascontiguousarray(self.means_ - shift, dtype=np.float64),
+            np.ascontiguousarray(self.covariances_, dtype=np.float64),
+            self.covariance_type,
+            output,
+        )
 
     def _weighted_log_prob(self, X):
         """`log(weight_j) + log N(x | component j)` for every row of `X`, computed by `_chunks` of rows.
@@ -395,6 +529,8 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
         np.ndarray of shape (n_samples,)
             Log density of every row.
         """
+        if self.backend == "rust":
+            return self._evaluate_rust(X, "score_samples")
         n, blocks = self._weighted_log_prob(X)
         out = np.empty(n)
         for rows, log_prob in blocks:
@@ -431,6 +567,8 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
         np.ndarray of shape (n_samples, n_components)
             Responsibilities, every row sums to one.
         """
+        if self.backend == "rust":
+            return self._evaluate_rust(X, "predict_proba")
         n, blocks = self._weighted_log_prob(X)
         out = np.empty((n, self.n_components))
         for rows, log_prob in blocks:
@@ -451,6 +589,8 @@ class EGaussianMixture(DensityMixin, BaseEstimator):
         np.ndarray of shape (n_samples,)
             Component labels.
         """
+        if self.backend == "rust":
+            return self._evaluate_rust(X, "predict").astype(np.intp, copy=False)
         n, blocks = self._weighted_log_prob(X)
         out = np.empty(n, dtype=np.intp)
         for rows, log_prob in blocks:

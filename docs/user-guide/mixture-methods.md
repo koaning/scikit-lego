@@ -72,8 +72,9 @@ As a sidenote: this image was generated with some dummy data, but its code can b
 `sklearn.mixture.GaussianMixture`, but trains it the way [e-means](clustering.md#e-means) trains k-means. Instead of
 full EM iterations over all of the data, it walks over the data in mini-batches. Every batch gets an E-step under the
 current parameters, and the responsibility-weighted sums of $x$ and $x^2$ then update each component's weight, mean
-and variance through an exponential moving average. After the last pass the parameters come from one exact M-step on
-the sums of that pass.
+and variance through an exponential moving average. Components that are (almost) never the most likely one for any
+row are revived by splitting a busy component, as `EMeans` revives empty clusters. After the last pass the parameters
+come from one exact M-step on the sums of that pass.
 
 ```py
 from sklearn.datasets import make_blobs
@@ -95,17 +96,35 @@ size come from the e-means scaling laws, with a batch of at least 64 rows per co
 0.3. Without those limits the k-means laws push the step size to 1 on longer runs, which turns the
 moving average into noisy mini-batch EM that gets worse with more epochs.
 
-`notebooks/emeans_benchmark.py` compares it to `GaussianMixture` with scikit-learn's defaults, timing every fit
-(initialisation included) and scoring it on held-out rows. On one run (Apple M4 Pro, one seed):
+!!! info "Revival"
 
-| data | covariance | `GaussianMixture()` defaults | `EGaussianMixture()` |
-|---|---|---|---|
-| embedding-like: 100k rows, 100-d, unit norm, 64 components | diag | 6.3s, 88.977 nats/row | **0.50s**, 88.945 (5 epochs) |
-| | spherical | 4.8s, 88.880 | **0.24s**, 88.836 (2 epochs) |
-| covtype: 464k rows, 10 numeric columns, 32 components | diag | 10.8s, -8.862 | **0.40s**, -8.813 (2 epochs) |
-| | spherical | 2.9s, -10.980 | **0.39s**, -10.959 (2 epochs) |
+    Like `EMeans`, `EGaussianMixture` revives unused components (`unused_threshold`, default `0.1`). A component is
+    unused when, averaged over recent batches, it is the most likely component for less than a tenth of its share of
+    the rows. It is then moved next to a busy component, which is split in two along its standard deviation. Revival
+    is tracked on these "most likely" counts rather than on the soft responsibility mass, because components that
+    share their rows, such as several that start at the same point, keep an equal mass forever. With the default
+    `init="e-means"` revival rarely triggers, since the `EMeans` initialisation already revives its clusters. It
+    matters most with `init="random"`, `"k-means++"` or an array of means.
 
-So the speedup ranges from about 7 to 27 times, for a held-out log-likelihood that is at most 0.05 nats per row below EM, and sometimes above it.
+[`benchmarks/emeans`](https://github.com/koaning/scikit-lego/tree/main/benchmarks/emeans) fits `EGaussianMixture`
+and `GaussianMixture` over their full range of epochs or EM iterations, and scores every fit on held-out rows. In
+short:
+
+- `EGaussianMixture` gets to a good model much sooner on every dataset. A large part of that is initialisation:
+  `GaussianMixture()` starts with a full `KMeans` fit.
+- On covtype it is better than EM at every time budget.
+- On embedding-like data it levels off a few hundredths of a nat per row below the `GaussianMixture()` default, and EM
+  keeps improving if you give it more iterations. With a large time budget, EM wins there.
+- On well separated blobs both recover the clusters equally well.
+- Samples drawn from either model are equally hard to tell apart from real rows.
+
+The [benchmark README](https://github.com/koaning/scikit-lego/tree/main/benchmarks/emeans) has the charts, tables and
+the commands to rerun it.
+
+`EGaussianMixture(backend="rust")` runs the training loop and the density evaluations in compiled Rust, see
+[the Rust backend of `EMeans`](clustering.md#rust-backend) for how to install it. With the same number of epochs it is
+2–4.4x faster than `backend="numpy"` in the benchmark (embedding-like data with diagonal covariances: 0.47s against
+0.18s at 5 epochs, 3.80s against 1.08s at 50), for the same held-out log-likelihood.
 
 !!! tip "Tuning `alpha` and `batch_size`"
 
