@@ -65,16 +65,14 @@ fn argmin_row<T: Float>(gram_row: &[T], center_norms: &[T], row_norm: T) -> (usi
     // Independent lanes break the dependency between comparisons, so the loop vectorises.
     const LANES: usize = 8;
     let k = gram_row.len();
-    let full = k - k % LANES;
+    let (gram_chunks, _) = gram_row.as_chunks::<LANES>();
+    let (norm_chunks, _) = center_norms.as_chunks::<LANES>();
+    let full = gram_chunks.len() * LANES;
     let (mut best, mut best_value) = (0, T::MINUS_TWO * gram_row[0] + center_norms[0]);
     if full > 0 {
         let mut lane_value = [best_value; LANES];
         let mut lane_index = [0usize; LANES];
-        for (c, (g, cn)) in gram_row[..full]
-            .chunks_exact(LANES)
-            .zip(center_norms[..full].chunks_exact(LANES))
-            .enumerate()
-        {
+        for (c, (g, cn)) in gram_chunks.iter().zip(norm_chunks).enumerate() {
             for l in 0..LANES {
                 let value = T::MINUS_TWO * g[l] + cn[l];
                 if value < lane_value[l] {
