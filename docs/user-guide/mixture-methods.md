@@ -66,8 +66,81 @@ As a sidenote: this image was generated with some dummy data, but its code can b
     --8<-- "docs/_scripts/mixture-methods.py:outlier-mixture-threshold"
     ```
 
+## Fast Gaussian mixtures with EGaussianMixture
+
+[`EGaussianMixture`][egmm-api] fits a Gaussian mixture with diagonal or spherical covariances, much like
+`sklearn.mixture.GaussianMixture`, but trains it the way [e-means](clustering.md#e-means) trains k-means. Instead of
+full EM iterations over all of the data, it walks over the data in mini-batches. Every batch gets an E-step under the
+current parameters, and the responsibility-weighted sums of $x$ and $x^2$ then update each component's weight, mean
+and variance through an exponential moving average. Components that are (almost) never the most likely one for any
+row are revived by splitting a busy component, as `EMeans` revives empty clusters. After the last pass the parameters
+come from one exact M-step on the sums of that pass.
+
+```py
+from sklearn.datasets import make_blobs
+from sklego.mixture import EGaussianMixture
+
+X, _ = make_blobs(n_samples=100_000, centers=50, n_features=32, random_state=42)
+
+gmm = EGaussianMixture(n_components=50, covariance_type="diag", random_state=42).fit(X)
+gmm.score(X)               # average log-likelihood per row
+gmm.predict_proba(X[:5])   # responsibilities
+samples, labels = gmm.sample(1_000)
+```
+
+It has the usual mixture API (`predict`, `predict_proba`, `score_samples`, `score`, `sample`, `bic`, `aic`), and the
+fitted `weights_`, `means_`, `covariances_` and `precisions_cholesky_` use the same layout as scikit-learn.
+
+By default the means start from an `EMeans` fit seeded with k-means++ on a small subsample. The batch size and step
+size come from the e-means scaling laws, with a batch of at least 64 rows per component and a step size capped at
+0.3. Without those limits the k-means laws push the step size to 1 on longer runs, which turns the
+moving average into noisy mini-batch EM that gets worse with more epochs.
+
+!!! info "Revival"
+
+    Like `EMeans`, `EGaussianMixture` revives unused components (`unused_threshold`, default `0.1`). A component is
+    unused when, averaged over recent batches, it is the most likely component for less than a tenth of its share of
+    the rows. It is then moved next to a busy component, which is split in two along its standard deviation. Revival
+    is tracked on these "most likely" counts rather than on the soft responsibility mass, because components that
+    share their rows, such as several that start at the same point, keep an equal mass forever. With the default
+    `init="e-means"` revival rarely triggers, since the `EMeans` initialisation already revives its clusters. It
+    matters most with `init="random"`, `"k-means++"` or an array of means.
+
+[`benchmarks/emeans`](https://github.com/koaning/scikit-lego/tree/main/benchmarks/emeans) fits `EGaussianMixture`
+and `GaussianMixture` over their full range of epochs or EM iterations, and scores every fit on held-out rows. In
+short:
+
+- `EGaussianMixture` gets to a good model much sooner on every dataset. A large part of that is initialisation:
+  `GaussianMixture()` starts with a full `KMeans` fit.
+- On covtype it is better than EM at every time budget.
+- On embedding-like data it levels off a few hundredths of a nat per row below the `GaussianMixture()` default, and EM
+  keeps improving if you give it more iterations. With a large time budget, EM wins there.
+- On well separated blobs both recover the clusters equally well.
+- Samples drawn from either model are equally hard to tell apart from real rows.
+
+The [benchmark README](https://github.com/koaning/scikit-lego/tree/main/benchmarks/emeans) has the charts, tables and
+the commands to rerun it.
+
+`EGaussianMixture(backend="rust")` runs the training loop and the density evaluations in compiled Rust, see
+[the Rust backend of `EMeans`](clustering.md#rust-backend) for how to install it. With the same number of epochs it is
+2–4.4x faster than `backend="numpy"` in the benchmark (embedding-like data with diagonal covariances: 0.47s against
+0.18s at 5 epochs, 3.80s against 1.08s at 50), for the same held-out log-likelihood.
+
+!!! tip "Tuning `alpha` and `batch_size`"
+
+    A larger `alpha` can give a slightly better fit, but only when every component sees enough rows per batch. As a
+    rule of thumb, keep `batch_size / n_components` at about 200 times `alpha` or more: `alpha=0.6` wants about 128
+    rows per component in a batch. With smaller batches, a large `alpha` makes the fit *worse* as you add epochs.
+
+!!! info "Full covariances"
+
+    Only `"diag"` and `"spherical"` covariances are supported for now. If you need full covariances, a fitted
+    `EGaussianMixture` can still provide a fast starting point: pass its `means_` as `means_init` to
+    `sklearn.mixture.GaussianMixture(covariance_type="full")`.
+
 [gmm-classifier-api]: ../../api/mixture#sklego.mixture.gmm_classifier.GMMClassifier
 [bayes_gmm-classifier-api]: ../../api/mixture#sklego.mixture.bayesian_gmm_classifier.BayesianGMMClassifier
 [gmm-outlier-detector-api]: ../../api/mixture#sklego.mixture.gmm_outlier_detector.GMMOutlierDetector
 [bayes_gmm-outlier-detector-api]: ../../api/mixture#sklego.mixture.gmm_outlier_detector.BayesianGMMOutlierDetector
 [bayes_kde-classifier-api]: ../../api/neighbors#sklego.neighbors.BayesianKernelDensityClassifier
+[egmm-api]: ../../api/mixture#sklego.mixture.egmm.EGaussianMixture

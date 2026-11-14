@@ -124,6 +124,7 @@ nav:
   - User guide:
     - Datasets: user-guide/datasets.md
     - Linear Models: user-guide/linear-models.md
+    - Clustering: user-guide/clustering.md
     - Mixture Methods: user-guide/mixture-methods.md
     - Feature Selection: user-guide/feature-selection.md
     - Naive Bayes: user-guide/naive-bayes.md
@@ -137,6 +138,7 @@ nav:
     - RStudio: rstudio.md
   - API Reference:
     - Base: api/base.md
+    - Cluster: api/cluster.md
     - Common: api/common.md
     - Datasets: api/datasets.md
     - Decay Functions: api/decay-functions.md

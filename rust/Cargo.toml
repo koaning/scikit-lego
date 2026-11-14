@@ -1,0 +1,24 @@
+[package]
+name = "sklego-rust"
+version = "0.1.0"
+edition = "2021"
+description = "Rust kernels for the EMeans and EGaussianMixture estimators of scikit-lego"
+license = "MIT"
+publish = false
+
+[lib]
+name = "sklego_rust"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.30", features = ["abi3-py310"] }
+numpy = "0.30"
+matrixmultiply = { version = "0.3", features = ["threading"] }
+rayon = "1.10"
+
+[features]
+extension-module = ["pyo3/extension-module"]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
